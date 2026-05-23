@@ -1,0 +1,26 @@
+/* ─── Navbar: center tabs like mem0 ─── */
+nav-tabs {
+  justify-content: center !important;
+  flex: 1 !important;
+}
+
+nav-tabs-item {
+  padding: 0 1rem !important;
+}
+
+/* ─── Add "Driftless" text next to logo ─── */
+nav-logo::after {
+  content: "Driftless";
+  margin-left: 0.6rem;
+  color: #e8e8e3;
+  font-family: "Geist Mono", monospace;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Tighten navbar spacing ─── */
+#navbar {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
