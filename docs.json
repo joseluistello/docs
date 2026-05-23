@@ -54,12 +54,17 @@
         "pages": ["index"]
       },
       {
-        "tab": "Quickstart",
-        "pages": ["quickstart"]
-      },
-      {
-        "tab": "Concepts",
-        "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
+        "tab": "Learn",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": ["quickstart"]
+          },
+          {
+            "group": "Concepts",
+            "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
+          }
+        ]
       },
       {
         "tab": "CLI & Agents",
