@@ -4,36 +4,76 @@ description: 'Shared codebase memory for engineering teams and coding agents.'
 mode: 'custom'
 ---
 
-<div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', maxWidth: '56rem', margin: '0 auto', textAlign: 'center' }}>
+<div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem 2rem', maxWidth: '68rem', margin: '0 auto' }}>
 
-  <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '1rem', color: '#e8e8e3', lineHeight: 1.1 }}>
-    Driftless your <span style={{ color: '#b8e87a' }}>day to day</span>
-  </h1>
-
-  <p style={{ fontSize: '1.15rem', color: '#7a7d77', lineHeight: 1.6, marginBottom: '2rem', maxWidth: '36rem' }}>
-    Shared codebase memory for engineering teams and coding agents. Context that survives sessions, repos, and team turnover.
+  <div style={{ maxWidth: '48rem' }}>
+  <p style={{ fontSize: '0.8rem', color: '#b8e87a', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+    Repo memory for AI-assisted teams
   </p>
 
-  <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#b8e87a', textDecoration: 'none', fontWeight: 500, paddingBottom: '0.25rem', borderBottom: '1px solid #b8e87a' }}>
-    Get started in 30 seconds
+  <h1 style={{ fontSize: 'clamp(2.25rem, 5vw, 4.5rem)', fontWeight: 700, marginBottom: '1rem', color: '#e8e8e3', lineHeight: 1.05 }}>
+    Give every agent the <span style={{ color: '#b8e87a' }}>right repo context</span> before it edits code.
+  </h1>
+
+  <p style={{ fontSize: '1.05rem', color: '#8d908a', lineHeight: 1.7, marginBottom: '2rem', maxWidth: '42rem' }}>
+    Driftless stores architectural knowledge as living topics: what an area does, how it works, what can break, and which files it applies to. Humans and coding agents can load those topics at the moment of change.
+  </p>
+
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '3.5rem' }}>
+    <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#0a0b0c', background: '#b8e87a', textDecoration: 'none', fontWeight: 600, padding: '0.75rem 1rem', borderRadius: '0.375rem' }}>
+      Start with Driftless
+      <span>→</span>
+    </a>
+    <a href="/concepts/topics" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#b8e87a', textDecoration: 'none', fontWeight: 500, paddingBottom: '0.25rem', borderBottom: '1px solid #b8e87a' }}>
+      Understand topics
+      <span>→</span>
+    </a>
+  </div>
+  </div>
+
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', width: '100%', marginBottom: '1rem' }}>
+    <div style={{ border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1rem', background: '#101113' }}>
+      <div style={{ color: '#b8e87a', fontSize: '0.8rem', marginBottom: '0.5rem' }}>01</div>
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Create topics</h3>
+      <p style={{ fontSize: '0.82rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Capture what, how, decisions, gotchas, invariants, and ownership.</p>
+    </div>
+    <div style={{ border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1rem', background: '#101113' }}>
+      <div style={{ color: '#b8e87a', fontSize: '0.8rem', marginBottom: '0.5rem' }}>02</div>
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Anchor to code</h3>
+      <p style={{ fontSize: '0.82rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Attach topics to files, glob patterns, docs, and repos so context has a precise surface area.</p>
+    </div>
+    <div style={{ border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1rem', background: '#101113' }}>
+      <div style={{ color: '#b8e87a', fontSize: '0.8rem', marginBottom: '0.5rem' }}>03</div>
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Load before edits</h3>
+      <p style={{ fontSize: '0.82rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Resolve matching topics before a human or agent changes files.</p>
+    </div>
+    <div style={{ border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1rem', background: '#101113' }}>
+      <div style={{ color: '#b8e87a', fontSize: '0.8rem', marginBottom: '0.5rem' }}>04</div>
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Keep fresh</h3>
+      <p style={{ fontSize: '0.82rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Use sync, PR observation, and staleness to see which topics need review.</p>
+    </div>
+  </div>
+
+  <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#b8e87a', textDecoration: 'none', fontWeight: 500, paddingBottom: '0.25rem', borderBottom: '1px solid #b8e87a', width: 'max-content', marginBottom: '3rem' }}>
+    Get started
     <span>→</span>
   </a>
 
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', padding: '4rem 0 2rem', width: '100%' }}>
-
-    <a href="/concepts/core-loop" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>The Driftless Loop</h3>
-      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Sync, load, persist. The core workflow that keeps context aligned with your codebase.</p>
-    </a>
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', width: '100%' }}>
 
     <a href="/concepts/topics" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
       <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Topics & Knowledge Graph</h3>
-      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>The unit of codebase memory. Scan-generated or hand-written, linked with typed relations.</p>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>The core unit of Driftless: repo knowledge anchored to code and linked with relations.</p>
+    </a>
+
+    <a href="/cli/sync" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Sync before work</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>See stale topics, recent PR activity, and suggested topics before starting a coding session.</p>
     </a>
 
     <a href="/cli/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>CLI Reference</h3>
-      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Install, init, context commands, graph, sync. Everything you need at your fingertips.</p>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>CLI Workflow</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Install, authenticate, create topics, load context, and inspect graph impact.</p>
     </a>
 
     <a href="/api/overview" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>

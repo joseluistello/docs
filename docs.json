@@ -50,37 +50,84 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Welcome",
-        "pages": ["index"]
-      },
-      {
-        "tab": "Concepts",
+        "tab": "Start",
+        "icon": "terminal",
         "groups": [
           {
-            "group": "Getting started",
-            "pages": ["quickstart"]
-          },
-          {
-            "group": "Concepts",
-            "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
+            "group": "Start here",
+            "icon": "rocket",
+            "pages": ["index", "quickstart"]
           }
         ]
       },
       {
-        "tab": "CLI & Agents",
-        "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync", "agents/setup"]
+        "tab": "Concepts",
+        "icon": "network",
+        "groups": [
+          {
+            "group": "Repo memory",
+            "icon": "brain",
+            "pages": ["concepts/topics", "concepts/core-loop"]
+          },
+          {
+            "group": "Context integrity",
+            "icon": "radar",
+            "pages": ["concepts/drift", "concepts/coverage"]
+          }
+        ]
       },
       {
-        "tab": "API Reference",
-        "pages": ["api/overview", "api/workspaces", "api/repos", "api/topics", "api/integrations"]
+        "tab": "CLI",
+        "icon": "square-terminal",
+        "groups": [
+          {
+            "group": "Setup",
+            "icon": "wrench",
+            "pages": ["cli/setup"]
+          },
+          {
+            "group": "Daily workflow",
+            "icon": "refresh-cw",
+            "pages": ["cli/sync", "cli/context", "cli/graph"]
+          },
+          {
+            "group": "Agents",
+            "icon": "bot",
+            "pages": ["agents/setup"]
+          }
+        ]
       },
       {
-        "tab": "Integrations",
-        "pages": ["integrations/github-app"]
+        "tab": "API",
+        "icon": "braces",
+        "groups": [
+          {
+            "group": "Overview",
+            "icon": "book-open",
+            "pages": ["api/overview"]
+          },
+          {
+            "group": "Core resources",
+            "icon": "database",
+            "pages": ["api/workspaces", "api/repos", "api/topics"]
+          },
+          {
+            "group": "Integrations",
+            "icon": "plug",
+            "pages": ["api/integrations", "integrations/github-app"]
+          }
+        ]
       },
       {
         "tab": "Security",
-        "pages": ["security/overview"]
+        "icon": "shield",
+        "groups": [
+          {
+            "group": "Security",
+            "icon": "shield-check",
+            "pages": ["security/overview"]
+          }
+        ]
       }
     ]
   },
