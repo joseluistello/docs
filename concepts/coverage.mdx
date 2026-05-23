@@ -9,10 +9,11 @@ For every file in a scanned repository, Driftless checks whether any topic cover
 
 ## Match specificity tiers
 
-Every file falls into one of four tiers, based on how strongly a topic anchors to it:
+Every file falls into one of five tiers, based on how strongly a topic anchors to it:
 
 | Tier | Mechanism | Strength |
 |------|-----------|----------|
+| **component** | Topic has this exact component name (e.g.AuthGuard) | Strong |
 | **file** | Topic has this exact file path in `where_files` | Strong / direct |
 | **pattern** | Topic's glob pattern matches this file | Indirect |
 | **repo** | Topic is scoped to this repository but has no file or pattern match | Weak |

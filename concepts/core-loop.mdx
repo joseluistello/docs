@@ -14,12 +14,11 @@ The scanner extracts components from your TypeScript codebase. It reads the AST 
 - **React**: components and hooks
 
 Scans happen in two ways:
-- **On demand**: `driftless init` or `driftless scan`
+- **On demand**: `driftless init`
 - **On push**: The GitHub App triggers a scan when code is pushed to tracked branches
 
 ```bash
 driftless init              # full baseline scan, uploads to Cloud
-driftless scan --diff       # diff scan: what changed since last baseline
 ```
 
 ## Phase 2: Observe

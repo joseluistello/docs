@@ -18,8 +18,8 @@ The **default branch** is always tracked. Additional branches can be added:
 ```bash
 driftless branches add staging
 driftless branches add release/*
-driftless branches list
-driftless branches remove staging
+driftless branches
+driftless branches rm staging
 ```
 
 Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Staleness is reserved for branches where changes signal durable context shifts.
@@ -65,7 +65,7 @@ driftless context get --diff            # staleness for current local (uncommitt
     Only pushes to tracked branches. PRs do **not** trigger staleness; they trigger PR observation instead (sticky context comments listing relevant topics). This distinction keeps staleness meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
   </Accordion>
   <Accordion title="Can I manually mark a topic as stale?">
-    Yes. Use `driftless context update <slug> --stale --reason "..."`. This is useful when you review a topic and notice it's outdated even though the file patterns haven't been pushed yet.
+    Yes. Run `driftless context update <slug> --status draft` to mark it for review, or update the content and set `--status reviewed` to clear staleness. You can also let the next push naturally trigger a staleness check.
   </Accordion>
   <Accordion title="What happens if I delete a topic's anchored files?">
     The scanner detects missing files during the next scan and reports them as structural staleness. The topic stays stale until someone either updates its anchors or confirms the context is no longer relevant.
