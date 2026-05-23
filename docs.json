@@ -54,7 +54,7 @@
         "pages": ["index"]
       },
       {
-        "tab": "Learn",
+        "tab": "Concepts",
         "groups": [
           {
             "group": "Getting started",
