@@ -1,86 +1,96 @@
 ---
-title: 'Release Notes'
-description: 'What shipped in each version of Driftless.'
+title: 'Changelog'
+description: 'Product updates and announcements'
 ---
 
-## v0.2.2
+<Update label="May 2026" description="v0.2.2">
+  Content persistence — topics now store full Markdown bodies. File anchoring via `context sync --file` links docs to code. TypeORM entities updated to match.
+</Update>
 
-*May 2026*
+<Update label="May 2026" description="v0.2.0" tags={["major"]}>
+  Big shift: from scanner + rules engine → context delivery + knowledge graph.
 
-- Content persistence — topics store full Markdown bodies
-- File anchoring — `context sync --file` links docs to code
-- TypeORM entities updated to match
+  **Flexible Topics** — Markdown documents with metadata (content, tags, kind, status, origin).
 
-## v0.2.0
+  **Typed relations** — `depends_on`, `relates_to`, `supersedes`, `blocks`, `implements`, `risk_for`.
 
-*May 2026*
+  **Wiki-links** — `[[slug]]` cross-references parsed into bidirectional graph edges.
 
-Big shift: from scanner + rules engine → context delivery + knowledge graph.
+  **Cross-repo context** — topics accumulate repos automatically on `context update`.
 
-- **Flexible Topics** — Markdown documents with metadata (content, tags, kind, status, origin)
-- **Typed relations** — `depends_on`, `relates_to`, `supersedes`, `blocks`, `implements`, `risk_for`
-- **Wiki-links** — `[[slug]]` cross-references parsed into bidirectional graph edges
-- **Cross-repo context** — topics accumulate repos automatically on `context update`
-- **Honest auth detection** — reads `@UseGuards`, `APP_GUARD`, Clerk `auth()` instead of assuming public
-- **Secrets encryption** — AES-256-GCM for all API keys and tokens
-- **Agent self-healing** — `install-skill` replaces managed block in-place
-- **Removed** — SEMANTIC rules, POST /scan violations, `driftless scan --diff`, rules/violations dashboard, intents API
+  **Honest auth detection** — reads `@UseGuards`, `APP_GUARD`, Clerk `auth()` instead of assuming public.
 
-## v0.1.x — The Foundation Era
+  **Secrets encryption** — AES-256-GCM for all API keys and tokens.
 
-*January–May 2026*
+  **Agent self-healing** — `install-skill` replaces managed block in-place.
 
-### Scanner maturity
+  **Removed** — SEMANTIC rules, POST /scan violations, `driftless scan --diff`, rules/violations dashboard, intents API.
+</Update>
 
-- **0.1.48** — Honest auth: APP_GUARD detection, never assert "public"
-- **0.1.49** — Per-file byte-cap circuit breaker (no OOM on large repos)
-- **0.1.65** — Init UX: colored banner, `--framework auto|nestjs|nextjs`, `--suggest` opt-in
-- **0.1.66** — Multi-pattern anchoring (`--add-pattern`, `--remove-pattern`) and real `--help`
-- **0.1.67** — `[[slug]]` wiki-links — first step toward the knowledge graph
-- **0.1.68–0.1.72** — Next.js Fase 1 + 2: App Router extractor, React component detection, Clerk auth inference
+<Update label="May 2026" description="v0.1.72" tags={["scanner"]}>
+  Next.js Fase 2.3 — standalone React (Vite/CRA) extractor.
+</Update>
 
-### Cross-repo context
+<Update label="May 2026" description="v0.1.71" tags={["scanner"]}>
+  Next.js Fase 2.2 — React components/hooks + page→component graph.
+</Update>
 
-- **0.1.62** — Surface cross-repo references in `context get`
-- **0.1.63** — Explicit `context link` + visible auto-link
+<Update label="May 2026" description="v0.1.70" tags={["scanner"]}>
+  Next.js Fase 2.1 — Clerk auth() / currentUser() inference.
+</Update>
 
-### Dogfood-driven fixes
+<Update label="May 2026" description="v0.1.69" tags={["docs"]}>
+  Sync Arc 1/2/3 across all surfaces.
+</Update>
 
-- AGENTS.md skill block self-heals (was frozen forever)
-- Skill REFERENCES installed alongside SKILL.md
-- `resolveRepo` no longer collapses to `no_workspace` under load
-- Init shows components for branched repos with `--src`
-- `--decision` appends instead of overwriting
-- GitHub App shows correct installation state
+<Update label="May 2026" description="v0.1.68" tags={["scanner"]}>
+  Next.js Fase 1 cleanup — 4 gaps from dogfood.
+</Update>
 
-### CLI evolution
+<Update label="May 2026" description="v0.1.67" tags={["cli"]}>
+  `[[slug]]` wiki-links — first step toward the knowledge graph.
+</Update>
 
-| Version | What shipped |
-|---------|-------------|
-| `0.1.0` | First public: `login`, `init`, `scan`, `context` |
-| `0.1.12` | `--help` system, `--human` flag |
-| `0.1.26` | Human-first CLI: `--json`, `--dry-run`, better errors |
-| `0.1.31` | Cross-repo topic table, auto-link on update |
-| `0.1.40` | Workspace resolution caching, real diagnostics |
-| `0.1.42` | GitHub App states, `list --kind`, `sync` PR activity |
-| `0.1.44` | `doctor --json` for agents/CI |
-| `0.1.50` | `graph coverage` — context coverage of scanned repo |
-| `0.1.51` | `context load --files` — topics + graph + coverage + actions |
-| `0.1.65` | `init --framework`, monorepo `--src`, `--suggest` opt-in |
+<Update label="May 2026" description="v0.1.66" tags={["cli"]}>
+  Multi-pattern anchoring (`--add-pattern`, `--remove-pattern`) and real `--help`.
+</Update>
 
-### Dashboard
+<Update label="May 2026" description="v0.1.65" tags={["cli"]}>
+  Init UX: colored banner, `--framework auto|nestjs|nextjs`, `--suggest` opt-in. Monorepo `--src` support.
+</Update>
 
-- **v0.1.75** — Full DESIGN.md visual parity. Dark terminal aesthetic, Geist Mono, phosphor lime accent. Ecosystem view, topic detail with inline editing, architecture map with coverage overlays, PR activity feed, Copy for AI, settings consolidation, Clerk dark theme.
+<Update label="May 2026" description="v0.1.64" tags={["cli"]}>
+  Three UX fixes from self-dogfood.
+</Update>
 
-### GitHub App
+<Update label="May 2026" description="v0.1.63" tags={["cli"]}>
+  Explicit `context link` + visible auto-link for cross-repo context.
+</Update>
 
-- Sticky PR comments listing matched topics per changed file
-- Push-driven topic staleness on tracked branches
-- Installation tracking via workspace/org matching
-- Public listing on GitHub Marketplace
+<Update label="May 2026" description="v0.1.62" tags={["cli"]}>
+  Surface cross-repo references in `context get`.
+</Update>
 
-## v0.0.x — Genesis
+<Update label="May 2026" description="v0.1.51" tags={["cli"]}>
+  `context load --files` — topics + graph + coverage + actions.
+</Update>
 
-*January 2026*
+<Update label="May 2026" description="v0.1.50" tags={["cli"]}>
+  `graph coverage` — context coverage of the scanned repo.
+</Update>
 
-Monorepo scaffolded with Turborepo, NestJS API, TypeORM entities, and GitHub webhook handler. Scanner extracted NestJS endpoints, guards, services, and modules from AST (ts-morph). CLI shipped with `login`, `init`, `scan`, and `context`. First dogfood run on `profile_nippy_ms` detected 155 endpoints and 15 guards.
+<Update label="May 2026" description="v0.1.49" tags={["scanner"]}>
+  Per-file byte-cap circuit breaker (no OOM on large repos).
+</Update>
+
+<Update label="May 2026" description="v0.1.48" tags={["scanner"]}>
+  Honest auth: APP_GUARD detection, never assert "public".
+</Update>
+
+<Update label="January 2026" description="v0.1.0" tags={["launch"]}>
+  First public release: `login`, `init`, `scan`, `context` commands.
+</Update>
+
+<Update label="January 2026" description="v0.0.x — Genesis" tags={["launch"]}>
+  Monorepo scaffolded with Turborepo, NestJS API, TypeORM entities, and GitHub webhook handler. Scanner extracted NestJS endpoints, guards, services, and modules from AST (ts-morph). First dogfood run on `profile_nippy_ms` detected 155 endpoints and 15 guards.
+</Update>

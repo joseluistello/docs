@@ -44,6 +44,15 @@
     }
   },
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Changelog",
+          "icon": "list",
+          "href": "/changelog/index"
+        }
+      ]
+    },
     "anchors": [
       {
         "anchor": "Documentation",
@@ -172,17 +181,6 @@
                 "group": "Overview",
                 "icon": "lock",
                 "pages": ["security/overview"]
-              }
-            ]
-          },
-          {
-            "tab": "Release Notes",
-            "icon": "sparkles",
-            "groups": [
-              {
-                "group": "Changelog",
-                "icon": "clock",
-                "pages": ["changelog/index"]
               }
             ]
           }
