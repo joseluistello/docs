@@ -1,57 +1,56 @@
 ---
 title: 'Driftless'
 description: 'Shared codebase memory for engineering teams and coding agents.'
+mode: 'custom'
 ---
 
-<div style={{ textAlign: 'center', padding: '3rem 0 2rem', maxWidth: '48rem', margin: '0 auto' }}>
-  <h1 style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '0.75rem', color: 'var(--ink)' }}>
-    Driftless your <span style={{ color: 'var(--accent)' }}>day to day</span>
+<div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', maxWidth: '56rem', margin: '0 auto', textAlign: 'center' }}>
+
+  <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '1rem', color: '#e8e8e3', lineHeight: 1.1 }}>
+    Driftless your <span style={{ color: '#b8e87a' }}>day to day</span>
   </h1>
-  <p style={{ fontSize: '1.1rem', color: 'var(--ink-3)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+
+  <p style={{ fontSize: '1.15rem', color: '#7a7d77', lineHeight: 1.6, marginBottom: '2rem', maxWidth: '36rem' }}>
     Shared codebase memory for engineering teams and coding agents. Context that survives sessions, repos, and team turnover.
   </p>
-  <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+
+  <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#b8e87a', textDecoration: 'none', fontWeight: 500, paddingBottom: '0.25rem', borderBottom: '1px solid #b8e87a' }}>
     Get started in 30 seconds
     <span>→</span>
   </a>
-</div>
 
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', padding: '1rem 0 3rem', maxWidth: '64rem', margin: '0 auto' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', padding: '4rem 0 2rem', width: '100%' }}>
 
-  <a href="/concepts/core-loop" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}></div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>The Driftless Loop</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>Sync, load, persist. The core workflow that keeps context aligned with your codebase.</p>
-  </a>
+    <a href="/concepts/core-loop" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>The Driftless Loop</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Sync, load, persist. The core workflow that keeps context aligned with your codebase.</p>
+    </a>
 
-  <a href="/concepts/topics" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}></div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>Topics & Knowledge Graph</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>The unit of codebase memory. Scan-generated or hand-written, linked with typed relations.</p>
-  </a>
+    <a href="/concepts/topics" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Topics & Knowledge Graph</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>The unit of codebase memory. Scan-generated or hand-written, linked with typed relations.</p>
+    </a>
 
-  <a href="/cli/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>⌘</div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>CLI Reference</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>Install, init, context commands, graph, sync. Everything you need at your fingertips.</p>
-  </a>
+    <a href="/cli/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>CLI Reference</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Install, init, context commands, graph, sync. Everything you need at your fingertips.</p>
+    </a>
 
-  <a href="/api/overview" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{ }</div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>API Reference</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>REST endpoints for workspaces, repos, topics, and integrations.</p>
-  </a>
+    <a href="/api/overview" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>API Reference</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>REST endpoints for workspaces, repos, topics, and integrations.</p>
+    </a>
 
-  <a href="/integrations/github-app" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}></div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>GitHub App</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>Auto-sync context from PR activity. Sticky comments with matched topics per file.</p>
-  </a>
+    <a href="/integrations/github-app" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>GitHub App</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Auto-sync context from PR activity. Sticky comments with matched topics per file.</p>
+    </a>
 
-  <a href="/agents/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--line)', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', transition: 'border-color 0.15s', background: 'var(--surface)' }} onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--line)'">
-    <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>⚙</div>
-    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--ink)' }}>Agent Setup</h3>
-    <p style={{ fontSize: '0.85rem', color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>Install the Driftless skill in Claude Code, Cursor, or any coding agent.</p>
-  </a>
+    <a href="/agents/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #23252a', borderRadius: '0.5rem', padding: '1.25rem', textDecoration: 'none', color: 'inherit', background: '#131416' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#e8e8e3' }}>Agent Setup</h3>
+      <p style={{ fontSize: '0.85rem', color: '#7a7d77', lineHeight: 1.5, margin: 0 }}>Install the Driftless skill in Claude Code, Cursor, or any coding agent.</p>
+    </a>
+
+  </div>
 
 </div>

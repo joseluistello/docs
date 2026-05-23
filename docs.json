@@ -48,7 +48,11 @@
     "tabs": [
       {
         "tab": "Welcome",
-        "pages": ["index", "quickstart"]
+        "pages": ["index"]
+      },
+      {
+        "tab": "Quickstart",
+        "pages": ["quickstart"]
       },
       {
         "tab": "Concepts",
