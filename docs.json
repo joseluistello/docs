@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
   "description": "Shared codebase memory for engineering teams and coding agents.",
-  "theme": "aspen",
+  "theme": "linden",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
     "light": "/terminal-icon.png",
