@@ -38,10 +38,6 @@
     }
   },
   "navbar": {
-    "links": [
-      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" },
-      { "label": "Blog", "href": "https://driftless.icu/blog" }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
