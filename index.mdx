@@ -1,47 +1,48 @@
 ---
-title: 'Driftless — Living memory for engineering teams'
-description: 'Driftless keeps architectural context alive across sessions, repos, and contributors.'
+title: 'Driftless'
+description: 'Shared codebase memory for engineering teams and coding agents.'
 ---
 
-import { CardGroup, Card } from '/snippets/card.mdx'
-import { Steps, Step } from '/snippets/steps.mdx'
+Driftless keeps architectural context alive across sessions, repos, and contributors.
 
-Driftless keeps architectural context alive across sessions, repos, and contributors. It is the durable context layer that agents and teams use to keep architectural knowledge alive.
+It is not a PR reviewer, CI gate, or cache. It is the durable context layer your team updates as the codebase changes, then loads before the next edit.
 
 <CardGroup cols={2}>
   <Card title="Quickstart" href="/quickstart" icon="rocket">
-    Install the CLI, scan your repo, and get your first context in under 5 minutes.
+    Install the CLI, link a repo, and read your first topic.
   </Card>
-  <Card title="Core Concepts" href="/concepts/overview" icon="book-open">
-    Understand the problem Driftless solves, the core loop, and how topics work.
+  <Card title="The Driftless loop" href="/concepts/core-loop" icon="repeat-2">
+    Scan code, observe changes, maintain topics, and deliver context.
   </Card>
-  <Card title="CLI Reference" href="/cli/installation" icon="terminal">
-    Full command reference: init, sync, context, graph, doctor, and more.
+  <Card title="CLI reference" href="/cli/reference" icon="terminal">
+    Commands for setup, sync, context, graph, branches, and health checks.
   </Card>
-  <Card title="Agent Setup" href="/agents/setup" icon="robot">
-    Teach your coding agents (Claude Code, Cursor) to sync, load, and persist context.
+  <Card title="Agent setup" href="/agents/setup" icon="bot">
+    Install AGENTS.md instructions so coding agents use context before editing.
   </Card>
 </CardGroup>
 
-## The agent loop in 3 commands
+## The loop
 
 <Steps>
-  <Step>
-    **Sync** — See what the team changed since your last session.
+  <Step title="Sync">
+    Pull team context changes before starting work.
 
     ```bash
     driftless sync
     ```
   </Step>
-  <Step>
-    **Load** — Get context for the files you're about to touch.
+
+  <Step title="Load">
+    Ask Cloud what applies to the files you are about to touch.
 
     ```bash
     driftless context load --files "src/auth/guard.ts,src/users/service.ts"
     ```
   </Step>
-  <Step>
-    **Persist** — Write what you learned back to the team.
+
+  <Step title="Persist">
+    Append durable decisions, gotchas, and anchors after you learn something.
 
     ```bash
     driftless context update auth --gotcha "JWT decode happens in guard, not middleware"
@@ -49,9 +50,18 @@ Driftless keeps architectural context alive across sessions, repos, and contribu
   </Step>
 </Steps>
 
-## What Driftless is NOT
+## Boundaries
 
-- **Not a PR reviewer** — It observes PRs and posts context comments, but doesn't approve or reject.
-- **Not CI** — It doesn't run tests, block merges, or gate deploys.
-- **Not a cache** — No Redis, no in-memory cache. Direct database queries only.
-- **Not an MCP server** — The CLI and REST API are the only interfaces. No MCP in v1.
+Driftless informs. It never modifies code, approves PRs, blocks merges, runs tests, or exposes an MCP server in v1.
+
+<CardGroup cols={3}>
+  <Card title="Topics" href="/concepts/topics" icon="notebook-tabs">
+    The unit of codebase memory.
+  </Card>
+  <Card title="Coverage" href="/concepts/coverage" icon="scan-search">
+    Which files have context and which files are gaps.
+  </Card>
+  <Card title="API" href="/api/reference" icon="server">
+    REST surface used by the CLI and dashboard.
+  </Card>
+</CardGroup>

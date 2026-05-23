@@ -1,0 +1,85 @@
+---
+title: 'Agent setup'
+description: 'Teach coding agents to sync, load, and persist Driftless context.'
+---
+
+Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing, inspect impact, and persist durable discoveries.
+
+## Install
+
+```bash
+driftless install-skill
+```
+
+`driftless init` runs this automatically for new repos.
+
+## Files written
+
+| File | Purpose |
+|---|---|
+| `.driftless/skill.md` | Dogfood copy of the Driftless agent workflow |
+| `AGENTS.md` | Agent instructions used by Codex and other agentic tools |
+| `CLAUDE.md` | Agent instructions used by Claude Code |
+
+The managed block is wrapped in comments:
+
+```text
+<!-- driftless:start -->
+...
+<!-- driftless:end -->
+```
+
+Re-run `driftless install-skill` to refresh only the managed Driftless block.
+
+## Expected agent workflow
+
+<Steps>
+  <Step title="Sync on session start">
+    ```bash
+    driftless sync
+    ```
+
+    The agent sees stale topics, changed context, PR activity, and suggested topics before touching files.
+  </Step>
+
+  <Step title="Load context before editing">
+    ```bash
+    driftless context load --files "src/auth/guard.ts,src/users/service.ts"
+    ```
+
+    The agent gets matching topics, coverage, and recommended actions for the files it is about to modify.
+  </Step>
+
+  <Step title="Check blast radius">
+    ```bash
+    driftless graph impact --files "src/auth/guard.ts,src/users/service.ts"
+    ```
+
+    The graph shows upstream and downstream components affected by the change.
+  </Step>
+
+  <Step title="Persist discoveries">
+    ```bash
+    driftless context update auth-flow \
+      --decision "WorkspaceGuard is global; use @Public() only for explicit public routes" \
+      --gotcha "Do not assume routes are public when guards are composed"
+    ```
+
+    Durable context goes back to Cloud so the next session does not start from zero.
+  </Step>
+</Steps>
+
+## What to write back
+
+Use Driftless for durable architecture knowledge:
+
+- Decisions that explain why the code works this way
+- Gotchas that would cause a future agent to make a bad edit
+- Invariants that must stay true across refactors
+- New or corrected anchors after code moves
+- Cross-repo relationships discovered while working
+
+<Warning>
+  Do not store secrets, credentials, raw customer data, or temporary scratch notes in context topics.
+</Warning>
+

@@ -1,6 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
+  "description": "Shared codebase memory for engineering teams and coding agents.",
   "theme": "luma",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
@@ -13,28 +14,46 @@
     "light": "#8aaf5b",
     "dark": "#0a0b0c"
   },
-  "font": {
-    "headings": { "family": "Geist Mono" },
-    "body": { "family": "Geist Mono" }
+  "appearance": {
+    "default": "dark"
   },
-  "topbarLinks": [
-    { "name": "Dashboard", "url": "https://driftless.icu" }
-  ],
-  "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "https://driftless.icu"
+  "fonts": {
+    "family": "Geist Mono"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": {
+      "theme": "github-dark"
+    }
+  },
+  "navbar": {
+    "links": [
+      { "label": "Dashboard", "href": "https://driftless.icu" },
+      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://driftless.icu"
+    }
   },
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Docs",
+        "icon": "book-open",
         "groups": [
           {
             "group": "Get Started",
+            "icon": "rocket",
             "pages": ["index", "quickstart"]
           },
           {
             "group": "Core Concepts",
+            "icon": "network",
             "pages": [
               "concepts/core-loop",
               "concepts/topics",
@@ -43,21 +62,54 @@
             ]
           },
           {
-            "group": "CLI Reference",
+            "group": "Using Driftless",
+            "icon": "terminal",
             "pages": [
               "cli/installation",
-              "cli/reference"
+              "agents/setup",
+              "integrations/github-app",
+              "dashboard/overview"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "icon": "braces",
+        "groups": [
+          {
+            "group": "CLI",
+            "icon": "terminal",
+            "pages": ["cli/reference"]
           },
           {
-            "group": "Integrations",
-            "pages": ["integrations/github-app"]
+            "group": "API",
+            "icon": "server",
+            "pages": ["api/reference"]
           }
         ]
       }
     ]
   },
-  "footerSocials": {
-    "github": "https://github.com/driftless-sh/driftless"
+  "footer": {
+    "socials": {
+      "github": "https://github.com/driftless-sh/driftless"
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          { "label": "Dashboard", "href": "https://driftless.icu" },
+          { "label": "GitHub App", "href": "/integrations/github-app" }
+        ]
+      },
+      {
+        "header": "Reference",
+        "items": [
+          { "label": "CLI", "href": "/cli/reference" },
+          { "label": "API", "href": "/api/reference" }
+        ]
+      }
+    ]
   }
 }

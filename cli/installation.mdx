@@ -1,5 +1,5 @@
 ---
-title: 'Installation & Authentication'
+title: 'Installation and authentication'
 description: 'Install the Driftless CLI and authenticate with your API key.'
 ---
 
@@ -47,9 +47,9 @@ The CLI stores its state in `~/.driftless/config.json`:
 }
 ```
 
-- `api_key` — Your Driftless API key.
-- `api_url` — The API base URL. Defaults to `https://api.driftless.icu/api/v1` if omitted.
-- `workspace_slug` / `workspace_id` — Set automatically by `driftless init` after linking to a workspace.
+- `api_key` - Your Driftless API key.
+- `api_url` - The API base URL. Defaults to `https://api.driftless.icu/api/v1` if omitted.
+- `workspace_slug` / `workspace_id` - Set automatically by `driftless init` after linking to a workspace.
 
 ## Initialize a Repo
 
@@ -57,7 +57,7 @@ The CLI stores its state in `~/.driftless/config.json`:
 driftless init
 ```
 
-`driftless init` scans the current repository, uploads a baseline to Driftless Cloud, and installs the agent skill so your agents can read and write context. See [Agent Setup](#agent-setup) for details on what the skill provides.
+`driftless init` scans the current repository, uploads a baseline to Driftless Cloud, and installs the agent skill so your agents can read and write context. See [Agent setup](/agents/setup) for details on what the skill provides.
 
 ## Verify
 
@@ -67,7 +67,7 @@ driftless doctor
 
 `driftless doctor` checks that your config, API key, and network connectivity are all working. Run this whenever you want to confirm the CLI is set up correctly.
 
-## Agent Setup
+## Agent setup
 
 Driftless provides a skill that teaches coding agents how to use Driftless context within your repo. Install it with:
 
@@ -88,11 +88,11 @@ The managed block is wrapped in comments:
 <!-- driftless:end -->
 ```
 
-### Self-healing
+### Self healing
 
-Running `driftless install-skill` again replaces the block contents. This means you can update the skill instructions without manual editing — just re-run the command and the block refreshes to the latest version.
+Running `driftless install-skill` again replaces the block contents. This means you can update the skill instructions without manual editing. Re-run the command and the block refreshes to the latest version.
 
-### Auto-install via `init`
+### Auto install via `init`
 
 `driftless init` calls `install-skill` automatically, so there's no separate step needed when setting up a new repo.
 

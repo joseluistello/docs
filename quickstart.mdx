@@ -1,29 +1,33 @@
 ---
-title: 'Quickstart — 5 minutes to living context'
-description: 'Install the CLI, scan your repo, and get your first context in under 5 minutes.'
+title: 'Quickstart'
+description: 'Install the CLI, link a repo, and load context before editing code.'
 ---
 
-import { Steps, Step } from '/snippets/steps.mdx'
-import { Note, Tip } from '/snippets/note.mdx'
+## Prerequisites
+
+- Node.js 22 or later
+- A Git repository with a remote
+- A Driftless workspace at [driftless.icu](https://driftless.icu)
 
 <Steps>
-  <Step>
-    **Install the CLI**
-
+  <Step title="Install the CLI">
     ```bash
     npm install -g @driftless-sh/cli
     ```
-
-    Verify installation:
 
     ```bash
     driftless --version
     ```
   </Step>
-  <Step>
-    **Log in**
 
-    Get your API key from the [dashboard](https://driftless.icu) and authenticate:
+  <Step title="Log in">
+    Authenticate from the terminal:
+
+    ```bash
+    driftless login
+    ```
+
+    For CI or non-interactive setup, pass an API key from the dashboard:
 
     ```bash
     driftless login --key drift_your_api_key_here
@@ -33,10 +37,9 @@ import { Note, Tip } from '/snippets/note.mdx'
       Store your key as `DRIFTLESS_API_KEY` in your environment to skip `--key` on every command.
     </Tip>
   </Step>
-  <Step>
-    **Initialize your repo**
 
-    Run init from the root of your repository. This scans your codebase, uploads a baseline to Driftless Cloud, and installs the agent skill.
+  <Step title="Initialize the repo">
+    Run init from the repository root. It scans the codebase, uploads a baseline, and installs the agent instructions.
 
     ```bash
     driftless init
@@ -52,10 +55,9 @@ import { Note, Tip } from '/snippets/note.mdx'
 
     Init creates `.driftless/config.yml` and `.driftless/skill.md` in your repo. The skill file is what agents read to learn the Driftless workflow.
   </Step>
-  <Step>
-    **Create your first context topic**
 
-    Anchor a topic to your auth code so agents and teammates know how it works:
+  <Step title="Create a topic">
+    Anchor team knowledge to the code it explains:
 
     ```bash
     driftless context add "my-auth" \
@@ -65,18 +67,17 @@ import { Note, Tip } from '/snippets/note.mdx'
       --kind code-context
     ```
 
-    You can also add decisions and gotchas:
+    Add decisions and gotchas as they become durable:
 
     ```bash
     driftless context update my-auth \
       --decision "We use asymmetric RS256 keys, not HS256" \
-      --gotcha "The guard decodes the JWT but doesn't verify roles — that happens in the role decorator"
+      --gotcha "The guard decodes the JWT but does not verify roles; that happens in the role decorator"
     ```
   </Step>
-  <Step>
-    **Load context before coding**
 
-    Any agent or teammate can now retrieve this context before touching auth files:
+  <Step title="Load before editing">
+    Retrieve the topic directly:
 
     ```bash
     driftless context get my-auth
@@ -90,8 +91,16 @@ import { Note, Tip } from '/snippets/note.mdx'
   </Step>
 </Steps>
 
-## Next steps
+## Verify setup
 
-- Read [Core Concepts](/concepts/overview) to understand the problem and architecture.
-- Explore the [CLI Reference](/cli/installation) for all available commands.
-- Set up [agent integration](/agents/setup) for Claude Code or Cursor.
+```bash
+driftless doctor
+```
+
+`doctor` checks the API key, workspace, Git remote, baseline, AGENTS.md installation, and GitHub App status.
+
+## Next
+
+- Read [The Driftless loop](/concepts/core-loop).
+- Install [agent instructions](/agents/setup).
+- Keep the [CLI reference](/cli/reference) open while you work.

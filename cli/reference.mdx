@@ -1,18 +1,22 @@
 ---
-title: 'CLI Command Reference'
-description: 'Every command, flag, and example.'
+title: 'CLI reference'
+description: 'Commands, flags, and examples for the Driftless CLI.'
 ---
 
-import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
+The CLI is the primary interface for developers and agents. Run commands from a Git repository root unless a command explicitly says otherwise.
 
-## Auth & Setup
+<Note>
+  Set `DRIFTLESS_API_KEY` for non-interactive environments. Set `DRIFTLESS_API_URL` only when targeting staging or a local API.
+</Note>
+
+## Auth and setup
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
 | `login` | `--key <key>`, `--url <url>` | Authenticate with API key | `driftless login --key drift_xxx` |
 | `init` | `--src <path>`, `--framework <fw>`, `--suggest` | Scan repo, upload baseline, install skill | `driftless init --src apps/api --suggest` |
 | `doctor` | `--json` | 8 health checks | `driftless doctor` |
-| `install-skill` | _(none)_ | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
+| `install-skill` | none | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
 
 ## Context CRUD
 
@@ -22,7 +26,7 @@ import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
-| `context search` | _(query)_, `--json` | Full-text search | `driftless context search "payment"` |
+| `context search` | query, `--json` | Full-text search | `driftless context search "payment"` |
 | `context add` | `--what`, `--how`, `--pattern`, `--kind`, `--tags`, `--rel`, `--content`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --what "Stripe checkout" --pattern "src/billing/**" --kind code-context` |
 | `context update` | `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`, `--rel`, `--dry-run` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
@@ -41,7 +45,7 @@ import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
 | `graph impact` | `--files "a,b"`, `--depth N`, `--direction <up\|down\|both>`, `--json` | Change impact analysis | `driftless graph impact --files "src/shared/utils.ts" --direction downstream` |
 | `graph coverage` | `--json` | Context coverage overview | `driftless graph coverage --json` |
 
-## Sync & Branches
+## Sync and branches
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
@@ -50,13 +54,13 @@ import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
 | `branches add` | `<branch>` | Track a branch | `driftless branches add staging` |
 | `branches rm` | `<branch>` | Stop tracking branch | `driftless branches rm staging` |
 
-## Other
+## Global
 
 | Command | Flags | Description |
 |---|---|---|
-| `--version` / `-v` | — | Print version |
-| `--help` / `-h` | — | Full help |
-| `<cmd> --help` | — | Command-specific help |
+| `--version` / `-v` | none | Print version |
+| `--help` / `-h` | none | Full help |
+| `<cmd> --help` | none | Command-specific help |
 
 <AccordionGroup>
   <Accordion title="Environment Variables">

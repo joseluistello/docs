@@ -5,7 +5,7 @@ description: "How Driftless measures what's documented vs what's not."
 
 ## Coverage model
 
-For every file in a scanned repository, Driftless checks whether any topic covers it — deterministically, with no LLM involved. The result is a **coverage map** that shows exactly what's documented and what's a knowledge gap.
+For every file in a scanned repository, Driftless checks whether any topic covers it deterministically, with no LLM involved. The result is a **coverage map** that shows exactly what is documented and what is a knowledge gap.
 
 ## Match specificity tiers
 
@@ -68,10 +68,10 @@ Output includes:
 
 The architecture map overlay colors module nodes by coverage:
 
-- **Green** — Covered (at least one file-level or pattern-level topic)
-- **Yellow** — Partial (repo-level only)
-- **Red** — Gap (no coverage)
-- **Red pulsing** — Critical gap (high-risk, no coverage)
+- **Green** - Covered (at least one file-level or pattern-level topic)
+- **Yellow** - Partial (repo-level only)
+- **Red** - Gap (no coverage)
+- **Red pulsing** - Critical gap (high-risk, no coverage)
 
 Click any node to see which topics cover it and what actions are recommended.
 

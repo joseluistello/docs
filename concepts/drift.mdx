@@ -3,15 +3,13 @@ title: 'Drift Detection'
 description: 'How Driftless detects when code has changed relative to team context.'
 ---
 
-import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
-
 ## How staleness works
 
 When a push arrives on a tracked branch, the API matches changed files against all workspace topics. Any topic whose anchored files or patterns overlap with the changed files gets marked **stale** with a human-readable reason.
 
 For example, if a push to `main` changes `src/auth/guard.ts` and `src/auth/service.ts`, the `auth-flow` topic anchored to `src/auth/**` becomes:
 
-> Stale — 3 files changed in commit `abc1234`: `src/auth/guard.ts`, `src/auth/service.ts`, `src/auth/dto/login.dto.ts`
+> Stale: 3 files changed in commit `abc1234`: `src/auth/guard.ts`, `src/auth/service.ts`, `src/auth/dto/login.dto.ts`
 
 ## Tracked branches
 
@@ -24,24 +22,24 @@ driftless branches list
 driftless branches remove staging
 ```
 
-Feature branches are **not tracked by default**. This prevents noise — most feature work is in progress and doesn't represent settled architecture. Staleness is reserved for branches where changes signal durable context shifts.
+Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Staleness is reserved for branches where changes signal durable context shifts.
 
 ## Structural staleness
 
 Beyond simple file matching, Driftless detects structural changes:
 
-- **Deleted endpoint files** — An endpoint that was extracted in a previous scan no longer exists
-- **Removed guards** — A guard that was protecting an endpoint has been removed
-- **Deleted services** — A service class no longer exists in the codebase
-- **Module restructuring** — Files moved between modules
+- **Deleted endpoint files** - An endpoint that was extracted in a previous scan no longer exists
+- **Removed guards** - A guard that was protecting an endpoint has been removed
+- **Deleted services** - A service class no longer exists in the codebase
+- **Module restructuring** - Files moved between modules
 
 These structural signals are more informative than file-level diffs because they describe *what changed architecturally*, not just *which files were touched*.
 
 ## Lifecycle
 
 ```
-stale → agent reviews → driftless context update topic --status reviewed → unstale
-stale → no repo claims it → orphaned
+stale -> agent reviews -> driftless context update topic --status reviewed -> unstale
+stale -> no repo claims it -> orphaned
 ```
 
 When a topic goes stale:
@@ -64,7 +62,7 @@ driftless context get --diff            # staleness for current local (uncommitt
 
 <AccordionGroup>
   <Accordion title="What triggers staleness?">
-    Only pushes to tracked branches. PRs do **not** trigger staleness — they trigger PR observation instead (sticky context comments listing relevant topics). This distinction keeps staleness meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
+    Only pushes to tracked branches. PRs do **not** trigger staleness; they trigger PR observation instead (sticky context comments listing relevant topics). This distinction keeps staleness meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
   </Accordion>
   <Accordion title="Can I manually mark a topic as stale?">
     Yes. Use `driftless context update <slug> --stale --reason "..."`. This is useful when you review a topic and notice it's outdated even though the file patterns haven't been pushed yet.

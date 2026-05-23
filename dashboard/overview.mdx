@@ -1,0 +1,49 @@
+---
+title: 'Dashboard overview'
+description: 'Where to inspect workspace health, topics, architecture, and integrations.'
+---
+
+The dashboard is the visual companion to the CLI. Use it when you need workspace-level visibility instead of terminal output.
+
+## Main areas
+
+| Area | Use it for |
+|---|---|
+| Ecosystem | Workspace health, repositories, activity, and setup state |
+| Context | Browse, edit, and review topics |
+| Architecture | Inspect repo structure, components, and coverage overlays |
+| PR activity | See observed pull requests and context matches |
+| Settings | Manage API keys, GitHub, members, and model configuration |
+
+## Context wiki
+
+Each topic has a detail page with:
+
+- What, how, decisions, gotchas, and invariants
+- Anchored files, patterns, repos, and documents
+- Stale status and reason
+- References and backlinks from wiki-links
+- Copy for AI output for agent prompts
+
+## Architecture map
+
+The architecture map answers two questions:
+
+- What exists in this repo?
+- Which parts have durable context?
+
+Coverage overlays highlight covered files, partial coverage, gaps, and critical gaps. Treat it as an operational map, not a static diagram.
+
+## Settings
+
+Use settings to manage:
+
+- API keys for CLI and CI
+- GitHub App installation
+- Workspace members and invitations
+- BYOM model URL, key, and model name
+
+<Note>
+  Driftless never hardcodes a model provider. Workspace model configuration controls any model-backed behavior.
+</Note>
+

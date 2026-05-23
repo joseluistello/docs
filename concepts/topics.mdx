@@ -1,5 +1,5 @@
 ---
-title: 'Topics & the Knowledge Graph'
+title: 'Topics and knowledge graph'
 description: 'How topics connect code to team knowledge.'
 ---
 
@@ -13,17 +13,17 @@ A topic has:
 |-------|-------------|
 | **slug** | Unique name within the workspace (e.g., `auth-flow`, `billing-webhook`) |
 | **what** | Short summary of what this code does |
-| **how** | Technical detail — the mechanism, the pattern |
+| **how** | Technical detail: the mechanism, the pattern |
 | **decisions** | Why choices were made (architecture decisions) |
 | **gotchas** | Traps, edge cases, things that will break |
 | **invariants** | Rules that must always hold true |
-| **content** | Full free-form body (Markdown) — can include diagrams, code snippets, references |
+| **content** | Full free-form body (Markdown). Can include diagrams, code snippets, references |
 | **anchors** | Patterns, files, and repos that link this topic to code |
 | **tags** | Labels for discovery (e.g., `auth`, `security`, `billing`) |
 | **relations** | Typed links to other topics |
 | **classification** | Origin, status, and kind |
 
-## Anchoring — linking topics to code
+## Anchoring topics to code
 
 Topics are connected to code through anchors. When anchored code changes, the topic goes stale.
 
@@ -41,7 +41,7 @@ driftless context add auth-flow --where src/auth/guard.ts
 driftless context add architecture-decisions --file docs/decisions/auth.md
 ```
 
-**Discipline**: 5–40 components per topic is healthy. Less than 5 means you're fragmenting. More than 100 is a catch-all trap that nobody will maintain. If a topic covers too much, split it. If it covers too little, merge it.
+**Discipline:** 5-40 components per topic is healthy. Less than 5 means you are fragmenting. More than 100 is a catch-all trap that nobody will maintain. If a topic covers too much, split it. If it covers too little, merge it.
 
 Remove anchors when they no longer make sense:
 
@@ -112,7 +112,7 @@ Use `[[slug]]` syntax inside any free-text field (what, how, decisions, gotchas,
 
 ```bash
 driftless context update billing-webhook \
-  --gotcha "Same idempotency race as [[stripe-webhook-ingest]] — deduplicate by event ID"
+  --gotcha "Same idempotency race as [[stripe-webhook-ingest]]; deduplicate by event ID"
 ```
 
 Both `billing-webhook` and `stripe-webhook-ingest` will show each other in their references when fetched.
@@ -141,4 +141,4 @@ The topic graph is explorable from CLI and dashboard:
 driftless context graph auth-flow    # BFS graph from a topic, terminal output
 ```
 
-The dashboard renders the full interactive graph with ReactFlow — nodes are topics, edges are typed relations. Click any node to see its full context, anchors, and coverage.
+The dashboard renders the full interactive graph with React Flow. Nodes are topics, edges are typed relations. Click any node to see its full context, anchors, and coverage.

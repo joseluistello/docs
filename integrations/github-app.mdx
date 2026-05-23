@@ -1,7 +1,8 @@
 ---
-title: 'GitHub App Integration'
+title: 'GitHub App integration'
 description: 'How the Driftless GitHub App observes PRs and pushes to keep context fresh.'
 ---
+
 The Driftless GitHub App connects your repositories to your workspace. Once installed, it observes pull requests and pushes, surfaces context on PRs, and tracks drift when files change.
 
 ## Installation
@@ -10,7 +11,7 @@ Install from the dashboard:
 
 <Steps>
   <Step title="Open GitHub Integration settings">
-    Go to **Settings → GitHub Integration** in the dashboard.
+    Go to **Settings > GitHub Integration** in the dashboard.
   </Step>
   <Step title="Start installation">
     Click **Install on GitHub**. You'll be redirected to GitHub's app installation flow.
@@ -25,7 +26,7 @@ Install from the dashboard:
 
 ## What the app does
 
-### PR Observation
+### PR observation
 
 On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` events:
 
@@ -33,9 +34,9 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 2. Matches each file against all workspace topic patterns
 3. Posts a **sticky comment** listing matched topics with their "what" summary and links to the dashboard
 
-The comment is updated in place on new commits — it's never re-posted.
+The comment is updated in place on new commits. It is never re-posted.
 
-### Push → Staleness
+### Push staleness
 
 On `push` events to tracked branches (default branch plus any custom branches):
 
@@ -48,11 +49,11 @@ Add custom tracked branches:
 driftless branches add staging
 ```
 
-### Installation Tracking
+### Installation tracking
 
 The installation ID is linked to your workspace automatically during setup by matching the GitHub organization name or existing connected repos.
 
-## PR Comment Format
+## PR comment format
 
 ```text
 <!-- driftless-context -->
@@ -61,7 +62,7 @@ The installation ID is linked to your workspace automatically during setup by ma
 auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
 how: 2 endpoints, 1 service, 1 guard
 decisions: Multi-tenant, uses org_id from token
-gotchas: All endpoints require auth — do not add @Public() without review
+gotchas: All endpoints require auth; do not add @Public() without review
 ```
 
 Each matched topic gets its own block. The HTML marker (`<!-- driftless-context -->`) lets Driftless find and update the comment on subsequent pushes.
@@ -79,7 +80,7 @@ The app never clones your repository and never reads secrets or environment file
 
 ## Deactivation
 
-Remove the integration from **Settings → GitHub Integration**, or uninstall the app directly on GitHub. The `installation/deleted` webhook automatically deactivates the integration in your workspace.
+Remove the integration from **Settings > GitHub Integration**, or uninstall the app directly on GitHub. The `installation/deleted` webhook automatically deactivates the integration in your workspace.
 
 <Note>
   The CLI works without the GitHub App. PR comments and push-driven staleness require the app to be installed.

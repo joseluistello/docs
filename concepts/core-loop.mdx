@@ -1,13 +1,13 @@
 ---
-title: 'The Driftless Loop'
-description: 'Scan → Observe → Contextualize → Deliver → Check'
+title: 'The Driftless loop'
+description: 'Scan, observe, contextualize, deliver, and check.'
 ---
 
 The Driftless loop has five phases. Every command, every event, every scan fits into one of them.
 
 ## Phase 1: Scan
 
-The scanner extracts components from your TypeScript codebase. It reads the AST (via ts-morph) and identifies:
+The scanner extracts components from your TypeScript codebase. It reads the AST and identifies:
 
 - **NestJS**: endpoints, guards, services, modules, DTOs, interceptors, pipes
 - **Next.js**: pages, layouts, route handlers, server actions, middleware
@@ -21,7 +21,7 @@ The scanner uses a two-pass streaming pipeline that keeps memory at O(largest fi
 
 ```bash
 driftless init              # full baseline scan, uploads to Cloud
-driftless scan --diff       # diff scan — what changed since last baseline
+driftless scan --diff       # diff scan: what changed since last baseline
 ```
 
 ## Phase 2: Observe
@@ -31,12 +31,12 @@ The GitHub App watches pushes and PRs. On every push to a tracked branch, it mat
 ```bash
 # PR comment example (auto-posted by GitHub App):
 # "Driftless: 3 topics cover files in this PR:
-#  • auth-flow [code-context] — JWT validation and role-based access
-#  • user-service [code-context] — User CRUD and profile management
-#  • api-guards [domain-map] — Global and route-level guard architecture"
+#  - auth-flow [code-context]: JWT validation and role-based access
+#  - user-service [code-context]: User CRUD and profile management
+#  - api-guards [domain-map]: Global and route-level guard architecture"
 ```
 
-Pushes to tracked branches can mark topics as stale. PRs themselves don't trigger staleness — they trigger observation only.
+Pushes to tracked branches can mark topics as stale. PRs themselves do not trigger staleness; they trigger observation only.
 
 ## Phase 3: Contextualize
 
@@ -52,7 +52,7 @@ driftless context add "auth-flow" \
 
 driftless context update auth-flow \
   --decision "Chose RS256 over HS256 so services can verify without shared secret" \
-  --gotcha "Token refresh is NOT handled by this guard — see [[token-refresh]]" \
+  --gotcha "Token refresh is NOT handled by this guard; see [[token-refresh]]" \
   --rel depends_on:token-refresh
 ```
 
@@ -81,7 +81,7 @@ driftless context doctor          # full health audit: staleness, coverage, orph
 driftless context get --diff      # staleness status for your current local changes
 ```
 
-Structural staleness goes beyond file matching — it detects deleted endpoint files, removed guards, and services that no longer exist in the codebase. Coverage reports show what's documented vs. what's not, with risk-based prioritization.
+Structural staleness goes beyond file matching. It detects deleted endpoint files, removed guards, and services that no longer exist in the codebase. Coverage reports show what is documented vs. what is not, with risk-based prioritization.
 
 ## System Architecture
 
@@ -91,11 +91,11 @@ Driftless is built as six components that compose into a single knowledge layer.
 
 **API** (NestJS, Render): REST API hosted at `api.driftless.icu`. Authenticates via API keys (`x-api-key`) and Clerk. A global `WorkspaceGuard` enforces workspace-level authorization across all endpoints. Exposes 45 endpoints for scans, context CRUD, graph queries, sync, and dashboard data.
 
-**CLI** (`@driftless-sh/cli`, npm): 24 commands — `init`, `sync`, `context` CRUD, `graph`, `install-skill`, `doctor`, `branches`, and more. Bundled with esbuild for fast startup. The primary interface agents and developers use to interact with Driftless.
+**CLI** (`@driftless-sh/cli`, npm): 24 commands including `init`, `sync`, `context` CRUD, `graph`, `install-skill`, `doctor`, and `branches`. Bundled with esbuild for fast startup. The primary interface agents and developers use to interact with Driftless.
 
 **GitHub App**: Posts context comments on PRs to surface relevant topics for changed files. Marks topics as stale when code is pushed to tracked branches, keeping the knowledge graph honest about drift.
 
-**Agent Skill** (`SKILL.md`): Instructions for coding agents (Claude Code, Cursor). Teaches the `sync` → `load` → `edit` → `persist` workflow so agents automatically check and contribute context during coding sessions.
+**Agent Skill** (`SKILL.md`): Instructions for coding agents (Claude Code, Cursor). Teaches the `sync` to `load` to `edit` to `persist` workflow so agents automatically check and contribute context during coding sessions.
 
 **Dashboard** (React + Vite, Vercel): Visual interface for workspace health, context browsing, architecture maps, and topic coverage. Companion to the CLI for team-level visibility.
 
@@ -106,4 +106,4 @@ CLI ──► API (NestJS) ──► Supabase (Postgres)
 Scanner ─┤  GitHub App ─┤  Dashboard
 ```
 
-**Tech stack**: NestJS + TypeScript + Turborepo + Supabase + Clerk + Render + Vercel.
+**Tech stack:** NestJS, TypeScript, Turborepo, Supabase, Clerk, Render, and Vercel.
