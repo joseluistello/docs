@@ -2,16 +2,11 @@
 title: 'Installation & Authentication'
 description: 'Install the Driftless CLI and authenticate with your API key.'
 ---
+
 ## Install
 
 ```bash
 npm install -g @driftless-sh/cli
-```
-
-Verify the installation:
-
-```bash
-driftless --version
 ```
 
 ## Authenticate
@@ -28,17 +23,6 @@ For non-interactive environments (e.g., CI), pass the key directly:
 driftless login --key drift_xxxxxxxxxxxxxxxxx
 ```
 
-The API key is stored in `~/.driftless/config.json`:
-
-```json
-{
-  "api_key": "drift_xxxxxxxxxxxxxxxxx",
-  "api_url": "https://api.driftless.icu/api/v1",
-  "workspace_slug": "acme-corp",
-  "workspace_id": "ws_abc123"
-}
-```
-
 ## Environment Variables
 
 | Variable | Description |
@@ -49,3 +33,78 @@ The API key is stored in `~/.driftless/config.json`:
 <Note>
   **Env var always wins.** If both `DRIFTLESS_API_KEY` and `~/.driftless/config.json` are present, the environment variable takes priority.
 </Note>
+
+## Config File
+
+The CLI stores its state in `~/.driftless/config.json`:
+
+```json
+{
+  "api_key": "drift_xxxxxxxxxxxxxxxxx",
+  "api_url": "https://api.driftless.icu/api/v1",
+  "workspace_slug": "acme-corp",
+  "workspace_id": "ws_abc123"
+}
+```
+
+- `api_key` — Your Driftless API key.
+- `api_url` — The API base URL. Defaults to `https://api.driftless.icu/api/v1` if omitted.
+- `workspace_slug` / `workspace_id` — Set automatically by `driftless init` after linking to a workspace.
+
+## Initialize a Repo
+
+```bash
+driftless init
+```
+
+`driftless init` scans the current repository, uploads a baseline to Driftless Cloud, and installs the agent skill so your agents can read and write context. See [Agent Setup](#agent-setup) for details on what the skill provides.
+
+## Verify
+
+```bash
+driftless doctor
+```
+
+`driftless doctor` checks that your config, API key, and network connectivity are all working. Run this whenever you want to confirm the CLI is set up correctly.
+
+## Agent Setup
+
+Driftless provides a skill that teaches coding agents how to use Driftless context within your repo. Install it with:
+
+```bash
+driftless install-skill
+```
+
+This command:
+
+- Downloads `SKILL.md` from the mirror repository `driftless-sh/driftless-skill` into `.driftless/`
+- Writes (or updates) `CLAUDE.md` and `AGENTS.md` with a managed Driftless block
+
+The managed block is wrapped in comments:
+
+```text
+<!-- driftless:start -->
+... driftless context instructions ...
+<!-- driftless:end -->
+```
+
+### Self-healing
+
+Running `driftless install-skill` again replaces the block contents. This means you can update the skill instructions without manual editing — just re-run the command and the block refreshes to the latest version.
+
+### Auto-install via `init`
+
+`driftless init` calls `install-skill` automatically, so there's no separate step needed when setting up a new repo.
+
+### What agents learn
+
+Once the skill is installed, agents that read `AGENTS.md` or `CLAUDE.md` will follow these workflows:
+
+| Behavior | Description |
+|---|---|
+| **Sync on start** | Agents run `driftless sync` to pull in team context changes before coding. |
+| **Load context before editing** | Agents run `driftless context load --files "a,b"` before touching any files. |
+| **Check graph** | Agents run `driftless graph impact --files "a,b"` to understand blast radius before changing code. |
+| **Persist discoveries** | Agents run `driftless context update <slug> --decision "..." --gotcha "..."` to append what they learn. |
+
+The skill fetches its instructions from the `driftless-sh/driftless-skill` mirror on GitHub. The source of truth for the skill lives in the Driftless monorepo under `skills/driftless/`.

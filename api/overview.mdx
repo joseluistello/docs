@@ -7,11 +7,73 @@ The Driftless API is a RESTful JSON API.
 
 **Base URL:** `https://api.driftless.icu/api/v1`
 
+## Authentication
+
+Every request must include exactly one authentication header. Pick the right one for your client.
+
+### API Keys (CLI & Service Accounts)
+
+Set the `X-API-Key` header to a key that starts with `drift_`:
+
+```bash
+curl -H "X-API-Key: drift_abc123..." https://api.driftless.icu/api/v1/me
+```
+
+Keys are created from the dashboard. They are stored as SHA-256 hashes — the plaintext key is shown once at creation and cannot be recovered.
+
+Validate any key with `GET /me`:
+
+```json
+{
+  "id": "key_abc123",
+  "label": "CLI",
+  "workspace_id": "ws_xyz",
+  "created_at": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### Clerk (Browser / Dashboard)
+
+Set the `Authorization` header with a Bearer token from Clerk:
+
+```bash
+curl -H "Authorization: Bearer eyJhbG..." https://api.driftless.icu/api/v1/workspaces
+```
+
+The token must belong to a Clerk user who is a member of the target organization. Organization-scoped endpoints check membership automatically.
+
+## Public Endpoints
+
+The following routes do not require authentication:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Health check |
+| `GET /version` | API version info |
+| `POST /webhooks/github` | GitHub webhook receiver |
+| `POST /webhooks/clerk` | Clerk webhook receiver |
+| `POST /workspaces` | Workspace creation |
+| `/blog/*` | Public blog endpoints |
+
+## API Key Management
+
+Manage API keys through these authenticated endpoints:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/api-key` | Create a new API key |
+| `GET` | `/api-key` | List all keys for the workspace |
+| `DELETE` | `/api-key/:id` | Revoke a key |
+
+Keys are scoped to a workspace. Revoking a key is immediate and permanent.
+
 ## Conventions
 
 All request and response bodies are JSON. Every response includes `Content-Type: application/json`.
 
 ### Standard Error Response
+
+Every error returns the same shape:
 
 ```json
 {
@@ -33,7 +95,7 @@ All request and response bodies are JSON. Every response includes `Content-Type:
 
 ### Pagination
 
-Endpoints that return lists support cursor or offset pagination:
+Endpoints that return lists support offset pagination:
 
 ```
 ?limit=50&offset=0
@@ -44,20 +106,21 @@ Endpoints that return lists support cursor or offset pagination:
 
 ### Rate Limiting
 
+Rate limits are enforced per IP. Every response includes rate-limit headers:
+
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+
 | Tier | Limit | Scope |
 | --- | --- | --- |
 | Webhook | 100 req/min | Per IP |
 | Public | 30 req/min | Per IP |
 | Authenticated | 200 req/min | Per API key or token |
 
-Rate limit headers are included on every response:
-- `X-RateLimit-Limit`
-- `X-RateLimit-Remaining`
-- `X-RateLimit-Reset`
+### Correlation ID
 
-### Correlation
-
-Send an `x-correlation-id` header with your requests to trace them through logs. If omitted, one is auto-generated and returned in the response.
+Send an `x-correlation-id` header to trace a request through logs. If omitted, one is auto-generated and returned in the response and error body.
 
 ```bash
 curl -H "X-API-Key: drift_xxx" \
@@ -69,7 +132,6 @@ curl -H "X-API-Key: drift_xxx" \
 
 ```bash
 curl https://api.driftless.icu/health
-# or
 curl https://api.driftless.icu/api/v1/health
 ```
 

@@ -13,8 +13,7 @@
     "body": { "family": "Geist Mono" }
   },
   "topbarLinks": [
-    { "name": "Dashboard", "url": "https://driftless.icu" },
-    { "name": "GitHub", "url": "https://github.com/driftless-sh/driftless" }
+    { "name": "Dashboard", "url": "https://driftless.icu" }
   ],
   "topbarCtaButton": {
     "name": "Get Started",
@@ -32,59 +31,22 @@
           {
             "group": "Core Concepts",
             "pages": [
-              "concepts/overview",
               "concepts/core-loop",
-              "concepts/architecture",
-              "concepts/topic-graph",
-              "concepts/drift-detection",
-              "concepts/context-coverage"
+              "concepts/topics",
+              "concepts/drift",
+              "concepts/coverage"
             ]
           },
           {
             "group": "CLI",
             "pages": [
               "cli/installation",
-              "cli/setup",
-              "cli/context",
-              "cli/graph",
-              "cli/sync",
               "cli/reference"
             ]
           },
           {
-            "group": "Agents",
-            "pages": [
-              "agents/overview",
-              "agents/setup",
-              "agents/workflow",
-              "agents/graph"
-            ]
-          },
-          {
-            "group": "Dashboard",
-            "pages": [
-              "dashboard/overview",
-              "dashboard/ecosystem",
-              "dashboard/context",
-              "dashboard/architecture-map",
-              "dashboard/pr-activity",
-              "dashboard/settings"
-            ]
-          },
-          {
             "group": "Integrations",
-            "pages": [
-              "integrations/github-app",
-              "integrations/ci-cd"
-            ]
-          },
-          {
-            "group": "Security",
-            "pages": [
-              "security/data-storage",
-              "security/auth",
-              "security/encryption"
-            ]
+            "pages": ["integrations/github-app"]
           }
         ]
       },
@@ -93,21 +55,14 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["api/overview", "api/authentication"]
+            "pages": ["api/overview"]
           },
           {
-            "group": "Resources",
+            "group": "Endpoints",
             "pages": [
-              "api/workspaces",
-              "api/repos",
-              "api/topics",
-              "api/graph",
+              "api/reference",
               "api/webhooks"
             ]
-          },
-          {
-            "group": "Reference",
-            "pages": ["api/reference"]
           }
         ]
       }

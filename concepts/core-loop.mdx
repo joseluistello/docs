@@ -82,3 +82,28 @@ driftless context get --diff      # staleness status for your current local chan
 ```
 
 Structural staleness goes beyond file matching — it detects deleted endpoint files, removed guards, and services that no longer exist in the codebase. Coverage reports show what's documented vs. what's not, with risk-based prioritization.
+
+## System Architecture
+
+Driftless is built as six components that compose into a single knowledge layer. Each component has one responsibility; the API orchestrates them.
+
+**Scanner** (`@driftless/scanner`): Static AST analysis that extracts components from TypeScript codebases. Identifies endpoints, guards, services, modules, and DTOs from NestJS; pages, layouts, route handlers, and server actions from Next.js; components and hooks from React. Uses a two-pass streaming pipeline with O(largest file) memory. Zero dependencies besides TypeScript and ts-morph.
+
+**API** (NestJS, Render): REST API hosted at `api.driftless.icu`. Authenticates via API keys (`x-api-key`) and Clerk. A global `WorkspaceGuard` enforces workspace-level authorization across all endpoints. Exposes 45 endpoints for scans, context CRUD, graph queries, sync, and dashboard data.
+
+**CLI** (`@driftless-sh/cli`, npm): 24 commands — `init`, `sync`, `context` CRUD, `graph`, `install-skill`, `doctor`, `branches`, and more. Bundled with esbuild for fast startup. The primary interface agents and developers use to interact with Driftless.
+
+**GitHub App**: Posts context comments on PRs to surface relevant topics for changed files. Marks topics as stale when code is pushed to tracked branches, keeping the knowledge graph honest about drift.
+
+**Agent Skill** (`SKILL.md`): Instructions for coding agents (Claude Code, Cursor). Teaches the `sync` → `load` → `edit` → `persist` workflow so agents automatically check and contribute context during coding sessions.
+
+**Dashboard** (React + Vite, Vercel): Visual interface for workspace health, context browsing, architecture maps, and topic coverage. Companion to the CLI for team-level visibility.
+
+```
+CLI ──► API (NestJS) ──► Supabase (Postgres)
+         ▲
+         │
+Scanner ─┤  GitHub App ─┤  Dashboard
+```
+
+**Tech stack**: NestJS + TypeScript + Turborepo + Supabase + Clerk + Render + Vercel.
