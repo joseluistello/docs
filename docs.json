@@ -81,10 +81,6 @@
       {
         "tab": "Security",
         "pages": ["security/overview"]
-      },
-      {
-        "tab": "Changelog",
-        "pages": ["changelog/index"]
       }
     ]
   },
@@ -121,10 +117,6 @@
     {
       "source": "/api/reference",
       "destination": "/api/overview"
-    },
-    {
-      "source": "/changelog",
-      "destination": "/changelog/index"
     }
   ]
 }
