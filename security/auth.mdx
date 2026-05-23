@@ -2,7 +2,6 @@
 title: 'Authentication & Authorization'
 description: 'How Driftless handles auth — API keys, Clerk, and workspace isolation.'
 ---
-import { Warning } from '/snippets/note.mdx'
 Driftless has two authentication paths, both resolving to the same workspace identity. All actions are scoped to the authenticated workspace — cross-workspace access is rejected at the API layer.
 
 ## Authentication paths
