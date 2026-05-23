@@ -1,36 +1,54 @@
-/* ─── "Driftless" text next to logo ─── */
-nav-logo {
-  display: flex !important;
+/* ─── Header: brand + balanced nav ─── */
+header a[aria-label="Driftless home page"] {
+  display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
+  gap: 0.625rem !important;
+  min-width: 9.5rem !important;
+  text-decoration: none !important;
 }
 
-nav-logo img {
-  margin-right: 0 !important;
-}
-
-nav-logo::after {
-  content: "Driftless" !important;
-  color: #e8e8e3 !important;
+header a[aria-label="Driftless home page"]::after {
+  content: "driftless" !important;
+  color: #f0f1ec !important;
   font-family: "Geist Mono", monospace !important;
-  font-weight: 600 !important;
-  font-size: 1.05rem !important;
-  letter-spacing: -0.02em !important;
+  font-size: 1.02rem !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
   white-space: nowrap !important;
 }
 
-/* ─── Tighten navbar ─── */
-#navbar {
-  padding-left: 1.5rem !important;
-  padding-right: 1.5rem !important;
+header a[aria-label="Driftless home page"] img {
+  width: 2rem !important;
+  height: 2rem !important;
+  object-fit: contain !important;
 }
 
-nav-tabs {
-  gap: 0.25rem !important;
+header a[href="/"] svg,
+header a[href="/concepts/topics"] svg,
+header a[href="/cli/setup"] svg,
+header a[href="/api/overview"] svg,
+header a[href="/security/overview"] svg {
+  display: none !important;
 }
 
-nav-tabs-item {
-  padding: 0 0.625rem !important;
+header a[href="/"],
+header a[href="/concepts/topics"],
+header a[href="/cli/setup"],
+header a[href="/api/overview"],
+header a[href="/security/overview"] {
+  gap: 0 !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+@media (min-width: 1024px) {
+  header > div,
+  header > div > div {
+    max-width: 1160px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }
 
 /* ─── Minimal footer ─── */

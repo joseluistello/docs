@@ -51,7 +51,6 @@
     "tabs": [
       {
         "tab": "Start",
-        "icon": "terminal",
         "groups": [
           {
             "group": "Start here",
@@ -62,7 +61,6 @@
       },
       {
         "tab": "Concepts",
-        "icon": "network",
         "groups": [
           {
             "group": "Repo memory",
@@ -78,7 +76,6 @@
       },
       {
         "tab": "CLI",
-        "icon": "square-terminal",
         "groups": [
           {
             "group": "Setup",
@@ -99,7 +96,6 @@
       },
       {
         "tab": "API",
-        "icon": "braces",
         "groups": [
           {
             "group": "Overview",
@@ -120,7 +116,6 @@
       },
       {
         "tab": "Security",
-        "icon": "shield",
         "groups": [
           {
             "group": "Security",
