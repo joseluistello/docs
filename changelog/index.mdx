@@ -1,53 +1,155 @@
 ---
-title: 'Changelog'
+title: 'Release Notes'
 description: 'What shipped in each version of Driftless.'
 ---
 
-## CLI v0.1.12
+## v0.2.2
 
-*Released 2026-05-23*
+*May 2026 — `@driftless-sh/cli`*
 
-- **Context add**: Create topics with `--what`, `--how`, `--pattern`, `--kind`, `--tags`, `--rel`
-- **Context update**: Modify topics with `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`
-- **Context graph**: BFS graph traversal from any topic (`--depth N`)
-- **Graph file**: Entrypoints, upstream, downstream, and contracts for a file
-- **Graph impact**: Blast radius analysis (`--direction up|down|both`)
-- **Graph coverage**: Context coverage overview
-- **Sync**: Pull team changes, stale topics, PR activity
-- **Branches**: Add, list, and remove tracked branches
-- **Doctor**: 8 health checks for API key, workspace, Git remote, skill installation
-- **install-skill**: Self-healing AGENTS.md / CLAUDE.md managed block
-- **Context doctor**: Full context health audit (staleness, coverage, orphans)
-- **Context load**: Match files to topics with coverage status
-- **Context link**: Cross-repo topic linkage
-- **Context relations**: List typed relations on a topic
-- **context add --file**: Anchor documents to a topic
-- **context update --stale --reason**: Manual staleness marking
+<AccordionGroup>
+  <Accordion title="Content persistence & file anchoring">
+    Topics now store `content` as full Markdown bodies and `file_content` as anchored document text. CLI `context update` and `context sync --file` write to both. TypeORM entities updated to match.
+  </Accordion>
+</AccordionGroup>
 
-## API
+## v0.2.0 — Flexible Topics, Knowledge Graph, Security Hardening
 
-- 45 REST endpoints at `https://api.driftless.icu/api/v1`
-- Workspace health: coverage, staleness, orphan detection
-- Structural staleness: detects deleted endpoints, removed guards, deleted services
-- Wiki-link parsing: `[[slug]]` auto-parsed into bidirectional graph references
-- Typed relations: `depends_on`, `relates_to`, `supersedes`, `blocks`, `implements`, `risk_for`
-- Cross-repo context accumulation via `context link` and `context update`
-- Two-pass streaming scanner pipeline: O(largest file) memory, no OOM on large repos
+*May 2026*
 
-## Dashboard
+This release marks a fundamental shift in what Driftless is. When we started, Driftless was a scanner + rules engine: scan your code, detect violations, enforce architecture rules. Teams told us loudly: **we don't need another enforcer. We need context delivery and a knowledge graph.**
 
-- Workspace ecosystem view with health metrics
-- Context wiki with full topic details, Copy for AI, and graph visualization
-- Architecture map with coverage overlays (covered, partial, gap, critical-gap)
-- PR activity feed with context matches and event timeline
-- BYOM model configuration per workspace
-- Security page with encryption details and API key management
+v0.2.0 is the result of that feedback.
 
-## Platform
+### Topics that work how you think
 
-- NestJS + TypeScript + Turborepo monorepo
-- Supabase (Postgres) for all data
-- Clerk for dashboard authentication
-- aes-256-gcm encryption for all secrets
-- GitHub App for PR observation and push-driven staleness
-- CI auto-syncs docs and skill mirrors on push to main
+Topics are no longer rigid DB records. They are Markdown documents with metadata.
+
+- **`content`** — full Markdown body. Write diagrams, code snippets, references, anything.
+- **`tags`** — freeform labels for discovery
+- **`kind`** taxonomy — code-context, domain-map, decision, roadmap, runbook, integration-note
+- **`status`** — reviewed, draft, suggested (auto-generated), orphaned
+- **`origin`** — auto, manual, agent, doc
+
+### Typed relations
+
+Topics now connect through semantic edges:
+
+| Relation | Meaning |
+|----------|---------|
+| `depends_on` | Topic A depends on B |
+| `relates_to` | General association |
+| `supersedes` | B replaces A |
+| `blocks` | A cannot proceed until B |
+| `implements` | A implements the pattern in B |
+| `risk_for` | A introduces risk for B |
+
+```bash
+driftless context update auth-guard \
+  --rel depends_on:jwt-service \
+  --rel risk_for:token-refresh
+```
+
+### `[[wiki-links]]`
+
+Cross-reference topics inline in any free-text field. The API auto-parses them into bidirectional graph edges:
+
+```bash
+driftless context update billing-webhook \
+  --gotcha "Same idempotency race as [[stripe-webhook-ingest]]; deduplicate by event ID"
+```
+
+### Cross-repo context
+
+Run `driftless context update` from any repo and the topic accumulates repos automatically. No manual wiring:
+
+```bash
+driftless context link auth-flow     # explicit
+driftless context get auth-flow       # shows all repos
+```
+
+### Security hardening
+
+**Honest auth detection.** The scanner now reads `@UseGuards`, `APP_GUARD`, and `Clerk auth()` / `currentUser()` instead of assuming endpoints are public. Every endpoint gets a `guards` field — if no guard is detected, you see `[no auth detected — verify]`. No more false "public" labels.
+
+**Secrets encryption.** All API keys, webhook tokens, and BYOM credentials are encrypted with AES-256-GCM before storage. Keys from environment variables only, never in the DB.
+
+### Agent self-healing
+
+`driftless install-skill` now replaces the managed block in-place without touching anything outside it. Re-run it after a CLI upgrade and agents get the latest instructions automatically.
+
+### What we removed
+
+Based on user feedback, we removed the rules enforcement surface entirely:
+
+- No more `SEMANTIC` rules (was an inert LLM stub)
+- No more `POST /scan` violation endpoint
+- No more `driftless scan --diff` (the scan command was absorbed into `init` and GitHub-driven scan)
+- No more `rules` / `violations` screens in the dashboard
+- No more `intents` API
+
+Driftless informs. It does not enforce.
+
+## v0.1.x — The Foundation Era
+
+*January–May 2026*
+
+### Scanner maturity (v0.1.48–v0.1.72)
+
+The scanner started as NestJS-only AST extraction and grew to support Next.js App Router, React components (Vite/CRA), and Clerk auth inference. Key milestones:
+
+- **`0.1.48`** — APP_GUARD detection, honest auth per endpoint
+- **`0.1.49`** — Per-file byte-cap circuit breaker (no OOM on large repos)
+- **`0.1.65`** — Init UX: colored banner, `--framework auto|nestjs|nextjs`, `--suggest` opt-in
+- **`0.1.66`** — Multi-pattern anchoring (`--add-pattern`, `--remove-pattern`) and real `--help`
+- **`0.1.67`** — `[[slug]]` wiki-links — the first step toward the knowledge graph
+- **`0.1.68–0.1.72`** — Next.js Fase 1 + 2: App Router extractor, React component detection, Clerk auth inference
+
+### Cross-repo context (v0.1.62–v0.1.63)
+
+Topics discovered across repos were invisible. We added `context link` and automatic cross-repo accumulation on every `context update`.
+
+### Dogfood-driven fixes (v0.1.40–v0.1.64)
+
+We built Driftless with Driftless. The self-dogfooding caught dozens of issues:
+
+- **AGENTS.md skill block froze forever** — re-running `install-skill` wrote a duplicate block instead of replacing. Fixed.
+- **Skill REFERENCES not installed** — only SKILL.md was installed, not the reference files. Fixed.
+- **`resolveRepo` collapsed to `no_workspace`** — when `/me` was slow under load. Fixed with caching.
+- **Init showed 0 components for branched repos** — monorepo with deep paths. Fixed with `--src`.
+- **`--decision` flag overwrote instead of appending** — dogfood users lost previous decisions. Fixed.
+- **GitHub App showed "not installed" when installed** — two bugs in the installation check. Fixed.
+
+### CLI UX evolution
+
+| Version | What shipped |
+|---------|-------------|
+| `0.1.0` | First public: `login`, `init`, `scan`, `context` |
+| `0.1.12` | `--help` system, `--human` flag, per-command help |
+| `0.1.26` | Human-first CLI: `--json`, `--dry-run`, better errors |
+| `0.1.31` | Cross-repo topic table, auto-link on update |
+| `0.1.40` | Workspace resolution caching, real diagnostics |
+| `0.1.42` | GitHub App states, `list --kind`, `sync` PR activity |
+| `0.1.44` | `doctor --json` for agents/CI |
+| `0.1.50` | `graph coverage` — context coverage of the scanned repo |
+| `0.1.51` | `context load --files` — topics + graph + coverage + actions |
+| `0.1.65` | `init --framework`, monorepo `--src`, `--suggest` opt-in |
+
+### Dashboard
+
+- **v0.1.75** — Full DESIGN.md visual parity. Dark terminal aesthetic, Geist Mono, phosphor lime accent. Ecosystem view, topic detail with inline editing, architecture map with coverage overlays, PR activity feed, Copy for AI, settings consolidation, Clerk dark theme.
+
+### GitHub App
+
+- Sticky PR comments listing matched topics per changed file
+- Push-driven topic staleness on tracked branches
+- Installation tracking via workspace/org matching
+- Public listing on GitHub Marketplace
+
+## v0.0.x — Genesis
+
+*January 2026*
+
+### M1–M4: Monorepo scaffold to first CLI
+
+The monorepo was scaffolded with Turborepo, NestJS API, TypeORM entities, and a GitHub webhook handler. The scanner extracted NestJS endpoints, guards, services, and modules from AST (ts-morph). The CLI shipped with `login`, `init`, `scan`, and `context` commands. The first dogfood run on `profile_nippy_ms` detected 155 endpoints and 15 guards.
