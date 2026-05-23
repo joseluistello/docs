@@ -1,0 +1,42 @@
+---
+title: "How Driftless authenticates you: sessions and keys"
+description: "Driftless has three authentication surfaces — dashboard session, CLI API key, and GitHub App token — all resolving to the same workspace identity."
+---
+
+Driftless has three surfaces that require authentication: the dashboard, the CLI, and the GitHub App. Each uses a different credential type suited to how that surface is used, but all three resolve to the same workspace — actions taken from any surface are scoped and recorded against the same workspace identity.
+
+## Dashboard
+
+The dashboard authenticates you with a session managed by Clerk. When you sign in, Clerk issues a session that the dashboard uses for all subsequent requests. You do not manage this session manually; it is handled transparently as part of the sign-in flow.
+
+## CLI
+
+The CLI authenticates with an API key. Run `driftless login` to store a key on your machine:
+
+```bash
+driftless login --key drift_xxx
+```
+
+The key is written to `~/.driftless/config.json`. All subsequent CLI commands read from that file automatically. The key is never sent anywhere other than the Driftless API, and it is stored only on your local machine — Driftless does not retain the plaintext after you first copy it from the dashboard.
+
+For environments where writing a config file is not appropriate (CI, shared machines), set the `DRIFTLESS_API_KEY` environment variable instead:
+
+```bash
+export DRIFTLESS_API_KEY=drift_xxx
+```
+
+The CLI reads this variable automatically when no config file is present. See [API keys](/integrations/api-keys) for instructions on generating and revoking keys.
+
+## GitHub App
+
+The GitHub App authenticates to your repositories using a short-lived installation token that GitHub issues at request time. This is never a personal access token and is never stored by Driftless beyond the duration of the API call it serves. The token is scoped only to the repositories you selected when installing the app.
+
+You do not interact with this token directly. Driftless handles the token exchange internally when it needs to read PR files or post a comment.
+
+## Summary
+
+| Surface | Credential | Where it lives |
+|---|---|---|
+| Dashboard | Clerk session | Browser (managed by Clerk) |
+| CLI | API key | `~/.driftless/config.json` or `DRIFTLESS_API_KEY` env var |
+| GitHub App | Short-lived installation token | Not stored; issued per request |

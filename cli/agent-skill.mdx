@@ -1,0 +1,86 @@
+---
+title: "AGENTS.md: wire AI agents to Driftless context"
+description: "Install the Driftless AGENTS.md skill so Claude Code, Cursor, and Codex automatically pull and push context before touching your code."
+---
+
+The Driftless agent skill is a block of instructions that gets added to your repo's `AGENTS.md` file. AI coding agents — including Claude Code, Cursor, and Codex — read `AGENTS.md` at the start of every session, so they know to pull context before exploring your code and push what they learn before finishing.
+
+## How to install
+
+The easiest way to install the skill is to run `driftless init` in your repo. It scans your codebase, uploads a structural baseline, and writes the skill block to `AGENTS.md` automatically.
+
+```bash
+driftless init
+```
+
+If you want to add the skill to an existing `AGENTS.md` without running a full init, you can find the canonical skill block in the [driftless-skill GitHub repo](https://github.com/driftless-sh/driftless-skill) and paste it in manually.
+
+## The AGENTS.md skill content
+
+This is the exact content written into `AGENTS.md` when you run `driftless init`:
+
+```text
+## Driftless — Context Integrity
+
+Driftless is a context + drift-awareness layer for this repo. It informs; it never blocks.
+
+Starting or resuming a session:
+  driftless sync
+
+Before exploring or grepping — CHECK FOR EXISTING CONTEXT FIRST:
+  driftless context list
+  driftless context get <topic>
+  driftless context load --files "a,b"
+  driftless context get --diff
+
+Blast radius before changing code:
+  driftless graph file <path>
+  driftless graph impact --files "a,b"
+
+Persist what you learned:
+  driftless context update <slug> --decision "..." --gotcha "..."
+  driftless context link <slug>
+
+Classification:
+  --kind <code-context|domain-map|decision|roadmap|runbook|customer-insight|integration-note|docs-note|operational-note>
+  --tags auth,security
+
+Content (markdown body):
+  --content "<text>"              Markdown body of topic
+  --content @path/to/file.md      Read content from file
+
+Semantic relations:
+  driftless context update <slug> --rel depends_on:other-topic
+  driftless context relations <slug>
+  driftless context graph <slug>
+```
+
+## What agents do with this skill
+
+The skill guides agents through four phases whenever they work in your repo.
+
+**1. Session start — sync**
+
+At the beginning of every session, the agent runs `driftless sync` to pull the latest Cloud state: which topics are stale, what activity happened since the last session, and any newly suggested topics. This ensures the agent is working from a fresh picture before it does anything else.
+
+**2. Before exploring — check existing context**
+
+Before searching your codebase or reading files, the agent checks whether context already exists for what it's about to explore. It runs `driftless context list` to see what's available, `driftless context get <topic>` to read a specific topic, and `driftless context load --files "..."` to find topics anchored to the files it plans to touch. This prevents the agent from rediscovering things that are already documented and avoids outdated assumptions.
+
+**3. Before changing code — check blast radius**
+
+Before making edits, the agent maps impact with `driftless graph file <path>` and `driftless graph impact --files "..."`. This surfaces related topics and downstream dependencies so the agent understands what else might be affected by the change.
+
+**4. After learning — persist context**
+
+After completing work, the agent writes back anything it discovered: decisions made during the session, gotchas it encountered, and cross-repo links. It uses `driftless context update <slug> --decision "..." --gotcha "..."` and `driftless context link <slug>` to persist that knowledge for the next session and for other team members.
+
+## Supported agents
+
+Any agent that reads `AGENTS.md` will follow the skill instructions. This includes:
+
+- **Claude Code** — reads `AGENTS.md` natively
+- **Cursor** — reads `AGENTS.md` as part of repo context
+- **Codex** — reads `AGENTS.md` before executing tasks
+
+If you use an agent not listed here, check whether it supports `AGENTS.md` or a similar repo-level instruction file. The skill content itself is plain text, so you can adapt it for any agent's instruction format.

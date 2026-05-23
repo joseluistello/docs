@@ -1,0 +1,97 @@
+---
+title: "Load relevant context for files via the API"
+description: "Use the Driftless API to fetch which topics cover a given set of files — useful for custom tooling and CI integrations that need context loaded on demand."
+---
+
+The context delivery pattern lets you fetch which topics are relevant for a set of files you are about to work on. This mirrors what the CLI does when you run `driftless context load --files` — you pass a list of file paths and get back the topics that cover them, along with their context bodies.
+
+<Tip>
+  Most users access context via the CLI (`driftless context load --files`). The API is useful for custom tooling and CI integrations where you need to load context programmatically without the CLI installed.
+</Tip>
+
+## How context delivery works
+
+Driftless topics each track a set of files. When you provide a list of files you intend to edit, you can use the watchers list endpoint to retrieve all topics, then match each topic's file list against your working set. Topics with overlapping files are the ones containing relevant context for your task.
+
+The steps below show a complete example workflow.
+
+## Example workflow
+
+### Step 1 — Identify the files you are about to edit
+
+Start with the list of files relevant to your current task:
+
+```bash
+FILES=(
+  "src/auth/jwt.ts"
+  "src/middleware/requireAuth.ts"
+)
+```
+
+### Step 2 — Fetch all topics
+
+Retrieve the full topic list from your workspace:
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/workspaces/_/watchers
+```
+
+```json
+[
+  {
+    "slug": "auth-boundaries",
+    "name": "Auth boundaries",
+    "description": "Authentication and authorization patterns across the codebase.",
+    "file_count": 12
+  },
+  {
+    "slug": "payment-flow",
+    "name": "Payment flow",
+    "description": "End-to-end payment processing and webhook handling.",
+    "file_count": 8
+  }
+]
+```
+
+### Step 3 — Fetch full detail for matching topics
+
+For each topic whose files overlap with your working set, retrieve the full topic detail including the context body:
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/workspaces/_/watchers/auth-boundaries
+```
+
+```json
+{
+  "slug": "auth-boundaries",
+  "name": "Auth boundaries",
+  "description": "Authentication and authorization patterns across the codebase.",
+  "context": "This topic covers JWT validation, session management, and role-based access control. Key entry points are in src/auth/ and src/middleware/.",
+  "files": [
+    "src/auth/jwt.ts",
+    "src/auth/session.ts",
+    "src/middleware/requireAuth.ts"
+  ],
+  "file_count": 3
+}
+```
+
+### Step 4 — Inject the context into your tooling
+
+Use the `context` field from matching topics to prime your editor, agent, or CI step with the relevant background before making changes.
+
+## Limiting results
+
+If your workspace has many topics, use the `limit` query parameter to page through results:
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  "https://api.driftless.icu/api/v1/workspaces/_/watchers?limit=25"
+```
+
+## Related
+
+- [GET /watchers — list and fetch topics](/api/topics)
+- [Authentication](/api/authentication)

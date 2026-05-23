@@ -1,0 +1,66 @@
+---
+title: "GitHub App: PR context comments and drift tracking"
+description: "Install the Driftless GitHub App to receive automatic PR context comments and push-driven drift tracking across the repos you select."
+---
+
+The Driftless GitHub App connects your repositories to your workspace so that every pull request gets a context-aware comment and every push updates the freshness of your topics. When a PR is opened, Driftless reads the changed files, matches them against your context topics, and posts a sticky comment with the relevant context — decisions, gotchas, and ownership — directly on the PR.
+
+## Installing the app
+
+<Steps>
+  <Step title="Open GitHub integration settings">
+    Go to **Settings → GitHub integration** in the Driftless dashboard.
+  </Step>
+  <Step title="Start the installation">
+    Click **Install on GitHub**. You will be redirected to GitHub's app installation flow.
+  </Step>
+  <Step title="Select repositories">
+    Choose the account or organization and select the specific repositories you want Driftless to observe. You can expand access to more repos later from the same settings page.
+  </Step>
+  <Step title="Return to the dashboard">
+    GitHub redirects you back to the dashboard. Driftless automatically links the installation to your workspace — no additional configuration is needed.
+  </Step>
+</Steps>
+
+## What the app does
+
+Once installed, the app listens for three GitHub events:
+
+| Event | What Driftless does |
+|---|---|
+| `pull_request.opened` / `synchronize` / `reopened` | Fetches PR files, matches them against topics, then posts or updates a sticky comment |
+| `push` | Updates `last_updated` on matching topics and records a `FILE_CHANGED` event |
+| `installation.deleted` | Deactivates the integration in your workspace |
+
+## PR comment shape
+
+Driftless posts a single sticky comment per PR, identified by an HTML marker so it can update rather than re-post. The comment looks like this:
+
+```text
+<!-- driftless-context -->
+### Driftless · context for this PR
+
+auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
+how: 2 endpoints, 1 service, 1 guard
+decisions: Multi-tenant, uses org_id from token
+gotchas: ! All endpoints require auth — do not add @Public() without review
+```
+
+The comment surfaces only the topics that match files changed in the PR. If the PR touches no tracked files, no comment is posted.
+
+## Permissions requested
+
+The app requests the minimum permissions needed to read your code structure and post comments:
+
+| Permission | Level | Reason |
+|---|---|---|
+| Contents | Read | Fetch the files changed in a PR |
+| Pull requests | Read & write | Post and update the sticky context comment |
+| Issues | Read & write | PR comments are created via GitHub's issues API |
+| Metadata | Read | Required by GitHub for all apps |
+
+The app never clones your repository and never reads secrets or env files.
+
+<Note>
+  Driftless still works without the GitHub App for local workflows. You just won't get PR nudges or push-driven drift tracking.
+</Note>

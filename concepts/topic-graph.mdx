@@ -1,0 +1,69 @@
+---
+title: "Topic graph: how Driftless organizes context"
+description: "Topics are structured context units linked by typed relations. The topic graph lets you navigate, visualize, and maintain codebase knowledge."
+---
+
+The topic graph is the central organizing structure in Driftless. Every piece of context you capture — an architectural decision, a runbook, an explanation of how a service works — lives as a **topic**. Topics connect to each other and to the code they describe, forming a navigable graph that reflects the real shape of your system.
+
+## What a topic contains
+
+Each topic has five fields:
+
+- **What** — a one-line summary of the thing being documented
+- **How** — a longer explanation of implementation details
+- **Decisions** — the choices made and the reasoning behind them
+- **Gotchas** — edge cases, known issues, and things that have tripped people up
+- **Ownership** — who is responsible and who to contact
+
+Topics are scoped to the files or components they cover. When those files change, Driftless marks the topic stale so you know the context may no longer reflect reality.
+
+## Topic kinds
+
+Topics are typed. The kind tells you what category of context the topic represents.
+
+<AccordionGroup>
+  <Accordion title="code-context">
+    Documents how a specific piece of code works — a service, module, controller, or other unit of implementation. This is the most common kind and is typically generated or suggested by the scanner.
+  </Accordion>
+  <Accordion title="decision">
+    Records an architectural or design decision: what was chosen, what alternatives were considered, and why. Decisions are durable — they survive beyond the PR or Slack thread where they were made.
+  </Accordion>
+  <Accordion title="roadmap">
+    Captures planned work or future direction for a part of the system. Useful for giving agents and teammates context about where something is headed.
+  </Accordion>
+  <Accordion title="runbook">
+    Step-by-step operational instructions for a process, incident response, or deployment. Keeps operational knowledge in the same graph as the code it applies to.
+  </Accordion>
+  <Accordion title="customer-insight">
+    Context from customer feedback, support tickets, or research that affects how a part of the system should behave. Bridges product understanding and implementation.
+  </Accordion>
+  <Accordion title="integration-note">
+    Documents how your system integrates with a third-party service or external dependency — auth flows, webhook shapes, API quirks, and so on.
+  </Accordion>
+  <Accordion title="docs-note">
+    Notes about the state or gaps in your documentation. Useful for tracking what's been written, what's missing, and what's out of date.
+  </Accordion>
+  <Accordion title="operational-note">
+    Observations about the running system — performance characteristics, known load patterns, deployment constraints, and infrastructure considerations.
+  </Accordion>
+</AccordionGroup>
+
+## Typed relations
+
+Topics connect to each other through typed relations. The two primary relation types are:
+
+- **`depends_on`** — the source topic's subject directly depends on the target's subject
+- **`relates_to`** — a looser association, useful for cross-cutting concerns or thematic links
+
+You can also create connections using **wiki-links** (e.g. `[[auth-service]]`) anywhere in a topic's text. Driftless resolves these links to other topics and renders them as edges in the graph.
+
+## The /graph dashboard
+
+Navigate to `/graph` in your Driftless dashboard to see the full topic graph for your workspace. The graph view gives you:
+
+- **Color-coded nodes by kind** — each topic kind has a distinct color so you can orient yourself at a glance
+- **Status indicators** — a red border means the topic is stale (its covered code has changed); a dashed amber border means the topic is a draft
+- **Detail panel** — click any node to see its fields, relations, and a content preview
+- **Layout and filtering** — toggle between vertical and horizontal layouts, search by topic name, and filter by kind or status
+
+The graph is a live view of your context coverage. Red nodes are where you have gaps; fresh nodes are where you are confident.

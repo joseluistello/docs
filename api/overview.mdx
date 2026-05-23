@@ -1,0 +1,37 @@
+---
+title: "Driftless REST API overview: base URL and endpoints"
+description: "The Driftless REST API provides programmatic access to workspace identity and context topics. All requests require Bearer token auth."
+---
+
+The Driftless REST API gives you programmatic access to your workspace identity and context topics. You can use it to build custom tooling, integrate Driftless into CI pipelines, or fetch context data outside of the CLI. All endpoints are served over HTTPS from a single base URL.
+
+**Base URL:** `https://api.driftless.icu/api/v1`
+
+Every request must include a valid `Authorization: Bearer <token>` header. See [Authentication](/api/authentication) for details on obtaining and using tokens.
+
+## Workspace shorthand
+
+Throughout the API, the `_` segment in a path (for example, `/workspaces/_/watchers`) is a shorthand that automatically resolves to the authenticated user's workspace. You do not need to supply a workspace ID explicitly.
+
+## Available endpoints
+
+<CardGroup cols={3}>
+  <Card title="GET /me" icon="user" href="/api/workspaces">
+    Returns your workspace identity — workspace ID, slug, and associated user details.
+  </Card>
+  <Card title="GET /watchers" icon="list" href="/api/topics">
+    Lists all context topics in your workspace, with optional pagination via a `limit` query parameter.
+  </Card>
+  <Card title="Context delivery" icon="file-search" href="/api/context">
+    Fetch topics matching a set of files to load relevant context for your editing session.
+  </Card>
+</CardGroup>
+
+## Quick example
+
+The following request verifies your credentials and returns your workspace identity:
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/me
+```

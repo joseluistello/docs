@@ -1,0 +1,142 @@
+---
+title: "GET /watchers — list and fetch workspace topics"
+description: "The /watchers endpoints return context topics for your workspace. List all topics with optional pagination, or fetch a single topic's full detail by slug."
+---
+
+The watchers endpoints expose your workspace's context topics over the API. You can retrieve a paginated list of all topics or fetch a single topic by its slug. Note that the CLI and dashboard refer to these as "topics," but the API path uses the term "watchers" — they refer to the same concept.
+
+The `_` in the path is a shorthand that resolves to the authenticated user's workspace. You do not need to supply a workspace ID explicitly.
+
+---
+
+## List all topics
+
+```
+GET https://api.driftless.icu/api/v1/workspaces/_/watchers
+```
+
+Returns an array of topic summaries for your workspace.
+
+### Parameters
+
+<ParamField query="limit" type="integer">
+  Maximum number of topics to return. Use this to paginate through large workspaces.
+</ParamField>
+
+<ParamField path="header.Authorization" type="string" required>
+  Bearer token for authentication. Format: `Bearer <token>`.
+</ParamField>
+
+### Example request
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  "https://api.driftless.icu/api/v1/workspaces/_/watchers?limit=10"
+```
+
+### Response
+
+A successful response returns an array of topic summary objects.
+
+```json
+[
+  {
+    "slug": "auth-boundaries",
+    "name": "Auth boundaries",
+    "description": "Authentication and authorization patterns across the codebase.",
+    "file_count": 12
+  },
+  {
+    "slug": "payment-flow",
+    "name": "Payment flow",
+    "description": "End-to-end payment processing and webhook handling.",
+    "file_count": 8
+  }
+]
+```
+
+<ResponseField name="slug" type="string" required>
+  The unique slug identifying this topic. Use it to fetch full topic details.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  The display name of the topic.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  A short description of what the topic covers.
+</ResponseField>
+
+<ResponseField name="file_count" type="integer">
+  The number of files tracked by this topic.
+</ResponseField>
+
+---
+
+## Get a single topic
+
+```
+GET https://api.driftless.icu/api/v1/workspaces/_/watchers/:slug
+```
+
+Returns full details for a single topic identified by its slug.
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The slug of the topic to retrieve. Slugs are returned by the list endpoint.
+</ParamField>
+
+<ParamField path="header.Authorization" type="string" required>
+  Bearer token for authentication. Format: `Bearer <token>`.
+</ParamField>
+
+### Example request
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/workspaces/_/watchers/auth-boundaries
+```
+
+### Response
+
+A successful response returns a single topic object with full detail.
+
+```json
+{
+  "slug": "auth-boundaries",
+  "name": "Auth boundaries",
+  "description": "Authentication and authorization patterns across the codebase.",
+  "context": "This topic covers JWT validation, session management, and role-based access control. Key entry points are in src/auth/ and src/middleware/.",
+  "files": [
+    "src/auth/jwt.ts",
+    "src/auth/session.ts",
+    "src/middleware/requireAuth.ts"
+  ],
+  "file_count": 3
+}
+```
+
+<ResponseField name="slug" type="string" required>
+  The unique slug for this topic.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  The display name of the topic.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  A short description of what the topic covers.
+</ResponseField>
+
+<ResponseField name="context" type="string">
+  The full context body for this topic, as shown in the CLI and dashboard.
+</ResponseField>
+
+<ResponseField name="files" type="string[]">
+  The list of file paths tracked by this topic.
+</ResponseField>
+
+<ResponseField name="file_count" type="integer">
+  The number of files tracked by this topic.
+</ResponseField>

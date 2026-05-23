@@ -1,0 +1,47 @@
+---
+title: "Drift detection: keeping your context honest"
+description: "Drift detection automatically flags topics when their covered files change, so your context stays honest and you always know what needs updating."
+---
+
+Drift happens when the code a topic describes changes, but the topic itself is not updated. The result is context that looks authoritative but no longer reflects reality — which is often worse than having no context at all. Driftless tracks this automatically and surfaces it before it becomes a problem.
+
+## What triggers drift
+
+Every topic in Driftless is scoped to one or more files. When the GitHub App observes a push or pull request that touches those files, Driftless marks the topic as **stale**.
+
+Staleness is not a judgment about whether the change was significant — any modification to a covered file is enough. This keeps the signal conservative: you decide whether the topic needs updating, not the system.
+
+A stale topic is visible in two places:
+
+- In the `/graph` dashboard, the node gets a **red border**
+- In the CLI, `driftless context get --diff` reports which topics have drifted since your last sync
+
+## Checking for drift locally
+
+Two CLI commands help you stay current:
+
+```bash
+# Pull the latest topic state from the cloud
+driftless sync
+```
+
+```bash
+# Check which topics have drifted against local file changes
+driftless context get --diff
+```
+
+Run `driftless sync` to pull down any staleness flags or topic updates that have accumulated since you last worked. Run `driftless context get --diff` to see a diff of what has changed locally against what the context describes — useful before starting a coding session or before opening a PR.
+
+## Resolving a stale topic
+
+When you identify a topic that needs updating, open it and revise the relevant fields — typically **What**, **How**, or **Gotchas** — to reflect the current state of the code. Then save and push the update:
+
+```bash
+driftless context update <topic-id>
+```
+
+Once the topic text is updated, Driftless clears the staleness flag. The node in the graph returns to its normal color, and the topic is no longer reported in `--diff` output.
+
+<Tip>
+  Push- and PR-driven drift detection requires the GitHub App to be installed on your repository. If you have not installed it yet, `driftless context get --diff` still works locally by comparing your working tree against the last-synced context state — you just won't get automatic staleness flags from remote pushes.
+</Tip>

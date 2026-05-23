@@ -1,0 +1,113 @@
+{
+  "projectType": "saas",
+  "projectName": "Driftless",
+  "projectDescription": "Driftless is a context and drift-awareness layer that keeps your team's codebase knowledge fresh by connecting topics, agents, and PRs through a living topic graph.",
+  "theme": "luma",
+  "primaryColor": "#76a306",
+  "lightColor": "#547304",
+  "darkColor": "#060704",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/topic-graph",
+              "concepts/drift-detection",
+              "concepts/architecture"
+            ]
+          },
+          {
+            "group": "CLI & Agents",
+            "pages": [
+              "cli/installation",
+              "cli/commands",
+              "cli/agent-skill"
+            ]
+          },
+          {
+            "group": "Dashboard",
+            "pages": [
+              "dashboard/overview",
+              "dashboard/context",
+              "dashboard/pr-activity",
+              "dashboard/architecture-map"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/github-app",
+              "integrations/api-keys"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
+              "security/data-storage",
+              "security/auth"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/workspaces",
+              "api/topics",
+              "api/context"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Living topic graph connecting code, decisions, and architectural knowledge",
+    "Automatic drift detection — topics go stale when covered code changes",
+    "GitHub App integration for PR-driven context nudges",
+    "CLI for agents (Claude Code, Cursor, Codex) to pull and push context",
+    "Architecture map with coverage overlay per repo",
+    "AGENTS.md skill injection for AI coding agents",
+    "Cross-repo context linking",
+    "Full-text search across all workspace topics"
+  ],
+  "publicApiSurface": [
+    "GET /api/v1/me",
+    "GET /api/v1/workspaces/_/watchers",
+    "GET /api/v1/workspaces/_/watchers/:slug",
+    "driftless login",
+    "driftless init",
+    "driftless sync",
+    "driftless doctor",
+    "driftless context add <slug>",
+    "driftless context update <slug>",
+    "driftless context get <slug>",
+    "driftless context list",
+    "driftless context search <query>",
+    "driftless context load --files",
+    "driftless context graph <slug>",
+    "driftless context relations <slug>",
+    "driftless context link <slug>",
+    "driftless context delete <slug>"
+  ]
+}

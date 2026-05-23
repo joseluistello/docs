@@ -1,0 +1,58 @@
+---
+title: "GET /me — verify credentials and resolve workspace"
+description: "GET /api/v1/me returns your workspace ID, slug, and email. Use it to verify your credentials or resolve workspace details for API integrations."
+---
+
+The `/me` endpoint returns identity information for the authenticated user. It is the simplest endpoint in the API and is useful for verifying that your token is valid, resolving your workspace slug, or bootstrapping integrations that need to know which workspace they are operating against.
+
+## Endpoint
+
+```
+GET https://api.driftless.icu/api/v1/me
+```
+
+Authentication is required. Pass your token as an `Authorization: Bearer <token>` header.
+
+## Parameters
+
+This endpoint accepts no query parameters.
+
+<ParamField path="header.Authorization" type="string" required>
+  Bearer token for authentication. Format: `Bearer <token>`.
+</ParamField>
+
+## Example request
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/me
+```
+
+## Response
+
+A successful response returns a JSON object with your workspace and user details.
+
+```json
+{
+  "workspace_id": "ws_01hx4k2p9rebc3nqj7v8m5tdzf",
+  "workspace_slug": "acme-corp",
+  "user_id": "usr_01hx4k2p9rebc3nqj7v8m5tdzg",
+  "email": "you@example.com"
+}
+```
+
+<ResponseField name="workspace_id" type="string" required>
+  The unique identifier for your workspace.
+</ResponseField>
+
+<ResponseField name="workspace_slug" type="string" required>
+  The human-readable slug for your workspace. This is the value that the `_` shorthand resolves to in other API paths.
+</ResponseField>
+
+<ResponseField name="user_id" type="string" required>
+  The unique identifier for the authenticated user.
+</ResponseField>
+
+<ResponseField name="email" type="string" required>
+  The email address associated with the authenticated user account.
+</ResponseField>

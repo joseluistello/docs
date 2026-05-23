@@ -1,0 +1,61 @@
+---
+title: "Driftless: keep your codebase context alive"
+description: "Driftless connects your code, decisions, and AI agents through a living topic graph that automatically detects drift when your code changes."
+---
+
+Driftless gives your team — and your AI agents — a shared, always-fresh layer of context about your codebase. You define topics (what a module does, how it works, known gotchas, decisions), Driftless watches your PRs and pushes, and automatically flags topics that have drifted from the code they describe.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="bolt" href="/quickstart">
+    Install the CLI, authenticate, and initialize your first repo in under 3 minutes.
+  </Card>
+  <Card title="CLI & Agents" icon="terminal" href="/cli/installation">
+    Full command reference and how to hook up Claude Code, Cursor, or Codex via AGENTS.md.
+  </Card>
+  <Card title="Topic Graph" icon="diagram-project" href="/concepts/topic-graph">
+    Understand how topics, relations, and drift detection keep your context living.
+  </Card>
+  <Card title="GitHub App" icon="github" href="/integrations/github-app">
+    Install the GitHub App to get PR nudges and push-driven drift tracking.
+  </Card>
+  <Card title="Dashboard" icon="gauge" href="/dashboard/overview">
+    Navigate the control room: context health, architecture map, and PR activity.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    REST API for the Driftless Cloud — topics, watchers, and workspace data.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Install and authenticate">
+    Install the CLI globally and log in with your API key.
+    ```bash
+    npm install -g @driftless-sh/cli
+    driftless login
+    ```
+  </Step>
+  <Step title="Initialize your repo">
+    Run `driftless init` to scan your repo, upload structural metadata, and install the AGENTS.md skill.
+    ```bash
+    driftless init
+    ```
+  </Step>
+  <Step title="Add context topics">
+    Create topics that describe key modules, decisions, and gotchas. Topics can cover files via glob patterns.
+    ```bash
+    driftless context add "auth-boundaries" \
+      --content "# Auth\n\n## What\nHandles JWT validation and org-scoping" \
+      --kind code-context \
+      --pattern "src/auth/**"
+    ```
+  </Step>
+  <Step title="Let Driftless watch your code">
+    Connect the GitHub App so topics automatically go stale when the files they cover change in PRs or pushes.
+  </Step>
+</Steps>
+
+<Note>
+  Your source code never leaves your machine. Driftless stores structural metadata and topic text only — not raw code or secrets.
+</Note>

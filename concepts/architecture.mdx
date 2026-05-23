@@ -1,0 +1,72 @@
+---
+title: "How Driftless works: Scan, Observe, Sync loop"
+description: "Driftless keeps context alive through a five-step loop: Scan, Observe, Contextualize, Deliver, and Sync — split between your machine and the cloud."
+---
+
+Driftless is built around a five-step loop that keeps context synchronized with your codebase. Some steps run locally on your machine; others run in the cloud. Understanding where each step runs helps you know what data leaves your environment and what stays local.
+
+<Note>
+  Your source code never leaves your machine — the scanner extracts structure locally and uploads only metadata.
+</Note>
+
+## The five-step loop
+
+<Steps>
+  <Step title="Scan">
+    **Runs locally, once per repo.**
+
+    When you run `driftless init`, the CLI scans your repository and extracts structural metadata — frameworks, controllers, services, endpoints, modules, and patterns. Nothing is sent to the cloud except the extracted metadata. See [what gets scanned](#what-gets-scanned-locally) below for the full list.
+  </Step>
+  <Step title="Observe">
+    **Runs in the cloud, per workspace.**
+
+    The GitHub App listens for push events and pull requests across your connected repositories. When a PR touches files that are covered by a topic, Driftless records the event and evaluates whether any topics have gone stale.
+  </Step>
+  <Step title="Contextualize">
+    **Runs in the cloud, per workspace.**
+
+    Topics are created, updated, and linked based on the structural baseline from the scan and the activity observed from PRs. The cloud stores the topic graph — what each component does, how it works, decisions made, gotchas, and ownership — but not your source files.
+  </Step>
+  <Step title="Deliver">
+    **Runs locally, per agent call.**
+
+    When an agent (Claude Code, Cursor, Codex, or any tool reading `AGENTS.md`) starts a task, it pulls the relevant context for the files it is about to touch. This gives the agent the decisions, gotchas, and ownership information it needs before it writes a single line.
+  </Step>
+  <Step title="Sync">
+    **Runs locally, per agent call.**
+
+    After work is complete, `driftless context get --diff` checks whether the local changes have caused any topics to drift. Agents can push new discoveries back as topic updates, keeping the graph current for the next person or session.
+  </Step>
+</Steps>
+
+## What gets scanned locally
+
+The scanner runs entirely on your machine during `driftless init`. It detects the following:
+
+| Detected | How | Why it matters |
+|---|---|---|
+| Framework | `package.json` + `tsconfig` | Classifies the repo for context coverage |
+| Controllers | `@Controller` | HTTP entry points |
+| Endpoints | `@Get`, `@Post`, etc. | API surface count |
+| Services | `@Injectable` | Business logic layer |
+| Guards | `CanActivate` | Auth coverage |
+| Modules | `@Module` | Architectural boundaries |
+| Auth patterns | Imports + usage | Detects Clerk, JWT, API keys, etc. |
+| Quarantine candidates | Files > 300 lines, legacy markers | Highlights areas that need durable context |
+| Multi-tenant pattern | `org_id` / `tenant_id` references | Highlights isolation context to document |
+
+## What runs locally vs. in the cloud
+
+**Runs locally:**
+- Repository scanning (`driftless init`)
+- Context delivery before agent calls
+- Drift checking (`driftless context get --diff`)
+- Syncing topic state (`driftless sync`)
+
+**Runs in the cloud:**
+- Components and relations — the structural baseline from each scan
+- Topics — what / how / decisions / gotchas / ownership
+- Webhook and context events — every push and PR observed
+- Integrations — GitHub App installation links
+
+The split is intentional. Your source code stays on your machine; the cloud holds only the structured metadata and topic text needed to deliver context.

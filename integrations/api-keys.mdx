@@ -1,0 +1,59 @@
+---
+title: "API keys: authenticate the CLI and direct API calls"
+description: "Generate API keys in the Driftless dashboard to authenticate the CLI, set environment variables for CI/CD, and make direct API calls."
+---
+
+API keys are the credential used by the Driftless CLI and any direct API requests to authenticate against your workspace. Each key is tied to your workspace and carries the same access as the member who created it. You can generate multiple keys — for example, one for local development and a separate one for CI — and revoke them independently.
+
+<Warning>
+  API keys are shown only once. Copy and store your key immediately after generation — you will not be able to retrieve it again from the dashboard.
+</Warning>
+
+## Generating a key
+
+Go to **Settings → API keys** in the dashboard and click **Generate key**. Give the key a name that identifies where it will be used (for example, `local-dev` or `github-actions`). The full key is displayed once at creation time.
+
+## Using a key with the CLI
+
+Pass the key to `driftless login` to authenticate your local session:
+
+```bash
+driftless login --key drift_xxx
+```
+
+The CLI writes the key to `~/.driftless/config.json` on your machine. Subsequent commands read from that file automatically — you do not need to pass the key again.
+
+<Tip>
+  For CI/CD pipelines, set the `DRIFTLESS_API_KEY` environment variable instead of writing a config file. The CLI reads this variable automatically when no config file is present.
+</Tip>
+
+## Using the environment variable
+
+```bash
+export DRIFTLESS_API_KEY=drift_xxx
+driftless context --repo my-repo
+```
+
+In GitHub Actions or similar systems, add the key as a repository secret and reference it in your workflow:
+
+```yaml
+- name: Run Driftless
+  env:
+    DRIFTLESS_API_KEY: ${{ secrets.DRIFTLESS_API_KEY }}
+  run: driftless context --repo my-repo
+```
+
+## Making direct API calls
+
+Include the key as a Bearer token in the `Authorization` header on every request:
+
+```bash
+curl https://api.driftless.icu/api/v1/me \
+  -H "Authorization: Bearer drift_xxx"
+```
+
+## Revoking a key
+
+Go to **Settings → API keys**, find the key you want to remove, and click **Revoke**. Revocation is immediate — any request using that key will be rejected from that point on. There is no grace period.
+
+Revoking a key does not affect other keys or your workspace data. If a key is compromised, revoke it and generate a replacement.

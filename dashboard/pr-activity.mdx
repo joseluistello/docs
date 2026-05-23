@@ -1,0 +1,47 @@
+---
+title: "PR Activity: how Driftless surfaces PR context"
+description: "See how Driftless matches open PRs to topics and posts a sticky nudge comment. Each row shows the full chain: diff, matched topics, and nudge posted."
+---
+
+The PR Activity panel shows you every pull request Driftless has observed and what happened when it did. When a PR is opened or updated, Driftless compares the diff against your topic graph, matches changed files to the topics that cover them, and posts a short comment on the PR to surface that context for the author and reviewers.
+
+## The observation chain
+
+Each row in the PR Activity panel represents one observed PR and shows the full chain of what Driftless did:
+
+```
+DIFF → TOPICS MATCHED → NUDGE POSTED
+```
+
+- **DIFF** — the set of files changed in the PR
+- **TOPICS MATCHED** — the topics whose file patterns overlap with those changes
+- **NUDGE POSTED** — whether Driftless successfully posted a context comment on the PR
+
+Click any row to see which specific topics were matched and a preview of the comment that was posted.
+
+## The PR nudge comment
+
+When Driftless matches a PR to one or more topics, it posts a sticky comment on the PR. The comment surfaces the relevant context inline so reviewers don't need to leave GitHub to understand what the code does.
+
+Here is an example of what the comment looks like:
+
+```text
+<!-- driftless-context -->
+### Driftless · context for this PR
+auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
+how: 2 endpoints, 1 service, 1 guard
+decisions: Multi-tenant, uses org_id from token
+gotchas: All endpoints require auth — do not add @Public() without review
+```
+
+A few things to know about how Driftless posts this comment:
+
+- **It never edits context.** The comment is read-only. Driftless will not modify any topic based on what it sees in the PR.
+- **It never blocks the PR.** Driftless does not add required checks or status gates. The nudge is purely informational.
+- **It updates in place.** If the PR diff changes (new commits pushed), Driftless updates the existing comment rather than posting a new one.
+
+If a PR touches multiple topics, each topic gets its own block in the same comment.
+
+<Note>
+  Requires the GitHub App. The PR Activity panel is empty until the first observed PR. See the [GitHub App integration](/integrations/github-app) guide to install and connect your repos.
+</Note>

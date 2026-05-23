@@ -1,0 +1,50 @@
+---
+title: "Architecture map: visualize module coverage"
+description: "Explore your repo's module structure, coverage states, and relationships in an interactive graph. Filter, focus on modules, and switch repos."
+---
+
+The architecture map gives you a visual representation of your codebase organized by module. It shows you which parts of your repo are well-covered by topics, which are partially covered, and which have no context at all — so you can make informed decisions about where to invest documentation effort and where change carries the most risk.
+
+## Three-panel layout
+
+The map is split into three panels:
+
+- **Module tree (left)** — a collapsible file-system-style tree of all modules in the selected repo. Click any module to select it and highlight it in the graph.
+- **Graph canvas (center)** — an interactive node-link diagram showing modules and the relationships between them. Zoom, pan, and click nodes to explore.
+- **Detail panel (right)** — shows the selected module's name, coverage state, linked topics, and a list of related modules. From here you can navigate directly to the topics that cover it.
+
+## Coverage states
+
+Every module in the graph is color-coded to show its coverage state:
+
+| State | Meaning |
+|---|---|
+| **Reviewed** | At least one up-to-date topic covers this module |
+| **Partial** | A topic exists but covers only some of the module's files or is stale |
+| **High-risk** | The module has changed recently and its topic is stale or missing |
+| **No topic** | No topic has ever been assigned to this module |
+
+The collapsible legend in the lower-left of the canvas explains the color coding. Toggle it closed if you need more canvas space.
+
+## Coverage filters
+
+Use the coverage filter controls above the graph to show or hide modules by state. For example, you can filter to **High-risk** and **No topic** to get a focused view of your coverage gaps. Filters apply to both the graph canvas and the module tree simultaneously.
+
+## Focus mode
+
+Focus mode lets you isolate a subset of modules and their direct relationships, reducing visual noise when you're investigating a specific area.
+
+To enter Focus mode:
+
+1. Select one or more modules in the tree or by clicking nodes in the graph.
+2. Click **Focus** in the toolbar.
+
+The canvas redraws to show only the selected modules and the modules they connect to. All other nodes are hidden. Click **Exit focus** to return to the full graph.
+
+<Tip>
+  Use Focus mode to understand the blast radius of a change before you make it. Select the module you're about to modify, enter Focus mode, and review every module that depends on it.
+</Tip>
+
+## Switching repos
+
+The repo switcher in the header lets you move between connected repositories without leaving the architecture map. Driftless remembers the last repo you viewed, so the map always reopens on the same repo across sessions.

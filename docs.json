@@ -1,0 +1,100 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Driftless",
+  "theme": "luma",
+  "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
+  "colors": {
+    "primary": "#76a306",
+    "light": "#547304",
+    "dark": "#060704"
+  },
+  "font": {
+    "headings": {
+      "family": "Geist Mono"
+    },
+    "body": {
+      "family": "Geist Mono"
+    }
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/driftless-sh/driftless-skill"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/topic-graph",
+              "concepts/drift-detection",
+              "concepts/architecture"
+            ]
+          },
+          {
+            "group": "CLI & Agents",
+            "pages": [
+              "cli/installation",
+              "cli/commands",
+              "cli/agent-skill"
+            ]
+          },
+          {
+            "group": "Dashboard",
+            "pages": [
+              "dashboard/overview",
+              "dashboard/context",
+              "dashboard/pr-activity",
+              "dashboard/architecture-map"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/github-app",
+              "integrations/api-keys"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
+              "security/data-storage",
+              "security/auth"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/workspaces",
+              "api/topics",
+              "api/context"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

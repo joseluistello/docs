@@ -1,0 +1,225 @@
+---
+title: "Driftless CLI reference: every command and flag"
+description: "Complete reference for every Driftless CLI command, grouped by function: session setup, topic management, and context delivery for files and agents."
+---
+
+The Driftless CLI covers three main areas: setting up and syncing your session, managing context topics, and delivering context to the files and agents that need it. Every command that returns structured data supports a `--json` flag for programmatic use in scripts and CI pipelines.
+
+## Session and setup
+
+These commands handle authentication, repo initialization, cloud sync, and environment health.
+
+<AccordionGroup>
+  <Accordion title="driftless login">
+    Authenticate with Driftless Cloud using an API key.
+
+    ```bash
+    driftless login
+    driftless login --key drift_your_key_here
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--key <key>` | Pass your API key non-interactively |
+  </Accordion>
+
+  <Accordion title="driftless init">
+    Scan your repo, upload a structural baseline to Driftless Cloud, and install the AGENTS.md skill so AI agents know how to use context in this repo.
+
+    ```bash
+    driftless init
+    driftless init --suggest
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--suggest` | Also generate suggested topics based on repo structure |
+  </Accordion>
+
+  <Accordion title="driftless sync">
+    Pull the latest Cloud state: stale topics, recent activity, and suggested new topics.
+
+    ```bash
+    driftless sync
+    driftless sync --json
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--json` | Output as JSON for scripting |
+  </Accordion>
+
+  <Accordion title="driftless doctor">
+    Run an environment health check covering authentication, API connectivity, git detection, and workspace resolution.
+
+    ```bash
+    driftless doctor
+    ```
+
+    No flags. Run this first if anything looks off.
+  </Accordion>
+</AccordionGroup>
+
+## Topic management
+
+These commands create, read, update, and delete context topics in your workspace.
+
+<AccordionGroup>
+  <Accordion title="driftless context add <slug>">
+    Create a new context topic with markdown content, tags, a topic kind, and optional file glob patterns (code anchors).
+
+    ```bash
+    driftless context add "auth" \
+      --content "# Auth\n\n## What\nHandles JWT validation" \
+      --kind code-context \
+      --tags auth,security \
+      --pattern "src/auth/**"
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--content <text>` | Markdown body. Use `@path/to/file.md` to read from a file |
+    | `--kind <kind>` | Topic classification (see kinds below) |
+    | `--tags <a,b>` | Comma-separated tags |
+    | `--pattern <glob>` | File glob pattern to anchor this topic to code |
+
+    **Topic kinds:** `code-context`, `domain-map`, `decision`, `roadmap`, `runbook`, `customer-insight`, `integration-note`, `docs-note`, `operational-note`
+  </Accordion>
+
+  <Accordion title="driftless context update <slug>">
+    Update an existing topic. You can change fields, append gotchas or decisions, add file patterns, and manage semantic relations to other topics.
+
+    ```bash
+    driftless context update auth \
+      --gotcha "Token rotation race condition under high load" \
+      --decision "Switched to short-lived JWTs in v2" \
+      --rel depends_on:session \
+      --add-pattern "src/auth/oauth/**"
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--content <text>` | Replace the markdown body |
+    | `--gotcha <text>` | Append a new gotcha entry |
+    | `--decision <text>` | Append a new decision entry |
+    | `--rel <type:slug>` | Add a typed relation to another topic |
+    | `--add-pattern <glob>` | Add an additional file anchor |
+    | `--tags <a,b>` | Replace tags |
+  </Accordion>
+
+  <Accordion title="driftless context get <slug>">
+    Show the full canonical view of a topic: what it covers, how it works, known gotchas, past decisions, and all relations.
+
+    ```bash
+    driftless context get auth-boundaries
+    driftless context get auth-boundaries --diff
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--diff` | Show what has changed since the last sync |
+    | `--json` | Output as JSON |
+  </Accordion>
+
+  <Accordion title="driftless context list">
+    List all context topics in the current workspace.
+
+    ```bash
+    driftless context list
+    driftless context list --json
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--json` | Output as JSON for scripting |
+  </Accordion>
+
+  <Accordion title="driftless context search <query>">
+    Full-text search across all topics, including content, tags, and metadata fields.
+
+    ```bash
+    driftless context search "auth"
+    driftless context search "token rotation" --json
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--json` | Output as JSON |
+  </Accordion>
+
+  <Accordion title="driftless context delete <slug>">
+    Delete a topic and its full history. This action is permanent.
+
+    ```bash
+    driftless context delete old-topic
+    ```
+
+    No additional flags.
+  </Accordion>
+</AccordionGroup>
+
+## Context delivery
+
+These commands deliver context to specific files you're about to edit, render topic graphs, and manage cross-repo linking.
+
+<AccordionGroup>
+  <Accordion title="driftless context load">
+    Match topics and their coverage for specific files you're about to edit. This is the primary command agents use before touching code.
+
+    ```bash
+    driftless context load --files "src/auth/guard.ts"
+    driftless context load --files "src/auth/guard.ts,src/session/store.ts" --json
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--files <a,b>` | Comma-separated file paths to match context for (required) |
+    | `--json` | Output as JSON |
+  </Accordion>
+
+  <Accordion title="driftless context graph <slug>">
+    Render the local topic graph centered on a topic, showing all related topics and their relation types.
+
+    ```bash
+    driftless context graph auth-boundaries
+    driftless context graph auth-boundaries --depth 2
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--depth <n>` | How many hops to traverse (default: 1) |
+  </Accordion>
+
+  <Accordion title="driftless context relations <slug>">
+    List all incoming and outgoing typed relations for a topic.
+
+    ```bash
+    driftless context relations auth-boundaries
+    driftless context relations auth-boundaries --json
+    ```
+
+    | Flag | Description |
+    |---|---|
+    | `--json` | Output as JSON |
+  </Accordion>
+
+  <Accordion title="driftless context link <slug>">
+    Register the current repository as a place where a topic is used. Useful when a topic is defined in one repo but relevant to others.
+
+    ```bash
+    driftless context link auth-boundaries
+    ```
+
+    No additional flags.
+  </Accordion>
+</AccordionGroup>
+
+## Using `--json` for scripting
+
+Most commands accept `--json` to return machine-readable output. This is useful for feeding context into CI scripts, custom tooling, or agent pipelines.
+
+```bash
+driftless context list --json | jq '.[].slug'
+driftless context load --files "src/auth/guard.ts" --json | jq '.topics'
+driftless sync --json | jq '.stale'
+```

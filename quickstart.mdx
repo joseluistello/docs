@@ -1,0 +1,96 @@
+---
+title: "Quickstart: set up Driftless in your repo"
+description: "Install the Driftless CLI, authenticate with an API key, initialize your repo, and add your first context topic in a few simple steps."
+---
+
+This guide walks you through installing Driftless, connecting it to your repo, and creating your first topic. By the end you'll have a live topic in the graph and your AI agents will be able to pull context before they start coding.
+
+<Steps>
+  <Step title="Install the CLI">
+    Install the Driftless CLI globally using npm:
+
+    ```bash
+    npm install -g @driftless-sh/cli
+    ```
+
+    Verify the installation:
+
+    ```bash
+    driftless --version
+    ```
+
+    You should see `CLI v0.2.1` or later.
+  </Step>
+
+  <Step title="Authenticate">
+    Log in to your Driftless account:
+
+    ```bash
+    driftless login
+    ```
+
+    This prompts you to enter your API key. If you already have a key, pass it directly with the `--key` flag to skip the prompt:
+
+    ```bash
+    driftless login --key drift_xxx
+    ```
+
+    You can generate an API key in the [dashboard](https://driftless.icu) under **Settings → API keys**.
+  </Step>
+
+  <Step title="Initialize your repo">
+    From the root of your repository, run:
+
+    ```bash
+    driftless init
+    ```
+
+    This command does three things:
+
+    - Scans your repo for structural patterns (NestJS modules, Next.js routes, and more)
+    - Uploads structural metadata to Driftless Cloud — not your source code
+    - Installs an `AGENTS.md` file so AI agents know how to pull and push context
+
+    Initialization takes a few seconds on most repos.
+  </Step>
+
+  <Step title="Add your first topic">
+    Create a topic that describes part of your codebase:
+
+    ```bash
+    driftless context add "auth-boundaries" \
+      --content "# Auth boundaries\n\n## What\nHandles JWT validation and org-scoping for all API routes." \
+      --kind code-context \
+      --pattern "src/auth/**"
+    ```
+
+    The `--pattern` flag links the topic to specific files. When those files change in a PR or push, Driftless marks the topic stale automatically.
+
+    To confirm the topic was created and see how it connects to others:
+
+    ```bash
+    driftless context graph auth-boundaries
+    ```
+  </Step>
+
+  <Step title="Check your dashboard">
+    Open [driftless.icu](https://driftless.icu) to see your repo's topic graph, context health, and any stale topics. The architecture map shows all topics color-coded by kind, with red borders on anything that has drifted from its covered code.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="CLI commands" icon="terminal" href="/cli/commands">
+    Full reference for every `driftless` command and flag.
+  </Card>
+  <Card title="Topic graph" icon="diagram-project" href="/concepts/topic-graph">
+    Learn how topics, relations, and drift detection work together.
+  </Card>
+  <Card title="GitHub App" icon="github" href="/integrations/github-app">
+    Install the GitHub App to get automatic stale detection on every PR.
+  </Card>
+  <Card title="Dashboard" icon="gauge" href="/dashboard/overview">
+    Navigate context health, the architecture map, and PR activity.
+  </Card>
+</CardGroup>

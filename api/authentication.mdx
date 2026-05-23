@@ -1,0 +1,49 @@
+---
+title: "Authenticate requests to the Driftless API"
+description: "Pass a Bearer token in the Authorization header on every Driftless API request. Generate your API key from the dashboard under Settings → API keys."
+---
+
+Every request to the Driftless API must include an `Authorization` header with a valid Bearer token. Without it, the API returns a `401 Unauthorized` response. You can obtain a token from your Driftless dashboard and use it directly in requests or store it as an environment variable for automation.
+
+## Passing your token
+
+Include the token in the `Authorization` header of every request:
+
+```bash
+curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
+  https://api.driftless.icu/api/v1/me
+```
+
+The header format is always `Authorization: Bearer <token>`, where `<token>` is the API key you generated in the dashboard.
+
+## Getting an API key
+
+<Steps>
+  <Step title="Open the dashboard">
+    Log in to your Driftless account and navigate to **Settings**.
+  </Step>
+  <Step title="Go to API keys">
+    Select **API keys** from the Settings menu.
+  </Step>
+  <Step title="Create a new key">
+    Click **New API key**, give it a descriptive name, and confirm. The key is displayed once — copy it immediately.
+  </Step>
+</Steps>
+
+<Warning>
+  API keys are displayed only once when created. Store yours securely in a password manager or secrets vault before closing the dialog.
+</Warning>
+
+## Using the environment variable
+
+For CLI usage and CI pipelines, set the `DRIFTLESS_API_KEY` environment variable instead of passing the token inline. The CLI reads this variable automatically:
+
+```bash
+export DRIFTLESS_API_KEY=your_api_key_here
+```
+
+You can also override the default API base URL if needed:
+
+```bash
+export DRIFTLESS_API_URL=https://api.driftless.icu/api/v1
+```

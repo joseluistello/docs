@@ -1,0 +1,60 @@
+---
+title: "What is Driftless? Context that stays current"
+description: "Driftless is a context and drift-awareness layer that keeps your team and AI agents in sync as your code evolves and decisions accumulate."
+---
+
+Driftless gives you a living layer of context on top of your codebase. You write topics — short, structured notes about what a module does, why a decision was made, how a runbook works — and Driftless watches your code. When the files a topic covers change, the topic is automatically flagged as stale so you always know what's out of date before you or your agents rely on it.
+
+It's built for developers who work with AI coding agents, manage complex repos, or just want architectural knowledge to survive longer than a Slack thread.
+
+## The core loop
+
+Driftless follows a five-stage loop to keep your context fresh:
+
+1. **Scan** — Driftless scans your repo and builds a structural map of your codebase (components, modules, patterns).
+2. **Observe** — It watches PRs, pushes, and code changes over time.
+3. **Contextualize** — Topics are matched to the files they cover using glob patterns and structural metadata.
+4. **Deliver** — Agents and teammates pull current context before starting work.
+5. **Sync** — When covered code changes, affected topics are flagged as stale so you can update them before pushing.
+
+## Workflows
+
+You can bring Driftless into your work in four ways:
+
+<CardGroup cols={2}>
+  <Card title="Repo" icon="code-branch" href="/concepts/topic-graph">
+    Start from an existing codebase. Driftless auto-scans NestJS and Next.js patterns, builds a component graph, and suggests topics to create.
+  </Card>
+  <Card title="Agent" icon="robot" href="/cli/agent-skill">
+    AI agents read `AGENTS.md`, pull current context before coding, and push discoveries back as new topics. Works with Claude Code, Cursor, and Codex.
+  </Card>
+  <Card title="Decision" icon="scale-balanced" href="/concepts/topic-graph">
+    Document architectural decisions as topics. They stay connected to the code they explain and outlive PR comments and Slack messages.
+  </Card>
+  <Card title="PR" icon="git-pull-request" href="/integrations/github-app">
+    When a PR touches covered code, the related topics go stale automatically. Sync before pushing to catch what drifted.
+  </Card>
+</CardGroup>
+
+## Topic kinds
+
+Every topic has a `kind` that signals its purpose. Driftless uses kind to color-code nodes in the graph and to surface the right context to agents.
+
+| Kind | What it's for |
+| --- | --- |
+| `code-context` | Describes what a module or component does and how it works |
+| `decision` | Records an architectural or product decision and its rationale |
+| `roadmap` | Tracks planned work and direction |
+| `runbook` | Step-by-step operational procedures |
+| `customer-insight` | Observations about user behavior or customer feedback |
+| `integration-note` | Details about how external services are connected |
+| `docs-note` | Notes tied to documentation or specs |
+| `operational-note` | Ongoing operational concerns, incidents, or observations |
+
+## The topic graph
+
+Topics connect to each other through typed relations like `depends_on` and `relates_to`, and through wiki-links inside topic content. In the dashboard's architecture map, nodes are color-coded by kind. A **red border** means the topic is stale — its covered code changed. A **dashed amber border** means the topic is a draft.
+
+<Note>
+  Your source code never leaves your machine. Driftless stores structural metadata and topic text only — not raw code or secrets.
+</Note>
