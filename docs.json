@@ -5,8 +5,8 @@
   "theme": "aspen",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
-    "light": "/new_logo.png",
-    "dark": "/new_logo.png",
+    "light": "/terminal-icon.png",
+    "dark": "/terminal-icon.png",
     "href": "https://driftless.icu"
   },
   "colors": {
