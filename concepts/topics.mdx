@@ -60,10 +60,7 @@ driftless context update auth-flow --remove-pattern "src/old-auth/**"
 | `decision` | Architecture decision and rationale |
 | `roadmap` | Planned changes or migration path |
 | `runbook` | Operational procedures, incident response |
-| `customer-insight` | Why something exists because of a customer need |
 | `integration-note` | How a third-party integration works |
-| `docs-note` | Supplementary documentation |
-| `operational-note` | Deployment, monitoring, or infra details |
 
 ### Status
 
@@ -89,21 +86,17 @@ Topics connect to each other through typed relations, building a semantic knowle
 
 | Relation | Meaning |
 |----------|---------|
-| `depends_on` | Topic A depends on B (e.g., auth-guard depends on jwt-service) |
+| `depends_on` | Topic A depends on B |
 | `relates_to` | General association |
 | `supersedes` | Topic B replaces A |
 | `blocks` | A cannot proceed until B is done |
 | `implements` | A is the implementation of the pattern described in B |
-| `documents` | A is documentation for B |
 | `risk_for` | A introduces risk for B |
 
 ```bash
 driftless context update auth-guard \
   --rel depends_on:jwt-service \
   --rel relates_to:role-decorator
-
-driftless context update jwt-service \
-  --rel risk_for:token-refresh
 ```
 
 ## Wiki-links
@@ -127,12 +120,6 @@ To explicitly link the current repo to a topic:
 driftless context link auth-flow
 ```
 
-To see which repos a topic spans:
-
-```bash
-driftless context get auth-flow --json | jq '.where_repos'
-```
-
 ## The knowledge graph
 
 The topic graph is explorable from CLI and dashboard:
@@ -141,4 +128,4 @@ The topic graph is explorable from CLI and dashboard:
 driftless context graph auth-flow    # BFS graph from a topic, terminal output
 ```
 
-The dashboard renders the full interactive graph with React Flow. Nodes are topics, edges are typed relations. Click any node to see its full context, anchors, and coverage.
+The dashboard renders the full interactive graph. Nodes are topics, edges are typed relations. Click any node to see its full context, anchors, and coverage.

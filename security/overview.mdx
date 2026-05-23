@@ -1,0 +1,71 @@
+---
+title: 'Security'
+description: 'How Driftless handles encryption, API keys, and data protection.'
+---
+
+## Encryption
+
+All secrets stored in Driftless are encrypted with **AES-256-GCM** before they reach the database. This includes:
+
+- API keys
+- Webhook secrets
+- GitHub App credentials
+- Model provider keys (BYOM)
+
+The encryption key is derived from environment variables and never stored in the database.
+
+<Warning>
+  Never store plaintext secrets in Driftless. The encryption layer is mandatory and applied transparently.
+</Warning>
+
+## API keys
+
+API keys are the primary authentication mechanism for the CLI and CI.
+
+- Keys are generated with a `drift_` prefix for easy identification
+- The raw key is shown **only once** at creation time
+- Keys are stored as salted hashes; the raw value cannot be recovered
+- Keys can be revoked at any time from the dashboard
+- Multiple keys per workspace are supported
+
+Create keys from the dashboard under **Settings > API Keys** or via the CLI:
+
+```bash
+driftless login
+```
+
+## Data handling
+
+| Data | Storage | Encryption |
+|---|---|---|
+| Topic content | Postgres | At rest (Supabase) |
+| API keys | Postgres (hashed) | Hashed + encrypted |
+| GitHub tokens | Postgres | AES-256-GCM |
+| Scan results | Postgres | At rest (Supabase) |
+| Source code | Never stored | N/A |
+
+Driftless **never stores** your source code. The scanner extracts metadata (endpoints, guards, services, modules) and uploads only the structural facts. File contents are never transmitted.
+
+## GitHub App permissions
+
+The GitHub App requests the minimum permissions required:
+
+| Permission | Why |
+|---|---|
+| **Contents (read)** | Fetch list of changed files per commit |
+| **Pull requests (read & write)** | Post and update context comments |
+| **Issues (read & write)** | PR comments use the Issues API |
+| **Metadata (read)** | Required by GitHub for all apps |
+
+The app never clones repositories and never reads source file contents.
+
+## Network
+
+- All traffic between CLI, dashboard, and API is HTTPS
+- API keys are sent in `x-api-key` headers, never in URL parameters
+- Webhook payloads are verified with HMAC signatures
+- The API runs on Render with encrypted environment variables
+
+## Reporting
+
+If you discover a security issue, please report it to security@driftless.icu. Do not open a public issue.

@@ -72,8 +72,6 @@ curl https://api.driftless.icu/api/v1/workspaces/acme/repos \
 
 ## Topics
 
-The API keeps the legacy route name `watchers` for compatibility. The product language is `topics`.
-
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/:slug/watchers` | List topics |
@@ -98,4 +96,3 @@ The API keeps the legacy route name `watchers` for compatibility. The product la
 | `POST` | `/workspaces/:slug/integrations` | Create or connect an integration |
 | `DELETE` | `/workspaces/:slug/integrations/:id` | Remove an integration |
 | `GET` | `/workspaces/:slug/pr-activity` | Observed pull request activity |
-

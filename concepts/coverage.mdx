@@ -68,25 +68,9 @@ Output includes:
 
 The architecture map overlay colors module nodes by coverage:
 
-- **Green** - Covered (at least one file-level or pattern-level topic)
-- **Yellow** - Partial (repo-level only)
-- **Red** - Gap (no coverage)
-- **Red pulsing** - Critical gap (high-risk, no coverage)
+- **Green** — Covered
+- **Yellow** — Partial
+- **Red** — Gap
+- **Red pulsing** — Critical gap (high-risk, no coverage)
 
 Click any node to see which topics cover it and what actions are recommended.
-
-## Health score
-
-The workspace health score in the dashboard weights coverage heavily:
-
-| Factor | Weight |
-|--------|--------|
-| Context coverage (% of files covered) | 55% |
-| Freshness (% of topics not stale) | 25% |
-| Stale ratio (stale vs. total topics) | 20% |
-
-A healthy workspace has high coverage, low staleness, and topics that are actively maintained.
-
-```bash
-driftless context doctor     # full health audit with breakdown
-```

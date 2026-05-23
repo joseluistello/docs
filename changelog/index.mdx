@@ -1,0 +1,53 @@
+---
+title: 'Changelog'
+description: 'What shipped in each version of Driftless.'
+---
+
+## CLI v0.1.12
+
+*Released 2026-05-23*
+
+- **Context add**: Create topics with `--what`, `--how`, `--pattern`, `--kind`, `--tags`, `--rel`
+- **Context update**: Modify topics with `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`
+- **Context graph**: BFS graph traversal from any topic (`--depth N`)
+- **Graph file**: Entrypoints, upstream, downstream, and contracts for a file
+- **Graph impact**: Blast radius analysis (`--direction up|down|both`)
+- **Graph coverage**: Context coverage overview
+- **Sync**: Pull team changes, stale topics, PR activity
+- **Branches**: Add, list, and remove tracked branches
+- **Doctor**: 8 health checks for API key, workspace, Git remote, skill installation
+- **install-skill**: Self-healing AGENTS.md / CLAUDE.md managed block
+- **Context doctor**: Full context health audit (staleness, coverage, orphans)
+- **Context load**: Match files to topics with coverage status
+- **Context link**: Cross-repo topic linkage
+- **Context relations**: List typed relations on a topic
+- **context add --file**: Anchor documents to a topic
+- **context update --stale --reason**: Manual staleness marking
+
+## API
+
+- 45 REST endpoints at `https://api.driftless.icu/api/v1`
+- Workspace health: coverage, staleness, orphan detection
+- Structural staleness: detects deleted endpoints, removed guards, deleted services
+- Wiki-link parsing: `[[slug]]` auto-parsed into bidirectional graph references
+- Typed relations: `depends_on`, `relates_to`, `supersedes`, `blocks`, `implements`, `risk_for`
+- Cross-repo context accumulation via `context link` and `context update`
+- Two-pass streaming scanner pipeline: O(largest file) memory, no OOM on large repos
+
+## Dashboard
+
+- Workspace ecosystem view with health metrics
+- Context wiki with full topic details, Copy for AI, and graph visualization
+- Architecture map with coverage overlays (covered, partial, gap, critical-gap)
+- PR activity feed with context matches and event timeline
+- BYOM model configuration per workspace
+- Security page with encryption details and API key management
+
+## Platform
+
+- NestJS + TypeScript + Turborepo monorepo
+- Supabase (Postgres) for all data
+- Clerk for dashboard authentication
+- aes-256-gcm encryption for all secrets
+- GitHub App for PR observation and push-driven staleness
+- CI auto-syncs docs and skill mirrors on push to main

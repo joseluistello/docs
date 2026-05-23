@@ -28,18 +28,18 @@ Feature branches are **not tracked by default**. This prevents noise because mos
 
 Beyond simple file matching, Driftless detects structural changes:
 
-- **Deleted endpoint files** - An endpoint that was extracted in a previous scan no longer exists
-- **Removed guards** - A guard that was protecting an endpoint has been removed
-- **Deleted services** - A service class no longer exists in the codebase
-- **Module restructuring** - Files moved between modules
+- **Deleted endpoint files** — An endpoint that was extracted in a previous scan no longer exists
+- **Removed guards** — A guard that was protecting an endpoint has been removed
+- **Deleted services** — A service class no longer exists in the codebase
+- **Module restructuring** — Files moved between modules
 
 These structural signals are more informative than file-level diffs because they describe *what changed architecturally*, not just *which files were touched*.
 
 ## Lifecycle
 
 ```
-stale -> agent reviews -> driftless context update topic --status reviewed -> unstale
-stale -> no repo claims it -> orphaned
+stale → agent reviews → driftless context update topic --status reviewed → unstale
+stale → no repo claims it → orphaned
 ```
 
 When a topic goes stale:
@@ -68,6 +68,6 @@ driftless context get --diff            # staleness for current local (uncommitt
     Yes. Use `driftless context update <slug> --stale --reason "..."`. This is useful when you review a topic and notice it's outdated even though the file patterns haven't been pushed yet.
   </Accordion>
   <Accordion title="What happens if I delete a topic's anchored files?">
-    The scanner detects missing files during the next scan and reports them as structural staleness. The topic stays stale until someone either updates its anchors or confirms the context is no longer relevant (at which point it can be orphaned or deleted).
+    The scanner detects missing files during the next scan and reports them as structural staleness. The topic stays stale until someone either updates its anchors or confirms the context is no longer relevant.
   </Accordion>
 </AccordionGroup>

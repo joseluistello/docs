@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
   "description": "Shared codebase memory for engineering teams and coding agents.",
-  "theme": "luma",
+  "theme": "aspen",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
     "light": "/logo.svg",
@@ -14,8 +14,15 @@
     "light": "#8aaf5b",
     "dark": "#0a0b0c"
   },
+  "background": {
+    "color": {
+      "light": "#0a0b0c",
+      "dark": "#0a0b0c"
+    }
+  },
   "appearance": {
-    "default": "dark"
+    "default": "dark",
+    "strict": true
   },
   "fonts": {
     "family": "Geist Mono"
@@ -36,80 +43,154 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
+      "label": "Dashboard",
       "href": "https://driftless.icu"
     }
   },
   "navigation": {
-    "tabs": [
+    "anchors": [
       {
-        "tab": "Docs",
+        "anchor": "Documentation",
         "icon": "book-open",
-        "groups": [
+        "tabs": [
           {
-            "group": "Get Started",
-            "icon": "rocket",
-            "pages": ["index", "quickstart"]
-          },
-          {
-            "group": "Core Concepts",
-            "icon": "network",
-            "pages": [
-              "concepts/core-loop",
-              "concepts/topics",
-              "concepts/drift",
-              "concepts/coverage"
+            "tab": "Home",
+            "icon": "home",
+            "groups": [
+              {
+                "group": "Get Started",
+                "icon": "rocket",
+                "pages": ["index", "quickstart"]
+              }
             ]
           },
           {
-            "group": "Using Driftless",
-            "icon": "terminal",
-            "pages": [
-              "cli/installation",
-              "agents/setup",
-              "integrations/github-app",
-              "dashboard/overview"
+            "tab": "Concepts",
+            "icon": "brain",
+            "groups": [
+              {
+                "group": "The Loop",
+                "icon": "repeat",
+                "pages": ["concepts/core-loop"]
+              },
+              {
+                "group": "Knowledge Layer",
+                "icon": "network",
+                "pages": ["concepts/topics", "concepts/drift", "concepts/coverage"]
+              }
             ]
-          }
-        ]
-      },
-      {
-        "tab": "Reference",
-        "icon": "braces",
-        "groups": [
-          {
-            "group": "CLI",
-            "icon": "terminal",
-            "pages": ["cli/reference"]
           },
           {
-            "group": "API",
-            "icon": "server",
-            "pages": ["api/reference"]
+            "tab": "CLI & Agents",
+            "icon": "terminal",
+            "groups": [
+              {
+                "group": "Setup",
+                "icon": "download",
+                "pages": ["cli/installation"]
+              },
+              {
+                "group": "CLI",
+                "icon": "terminal",
+                "pages": ["cli/reference"]
+              },
+              {
+                "group": "Agents",
+                "icon": "bot",
+                "pages": ["agents/setup"]
+              }
+            ]
+          },
+          {
+            "tab": "API",
+            "icon": "braces",
+            "groups": [
+              {
+                "group": "REST API",
+                "icon": "server",
+                "pages": ["api/reference"]
+              }
+            ]
+          },
+          {
+            "tab": "Integrations",
+            "icon": "plug",
+            "groups": [
+              {
+                "group": "GitHub App",
+                "icon": "github",
+                "pages": ["integrations/github-app"]
+              }
+            ]
+          },
+          {
+            "tab": "Security",
+            "icon": "shield",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "lock",
+                "pages": ["security/overview"]
+              }
+            ]
+          },
+          {
+            "tab": "Changelog",
+            "icon": "clock",
+            "groups": [
+              {
+                "group": "Release Notes",
+                "icon": "sparkles",
+                "pages": ["changelog/index"]
+              }
+            ]
           }
         ]
       }
     ]
   },
+  "contextual": {
+    "options": [
+      "copy",
+      "chatgpt",
+      "claude"
+    ]
+  },
   "footer": {
     "socials": {
-      "github": "https://github.com/driftless-sh/driftless"
+      "github": "https://github.com/driftless-sh/driftless",
+      "x": "https://x.com/driftless_sh"
     },
     "links": [
       {
         "header": "Product",
         "items": [
           { "label": "Dashboard", "href": "https://driftless.icu" },
+          { "label": "Blog", "href": "https://driftless.icu/blog" },
           { "label": "GitHub App", "href": "/integrations/github-app" }
         ]
       },
       {
         "header": "Reference",
         "items": [
-          { "label": "CLI", "href": "/cli/reference" },
-          { "label": "API", "href": "/api/reference" }
+          { "label": "CLI Reference", "href": "/cli/reference" },
+          { "label": "API Reference", "href": "/api/reference" },
+          { "label": "Agent Setup", "href": "/agents/setup" }
+        ]
+      },
+      {
+        "header": "Company",
+        "items": [
+          { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" },
+          { "label": "Security", "href": "/security/overview" }
         ]
       }
     ]
-  }
+  },
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/quickstart"
+    }
+  ]
 }

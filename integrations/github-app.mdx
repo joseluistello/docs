@@ -30,7 +30,7 @@ Install from the dashboard:
 
 On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` events:
 
-1. Fetches the list of changed files via the GitHub API (using a short-lived installation token)
+1. Fetches the list of changed files via the GitHub API
 2. Matches each file against all workspace topic patterns
 3. Posts a **sticky comment** listing matched topics with their "what" summary and links to the dashboard
 
@@ -49,11 +49,7 @@ Add custom tracked branches:
 driftless branches add staging
 ```
 
-### Installation tracking
-
-The installation ID is linked to your workspace automatically during setup by matching the GitHub organization name or existing connected repos.
-
-## PR comment format
+### PR comment format
 
 ```text
 <!-- driftless-context -->

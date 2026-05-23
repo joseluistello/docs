@@ -47,10 +47,6 @@ The CLI stores its state in `~/.driftless/config.json`:
 }
 ```
 
-- `api_key` - Your Driftless API key.
-- `api_url` - The API base URL. Defaults to `https://api.driftless.icu/api/v1` if omitted.
-- `workspace_slug` / `workspace_id` - Set automatically by `driftless init` after linking to a workspace.
-
 ## Initialize a Repo
 
 ```bash
@@ -92,10 +88,6 @@ The managed block is wrapped in comments:
 
 Running `driftless install-skill` again replaces the block contents. This means you can update the skill instructions without manual editing. Re-run the command and the block refreshes to the latest version.
 
-### Auto install via `init`
-
-`driftless init` calls `install-skill` automatically, so there's no separate step needed when setting up a new repo.
-
 ### What agents learn
 
 Once the skill is installed, agents that read `AGENTS.md` or `CLAUDE.md` will follow these workflows:
@@ -106,5 +98,3 @@ Once the skill is installed, agents that read `AGENTS.md` or `CLAUDE.md` will fo
 | **Load context before editing** | Agents run `driftless context load --files "a,b"` before touching any files. |
 | **Check graph** | Agents run `driftless graph impact --files "a,b"` to understand blast radius before changing code. |
 | **Persist discoveries** | Agents run `driftless context update <slug> --decision "..." --gotcha "..."` to append what they learn. |
-
-The skill fetches its instructions from the `driftless-sh/driftless-skill` mirror on GitHub. The source of truth for the skill lives in the Driftless monorepo under `skills/driftless/`.
