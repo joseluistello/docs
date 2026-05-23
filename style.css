@@ -1,50 +1,102 @@
-/* ─── Navbar: center tabs like mem0 ── */
-nav-tabs {
-  justify-content: center !important;
-  flex: 1 !important;
+/* ═══════════════════════════════════════════
+   Two-row navbar: logo+actions / tabs
+   ═══════════════════════════════════════════ */
+
+#navbar {
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  grid-template-columns: auto 1fr auto !important;
+  align-items: center !important;
+  gap: 0 !important;
+  padding: 0.75rem 1.5rem !important;
 }
 
-nav-tabs-item {
-  padding: 0 1rem !important;
-}
-
-/* ─── "Driftless" text next to logo ─── */
+/* Row 1 — logo (left) */
 nav-logo {
+  grid-row: 1 !important;
+  grid-column: 1 !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
 }
 
 nav-logo img {
-  margin-right: 0 !important;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 nav-logo::after {
   content: "Driftless" !important;
+  display: inline-block !important;
   color: #e8e8e3 !important;
-  font-family: "Geist Mono", monospace !important;
+  font-family: "Geist Mono", ui-monospace, monospace !important;
   font-weight: 600 !important;
   font-size: 1.05rem !important;
   letter-spacing: -0.02em !important;
   white-space: nowrap !important;
 }
 
-/* ─── Tighten navbar ─── */
-#navbar {
-  padding-left: 1.5rem !important;
-  padding-right: 1.5rem !important;
+/* Row 1 — actions (right) */
+.topbar-right-container {
+  grid-row: 1 !important;
+  grid-column: 3 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
 }
 
-/* ─── Minimal footer ─── */
+/* Row 2 — tabs (centered, full width) */
+nav-tabs {
+  grid-row: 2 !important;
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  border-top: 1px solid #23252a !important;
+  margin-top: 0.5rem !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+nav-tabs-item {
+  padding: 0.4rem 1rem !important;
+  font-size: 0.9rem !important;
+  color: #7a7d77 !important;
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+}
+
+nav-tabs-item:hover {
+  color: #e8e8e3 !important;
+}
+
+nav-tabs-item[data-active] {
+  color: #b8e87a !important;
+  font-weight: 600 !important;
+}
+
+/* Hide the blog link from navbar (keep in footer) */
+.navbar-link[href*="blog"] {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════
+   Minimal footer
+   ═══════════════════════════════════════════ */
+
 footer {
-  padding-top: 2rem !important;
-  padding-bottom: 2rem !important;
+  padding: 1.5rem 0 !important;
   border-top: 1px solid #23252a !important;
 }
 
-footer .grid {
-  grid-template-columns: 1fr !important;
-  text-align: center !important;
+footer > div {
+  max-width: 48rem !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
 footer h5 {
@@ -53,20 +105,15 @@ footer h5 {
 
 footer ul {
   display: flex !important;
-  justify-content: center !important;
-  gap: 1.5rem !important;
+  gap: 1.25rem !important;
   list-style: none !important;
   padding: 0 !important;
   margin: 0 !important;
 }
 
-footer ul li {
-  margin: 0 !important;
-}
-
 footer ul li a {
   color: #7a7d77 !important;
-  font-size: 0.85rem !important;
+  font-size: 0.8rem !important;
   text-decoration: none !important;
 }
 
@@ -76,10 +123,6 @@ footer ul li a:hover {
 
 footer .ld-foot-bottom,
 footer > div > div:last-child {
-  margin-top: 1.5rem !important;
-  padding-top: 1rem !important;
-  border-top: 1px solid #23252a !important;
-  text-align: center !important;
-  font-size: 0.8rem !important;
+  font-size: 0.75rem !important;
   color: #4a4d49 !important;
 }

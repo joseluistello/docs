@@ -38,9 +38,6 @@
     }
   },
   "navbar": {
-    "links": [
-      { "label": "Blog", "href": "https://driftless.icu/blog" }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
