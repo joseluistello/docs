@@ -47,50 +47,31 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
-        "icon": "book-open",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": ["index", "quickstart"]
-          },
-          {
-            "group": "Concepts",
-            "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
-          },
-          {
-            "group": "CLI & Agents",
-            "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync", "agents/setup"]
-          }
-        ]
+        "tab": "Welcome",
+        "pages": ["index", "quickstart"]
+      },
+      {
+        "tab": "Concepts",
+        "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
+      },
+      {
+        "tab": "CLI & Agents",
+        "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync", "agents/setup"]
       },
       {
         "tab": "API Reference",
-        "icon": "braces",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": ["api/overview"]
-          },
-          {
-            "group": "Endpoints",
-            "pages": ["api/workspaces", "api/repos", "api/topics", "api/integrations"]
-          }
-        ]
+        "pages": ["api/overview", "api/workspaces", "api/repos", "api/topics", "api/integrations"]
       },
       {
         "tab": "Integrations",
-        "icon": "plug",
         "pages": ["integrations/github-app"]
       },
       {
         "tab": "Security",
-        "icon": "shield",
         "pages": ["security/overview"]
       },
       {
         "tab": "Changelog",
-        "icon": "list",
         "pages": ["changelog/index"]
       }
     ]
