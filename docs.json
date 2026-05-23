@@ -3,10 +3,15 @@
   "name": "Driftless",
   "theme": "luma",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
+  "logo": {
+    "light": "/logo.png",
+    "dark": "/logo.png",
+    "href": "https://driftless.icu"
+  },
   "colors": {
-    "primary": "#76a306",
-    "light": "#547304",
-    "dark": "#060704"
+    "primary": "#b8e87a",
+    "light": "#8aaf5b",
+    "dark": "#0a0b0c"
   },
   "font": {
     "headings": { "family": "Geist Mono" },
