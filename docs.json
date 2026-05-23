@@ -37,6 +37,9 @@
     }
   },
   "navbar": {
+    "links": [
+      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" }
+    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
@@ -44,146 +47,59 @@
     }
   },
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Changelog",
-          "icon": "list",
-          "href": "/changelog/index"
-        }
-      ]
-    },
-    "anchors": [
+    "dropdowns": [
       {
-        "anchor": "Documentation",
+        "dropdown": "Documentation",
         "icon": "book-open",
-        "tabs": [
-          {
-            "tab": "Home",
-            "icon": "home",
-            "groups": [
-              {
-                "group": "Introduction",
-                "icon": "book-open",
-                "pages": ["index"]
-              },
-              {
-                "group": "Quickstart",
-                "icon": "rocket",
-                "pages": ["quickstart"]
-              }
-            ]
-          },
-          {
-            "tab": "Concepts",
-            "icon": "brain",
-            "groups": [
-              {
-                "group": "The Driftless Loop",
-                "icon": "repeat",
-                "pages": ["concepts/core-loop"]
-              },
-              {
-                "group": "Topics & Knowledge Graph",
-                "icon": "network",
-                "pages": ["concepts/topics"]
-              },
-              {
-                "group": "Drift Detection",
-                "icon": "radar",
-                "pages": ["concepts/drift"]
-              },
-              {
-                "group": "Context Coverage",
-                "icon": "scan-search",
-                "pages": ["concepts/coverage"]
-              }
-            ]
-          },
-          {
-            "tab": "CLI & Agents",
-            "icon": "terminal",
-            "groups": [
-              {
-                "group": "CLI Setup",
-                "icon": "download",
-                "pages": ["cli/setup"]
-              },
-              {
-                "group": "Context Commands",
-                "icon": "notebook-tabs",
-                "pages": ["cli/context"]
-              },
-              {
-                "group": "Graph & Impact",
-                "icon": "git-graph",
-                "pages": ["cli/graph"]
-              },
-              {
-                "group": "Sync & Branches",
-                "icon": "refresh-cw",
-                "pages": ["cli/sync"]
-              },
-              {
-                "group": "Agent Setup",
-                "icon": "bot",
-                "pages": ["agents/setup"]
-              }
-            ]
-          },
-          {
-            "tab": "API",
-            "icon": "braces",
-            "groups": [
-              {
-                "group": "Overview",
-                "icon": "book-marked",
-                "pages": ["api/overview"]
-              },
-              {
-                "group": "Workspaces",
-                "icon": "building",
-                "pages": ["api/workspaces"]
-              },
-              {
-                "group": "Repositories & Scans",
-                "icon": "folder-git",
-                "pages": ["api/repos"]
-              },
-              {
-                "group": "Topics",
-                "icon": "notebook-tabs",
-                "pages": ["api/topics"]
-              },
-              {
-                "group": "Integrations & PR Activity",
-                "icon": "plug",
-                "pages": ["api/integrations"]
-              }
-            ]
-          },
-          {
-            "tab": "Integrations",
-            "icon": "plug",
-            "groups": [
-              {
-                "group": "GitHub App",
-                "icon": "github",
-                "pages": ["integrations/github-app"]
-              }
-            ]
-          },
-          {
-            "tab": "Security",
-            "icon": "shield",
-            "groups": [
-              {
-                "group": "Overview",
-                "icon": "lock",
-                "pages": ["security/overview"]
-              }
-            ]
-          }
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "dropdown": "Concepts",
+        "icon": "brain",
+        "pages": [
+          "concepts/core-loop",
+          "concepts/topics",
+          "concepts/drift",
+          "concepts/coverage"
+        ]
+      },
+      {
+        "dropdown": "CLI & Agents",
+        "icon": "terminal",
+        "pages": [
+          "cli/setup",
+          "cli/context",
+          "cli/graph",
+          "cli/sync",
+          "agents/setup"
+        ]
+      },
+      {
+        "dropdown": "API",
+        "icon": "braces",
+        "pages": [
+          "api/overview",
+          "api/workspaces",
+          "api/repos",
+          "api/topics",
+          "api/integrations"
+        ]
+      },
+      {
+        "dropdown": "Integrations",
+        "icon": "plug",
+        "pages": [
+          "integrations/github-app"
+        ]
+      },
+      {
+        "dropdown": "Security",
+        "icon": "shield",
+        "pages": [
+          "security/overview"
         ]
       }
     ]
