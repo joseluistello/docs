@@ -5,57 +5,58 @@ description: 'Teach coding agents to sync, load, and persist Driftless context.'
 
 Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing, inspect impact, and persist durable discoveries.
 
-## Install
+## Auto-install via init
+
+`driftless init` runs the agent setup automatically. No separate step needed when setting up a new repo.
+
+If you need to re-run it later (e.g., to update the skill instructions after a CLI upgrade):
 
 ```bash
 driftless install-skill
 ```
 
-`driftless init` runs this automatically for new repos.
-
-## Files written
+## What gets installed
 
 | File | Purpose |
 |---|---|
-| `.driftless/skill.md` | Dogfood copy of the Driftless agent workflow |
-| `AGENTS.md` | Agent instructions used by Codex and other agentic tools |
-| `CLAUDE.md` | Agent instructions used by Claude Code |
+| `AGENTS.md` | Agent instructions for Codex, Cursor, and other agentic tools |
+| `CLAUDE.md` | Agent instructions for Claude Code |
+| `.driftless/skill.md` | Full Driftless skill — the canonical reference for agents |
 
-The managed block is wrapped in comments:
+The managed block inside `AGENTS.md` and `CLAUDE.md` is wrapped in comments:
 
 ```text
 <!-- driftless:start -->
-...
+... driftless context instructions ...
 <!-- driftless:end -->
 ```
 
-Re-run `driftless install-skill` to refresh only the managed Driftless block.
-
-## Expected agent workflow
+The Driftless block teaches agents this workflow:
 
 <Steps>
+  <Step title="Detect situation">
+    Agent runs `driftless doctor` to check API key, workspace, Git remote, and skill installation.
+  </Step>
+
   <Step title="Sync on session start">
     ```bash
     driftless sync
     ```
-
-    The agent sees stale topics, changed context, PR activity, and suggested topics before touching files.
+    Agent sees stale topics, changed context, PR activity, and suggested topics before touching files.
   </Step>
 
   <Step title="Load context before editing">
     ```bash
     driftless context load --files "src/auth/guard.ts,src/users/service.ts"
     ```
-
-    The agent gets matching topics, coverage, and recommended actions for the files it is about to modify.
+    Agent gets matching topics, coverage, and recommended actions for the files it is about to modify.
   </Step>
 
   <Step title="Check blast radius">
     ```bash
     driftless graph impact --files "src/auth/guard.ts,src/users/service.ts"
     ```
-
-    The graph shows upstream and downstream components affected by the change.
+    Graph shows upstream and downstream components affected by the change.
   </Step>
 
   <Step title="Persist discoveries">
@@ -64,21 +65,26 @@ Re-run `driftless install-skill` to refresh only the managed Driftless block.
       --decision "WorkspaceGuard is global; use @Public() only for explicit public routes" \
       --gotcha "Do not assume routes are public when guards are composed"
     ```
-
-    Durable context goes back to Cloud so the next session does not start from zero.
+    Durable context goes back to Cloud so the next session doesn't start from zero.
   </Step>
 </Steps>
+
+## Self-healing
+
+Running `driftless install-skill` again replaces the managed block contents without touching anything outside it. This means you can update the skill instructions without manual editing — re-run the command and the block refreshes to the latest version.
 
 ## What to write back
 
 Use Driftless for durable architecture knowledge:
 
-- Decisions that explain why the code works this way
-- Gotchas that would cause a future agent to make a bad edit
-- Invariants that must stay true across refactors
-- New or corrected anchors after code moves
-- Cross-repo relationships discovered while working
+- **Decisions** — why the code works this way
+- **Gotchas** — traps that would cause a future agent to make a bad edit
+- **Invariants** — rules that must stay true across refactors
+- **Anchors** — new or corrected file patterns after code moves
+- **Relations** — cross-repo dependencies discovered while working
+
+## What NOT to store
 
 <Warning>
-  Do not store secrets, credentials, raw customer data, or temporary scratch notes in context topics.
+  Never put secrets, credentials, raw customer data, API keys, or temporary scratch notes in context topics.
 </Warning>
