@@ -92,31 +92,14 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/driftless-sh/driftless",
-      "x": "https://x.com/driftless_sh"
+      "github": "https://github.com/driftless-sh/driftless"
     },
     "links": [
       {
-        "header": "Product",
+        "header": "Driftless",
         "items": [
           { "label": "Dashboard", "href": "https://driftless.icu" },
-          { "label": "Blog", "href": "https://driftless.icu/blog" },
-          { "label": "GitHub App", "href": "/integrations/github-app" }
-        ]
-      },
-      {
-        "header": "Reference",
-        "items": [
-          { "label": "CLI Reference", "href": "/cli/setup" },
-          { "label": "API Reference", "href": "/api/overview" },
-          { "label": "Agent Setup", "href": "/agents/setup" }
-        ]
-      },
-      {
-        "header": "Company",
-        "items": [
-          { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" },
-          { "label": "Security", "href": "/security/overview" }
+          { "label": "Blog", "href": "https://driftless.icu/blog" }
         ]
       }
     ]
