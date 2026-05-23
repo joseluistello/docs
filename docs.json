@@ -25,7 +25,8 @@
     "strict": true
   },
   "fonts": {
-    "family": "Geist Mono"
+    "family": "Geist Mono",
+    "weight": 400
   },
   "icons": {
     "library": "lucide"
@@ -38,7 +39,8 @@
   },
   "navbar": {
     "links": [
-      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" }
+      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" },
+      { "label": "Blog", "href": "https://driftless.icu/blog" }
     ],
     "primary": {
       "type": "button",
@@ -47,60 +49,53 @@
     }
   },
   "navigation": {
-    "dropdowns": [
+    "tabs": [
       {
-        "dropdown": "Documentation",
+        "tab": "Documentation",
         "icon": "book-open",
-        "pages": [
-          "index",
-          "quickstart"
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Concepts",
+            "pages": ["concepts/core-loop", "concepts/topics", "concepts/drift", "concepts/coverage"]
+          },
+          {
+            "group": "CLI & Agents",
+            "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync", "agents/setup"]
+          }
         ]
       },
       {
-        "dropdown": "Concepts",
-        "icon": "brain",
-        "pages": [
-          "concepts/core-loop",
-          "concepts/topics",
-          "concepts/drift",
-          "concepts/coverage"
-        ]
-      },
-      {
-        "dropdown": "CLI & Agents",
-        "icon": "terminal",
-        "pages": [
-          "cli/setup",
-          "cli/context",
-          "cli/graph",
-          "cli/sync",
-          "agents/setup"
-        ]
-      },
-      {
-        "dropdown": "API",
+        "tab": "API Reference",
         "icon": "braces",
-        "pages": [
-          "api/overview",
-          "api/workspaces",
-          "api/repos",
-          "api/topics",
-          "api/integrations"
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api/overview"]
+          },
+          {
+            "group": "Endpoints",
+            "pages": ["api/workspaces", "api/repos", "api/topics", "api/integrations"]
+          }
         ]
       },
       {
-        "dropdown": "Integrations",
+        "tab": "Integrations",
         "icon": "plug",
-        "pages": [
-          "integrations/github-app"
-        ]
+        "pages": ["integrations/github-app"]
       },
       {
-        "dropdown": "Security",
+        "tab": "Security",
         "icon": "shield",
-        "pages": [
-          "security/overview"
-        ]
+        "pages": ["security/overview"]
+      },
+      {
+        "tab": "Changelog",
+        "icon": "list",
+        "pages": ["changelog/index"]
       }
     ]
   },
