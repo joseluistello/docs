@@ -1,47 +1,84 @@
 ---
-title: "PR Activity: how Driftless surfaces PR context"
-description: "See how Driftless matches open PRs to topics and posts a sticky nudge comment. Each row shows the full chain: diff, matched topics, and nudge posted."
+title: 'PR Activity'
+description: 'PR observation log — every PR the GitHub App has seen.'
 ---
 
-The PR Activity panel shows you every pull request Driftless has observed and what happened when it did. When a PR is opened or updated, Driftless compares the diff against your topic graph, matches changed files to the topics that cover them, and posts a short comment on the PR to surface that context for the author and reviewers.
+The PR Activity panel logs every pull request observed by the GitHub App. Each row shows the full chain: files changed, topics matched, and whether a context comment was posted.
 
-## The observation chain
+## PR Table
 
-Each row in the PR Activity panel represents one observed PR and shows the full chain of what Driftless did:
+| Column | Description |
+|---|---|
+| **PR #** | Pull request number with link to GitHub |
+| **Title** | PR title |
+| **Author** | GitHub username |
+| **Branch** | Source branch name |
+| **Files touched** | Number of changed files |
+| **Topics matched** | Number of topics whose patterns overlap with changed files |
+| **Comment status** | `posted`, `no_match`, or `error` |
+| **Risk** | Inferred risk level based on matched topics |
+| **Observed date** | When the webhook was received |
 
-```
-DIFF → TOPICS MATCHED → NUDGE POSTED
-```
+## Filters
 
-- **DIFF** — the set of files changed in the PR
-- **TOPICS MATCHED** — the topics whose file patterns overlap with those changes
-- **NUDGE POSTED** — whether Driftless successfully posted a context comment on the PR
+| Filter | Options |
+|---|---|
+| **Status** | Dropdown: `all`, `posted`, `no_match`, `error` |
+| **Branch** | Free-text branch name filter |
 
-Click any row to see which specific topics were matched and a preview of the comment that was posted.
+## Detail Panel
 
-## The PR nudge comment
+Click any row to open the detail panel, which shows:
 
-When Driftless matches a PR to one or more topics, it posts a sticky comment on the PR. The comment surfaces the relevant context inline so reviewers don't need to leave GitHub to understand what the code does.
+- **Matched topics** — each with a link to the topic detail page
+- **Files touched** — complete list of changed files
+- **GitHub PR link** — direct link to the pull request on GitHub
 
-Here is an example of what the comment looks like:
+## KPI Summary
 
-```text
-<!-- driftless-context -->
-### Driftless · context for this PR
-auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
-how: 2 endpoints, 1 service, 1 guard
-decisions: Multi-tenant, uses org_id from token
-gotchas: All endpoints require auth — do not add @Public() without review
-```
+The top of the page shows aggregate counts:
 
-A few things to know about how Driftless posts this comment:
+| KPI | Description |
+|---|---|
+| **Observed** | Total PRs received |
+| **Matched** | PRs where at least one topic matched |
+| **Posted** | PRs where a context comment was successfully posted |
+| **Updated** | PRs where an existing comment was updated |
+| **No-match** | PRs with zero topic matches |
+| **Failed** | PRs where comment posting errored |
 
-- **It never edits context.** The comment is read-only. Driftless will not modify any topic based on what it sees in the PR.
-- **It never blocks the PR.** Driftless does not add required checks or status gates. The nudge is purely informational.
-- **It updates in place.** If the PR diff changes (new commits pushed), Driftless updates the existing comment rather than posting a new one.
+## PR Flow Diagram
 
-If a PR touches multiple topics, each topic gets its own block in the same comment.
+The canonical flow from webhook to comment:
+
+<Steps>
+  <Step title="GitHub App receives webhook">
+    Triggered on `pull_request.opened`, `synchronize`, `reopened`, or `ready_for_review`.
+  </Step>
+  <Step title="API resolves workspace">
+    The installation ID from the webhook is mapped to the correct workspace.
+  </Step>
+  <Step title="Fetch PR files">
+    Driftless fetches the list of changed files via the GitHub API using a short-lived installation token.
+  </Step>
+  <Step title="Match files against topics">
+    Each changed file is checked against every topic's file patterns and `where_files`.
+  </Step>
+  <Step title="Post or update sticky comment">
+    Matched topics are posted as a single comment on the PR. If a comment already exists (identified by the `<!-- driftless-context -->` marker), it's updated in place rather than re-posted.
+  </Step>
+</Steps>
+
+## Status details
+
+### No-match
+
+No topic patterns matched the changed files. The PR touches areas with no documented context. Consider creating a topic for those files.
+
+### Error
+
+The comment could not be posted. Common causes: GitHub App not installed on the repo, missing permissions, API rate limiting, or temporary GitHub outage.
 
 <Note>
-  Requires the GitHub App. The PR Activity panel is empty until the first observed PR. See the [GitHub App integration](/integrations/github-app) guide to install and connect your repos.
+  Requires the GitHub App. The PR Activity panel is empty until the first observed PR. See [GitHub App Integration](/integrations/github-app) to install and connect.
 </Note>

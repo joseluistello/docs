@@ -9,18 +9,16 @@
     "dark": "#060704"
   },
   "font": {
-    "headings": {
-      "family": "Geist Mono"
-    },
-    "body": {
-      "family": "Geist Mono"
-    }
+    "headings": { "family": "Geist Mono" },
+    "body": { "family": "Geist Mono" }
   },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/driftless-sh/driftless-skill"
-    }
+  "topbarLinks": [
+    { "name": "Dashboard", "url": "https://driftless.icu" },
+    { "name": "GitHub", "url": "https://github.com/driftless-sh/driftless" }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://driftless.icu"
   },
   "navigation": {
     "tabs": [
@@ -29,48 +27,63 @@
         "groups": [
           {
             "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart"
-            ]
+            "pages": ["index", "quickstart"]
           },
           {
             "group": "Core Concepts",
             "pages": [
+              "concepts/overview",
+              "concepts/core-loop",
+              "concepts/architecture",
               "concepts/topic-graph",
               "concepts/drift-detection",
-              "concepts/architecture"
+              "concepts/context-coverage"
             ]
           },
           {
-            "group": "CLI & Agents",
+            "group": "CLI",
             "pages": [
               "cli/installation",
-              "cli/commands",
-              "cli/agent-skill"
+              "cli/setup",
+              "cli/context",
+              "cli/graph",
+              "cli/sync",
+              "cli/reference"
+            ]
+          },
+          {
+            "group": "Agents",
+            "pages": [
+              "agents/overview",
+              "agents/setup",
+              "agents/workflow",
+              "agents/graph"
             ]
           },
           {
             "group": "Dashboard",
             "pages": [
               "dashboard/overview",
+              "dashboard/ecosystem",
               "dashboard/context",
+              "dashboard/architecture-map",
               "dashboard/pr-activity",
-              "dashboard/architecture-map"
+              "dashboard/settings"
             ]
           },
           {
             "group": "Integrations",
             "pages": [
               "integrations/github-app",
-              "integrations/api-keys"
+              "integrations/ci-cd"
             ]
           },
           {
             "group": "Security",
             "pages": [
               "security/data-storage",
-              "security/auth"
+              "security/auth",
+              "security/encryption"
             ]
           }
         ]
@@ -80,21 +93,27 @@
         "groups": [
           {
             "group": "Overview",
+            "pages": ["api/overview", "api/authentication"]
+          },
+          {
+            "group": "Resources",
             "pages": [
-              "api/overview",
-              "api/authentication"
+              "api/workspaces",
+              "api/repos",
+              "api/topics",
+              "api/graph",
+              "api/webhooks"
             ]
           },
           {
-            "group": "Endpoints",
-            "pages": [
-              "api/workspaces",
-              "api/topics",
-              "api/context"
-            ]
+            "group": "Reference",
+            "pages": ["api/reference"]
           }
         ]
       }
     ]
+  },
+  "footerSocials": {
+    "github": "https://github.com/driftless-sh/driftless"
   }
 }

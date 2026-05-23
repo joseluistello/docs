@@ -1,37 +1,97 @@
 ---
-title: "Driftless REST API overview: base URL and endpoints"
-description: "The Driftless REST API provides programmatic access to workspace identity and context topics. All requests require Bearer token auth."
+title: 'API Overview'
+description: 'Base URL, authentication, error handling, pagination, and health check for the Driftless API.'
 ---
 
-The Driftless REST API gives you programmatic access to your workspace identity and context topics. You can use it to build custom tooling, integrate Driftless into CI pipelines, or fetch context data outside of the CLI. All endpoints are served over HTTPS from a single base URL.
+The Driftless API is a RESTful JSON API.
 
 **Base URL:** `https://api.driftless.icu/api/v1`
 
-Every request must include a valid `Authorization: Bearer <token>` header. See [Authentication](/api/authentication) for details on obtaining and using tokens.
+## Conventions
 
-## Workspace shorthand
+All request and response bodies are JSON. Every response includes `Content-Type: application/json`.
 
-Throughout the API, the `_` segment in a path (for example, `/workspaces/_/watchers`) is a shorthand that automatically resolves to the authenticated user's workspace. You do not need to supply a workspace ID explicitly.
+### Standard Error Response
 
-## Available endpoints
+```json
+{
+  "statusCode": 404,
+  "message": "Workspace not found",
+  "request_id": "req_abc123",
+  "retryable": false,
+  "endpoint": "GET /api/v1/workspaces/my-workspace"
+}
+```
 
-<CardGroup cols={3}>
-  <Card title="GET /me" icon="user" href="/api/workspaces">
-    Returns your workspace identity — workspace ID, slug, and associated user details.
-  </Card>
-  <Card title="GET /watchers" icon="list" href="/api/topics">
-    Lists all context topics in your workspace, with optional pagination via a `limit` query parameter.
-  </Card>
-  <Card title="Context delivery" icon="file-search" href="/api/context">
-    Fetch topics matching a set of files to load relevant context for your editing session.
-  </Card>
-</CardGroup>
+| Field | Description |
+| --- | --- |
+| `statusCode` | HTTP status code |
+| `message` | Human-readable description |
+| `request_id` | Correlation ID for tracing |
+| `retryable` | `true` for 5xx errors, `false` for 4xx |
+| `endpoint` | The method and path that was called |
 
-## Quick example
+### Pagination
 
-The following request verifies your credentials and returns your workspace identity:
+Endpoints that return lists support cursor or offset pagination:
+
+```
+?limit=50&offset=0
+```
+
+- `limit` — Max items per page (varies by endpoint, typically 50)
+- `offset` — Number of items to skip
+
+### Rate Limiting
+
+| Tier | Limit | Scope |
+| --- | --- | --- |
+| Webhook | 100 req/min | Per IP |
+| Public | 30 req/min | Per IP |
+| Authenticated | 200 req/min | Per API key or token |
+
+Rate limit headers are included on every response:
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+
+### Correlation
+
+Send an `x-correlation-id` header with your requests to trace them through logs. If omitted, one is auto-generated and returned in the response.
 
 ```bash
-curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
-  https://api.driftless.icu/api/v1/me
+curl -H "X-API-Key: drift_xxx" \
+     -H "x-correlation-id: my-trace-001" \
+     https://api.driftless.icu/api/v1/me
+```
+
+## Health Check
+
+```bash
+curl https://api.driftless.icu/health
+# or
+curl https://api.driftless.icu/api/v1/health
+```
+
+```json
+{
+  "status": "ok",
+  "uptime": 123456,
+  "timestamp": "2025-01-01T00:00:00.000Z"
+}
+```
+
+## Version
+
+```bash
+curl https://api.driftless.icu/api/v1/version
+```
+
+```json
+{
+  "version": "0.1.0",
+  "commit": "abc1234",
+  "branch": "main",
+  "nodeVersion": "20.11.0"
+}
 ```

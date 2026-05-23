@@ -1,65 +1,40 @@
 ---
-title: "Dashboard overview: workspace health at a glance"
-description: "See context score, connected repos, coverage, and stale topics at a glance. The setup checklist guides you to install the GitHub App and run init."
+title: 'Dashboard Tour'
+description: 'Overview of the Driftless Dashboard at driftless.icu'
 ---
 
-The dashboard overview is your workspace's control room. It gives you an at-a-glance summary of context health across every connected repo, tracks how fresh your baseline is, and walks new workspaces through the steps needed to get fully operational.
+The Dashboard is the visual interface for workspace management at [driftless.icu](https://driftless.icu). It is not required — the CLI is fully functional as a standalone tool — but it provides visual context, team-wide visibility, and point-and-click management of your entire ecosystem.
 
-## Workspace health metrics
+## Authentication
 
-The top section of the overview displays six key indicators for your workspace:
+The dashboard is protected by **Clerk** authentication. Sign in with your organization account. Your workspace is automatically resolved from your Clerk organization membership.
 
-| Metric | What it shows |
+## Navigation
+
+The sidebar provides access to every section of the dashboard:
+
+| Section | Pages |
 |---|---|
-| **Context score** | A 0–100 composite of freshness, coverage, and source quality across all topics |
-| **Connected repos** | The number of repositories linked to your workspace |
-| **Topics count** | Total topics across all repos |
-| **Coverage** | Percentage of modules that have at least one topic assigned |
-| **Stale context** | Number of topics flagged as drifted or out of date |
-| **Baseline freshness** | How recently the structural baseline for your repos was last updated |
-
-These metrics update after each scan, push event, or manual topic edit.
-
-## Setup checklist
-
-When you first create a workspace, the overview shows a checklist that guides you through the three steps required before Driftless can start observing your code:
-
-<Steps>
-  <Step title="Install the GitHub App">
-    Connect Driftless to your GitHub organization so it can observe PRs and pushes. See the [GitHub App integration](/integrations/github-app) for installation steps.
-  </Step>
-  <Step title="Run smart init">
-    From your repo, run `driftless init` to upload your structural baseline and generate initial topic suggestions.
-
-    ```bash
-    driftless init
-    ```
-  </Step>
-  <Step title="Invite teammates">
-    Add collaborators to your workspace from **Settings → Members** so they can view and edit context.
-  </Step>
-</Steps>
-
-The checklist disappears once all three steps are complete.
-
-## PR observation summary and context health
-
-The bottom half of the overview is split into two panels:
-
-**PR observation summary** — shows how many PRs have been observed in the current period, how many triggered topic nudges, and which repos are most active.
-
-**Context health by repo** — a per-repo breakdown of freshness, topic source (auto-generated vs. manually written), and coverage percentage. Use this panel to spot repos that are falling behind so you can prioritize them.
+| **Control** | Ecosystem — workspace health, repos, setup checklist |
+| **Repo Context** | Context browser, Topic Graph, PR Activity, Architecture, Activity log |
+| **Integration** | Agents & CLI setup, Settings |
 
 ## Explore the dashboard
 
 <CardGroup cols={2}>
-  <Card title="Context panel" icon="file-lines" href="/dashboard/context">
-    Browse, filter, and inspect every topic in your workspace.
+  <Card title="Ecosystem" icon="house" href="/dashboard/ecosystem">
+    Workspace health score, connected repos, setup checklist, and context integrity KPIs.
+  </Card>
+  <Card title="Context Browser" icon="file-lines" href="/dashboard/context">
+    Browse, search, filter, and create context topics for every repo in your workspace.
+  </Card>
+  <Card title="Architecture Map" icon="diagram-project" href="/dashboard/architecture-map">
+    Interactive module-level graph with coverage overlay and component detail panels.
   </Card>
   <Card title="PR Activity" icon="code-pull-request" href="/dashboard/pr-activity">
-    See how Driftless surfaces context on open pull requests.
+    Every PR observed by the GitHub App, with matched topics and nudge comment history.
   </Card>
-  <Card title="Architecture map" icon="diagram-project" href="/dashboard/architecture-map">
-    Visualize module coverage and relationships across your repos.
+  <Card title="Settings" icon="gear" href="/dashboard/settings">
+    GitHub integration, members, API keys, and model configuration.
   </Card>
 </CardGroup>

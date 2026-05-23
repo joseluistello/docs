@@ -1,0 +1,72 @@
+---
+title: 'Code Graph for Agents'
+description: 'Deterministic blast radius and guard checking before editing code.'
+---
+
+Every agent should check the blast radius of a file before editing it. The graph command gives you a deterministic view of entrypoints, guards, and dependencies — no LLM involved.
+
+## Checking a file's context
+
+```bash
+driftless graph file src/auth/guard.ts
+```
+
+Example output:
+
+```text
+Entrypoints:
+  POST /api/v1/auth/login      → AuthController.login      (guards: AuthGuard)
+  GET  /api/v1/auth/me         → AuthController.me          (guards: AuthGuard)
+  POST /api/v1/auth/refresh    → AuthController.refresh     (guards: [no auth detected — verify])
+
+Global guards (APP_GUARD):  WorkspaceGuard
+
+Upstream (consumers):
+  apps/api/src/app.module.ts
+  apps/api/src/auth/auth.module.ts
+
+Downstream (dependencies):
+  libs/db/src/entities/user.entity.ts
+  libs/encryption/src/encryption.service.ts
+```
+
+## Guard checking
+
+The graph surfaces every guard on every entrypoint. If an entrypoint shows no guards, the output includes `[no auth detected — verify]`. Never assume a route is public — composed decorators, guard hierarchies, and module-level configurations can hide auth. File an issue or verify manually before treating an unguarded endpoint as public.
+
+## Blast radius
+
+```bash
+driftless graph impact --files "src/auth/guard.ts,src/auth/service.ts"
+```
+
+Returns what can break if those files change:
+
+| Direction | Shows |
+|---|---|
+| **Upstream** | Modules that import or depend on the changed files |
+| **Downstream** | Modules that the changed files depend on |
+| **Both** | Full dependency tree in both directions |
+
+## Graph data source
+
+Graph data comes from deterministic CTE queries on the `component_relations` table in Postgres. No LLM is involved in generating graph facts — the data is purely structural, extracted by the scanner from AST analysis.
+
+## Coverage overlay
+
+```bash
+driftless graph coverage
+```
+
+Shows which modules are covered by at least one topic and which have no context. Use this to identify high-risk areas before making changes.
+
+| Coverage state | Meaning |
+|---|---|
+| **Covered** | At least one up-to-date topic exists |
+| **Partial** | A topic exists but is stale or only covers some files |
+| **Gap** | No topic assigned |
+| **Critical gap** | High-traffic module with no coverage |
+
+<Warning>
+  Editing a file in a module with `critical gap` coverage carries the highest risk — you're working blind without team context.
+</Warning>

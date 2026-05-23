@@ -1,0 +1,147 @@
+---
+title: 'API Endpoint Reference'
+description: 'Complete table of all 45 REST API endpoints — method, path, auth, and description.'
+---
+
+import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
+
+## All Endpoints
+
+Base URL: `https://api.driftless.icu/api/v1` unless noted.
+
+### Health & Version
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/health` | Public | Render health check |
+| `GET` | `/version` | Public | Version info |
+| `GET` | `/api/v1/health` | Public | Health check (API prefix) |
+| `GET` | `/api/v1/version` | Public | Version info (API prefix) |
+
+### Workspaces
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/v1/workspaces` | Public | Create workspace |
+| `GET` | `/api/v1/workspaces/:slug` | Auth | Get workspace by slug |
+| `PATCH` | `/api/v1/workspaces/:slug` | Auth | Update workspace |
+| `GET` | `/api/v1/me` | Auth | Get authenticated user's workspace |
+
+### Members
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/members` | Auth | List members |
+| `POST` | `/api/v1/workspaces/:slug/members` | Auth | Add member |
+| `DELETE` | `/api/v1/workspaces/:slug/members/:memberId` | Auth | Remove member |
+
+### Health
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/health` | Auth | Workspace health snapshot |
+
+### Repositories
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/v1/workspaces/:slug/repos` | Auth | Register a repo |
+| `GET` | `/api/v1/workspaces/:slug/repos` | Auth | List repos |
+| `GET` | `/api/v1/workspaces/:slug/repos/:id` | Auth | Get repo detail |
+| `PATCH` | `/api/v1/workspaces/:slug/repos/:id` | Auth | Set tracked branches |
+| `DELETE` | `/api/v1/workspaces/:slug/repos/:id` | Auth | Delete repo (full cleanup) |
+
+### Components & Scans
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/v1/workspaces/:slug/repos/:id/components` | Auth | Upload scanned components |
+| `GET` | `/api/v1/workspaces/:slug/repos/:id/components/:name` | Auth | Component detail |
+| `POST` | `/api/v1/workspaces/:slug/repos/:id/baseline` | Auth | Upload baseline summary |
+| `POST` | `/api/v1/workspaces/:slug/repos/:id/scan` | Auth | Trigger full repo scan |
+| `GET` | `/api/v1/workspaces/:slug/repos/:id/architecture-summary` | Auth | Architecture summary + coverage |
+
+### Graph
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/repos/:id/graph/file` | Auth | File-level code graph |
+| `GET` | `/api/v1/workspaces/:slug/repos/:id/graph/impact` | Auth | Blast radius analysis |
+| `POST` | `/api/v1/workspaces/:slug/repos/:id/context/load` | Auth | Agent context load |
+
+### Topics (Watchers)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/watchers` | Auth | List topics |
+| `POST` | `/api/v1/workspaces/:slug/watchers` | Auth | Create topic |
+| `POST` | `/api/v1/workspaces/:slug/watchers/match-files` | Auth | Match topics to files |
+| `GET` | `/api/v1/workspaces/:slug/watchers/search` | Auth | Full-text search |
+| `GET` | `/api/v1/workspaces/:slug/watchers/audit` | Auth | Context health audit |
+| `GET` | `/api/v1/workspaces/:slug/watchers/graph` | Auth | Topic knowledge graph |
+| `GET` | `/api/v1/workspaces/:slug/watchers/events` | Auth | Paginated event feed |
+| `GET` | `/api/v1/workspaces/:slug/watchers/:slug` | Auth | Get topic detail |
+| `PATCH` | `/api/v1/workspaces/:slug/watchers/:slug` | Auth | Update topic (optimistic concurrency) |
+| `DELETE` | `/api/v1/workspaces/:slug/watchers/:slug` | Auth | Delete topic |
+| `POST` | `/api/v1/workspaces/:slug/watchers/:slug/relations` | Auth | Create typed relation |
+| `GET` | `/api/v1/workspaces/:slug/watchers/:slug/relations` | Auth | List relations |
+| `DELETE` | `/api/v1/workspaces/:slug/watchers/:slug/relations/:id` | Auth | Delete relation |
+
+### Webhooks
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/webhooks/github` | Public | GitHub push/PR webhook |
+| `POST` | `/webhooks/clerk` | Public | Clerk organization webhook |
+
+### Integrations
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/integrations` | Auth | List integrations |
+| `POST` | `/api/v1/workspaces/:slug/integrations` | Auth | Create integration |
+| `DELETE` | `/api/v1/workspaces/:slug/integrations/:id` | Auth | Delete integration |
+
+### PR Activity
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/workspaces/:slug/pr-activity` | Auth | List PR observations |
+
+### API Keys
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/v1/auth/api-keys` | Auth | Create API key |
+| `GET` | `/api/v1/auth/api-keys` | Auth | List API keys (prefixes only) |
+| `DELETE` | `/api/v1/auth/api-keys/:id` | Auth | Revoke API key |
+
+### Blog
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/v1/blog/posts` | Public | List published posts |
+| `GET` | `/api/v1/blog/posts/:slug` | Public | Get single post |
+
+---
+
+<AccordionGroup>
+  <Accordion title="Auth Legend">
+    - **Public**: No authentication required. Rate limit: 30 req/min.
+    - **Auth**: Requires `X-API-Key` header (CLI) or `Authorization: Bearer <token>` (dashboard). Rate limit: 200 req/min.
+    - **Webhook**: Requires HMAC signature verification. Rate limit: 50-100 req/min.
+  </Accordion>
+  <Accordion title="Error Response Format">
+    ```json
+    {
+      "statusCode": 404,
+      "message": "Repo not found",
+      "request_id": "f9b8d7a1-...",
+      "retryable": false,
+      "endpoint": "GET /api/v1/workspaces/my-org/repos/123"
+    }
+    ```
+    - `retryable`: `true` for 5xx, `false` for 4xx
+    - `request_id`: Correlation ID for tracing
+  </Accordion>
+</AccordionGroup>

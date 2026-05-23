@@ -1,0 +1,53 @@
+---
+title: 'Agent Setup — AGENTS.md & CLAUDE.md'
+description: 'Installing the Driftless agent skill into your repo.'
+---
+
+The Driftless skill teaches coding agents how to load context before editing and persist discoveries after editing. It's installed into your repo's instruction files so every session starts with context awareness.
+
+## Installing the skill
+
+<Steps>
+  <Step title="Run install-skill">
+    From any repo with a Driftless workspace configured:
+
+    ```bash
+    driftless install-skill
+    ```
+  </Step>
+  <Step title="What it creates">
+    The command installs skill files into two locations:
+  </Step>
+</Steps>
+
+### CLAUDE.md
+
+Creates a `CLAUDE.md` file with a reference to `.driftless/skill.md`. If `CLAUDE.md` already exists but doesn't reference the skill, Driftless appends the reference without touching existing content.
+
+### AGENTS.md
+
+Writes a managed block between `<!-- driftless:start -->` and `<!-- driftless:end -->` markers. If `AGENTS.md` already exists, the block is inserted or updated in place. Re-running `install-skill` replaces the block content — old installations stay current.
+
+### Self-healing
+
+`driftless init` calls `install-skill` automatically. If the skill reference ever gets removed or corrupted, re-running either command restores it.
+
+## What the skill teaches agents
+
+After installation, agents reading `AGENTS.md` or `CLAUDE.md` learn the following workflow:
+
+| Rule | Command |
+|---|---|
+| Sync on session start | `driftless sync` |
+| Load context before touching code | `driftless context load --files "a,b"` |
+| Get a specific topic | `driftless context get <slug>` |
+| Check blast radius before editing | `driftless graph file <path>` |
+| Verify guards — never assume public | `driftless graph file <path>` shows guards |
+| Persist discoveries | `driftless context update --gotcha/--decision` |
+| Keep anchors focused | 5-40 components healthy, 100+ is a catch-all trap |
+| Use wiki-links | `[[slug]]` syntax in content and decisions |
+| Typed relations | `--rel depends_on:\|blocks:\|implements:\|documents:\|risk_for:` |
+
+<Note>
+  The skill source of truth is `skills/driftless/` in the Driftless monorepo. The public mirror at `driftless-sh/driftless-skill` is auto-synced on merges to `main`. Never edit the mirror directly.
+</Note>

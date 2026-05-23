@@ -1,72 +1,97 @@
 ---
-title: "How Driftless works: Scan, Observe, Sync loop"
-description: "Driftless keeps context alive through a five-step loop: Scan, Observe, Contextualize, Deliver, and Sync — split between your machine and the cloud."
+title: 'System Architecture'
+description: 'How the Driftless components fit together.'
 ---
 
-Driftless is built around a five-step loop that keeps context synchronized with your codebase. Some steps run locally on your machine; others run in the cloud. Understanding where each step runs helps you know what data leaves your environment and what stays local.
+```
+┌──────────┐   ┌──────────┐   ┌────────────┐
+│  CLI      │──▶│  API      │──▶│  Supabase   │
+│ (Node.js) │   │ (NestJS)  │   │ (Postgres)  │
+└──────────┘   └──────────┘   └────────────┘
+     │              ▲               │
+     │              │               │
+     ▼              │               ▼
+┌──────────┐   ┌──────────┐   ┌────────────┐
+│ Scanner   │   │ GitHub App│   │  Dashboard  │
+│ (ts-morph)│   │ (PR/Push) │   │ (React/Vite) │
+└──────────┘   └──────────┘   └────────────┘
+```
 
-<Note>
-  Your source code never leaves your machine — the scanner extracts structure locally and uploads only metadata.
-</Note>
+## Components
 
-## The five-step loop
+### Scanner (`@driftless/scanner`)
 
-<Steps>
-  <Step title="Scan">
-    **Runs locally, once per repo.**
+Static AST analysis engine. Extracts components from TypeScript codebases:
 
-    When you run `driftless init`, the CLI scans your repository and extracts structural metadata — frameworks, controllers, services, endpoints, modules, and patterns. Nothing is sent to the cloud except the extracted metadata. See [what gets scanned](#what-gets-scanned-locally) below for the full list.
-  </Step>
-  <Step title="Observe">
-    **Runs in the cloud, per workspace.**
+- **NestJS**: endpoints, guards, services, modules, DTOs, interceptors, pipes
+- **Next.js**: pages, layouts, route handlers, server actions, middleware
+- **React**: components and hooks
 
-    The GitHub App listens for push events and pull requests across your connected repositories. When a PR touches files that are covered by a topic, Driftless records the event and evaluates whether any topics have gone stale.
-  </Step>
-  <Step title="Contextualize">
-    **Runs in the cloud, per workspace.**
+The scanner uses a two-pass streaming pipeline — facts are processed as they're extracted without accumulating all file results in memory. Peak memory is O(largest file). Zero runtime dependencies beyond TypeScript.
 
-    Topics are created, updated, and linked based on the structural baseline from the scan and the activity observed from PRs. The cloud stores the topic graph — what each component does, how it works, decisions made, gotchas, and ownership — but not your source files.
-  </Step>
-  <Step title="Deliver">
-    **Runs locally, per agent call.**
+### API (NestJS, Render)
 
-    When an agent (Claude Code, Cursor, Codex, or any tool reading `AGENTS.md`) starts a task, it pulls the relevant context for the files it is about to touch. This gives the agent the decisions, gotchas, and ownership information it needs before it writes a single line.
-  </Step>
-  <Step title="Sync">
-    **Runs locally, per agent call.**
+REST API at `api.driftless.icu`. Built on NestJS with TypeORM and Supabase (Postgres).
 
-    After work is complete, `driftless context get --diff` checks whether the local changes have caused any topics to drift. Agents can push new discoveries back as topic updates, keeping the graph current for the next person or session.
-  </Step>
-</Steps>
+- **45 endpoints** across workspaces, context, scan, graph, and webhooks
+- **Auth** via API keys (`x-api-key` header) for CLI and Clerk for dashboard sessions
+- **Global WorkspaceGuard** enforces multi-tenant isolation — every request is scoped to a workspace
+- **No caching** by design — direct database queries only (see [ADR: No caching layer](/decisions/no-cache))
 
-## What gets scanned locally
+### Dashboard (React + Vite, Vercel)
 
-The scanner runs entirely on your machine during `driftless init`. It detects the following:
+Web UI at `driftless.icu`. Provides:
 
-| Detected | How | Why it matters |
-|---|---|---|
-| Framework | `package.json` + `tsconfig` | Classifies the repo for context coverage |
-| Controllers | `@Controller` | HTTP entry points |
-| Endpoints | `@Get`, `@Post`, etc. | API surface count |
-| Services | `@Injectable` | Business logic layer |
-| Guards | `CanActivate` | Auth coverage |
-| Modules | `@Module` | Architectural boundaries |
-| Auth patterns | Imports + usage | Detects Clerk, JWT, API keys, etc. |
-| Quarantine candidates | Files > 300 lines, legacy markers | Highlights areas that need durable context |
-| Multi-tenant pattern | `org_id` / `tenant_id` references | Highlights isolation context to document |
+- Workspace health overview and module-level architecture maps (ReactFlow + dagre)
+- Context browser and topic graph explorer
+- PR activity log with sticky context comments
+- Settings: API keys, tracked branches, integrations
 
-## What runs locally vs. in the cloud
+### CLI (`@driftless-sh/cli`, npm)
 
-**Runs locally:**
-- Repository scanning (`driftless init`)
-- Context delivery before agent calls
-- Drift checking (`driftless context get --diff`)
-- Syncing topic state (`driftless sync`)
+24 commands bundled with esbuild into a single binary. Core workflows:
 
-**Runs in the cloud:**
-- Components and relations — the structural baseline from each scan
-- Topics — what / how / decisions / gotchas / ownership
-- Webhook and context events — every push and PR observed
-- Integrations — GitHub App installation links
+- `init`, `scan`, `sync` — baseline and drift detection
+- `context add|get|update|list|search|load|link|doctor|graph` — full context CRUD
+- `graph file|impact` — blast radius analysis
+- `branches add|remove|list` — tracked branch management
+- `install-skill` — install the agent skill into consumer repos
 
-The split is intentional. Your source code stays on your machine; the cloud holds only the structured metadata and topic text needed to deliver context.
+### GitHub App
+
+Installed on repos. Two main functions:
+
+- **PR observation**: Posts context comments listing topics relevant to changed files
+- **Push staleness**: Matches changed files on tracked branches against anchored topics, marks matches as stale
+
+The app never blocks merges or modifies code.
+
+### Agent Skill (`SKILL.md`)
+
+A markdown file that teaches coding agents (Claude Code, Cursor) the Driftless workflow. Installed by `driftless install-skill` or `driftless init`. The skill instructs agents to:
+
+1. Sync before starting a session
+2. Load context for files they're about to touch
+3. Persist discoveries back to Cloud
+
+The canonical source of the skill lives in the Driftless monorepo. A mirror repo (`github.com/driftless-sh/driftless-skill`) serves it for installation via raw URL.
+
+## Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Monorepo | Turborepo |
+| Language | TypeScript |
+| API framework | NestJS |
+| ORM | TypeORM |
+| Database | Supabase (Postgres) |
+| Auth (dashboard) | Clerk |
+| Auth (CLI/API) | API keys with AES-256-GCM encryption |
+| Scanner | ts-morph (TypeScript compiler API) |
+| Dashboard | React + Vite |
+| Graph rendering | ReactFlow + dagre |
+| CLI bundling | esbuild |
+| Deploy (API) | Render |
+| Deploy (Dashboard) | Vercel |
+| Docs | Mintlify |
+| Webhook testing | smee.io |

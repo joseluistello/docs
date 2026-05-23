@@ -1,0 +1,77 @@
+---
+title: 'Encryption — AES-256-GCM'
+description: 'How secrets are encrypted at rest using AES-256-GCM.'
+---
+
+Driftless encrypts sensitive values at rest using AES-256-GCM. The encryption is handled by the `@driftless/encryption` library — zero runtime dependencies, Node.js `crypto` module only.
+
+## Algorithm
+
+| Property | Value |
+|---|---|
+| **Algorithm** | AES-256-GCM |
+| **Key size** | 256 bits (32 bytes) |
+| **Key format** | 64-character hex string |
+| **Key source** | `ENCRYPTION_KEY` environment variable |
+| **IV** | Random 16 bytes per encryption call |
+| **Auth tag** | 16 bytes |
+| **Overhead** | 32 bytes per encrypted value (16 IV + 16 auth tag) |
+
+AES-256-GCM provides authenticated encryption with associated data. The authentication tag guarantees integrity — any tampering is detected on decrypt.
+
+## Key management
+
+The encryption key is a 32-byte value provided as a 64-character hex string:
+
+```bash
+export ENCRYPTION_KEY=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
+```
+
+The key is read at startup and never exposed in logs, API responses, or error messages. It never leaves the server process.
+
+## Output format
+
+Encrypted values are stored as a hex-encoded string:
+
+```text
+IV (16 bytes) || AuthTag (16 bytes) || Ciphertext (variable)
+```
+
+Decoding reverses the format: extract IV, auth tag, and ciphertext, then pass to `decipher.setAAD()`, `decipher.setAuthTag()`, and decrypt.
+
+## Usage
+
+```typescript
+import { encrypt, decrypt } from '@driftless/encryption';
+
+// Encrypt
+const encrypted = encrypt(plaintext, encryptionKeyHex);
+// → hex string
+
+// Decrypt
+const decrypted = decrypt(encrypted, encryptionKeyHex);
+// → original plaintext
+```
+
+## Integrity guarantees
+
+- **Wrong key** → GCM auth tag mismatch → error thrown (not silent corruption)
+- **Tampered ciphertext** → auth tag mismatch → error thrown
+- **Truncated value** → decode fails before decrypt is attempted
+
+## What it protects
+
+| Data | Method |
+|---|---|
+| GitHub webhook secrets | Encrypted with AES-256-GCM |
+| API tokens in integration configs | Encrypted with AES-256-GCM |
+
+## What it does NOT protect
+
+| Data | Method |
+|---|---|
+| Raw API keys | SHA-256 hash (one-way) — never stored |
+
+<Note>
+  The encryption key itself is never persisted. It comes from environment variables only. If the key is lost or rotated without re-encrypting existing values, those values cannot be decrypted.
+</Note>

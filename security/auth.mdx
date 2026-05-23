@@ -1,42 +1,79 @@
 ---
-title: "How Driftless authenticates you: sessions and keys"
-description: "Driftless has three authentication surfaces — dashboard session, CLI API key, and GitHub App token — all resolving to the same workspace identity."
+title: 'Authentication & Authorization'
+description: 'How Driftless handles auth — API keys, Clerk, and workspace isolation.'
 ---
 
-Driftless has three surfaces that require authentication: the dashboard, the CLI, and the GitHub App. Each uses a different credential type suited to how that surface is used, but all three resolve to the same workspace — actions taken from any surface are scoped and recorded against the same workspace identity.
+Driftless has two authentication paths, both resolving to the same workspace identity. All actions are scoped to the authenticated workspace — cross-workspace access is rejected at the API layer.
 
-## Dashboard
+## Authentication paths
 
-The dashboard authenticates you with a session managed by Clerk. When you sign in, Clerk issues a session that the dashboard uses for all subsequent requests. You do not manage this session manually; it is handled transparently as part of the sign-in flow.
+### 1. API Keys — CLI and programmatic access
 
-## CLI
+Header: `X-API-Key: drift_xxx`
 
-The CLI authenticates with an API key. Run `driftless login` to store a key on your machine:
+- Keys must start with `drift_`
+- Validated via SHA-256 hash lookup in the database
+- Scoped to the workspace that generated the key
+- Raw key is shown **once** at creation time and never stored
 
-```bash
-driftless login --key drift_xxx
+### 2. Clerk — Dashboard and browser access
+
+Header: `Authorization: Bearer <token>`
+
+- Requires Clerk organization membership
+- Workspace is resolved from the Clerk organization ID
+- Auto-creates a workspace on first access if the Clerk org matches
+- Dashboard uses `credentials: include` for cookie-based session management
+
+## Workspace isolation
+
+Every API endpoint resolves workspace identity from the auth credential. The URL `:slug` parameter is verified against the authenticated workspace. If a request targets a different workspace's resources, the API returns `403 Forbidden`.
+
+```typescript
+// All guarded endpoints follow this pattern:
+const workspace = await this.resolveWorkspace(auth);
+if (workspace.slug !== params.slug) {
+  throw new ForbiddenException('Cross-workspace access denied');
+}
 ```
 
-The key is written to `~/.driftless/config.json`. All subsequent CLI commands read from that file automatically. The key is never sent anywhere other than the Driftless API, and it is stored only on your local machine — Driftless does not retain the plaintext after you first copy it from the dashboard.
+## Rate limiting
 
-For environments where writing a config file is not appropriate (CI, shared machines), set the `DRIFTLESS_API_KEY` environment variable instead:
-
-```bash
-export DRIFTLESS_API_KEY=drift_xxx
-```
-
-The CLI reads this variable automatically when no config file is present. See [API keys](/integrations/api-keys) for instructions on generating and revoking keys.
-
-## GitHub App
-
-The GitHub App authenticates to your repositories using a short-lived installation token that GitHub issues at request time. This is never a personal access token and is never stored by Driftless beyond the duration of the API call it serves. The token is scoped only to the repositories you selected when installing the app.
-
-You do not interact with this token directly. Driftless handles the token exchange internally when it needs to read PR files or post a comment.
-
-## Summary
-
-| Surface | Credential | Where it lives |
+| Limit | Scope | Rate |
 |---|---|---|
-| Dashboard | Clerk session | Browser (managed by Clerk) |
-| CLI | API key | `~/.driftless/config.json` or `DRIFTLESS_API_KEY` env var |
-| GitHub App | Short-lived installation token | Not stored; issued per request |
+| Webhook | Per IP | 100 / minute |
+| Public | Per IP | 30 / minute |
+| Authenticated | Per key or session | 200 / minute |
+
+Rate limits are IP-based and enforced at the global middleware level before reaching route handlers.
+
+## Public endpoints
+
+Only 6 routes are exempt from authentication:
+
+| Route | Purpose |
+|---|---|
+| `GET /health` | Health check |
+| `GET /version` | API version |
+| `POST /webhooks/github` | GitHub webhook receiver |
+| `POST /webhooks/clerk` | Clerk webhook receiver |
+| `POST /workspaces` | Initial workspace creation |
+| `GET /blog/*` | Public blog content |
+
+Everything else requires authentication via API key or Clerk token.
+
+## API key lifecycle
+
+| Stage | What happens |
+|---|---|
+| **Create** | Raw key generated, returned once. SHA-256 hash stored. |
+| **List** | Only key prefixes shown (first 8 chars). Raw keys never exposed. |
+| **Revoke** | SHA-256 hash deleted. Key immediately invalid. |
+
+<Warning>
+  If you lose a raw API key, you cannot recover it. Generate a new one and revoke the old prefix.
+</Warning>
+
+## Dashboard auth flow
+
+Clerk sign-in → organization selection → workspace lookup (or auto-create) → JWT token for API calls. All dashboard API requests include `Authorization: Bearer <clerk_token>`.

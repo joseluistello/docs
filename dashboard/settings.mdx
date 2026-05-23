@@ -1,0 +1,73 @@
+---
+title: 'Workspace Settings'
+description: 'GitHub integration, members, API keys, and model configuration.'
+---
+
+The Settings page is organized into tabs covering all workspace configuration.
+
+## Workspace
+
+Edit your workspace's display name. The workspace ID and slug are shown for reference (not editable).
+
+## GitHub Integration
+
+Connect, manage, and disconnect the Driftless GitHub App.
+
+<Steps>
+  <Step title="Install">
+    Click **Install on GitHub**. You'll be redirected to GitHub's app installation flow to choose an organization and select repositories.
+  </Step>
+  <Step title="Auto-link">
+    After installation, GitHub redirects back to the dashboard with `?installation_id=` in the URL. Driftless auto-links the installation to your workspace by matching the organization name or existing repos.
+  </Step>
+  <Step title="Status">
+    The integration card shows active status, installation date, and the list of selected repositories.
+  </Step>
+  <Step title="Disconnect">
+    Click **Disconnect** to remove the integration from your workspace. Uninstalling the app on GitHub also triggers an `installation/deleted` webhook that deactivates the integration automatically.
+  </Step>
+</Steps>
+
+<Note>
+  Driftless works without the GitHub App for local CLI workflows. The App is only required for PR context comments and push-driven drift tracking.
+</Note>
+
+## Members
+
+View members of your workspace (sourced from your Clerk organization). 
+
+- **Invite**: Send email invitations with role selection (`admin` or `member`)
+- **Revoke**: Remove a member from the workspace
+- **Roles**: Admins can manage settings and members; members can view and edit context
+
+## API Keys
+
+Manage API keys for CLI and programmatic access.
+
+### Creating a key
+
+1. Click **Generate new key**
+2. Copy the raw key immediately — it is shown **once** and never again
+3. The key prefix (`drift_xxx...`) is shown in the list for identification
+
+### Key list
+
+The table shows only key **prefixes** — never raw keys. Each row shows:
+
+| Field | Description |
+|---|---|
+| **Prefix** | First 8 characters of the key for identification |
+| **Created** | Creation date |
+| **Last used** | Most recent use timestamp |
+
+### Revoking
+
+Click **Revoke** on any key to immediately invalidate it. The key's SHA-256 hash is deleted from the database. CLI commands using that key will start returning 401.
+
+<Warning>
+  Raw API keys are never stored in the database — only their SHA-256 hash. If you lose a raw key, you must generate a new one.
+</Warning>
+
+## Model Config
+
+Placeholder section for **BYOM** (Bring Your Own Model) configuration. In a future release, configure your workspace's LLM provider — model URL, API key, and model name — for features that require LLM capabilities. Currently informational only.

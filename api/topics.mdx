@@ -1,142 +1,364 @@
 ---
-title: "GET /watchers — list and fetch workspace topics"
-description: "The /watchers endpoints return context topics for your workspace. List all topics with optional pagination, or fetch a single topic's full detail by slug."
+title: 'Topics (Watchers)'
+description: 'CRUD, search, audit, and relations for context topics.'
 ---
 
-The watchers endpoints expose your workspace's context topics over the API. You can retrieve a paginated list of all topics or fetch a single topic by its slug. Note that the CLI and dashboard refer to these as "topics," but the API path uses the term "watchers" — they refer to the same concept.
+Topics (also called watchers) are the core context unit in Driftless. Each topic captures *what* something is, *how* it works, and *where* it lives.
 
-The `_` in the path is a shorthand that resolves to the authenticated user's workspace. You do not need to supply a workspace ID explicitly.
+## List & Search
 
----
-
-## List all topics
-
-```
-GET https://api.driftless.icu/api/v1/workspaces/_/watchers
-```
-
-Returns an array of topic summaries for your workspace.
-
-### Parameters
-
-<ParamField query="limit" type="integer">
-  Maximum number of topics to return. Use this to paginate through large workspaces.
-</ParamField>
-
-<ParamField path="header.Authorization" type="string" required>
-  Bearer token for authentication. Format: `Bearer <token>`.
-</ParamField>
-
-### Example request
+### List Topics
 
 ```bash
-curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
-  "https://api.driftless.icu/api/v1/workspaces/_/watchers?limit=10"
+curl -H "X-API-Key: drift_xxx" \
+     "https://api.driftless.icu/api/v1/workspaces/my-team/watchers?stale=true&kind=code-context&repo=repo_uuid"
 ```
 
-### Response
+Query parameters:
 
-A successful response returns an array of topic summary objects.
+| Param | Type | Description |
+| --- | --- | --- |
+| `stale` | boolean | Filter stale topics |
+| `docs` | boolean | Filter topics with anchored docs |
+| `auto` | boolean | Filter auto-generated topics |
+| `manual` | boolean | Filter manually created topics |
+| `suggested` | boolean | Filter suggested topics |
+| `status` | string | Filter by status |
+| `kind` | string | Filter by kind (e.g. `code-context`, `decision`) |
+| `repo` | UUID | Filter by repository ID |
 
-```json
-[
-  {
-    "slug": "auth-boundaries",
-    "name": "Auth boundaries",
-    "description": "Authentication and authorization patterns across the codebase.",
-    "file_count": 12
-  },
-  {
-    "slug": "payment-flow",
-    "name": "Payment flow",
-    "description": "End-to-end payment processing and webhook handling.",
-    "file_count": 8
-  }
-]
-```
+Returns `CanonicalContextSummary[]`.
 
-<ResponseField name="slug" type="string" required>
-  The unique slug identifying this topic. Use it to fetch full topic details.
-</ResponseField>
-
-<ResponseField name="name" type="string" required>
-  The display name of the topic.
-</ResponseField>
-
-<ResponseField name="description" type="string">
-  A short description of what the topic covers.
-</ResponseField>
-
-<ResponseField name="file_count" type="integer">
-  The number of files tracked by this topic.
-</ResponseField>
-
----
-
-## Get a single topic
-
-```
-GET https://api.driftless.icu/api/v1/workspaces/_/watchers/:slug
-```
-
-Returns full details for a single topic identified by its slug.
-
-### Parameters
-
-<ParamField path="slug" type="string" required>
-  The slug of the topic to retrieve. Slugs are returned by the list endpoint.
-</ParamField>
-
-<ParamField path="header.Authorization" type="string" required>
-  Bearer token for authentication. Format: `Bearer <token>`.
-</ParamField>
-
-### Example request
+### Full-Text Search
 
 ```bash
-curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
-  https://api.driftless.icu/api/v1/workspaces/_/watchers/auth-boundaries
+curl -H "X-API-Key: drift_xxx" \
+     "https://api.driftless.icu/api/v1/workspaces/my-team/watchers/search?q=auth middleware"
 ```
 
-### Response
+Uses Postgres `to_tsvector` + `ILIKE` for combined full-text and pattern matching.
 
-A successful response returns a single topic object with full detail.
+### Audit
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/watchers/audit
+```
 
 ```json
 {
-  "slug": "auth-boundaries",
-  "name": "Auth boundaries",
-  "description": "Authentication and authorization patterns across the codebase.",
-  "context": "This topic covers JWT validation, session management, and role-based access control. Key entry points are in src/auth/ and src/middleware/.",
-  "files": [
-    "src/auth/jwt.ts",
-    "src/auth/session.ts",
-    "src/middleware/requireAuth.ts"
-  ],
-  "file_count": 3
+  "total": 42,
+  "stale": [{ "slug": "auth-guard", "reason": "File changed in commit abc123" }],
+  "orphaned": 3,
+  "draft": 5,
+  "docs_pending": 2,
+  "repo_leak": 1
 }
 ```
 
-<ResponseField name="slug" type="string" required>
-  The unique slug for this topic.
-</ResponseField>
+### Match Files to Topics
 
-<ResponseField name="name" type="string" required>
-  The display name of the topic.
-</ResponseField>
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/my-team/watchers/match-files \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "files": ["src/auth/guard.ts", "src/users/service.ts"] }'
+```
 
-<ResponseField name="description" type="string">
-  A short description of what the topic covers.
-</ResponseField>
+Returns topics matching the given files, including match reason.
 
-<ResponseField name="context" type="string">
-  The full context body for this topic, as shown in the CLI and dashboard.
-</ResponseField>
+---
 
-<ResponseField name="files" type="string[]">
-  The list of file paths tracked by this topic.
-</ResponseField>
+## Detail
 
-<ResponseField name="file_count" type="integer">
-  The number of files tracked by this topic.
-</ResponseField>
+### Get Topic Detail
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     "https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard?include_orphaned=true"
+```
+
+<Accordion title="Canonical Context Response Shape">
+  <ResponseField name="id" type="string">
+    UUID of the canonical context.
+  </ResponseField>
+  <ResponseField name="name" type="string">
+    Topic name (display).
+  </ResponseField>
+  <ResponseField name="slug" type="string">
+    URL-friendly identifier.
+  </ResponseField>
+  <ResponseField name="version" type="number">
+    Monotonically increasing version number.
+  </ResponseField>
+  <ResponseField name="kind" type="string">
+    Classification: `code-context`, `decision`, `docs-pending`, etc.
+  </ResponseField>
+  <ResponseField name="status" type="string">
+    `reviewed`, `draft`, `suggested`, etc.
+  </ResponseField>
+  <ResponseField name="description" type="object">
+    <ResponseField name="what" type="string">
+      What the topic is about.
+    </ResponseField>
+    <ResponseField name="how" type="string">
+      How it works.
+    </ResponseField>
+    <ResponseField name="decisions" type="string[]">
+      Key decisions made.
+    </ResponseField>
+    <ResponseField name="gotchas" type="string[]">
+      Known gotchas and pitfalls.
+    </ResponseField>
+  </ResponseField>
+  <ResponseField name="content" type="string">
+    Full free-form content (max 256KB).
+  </ResponseField>
+  <ResponseField name="tags" type="string[]">
+    Tags (max 50, each &le; 64 chars).
+  </ResponseField>
+  <ResponseField name="invariants" type="string[]">
+    Invariants that must hold true.
+  </ResponseField>
+  <ResponseField name="references_topics" type="array">
+    Topics this topic references via `[[slug]]` wiki-links.
+  </ResponseField>
+  <ResponseField name="referenced_by" type="array">
+    Topics that reference this topic.
+  </ResponseField>
+  <ResponseField name="relations" type="object">
+    <ResponseField name="outgoing" type="array">
+      Relations from this topic to others.
+    </ResponseField>
+    <ResponseField name="incoming" type="array">
+      Relations from other topics to this one.
+    </ResponseField>
+  </ResponseField>
+  <ResponseField name="anchors" type="array">
+    File patterns and repos where this topic applies.
+  </ResponseField>
+  <ResponseField name="components" type="array">
+    Associated components from scans.
+  </ResponseField>
+  <ResponseField name="coverage" type="object">
+    Coverage statistics for this topic.
+  </ResponseField>
+  <ResponseField name="stale" type="boolean">
+    Whether the topic is stale.
+  </ResponseField>
+  <ResponseField name="stale_reason" type="string | null">
+    Reason for staleness if stale.
+  </ResponseField>
+  <ResponseField name="metadata" type="object">
+    <ResponseField name="created_at" type="string" />
+    <ResponseField name="updated_at" type="string" />
+    <ResponseField name="created_by" type="string" />
+    <ResponseField name="origin" type="string">
+      `auto`, `manual`, or `suggested`.
+    </ResponseField>
+  </ResponseField>
+</Accordion>
+
+---
+
+## CRUD
+
+### Create Topic
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/my-team/watchers \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Auth Guard",
+    "what": "Global authentication guard for all routes",
+    "how": "Applied as APP_GUARD, checks JWT tokens via Clerk",
+    "patterns": ["src/auth/*.ts"],
+    "decisions": ["Use Clerk over custom JWT for session management"],
+    "gotchas": ["Must exempt health endpoint with @Public()"],
+    "tags": ["auth", "middleware"],
+    "kind": "code-context"
+  }'
+```
+
+<ParamField query="body" type="object" defaultValue={null}>
+  <ParamField name="name" type="string" required>
+    Display name. Slug is auto-derived from name.
+  </ParamField>
+  <ParamField name="what" type="string" optional>
+    What this topic covers.
+  </ParamField>
+  <ParamField name="how" type="string" optional>
+    How the described system works.
+  </ParamField>
+  <ParamField name="patterns" type="string[]" optional>
+    Glob patterns for file matching.
+  </ParamField>
+  <ParamField name="where_files" type="string[]" optional>
+    Explicit file paths.
+  </ParamField>
+  <ParamField name="where_repos" type="string[]" optional>
+    Repository slugs where this topic applies.
+  </ParamField>
+  <ParamField name="decisions" type="string[]" optional>
+    Key decisions documented in this topic.
+  </ParamField>
+  <ParamField name="gotchas" type="string[]" optional>
+    Known pitfalls and edge cases.
+  </ParamField>
+  <ParamField name="invariants" type="string[]" optional>
+    Invariants that must hold.
+  </ParamField>
+  <ParamField name="ownership" type="string" optional>
+    Owning team or person.
+  </ParamField>
+  <ParamField name="content" type="string" optional>
+    Free-form content (max 256KB). Supports `[[slug]]` wiki-links.
+  </ParamField>
+  <ParamField name="tags" type="string[]" optional>
+    Max 50 tags, each &le; 64 characters.
+  </ParamField>
+  <ParamField name="kind" type="string" optional>
+    Classification. Defaults to `domain-map`.
+  </ParamField>
+  <ParamField name="status" type="string" optional>
+    Initial status: `reviewed`, `draft`, `suggested`.
+  </ParamField>
+  <ParamField name="suggested" type="boolean" optional defaultValue="false">
+    Mark as a suggested (AI-proposed) topic.
+  </ParamField>
+  <ParamField name="origin" type="string" optional>
+    `manual` or `auto`.
+  </ParamField>
+  <ParamField name="file_content" type="string" optional>
+    Raw file content to anchor.
+  </ParamField>
+  <ParamField name="anchored_doc_path" type="string" optional>
+    Path to an anchored document.
+  </ParamField>
+</ParamField>
+
+Wiki-links in the `content` field (e.g. `[[auth-guard]]`) are automatically parsed and create topic references.
+
+### Update Topic
+
+```bash
+curl -X PATCH https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "what": "Updated description",
+    "_append_gotchas": ["New edge case found with WebSocket"],
+    "_add_patterns": ["src/websocket/**"],
+    "expected_version": 3
+  }'
+```
+
+**Optimistic concurrency:** Pass `expected_version` to ensure you're updating the latest version. On mismatch, returns a `409 Conflict`.
+
+**Atomic appends** (idempotent — duplicates are ignored):
+- `_append_gotchas` — Append to gotchas array
+- `_append_decisions` — Append to decisions array
+- `_append_invariants` — Append to invariants array
+- `_append_required_checks` — Append to required checks
+
+**Idempotent anchors:**
+- `_add_patterns` — Add file patterns
+- `_remove_patterns` — Remove file patterns
+
+**Cross-repo linking:**
+- `_add_repo` — Link this topic to a repository in another workspace
+
+### Delete Topic
+
+```bash
+curl -X DELETE \
+     -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard
+```
+
+```json
+{ "status": "deleted" }
+```
+
+Cascades: associated events are also deleted.
+
+---
+
+## Relations
+
+### Create Relation
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard/relations \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "to_slug": "b2b-routing", "relation_type": "depends_on" }'
+```
+
+**Relation types:** `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`.
+
+### List Relations
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard/relations
+```
+
+```json
+{
+  "outgoing": [{ "id": "uuid", "to_slug": "b2b-routing", "relation_type": "depends_on" }],
+  "incoming": [{ "id": "uuid", "from_slug": "api-keys", "relation_type": "relates_to" }]
+}
+```
+
+### Delete Relation
+
+```bash
+curl -X DELETE \
+     -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/watchers/auth-guard/relations/relation_uuid
+```
+
+```json
+{ "status": "deleted" }
+```
+
+---
+
+## Graph & Events
+
+### Topic Knowledge Graph
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     "https://api.driftless.icu/api/v1/workspaces/my-team/watchers/graph?center=auth-guard&depth=3"
+```
+
+```json
+{
+  "nodes": [
+    { "slug": "auth-guard", "kind": "code-context" },
+    { "slug": "b2b-routing", "kind": "decision" }
+  ],
+  "edges": [
+    { "from": "auth-guard", "to": "b2b-routing", "type": "depends_on" }
+  ]
+}
+```
+
+### Context Events
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     "https://api.driftless.icu/api/v1/workspaces/my-team/watchers/events?limit=50&offset=0&type=changed&repo_id=repo_uuid"
+```
+
+Returns merged `watcher_events` + `context_events`, paginated.
+
+```json
+{
+  "events": [ ... ],
+  "total": 128
+}
+```

@@ -1,0 +1,37 @@
+---
+title: 'What problem does Driftless solve?'
+description: 'Engineering knowledge is lost every time a session ends. Driftless keeps it alive.'
+---
+
+## The problem
+
+Engineering knowledge evaporates.
+
+A developer figures out why the auth flow uses asymmetric keys. They close their laptop. Next week, a teammate touches the same code and hits the same wall. The knowledge is gone.
+
+PR comments get buried. Architecture Decision Records go stale. The codebase grows but the shared understanding of *why* things work a certain way doesn't keep up. Every new contributor re-learns the same lessons.
+
+## The solution
+
+Driftless gives teams a **durable context layer** that lives outside any single session, PR, or contributor's head.
+
+It has three parts:
+
+1. **Persistent Cloud context** — Topics stored in Driftless Cloud (backed by Postgres) that describe what things do, how they work, what decisions were made, and what traps exist. This is the source of truth.
+2. **Local detection** — The CLI scanner reads your TypeScript AST and identifies endpoints, guards, services, modules, and component hierarchies. Scans are lightweight execution units that run on push or on demand.
+3. **Agent delivery** — Coding agents (Claude Code, Cursor) consume context through CLI commands. They sync before sessions, load context for files they're about to touch, and persist what they learn. Agents consume context — they don't own it.
+
+## The core idea: topics anchored to code
+
+Instead of writing docs that sit in a folder and rot, you **anchor topics to code**. A topic has glob patterns (`--pattern "src/auth/**"`) or exact file paths that link it to the code it describes.
+
+When the code changes, Driftless detects the drift. Topics go stale with a reason. The team knows exactly what context needs refreshing.
+
+A topic is 5–40 components. Less is noise, more is a catch-all that nobody maintains.
+
+## Key principles
+
+- **Cloud is the source of truth.** Local files and agent sessions are views into Cloud.
+- **Scans are execution units.** Each scan extracts facts and compares them against stored context.
+- **Agents consume, don't own.** Agents load context, use it, and write back what they learn — but the canonical copy lives in Cloud.
+- **No caching, no MCP, no blocking.** Driftless informs. It never gates or caches.

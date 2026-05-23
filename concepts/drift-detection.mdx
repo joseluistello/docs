@@ -1,47 +1,75 @@
 ---
-title: "Drift detection: keeping your context honest"
-description: "Drift detection automatically flags topics when their covered files change, so your context stays honest and you always know what needs updating."
+title: 'Drift Detection'
+description: 'How Driftless detects when code has changed relative to team context.'
 ---
 
-Drift happens when the code a topic describes changes, but the topic itself is not updated. The result is context that looks authoritative but no longer reflects reality — which is often worse than having no context at all. Driftless tracks this automatically and surfaces it before it becomes a problem.
+import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
 
-## What triggers drift
+## How staleness works
 
-Every topic in Driftless is scoped to one or more files. When the GitHub App observes a push or pull request that touches those files, Driftless marks the topic as **stale**.
+When a push arrives on a tracked branch, the API matches changed files against all workspace topics. Any topic whose anchored files or patterns overlap with the changed files gets marked **stale** with a human-readable reason.
 
-Staleness is not a judgment about whether the change was significant — any modification to a covered file is enough. This keeps the signal conservative: you decide whether the topic needs updating, not the system.
+For example, if a push to `main` changes `src/auth/guard.ts` and `src/auth/service.ts`, the `auth-flow` topic anchored to `src/auth/**` becomes:
 
-A stale topic is visible in two places:
+> Stale — 3 files changed in commit `abc1234`: `src/auth/guard.ts`, `src/auth/service.ts`, `src/auth/dto/login.dto.ts`
 
-- In the `/graph` dashboard, the node gets a **red border**
-- In the CLI, `driftless context get --diff` reports which topics have drifted since your last sync
+## Tracked branches
 
-## Checking for drift locally
-
-Two CLI commands help you stay current:
+The **default branch** is always tracked. Additional branches can be added:
 
 ```bash
-# Pull the latest topic state from the cloud
-driftless sync
+driftless branches add staging
+driftless branches add release/*
+driftless branches list
+driftless branches remove staging
 ```
+
+Feature branches are **not tracked by default**. This prevents noise — most feature work is in progress and doesn't represent settled architecture. Staleness is reserved for branches where changes signal durable context shifts.
+
+## Structural staleness
+
+Beyond simple file matching, Driftless detects structural changes:
+
+- **Deleted endpoint files** — An endpoint that was extracted in a previous scan no longer exists
+- **Removed guards** — A guard that was protecting an endpoint has been removed
+- **Deleted services** — A service class no longer exists in the codebase
+- **Module restructuring** — Files moved between modules
+
+These structural signals are more informative than file-level diffs because they describe *what changed architecturally*, not just *which files were touched*.
+
+## Lifecycle
+
+```
+stale → agent reviews → driftless context update topic --status reviewed → unstale
+stale → no repo claims it → orphaned
+```
+
+When a topic goes stale:
+1. `driftless sync` surfaces it to every team member
+2. An agent or human reviews the change
+3. If the context still holds, mark it reviewed to unstale it
+4. If no repo claims the topic anymore, it becomes orphaned
 
 ```bash
-# Check which topics have drifted against local file changes
-driftless context get --diff
+driftless context update auth-flow --status reviewed
 ```
 
-Run `driftless sync` to pull down any staleness flags or topic updates that have accumulated since you last worked. Run `driftless context get --diff` to see a diff of what has changed locally against what the context describes — useful before starting a coding session or before opening a PR.
-
-## Resolving a stale topic
-
-When you identify a topic that needs updating, open it and revise the relevant fields — typically **What**, **How**, or **Gotchas** — to reflect the current state of the code. Then save and push the update:
+## Checking for staleness
 
 ```bash
-driftless context update <topic-id>
+driftless sync                         # shows stale topics and what changed
+driftless context doctor               # full health audit across all topics
+driftless context get --diff            # staleness for current local (uncommitted) changes
 ```
 
-Once the topic text is updated, Driftless clears the staleness flag. The node in the graph returns to its normal color, and the topic is no longer reported in `--diff` output.
-
-<Tip>
-  Push- and PR-driven drift detection requires the GitHub App to be installed on your repository. If you have not installed it yet, `driftless context get --diff` still works locally by comparing your working tree against the last-synced context state — you just won't get automatic staleness flags from remote pushes.
-</Tip>
+<AccordionGroup>
+  <Accordion title="What triggers staleness?">
+    Only pushes to tracked branches. PRs do **not** trigger staleness — they trigger PR observation instead (sticky context comments listing relevant topics). This distinction keeps staleness meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
+  </Accordion>
+  <Accordion title="Can I manually mark a topic as stale?">
+    Yes. Use `driftless context update <slug> --stale --reason "..."`. This is useful when you review a topic and notice it's outdated even though the file patterns haven't been pushed yet.
+  </Accordion>
+  <Accordion title="What happens if I delete a topic's anchored files?">
+    The scanner detects missing files during the next scan and reports them as structural staleness. The topic stays stale until someone either updates its anchors or confirms the context is no longer relevant (at which point it can be orphaned or deleted).
+  </Accordion>
+</AccordionGroup>

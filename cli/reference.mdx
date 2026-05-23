@@ -1,0 +1,69 @@
+---
+title: 'CLI Command Reference'
+description: 'Every command, flag, and example.'
+---
+
+import { AccordionGroup, Accordion } from '/snippets/accordion.mdx'
+
+## Auth & Setup
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `login` | `--key <key>`, `--url <url>` | Authenticate with API key | `driftless login --key drift_xxx` |
+| `init` | `--src <path>`, `--framework <fw>`, `--suggest` | Scan repo, upload baseline, install skill | `driftless init --src apps/api --suggest` |
+| `doctor` | `--json` | 8 health checks | `driftless doctor` |
+| `install-skill` | _(none)_ | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
+
+## Context CRUD
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context list` | `--stale`, `--docs`, `--auto`, `--manual`, `--status`, `--kind`, `--repo`, `--json` | List topics with filters | `driftless context list --stale --auto` |
+| `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
+| `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
+| `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
+| `context search` | _(query)_, `--json` | Full-text search | `driftless context search "payment"` |
+| `context add` | `--what`, `--how`, `--pattern`, `--kind`, `--tags`, `--rel`, `--content`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --what "Stripe checkout" --pattern "src/billing/**" --kind code-context` |
+| `context update` | `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`, `--rel`, `--dry-run` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
+| `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
+| `context load` | `--files "a,b"`, `--dry-run`, `--json` | Context + coverage | `driftless context load --files "src/auth/guard.ts,src/auth/service.ts"` |
+| `context link` | `--dry-run`, `--json` | Cross-repo linkage | `driftless context link payment-flow` |
+| `context sync` | `--doc <path>` or `--note "..."` | Anchor doc or add note | `driftless context sync payment-flow --doc docs/billing.md` |
+| `context doctor` | `--json` | Audit context health | `driftless context doctor` |
+| `context relations` | `--json` | List typed relations | `driftless context relations payment-flow` |
+| `context graph` | `--depth N`, `--json` | Topic knowledge graph | `driftless context graph payment-flow --depth 2` |
+
+## Code Graph
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `graph file` | `<path>`, `--depth N`, `--json` | Entrypoints + blast radius | `driftless graph file src/auth/guard.ts --depth 2` |
+| `graph impact` | `--files "a,b"`, `--depth N`, `--direction <up\|down\|both>`, `--json` | Change impact analysis | `driftless graph impact --files "src/shared/utils.ts" --direction downstream` |
+| `graph coverage` | `--json` | Context coverage overview | `driftless graph coverage --json` |
+
+## Sync & Branches
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `sync` | `--json` | Pull team changes | `driftless sync` |
+| `branches` | `--json` | View tracked branches | `driftless branches` |
+| `branches add` | `<branch>` | Track a branch | `driftless branches add staging` |
+| `branches rm` | `<branch>` | Stop tracking branch | `driftless branches rm staging` |
+
+## Other
+
+| Command | Flags | Description |
+|---|---|---|
+| `--version` / `-v` | — | Print version |
+| `--help` / `-h` | — | Full help |
+| `<cmd> --help` | — | Command-specific help |
+
+<AccordionGroup>
+  <Accordion title="Environment Variables">
+    | Variable | Description |
+    |---|---|
+    | `DRIFTLESS_API_KEY` | API key (wins over config file) |
+    | `DRIFTLESS_API_URL` | API server URL (default: `https://api.driftless.icu/api/v1`) |
+    | `DRIFTLESS_MAX_FILE_BYTES` | Per-file scan cap for the scanner |
+  </Accordion>
+</AccordionGroup>

@@ -1,49 +1,75 @@
 ---
-title: "Authenticate requests to the Driftless API"
-description: "Pass a Bearer token in the Authorization header on every Driftless API request. Generate your API key from the dashboard under Settings → API keys."
+title: 'Authentication'
+description: 'API key and Clerk-based authentication for the Driftless API.'
 ---
 
-Every request to the Driftless API must include an `Authorization` header with a valid Bearer token. Without it, the API returns a `401 Unauthorized` response. You can obtain a token from your Driftless dashboard and use it directly in requests or store it as an environment variable for automation.
+Driftless supports two authentication paths: API Keys for CLI and programmatic access, and Clerk for browser-based dashboard access.
 
-## Passing your token
+## API Keys (CLI + Programmatic)
 
-Include the token in the `Authorization` header of every request:
+API keys use the `X-API-Key` header and start with the `drift_` prefix.
 
-```bash
-curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
-  https://api.driftless.icu/api/v1/me
-```
+### Creating Keys
 
-The header format is always `Authorization: Bearer <token>`, where `<token>` is the API key you generated in the dashboard.
-
-## Getting an API key
-
-<Steps>
-  <Step title="Open the dashboard">
-    Log in to your Driftless account and navigate to **Settings**.
-  </Step>
-  <Step title="Go to API keys">
-    Select **API keys** from the Settings menu.
-  </Step>
-  <Step title="Create a new key">
-    Click **New API key**, give it a descriptive name, and confirm. The key is displayed once — copy it immediately.
-  </Step>
-</Steps>
-
-<Warning>
-  API keys are displayed only once when created. Store yours securely in a password manager or secrets vault before closing the dialog.
-</Warning>
-
-## Using the environment variable
-
-For CLI usage and CI pipelines, set the `DRIFTLESS_API_KEY` environment variable instead of passing the token inline. The CLI reads this variable automatically:
+Create API keys via the [Dashboard](https://driftless.icu) Settings page or via the API:
 
 ```bash
-export DRIFTLESS_API_KEY=your_api_key_here
+curl -X POST https://api.driftless.icu/api/v1/auth/api-keys \
+  -H "Authorization: Bearer <clerk_token>" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "my-cli-key" }'
 ```
 
-You can also override the default API base URL if needed:
+```json
+{
+  "key": "drift_abc123def456...",
+  "prefix": "drift_abc",
+  "id": "key_uuid_here"
+}
+```
+
+**Important:** The raw key is shown only once at creation. Keys are stored as SHA-256 hashes — the server cannot recover a lost key.
+
+### Using API Keys
 
 ```bash
-export DRIFTLESS_API_URL=https://api.driftless.icu/api/v1
+curl -H "X-API-Key: drift_xxx" https://api.driftless.icu/api/v1/me
 ```
+
+Validate a key by calling the `/me` endpoint. A `200` response confirms the key is valid and returns the associated workspace.
+
+### Managing API Keys
+
+<Accordion title="List API Keys">
+  ```bash
+  curl -H "Authorization: Bearer <clerk_token>" \
+       https://api.driftless.icu/api/v1/auth/api-keys
+  ```
+  Only key prefixes and IDs are returned — never the raw key.
+</Accordion>
+
+<Accordion title="Revoke an API Key">
+  ```bash
+  curl -X DELETE \
+       -H "Authorization: Bearer <clerk_token>" \
+       https://api.driftless.icu/api/v1/auth/api-keys/key_uuid_here
+  ```
+</Accordion>
+
+## Clerk (Dashboard / Browser)
+
+For browser-based access, use a Clerk Bearer token:
+
+```
+Authorization: Bearer <clerk_token>
+```
+
+Obtain the token via Clerk's `getToken()` method in the browser. The user must be a member of a Clerk organization. On first access, if the Clerk org matches a workspace slug, the workspace is auto-created.
+
+## Rate Limiting
+
+| Tier | Limit |
+| --- | --- |
+| Authenticated (API key or Clerk) | 200 req/min |
+| Public endpoints | 30 req/min |
+| Webhooks | 50–100 req/min |

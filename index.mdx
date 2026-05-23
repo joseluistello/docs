@@ -1,61 +1,57 @@
 ---
-title: "Driftless: keep your codebase context alive"
-description: "Driftless connects your code, decisions, and AI agents through a living topic graph that automatically detects drift when your code changes."
+title: 'Driftless — Living memory for engineering teams'
+description: 'Driftless keeps architectural context alive across sessions, repos, and contributors.'
 ---
 
-Driftless gives your team — and your AI agents — a shared, always-fresh layer of context about your codebase. You define topics (what a module does, how it works, known gotchas, decisions), Driftless watches your PRs and pushes, and automatically flags topics that have drifted from the code they describe.
+import { CardGroup, Card } from '/snippets/card.mdx'
+import { Steps, Step } from '/snippets/steps.mdx'
+
+Driftless keeps architectural context alive across sessions, repos, and contributors. It is the durable context layer that agents and teams use to keep architectural knowledge alive.
 
 <CardGroup cols={2}>
-  <Card title="Quick Start" icon="bolt" href="/quickstart">
-    Install the CLI, authenticate, and initialize your first repo in under 3 minutes.
+  <Card title="Quickstart" href="/quickstart" icon="rocket">
+    Install the CLI, scan your repo, and get your first context in under 5 minutes.
   </Card>
-  <Card title="CLI & Agents" icon="terminal" href="/cli/installation">
-    Full command reference and how to hook up Claude Code, Cursor, or Codex via AGENTS.md.
+  <Card title="Core Concepts" href="/concepts/overview" icon="book-open">
+    Understand the problem Driftless solves, the core loop, and how topics work.
   </Card>
-  <Card title="Topic Graph" icon="diagram-project" href="/concepts/topic-graph">
-    Understand how topics, relations, and drift detection keep your context living.
+  <Card title="CLI Reference" href="/cli/installation" icon="terminal">
+    Full command reference: init, sync, context, graph, doctor, and more.
   </Card>
-  <Card title="GitHub App" icon="github" href="/integrations/github-app">
-    Install the GitHub App to get PR nudges and push-driven drift tracking.
-  </Card>
-  <Card title="Dashboard" icon="gauge" href="/dashboard/overview">
-    Navigate the control room: context health, architecture map, and PR activity.
-  </Card>
-  <Card title="API Reference" icon="code" href="/api/overview">
-    REST API for the Driftless Cloud — topics, watchers, and workspace data.
+  <Card title="Agent Setup" href="/agents/setup" icon="robot">
+    Teach your coding agents (Claude Code, Cursor) to sync, load, and persist context.
   </Card>
 </CardGroup>
 
-## How it works
+## The agent loop in 3 commands
 
 <Steps>
-  <Step title="Install and authenticate">
-    Install the CLI globally and log in with your API key.
+  <Step>
+    **Sync** — See what the team changed since your last session.
+
     ```bash
-    npm install -g @driftless-sh/cli
-    driftless login
+    driftless sync
     ```
   </Step>
-  <Step title="Initialize your repo">
-    Run `driftless init` to scan your repo, upload structural metadata, and install the AGENTS.md skill.
+  <Step>
+    **Load** — Get context for the files you're about to touch.
+
     ```bash
-    driftless init
+    driftless context load --files "src/auth/guard.ts,src/users/service.ts"
     ```
   </Step>
-  <Step title="Add context topics">
-    Create topics that describe key modules, decisions, and gotchas. Topics can cover files via glob patterns.
+  <Step>
+    **Persist** — Write what you learned back to the team.
+
     ```bash
-    driftless context add "auth-boundaries" \
-      --content "# Auth\n\n## What\nHandles JWT validation and org-scoping" \
-      --kind code-context \
-      --pattern "src/auth/**"
+    driftless context update auth --gotcha "JWT decode happens in guard, not middleware"
     ```
-  </Step>
-  <Step title="Let Driftless watch your code">
-    Connect the GitHub App so topics automatically go stale when the files they cover change in PRs or pushes.
   </Step>
 </Steps>
 
-<Note>
-  Your source code never leaves your machine. Driftless stores structural metadata and topic text only — not raw code or secrets.
-</Note>
+## What Driftless is NOT
+
+- **Not a PR reviewer** — It observes PRs and posts context comments, but doesn't approve or reject.
+- **Not CI** — It doesn't run tests, block merges, or gate deploys.
+- **Not a cache** — No Redis, no in-memory cache. Direct database queries only.
+- **Not an MCP server** — The CLI and REST API are the only interfaces. No MCP in v1.

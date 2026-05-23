@@ -1,42 +1,66 @@
 ---
-title: "Data storage: what Driftless stores and never stores"
-description: "A precise list of what data Driftless stores, what it never touches, where processing happens, and how to delete your data during beta."
+title: 'Data Storage'
+description: 'What Driftless stores, what it never stores, and how data is handled.'
 ---
 
-This page covers exactly what data Driftless holds, what it never reads or transmits, and how retention works during the beta period. The intent is precision, not marketing — if something is stored, it is listed; if it is not, that is stated plainly too.
+This page covers exactly what data Driftless holds and what it never touches. If something is stored, it's listed here. If it's not, that's stated plainly.
 
-## What Driftless stores
+## Stored in Postgres (Supabase)
 
-- **Structural metadata** — components (controllers, services, endpoints, guards, modules), DTO and field names, endpoint paths, file paths, line numbers, relations, and scanner metadata. This is extracted by the local scanner and is the only code-derived data that leaves your machine.
-- **Topic text** — the what, how, decisions, and gotchas your team writes into each topic. Your words, stored as you enter them.
-- **Markdown docs you intentionally sync** — running `context sync --doc` stores the content of that document in the selected topic.
-- **GitHub webhook payloads** — for repos you connect: push and PR event data including file paths, commit SHAs, authors, commit messages, and added/modified/removed file lists. This is GitHub's webhook payload, not a clone of your repository.
-- **Activity events** — file paths, commit hashes, and authors for changes near your topics.
-- **Account data** — workspace details, members, API keys (stored as a hash; the plaintext is shown once and never again), and the GitHub installation ID.
+| Data | Description |
+|---|---|
+| **Workspace metadata** | Name, slug, Clerk organization ID |
+| **Repo metadata** | Organization, repo name, system type, framework, scan summary |
+| **Scanned components** | Type, name, file path, line number, metadata. No source code. |
+| **Topic content** | What, how, decisions, gotchas, invariants, content body, tags |
+| **Events** | Webhook events, watcher events, context events — commit hashes, authors, diff snippets |
+| **Integration configs** | GitHub installation IDs, webhook secret hashes |
+| **API key hashes** | SHA-256 hash only — never raw keys |
+| **PR observations** | PR number, title, author, branch, files touched, matched topics, comment status |
 
-## What Driftless never stores
+## Never stored
 
-- **Your raw source code.** The scanner runs entirely on your machine, extracts structure, and uploads only that structure. No `git clone`, no source file contents.
-- **A copy or mirror of your repository.**
-- **Secrets or environment files.** They are never read or transmitted by the scanner.
+- **Source code** — only file paths, line numbers, and structural metadata
+- **Raw API keys** — only SHA-256 hash after creation
+- **Raw GitHub webhook secrets** — verified then discarded
+- **Raw GitHub App private keys** — read from environment variables, never persisted
 
-<Note>
-  Structural metadata can reveal architecture names and file paths. A GitHub push webhook payload can also include a diff if GitHub sends one — Driftless stores the payload as received and does not fetch additional code beyond what GitHub delivers.
-</Note>
+## Encryption
 
-## Where processing happens
+| What | Method |
+|---|---|
+| API keys | SHA-256 hash (one-way) |
+| Webhook secrets, tokens | AES-256-GCM (two-way, reversible) |
 
-- **Scanner** — fully local. Only structural metadata leaves your machine.
-- **Cloud** — stores the metadata and topic text listed above. Every action is scoped to your workspace; cross-workspace access is rejected at the API layer.
-- **GitHub App** — operates with a short-lived installation token scoped only to the repositories you explicitly select.
+See the [Encryption](/security/encryption) page for full details on the AES-256-GCM implementation.
 
-## Retention during beta
+## Transit
 
-During the beta period there is no automatic time-based data purge. Data is retained for the life of your workspace and removed when you take one of the deletion actions below. This is stated plainly because implying a retention schedule that is not enforced would be misleading.
+All API communication is over HTTPS. No unencrypted endpoints exist.
 
-## Deleting your data
+## Infrastructure
 
-- **Revoke an API key** — go to Settings → API keys and click Revoke. Takes effect immediately.
-- **Disconnect the GitHub App** — go to Settings → Integrations, or uninstall directly on GitHub. Stops all webhook ingestion immediately.
-- **Delete a repo** — removes its components, activity events, and PR observations, and unlinks its topics (cascade delete).
-- **Full workspace deletion** — not yet self-serve in beta. Contact Driftless via [driftless.icu](https://driftless.icu) to request it. Everything tied to your workspace is purged.
+| Component | Hosting |
+|---|---|
+| **API** | Render |
+| **Dashboard** | Vercel |
+| **Mintlify Docs** | Mintlify (deploys from `54.242.90.151`) |
+| **Database** | Supabase (Postgres) |
+
+## Backups
+
+Supabase handles Postgres backups automatically. No additional backup infrastructure is maintained.
+
+## Deletion
+
+### Repo deletion
+
+`DELETE /workspaces/:slug/repos/:id` fully cleans up:
+
+- Removes all components, events, and PR observations for that repo
+- Removes the repo from all topics' `where_repos`
+- Orphans topics that no longer match any repo
+
+### Workspace deletion
+
+Not self-serve during beta. Contact Driftless to request full workspace deletion. Everything tied to the workspace — repos, components, topics, events, integration configs — is purged.

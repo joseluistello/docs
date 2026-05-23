@@ -1,58 +1,175 @@
 ---
-title: "GET /me — verify credentials and resolve workspace"
-description: "GET /api/v1/me returns your workspace ID, slug, and email. Use it to verify your credentials or resolve workspace details for API integrations."
+title: 'Workspaces, Members & Health'
+description: 'CRUD for workspaces, member management, and health snapshots.'
 ---
 
-The `/me` endpoint returns identity information for the authenticated user. It is the simplest endpoint in the API and is useful for verifying that your token is valid, resolving your workspace slug, or bootstrapping integrations that need to know which workspace they are operating against.
+## Workspaces
 
-## Endpoint
+A workspace is the top-level container for repos, topics, and team context.
 
-```
-GET https://api.driftless.icu/api/v1/me
-```
+### Create Workspace
 
-Authentication is required. Pass your token as an `Authorization: Bearer <token>` header.
-
-## Parameters
-
-This endpoint accepts no query parameters.
-
-<ParamField path="header.Authorization" type="string" required>
-  Bearer token for authentication. Format: `Bearer <token>`.
+<ParamField query="body" type="object" defaultValue={null}>
+  <ParamField name="name" type="string" required>
+    Display name for the workspace.
+  </ParamField>
+  <ParamField name="slug" type="string" required>
+    URL-friendly identifier. Example: `my-team`.
+  </ParamField>
 </ParamField>
 
-## Example request
-
 ```bash
-curl -H "Authorization: Bearer $DRIFTLESS_API_KEY" \
-  https://api.driftless.icu/api/v1/me
+curl -X POST https://api.driftless.icu/api/v1/workspaces \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "My Team", "slug": "my-team" }'
 ```
 
-## Response
+### Get Workspace
 
-A successful response returns a JSON object with your workspace and user details.
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team
+```
+
+### Update Workspace
+
+```bash
+curl -X PATCH https://api.driftless.icu/api/v1/workspaces/my-team \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "New Name" }'
+```
+
+### Get Authenticated User's Workspace
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/me
+```
 
 ```json
 {
-  "workspace_id": "ws_01hx4k2p9rebc3nqj7v8m5tdzf",
-  "workspace_slug": "acme-corp",
-  "user_id": "usr_01hx4k2p9rebc3nqj7v8m5tdzg",
-  "email": "you@example.com"
+  "workspace_id": "uuid",
+  "name": "My Team",
+  "slug": "my-team"
 }
 ```
 
-<ResponseField name="workspace_id" type="string" required>
-  The unique identifier for your workspace.
-</ResponseField>
+---
 
-<ResponseField name="workspace_slug" type="string" required>
-  The human-readable slug for your workspace. This is the value that the `_` shorthand resolves to in other API paths.
-</ResponseField>
+## Members
 
-<ResponseField name="user_id" type="string" required>
-  The unique identifier for the authenticated user.
-</ResponseField>
+### List Members
 
-<ResponseField name="email" type="string" required>
-  The email address associated with the authenticated user account.
-</ResponseField>
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/members
+```
+
+Returns `WorkspaceMember[]`.
+
+### Add Member
+
+<ParamField query="body" type="object" defaultValue={null}>
+  <ParamField name="clerk_user_id" type="string" required>
+    The Clerk user ID to add.
+  </ParamField>
+  <ParamField name="role" type="string" optional>
+    Defaults to `"member"`. Options: `"member"`, `"admin"`.
+  </ParamField>
+</ParamField>
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/my-team/members \
+  -H "X-API-Key: drift_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "clerk_user_id": "user_xxx", "role": "admin" }'
+```
+
+This endpoint is idempotent — adding an existing member returns the existing record.
+
+### Remove Member
+
+```bash
+curl -X DELETE \
+     -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/members/member_uuid
+```
+
+```json
+{ "status": "removed" }
+```
+
+---
+
+## Health Snapshot
+
+Get a health overview of a workspace:
+
+```bash
+curl -H "X-API-Key: drift_xxx" \
+     https://api.driftless.icu/api/v1/workspaces/my-team/health
+```
+
+<Accordion title="Response Shape">
+  <ResponseField name="health_score" type="number">
+    Composite health score (0–100).
+  </ResponseField>
+  <ResponseField name="grade" type="string">
+    Letter grade: A (90+), B (75+), C (60+), D (40+), F (&lt;40).
+  </ResponseField>
+  <ResponseField name="repos" type="object">
+    <ResponseField name="total" type="number" />
+    <ResponseField name="ready" type="number" />
+    <ResponseField name="scanning" type="number" />
+    <ResponseField name="error" type="number" />
+    <ResponseField name="pending" type="number" />
+  </ResponseField>
+  <ResponseField name="components" type="object">
+    <ResponseField name="total" type="number" />
+    <ResponseField name="by_type" type="object">
+      Breakdown by component type (module, controller, service, etc.).
+    </ResponseField>
+  </ResponseField>
+  <ResponseField name="watchers" type="object">
+    <ResponseField name="total" type="number" />
+    <ResponseField name="stale" type="number" />
+    <ResponseField name="with_doc" type="number" />
+    <ResponseField name="auto" type="number" />
+    <ResponseField name="manual" type="number" />
+  </ResponseField>
+  <ResponseField name="coverage" type="object">
+    <ResponseField name="covered" type="number" />
+    <ResponseField name="total" type="number" />
+    <ResponseField name="percentage" type="number" />
+  </ResponseField>
+  <ResponseField name="scans" type="object">
+    <ResponseField name="last_scan_at" type="string | null">
+      ISO timestamp of the most recent scan.
+    </ResponseField>
+    <ResponseField name="scans_7d" type="number" />
+    <ResponseField name="stale_repos" type="number" />
+  </ResponseField>
+  <ResponseField name="activity_7d" type="number">
+    Total events in the last 7 days.
+  </ResponseField>
+  <ResponseField name="breakdown" type="object">
+    <ResponseField name="coverage_pts" type="number">
+      Points from coverage percentage (55% weight).
+    </ResponseField>
+    <ResponseField name="freshness_pts" type="number">
+      Points from scan freshness (25% weight).
+    </ResponseField>
+    <ResponseField name="stale_pts" type="number">
+      Points from stale topic ratio (20% weight).
+    </ResponseField>
+  </ResponseField>
+</Accordion>
+
+### Scoring Formula
+
+The health score is a weighted sum:
+
+- **55%** — Coverage: `(covered / total) * 55`
+- **25%** — Freshness: recency and frequency of scans
+- **20%** — Stale ratio: `(1 - stale/total) * 20`

@@ -1,0 +1,100 @@
+---
+title: 'Agent Workflow — The Full Loop'
+description: 'Load context → edit code → persist discoveries — the complete agent session loop.'
+---
+
+This is the canonical agent workflow. Every agent that reads `AGENTS.md` should follow this loop, start to finish, every session.
+
+<Steps>
+  <Step title="Sync (session start)">
+
+    ```bash
+    driftless sync
+    ```
+
+    Returns what the team changed since your last session — stale topics, team PR activity, suggested topics pending review.
+
+  </Step>
+  <Step title="Load context (before touching code)">
+
+    ```bash
+    driftless context load --files "src/auth/guard.ts,src/auth/service.ts"
+    ```
+
+    Returns per-file: matching topics (direct and indirect), coverage status (`covered`, `partial`, `gap`, `critical-gap`), recommended action, and graph facts (entrypoints, guards, upstream/downstream).
+
+    For a specific topic:
+
+    ```bash
+    driftless context get b2b-guard
+    ```
+
+    To search across topics:
+
+    ```bash
+    driftless context search "payment flow"
+    ```
+
+  </Step>
+  <Step title="Check blast radius (before editing)">
+
+    ```bash
+    driftless graph file src/auth/guard.ts
+    ```
+
+    Shows entrypoints with HTTP methods and paths, guard names, upstream/downstream dependencies. Critical: if an entrypoint shows `[no auth detected — verify]`, never assume it's public.
+
+  </Step>
+  <Step title="Check your current changes">
+
+    ```bash
+    driftless context get --diff
+    ```
+
+    Shows which topics your uncommitted changes affect.
+
+  </Step>
+  <Step title="Edit code (the actual work)" />
+  <Step title="Persist discoveries">
+
+    Update an existing topic:
+
+    ```bash
+    driftless context update b2b-guard \
+      --gotcha "Token expiry is 5min — refresh before long ops" \
+      --decision "Switched to RS256 from HS256 for key rotation"
+    ```
+
+    Add a new topic:
+
+    ```bash
+    driftless context add "stripe-webhook-ingest" \
+      --what "Validates Stripe webhook signatures and dispatches events" \
+      --pattern "src/webhooks/stripe/**" \
+      --kind code-context \
+      --tags billing,webhooks
+    ```
+
+  </Step>
+  <Step title="Check graph for new connections">
+
+    ```bash
+    driftless context relations b2b-guard
+    driftless context graph b2b-guard --depth 2
+    ```
+
+  </Step>
+  <Step title="Before committing or pushing">
+
+    ```bash
+    driftless sync
+    driftless context get --diff
+    driftless context doctor
+    ```
+
+  </Step>
+</Steps>
+
+<Tip>
+  Batch related changes in ONE `context update` call. Every PATCH bumps the topic version and writes history. Stack `--gotcha`, `--decision`, `--add-pattern`, and `--kind` in a single invocation instead of spreading them across multiple calls.
+</Tip>

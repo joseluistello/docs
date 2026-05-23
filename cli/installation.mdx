@@ -1,78 +1,52 @@
 ---
-title: "Install the Driftless CLI — setup and configuration"
-description: "Install the Driftless CLI globally via npm, set up authentication with your API key, and verify your environment. Current version: v0.2.1."
+title: 'Installation & Authentication'
+description: 'Install the Driftless CLI and authenticate with your API key.'
 ---
 
-The Driftless CLI is the primary way to manage context topics, sync your workspace, and connect AI agents to your codebase. You install it globally via npm and authenticate once with an API key from the dashboard.
-
-## Requirements
-
-- Node.js 18 or later
-- npm 7 or later
-- A Driftless account and API key
-
 ## Install
-
-Install the CLI globally so the `driftless` command is available in any directory.
 
 ```bash
 npm install -g @driftless-sh/cli
 ```
 
-Current version: **v0.2.1** — available as `@driftless-sh/cli` on npm.
+Verify the installation:
+
+```bash
+driftless --version
+```
 
 ## Authenticate
 
-After installing, log in with your API key. You can find your key in the Driftless dashboard under **Settings → API Keys**.
+Run `driftless login` to open your browser to the Driftless dashboard, where you can copy your API key:
 
 ```bash
 driftless login
 ```
 
-To pass the key non-interactively (useful in CI):
+For non-interactive environments (e.g., CI), pass the key directly:
 
 ```bash
-driftless login --key drift_your_key_here
+driftless login --key drift_xxxxxxxxxxxxxxxxx
 ```
 
-## Verify your installation
+The API key is stored in `~/.driftless/config.json`:
 
-Run `driftless doctor` to confirm the CLI can reach the API, detect your git repository, and locate your workspace.
-
-```bash
-driftless doctor
+```json
+{
+  "api_key": "drift_xxxxxxxxxxxxxxxxx",
+  "api_url": "https://api.driftless.icu/api/v1",
+  "workspace_slug": "acme-corp",
+  "workspace_id": "ws_abc123"
+}
 ```
 
-A healthy output looks like:
+## Environment Variables
 
-```text
-✔ auth       Authenticated as your@email.com
-✔ api        Connected to https://api.driftless.icu/api/v1
-✔ git        Git repository detected
-✔ workspace  Workspace resolved
-```
+| Variable | Description |
+|---|---|
+| `DRIFTLESS_API_KEY` | API key (takes priority over config file) |
+| `DRIFTLESS_API_URL` | API server URL (default: `https://api.driftless.icu/api/v1`) |
 
-If any check fails, the output includes a short explanation and a suggested fix.
-
-## Environment variables
-
-You can configure the CLI through environment variables instead of interactive prompts. These are particularly useful in CI pipelines and Docker environments.
-
-| Variable | Description | Default |
-|---|---|---|
-| `DRIFTLESS_API_KEY` | API key for authentication | — |
-| `DRIFTLESS_API_URL` | Override the API base URL | `https://api.driftless.icu/api/v1` |
-
-<Tip>
-In CI, set `DRIFTLESS_API_KEY` as a secret environment variable rather than passing `--key` inline. The CLI reads this variable automatically, so you can run commands like `driftless sync` or `driftless context load` without any additional flags.
-</Tip>
-
-## Next steps
-
-Once installed and authenticated, initialize Driftless in your repository:
-
-```bash
-driftless init
-```
-
-This scans your repo, uploads a structural baseline, and installs the AGENTS.md skill so AI agents know how to pull and push context. See [CLI commands](/cli/commands) for the full reference.
+<Note>
+  **Env var always wins.** If both `DRIFTLESS_API_KEY` and `~/.driftless/config.json` are present, the environment variable takes priority.
+</Note>

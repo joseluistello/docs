@@ -1,0 +1,91 @@
+---
+title: 'CI/CD Integration'
+description: 'Running Driftless in CI pipelines for architecture gates.'
+---
+
+Driftless does not block PRs — it informs. But you can run it in CI to surface violations, drift, and stale context before merging.
+
+## Scan on diff
+
+Check current changes against team rules and topics:
+
+```bash
+driftless scan --diff
+```
+
+Outputs violations and drift for the current diff. Non-zero exit if violations are found (optional gate).
+
+## Architecture gate
+
+`driftless context doctor` audits your topic graph health:
+
+```bash
+driftless context doctor
+```
+
+Exits with code `1` if orphaned topics or repo-leak topics exist. Use as a soft gate — it warns but doesn't enforce.
+
+## Sync in CI
+
+Pull the latest team state before running checks:
+
+```bash
+driftless sync
+```
+
+Ensures CI has the freshest view of team context before evaluating changes.
+
+## Proactive check
+
+Before merging, check if the PR touches areas with stale context:
+
+```bash
+driftless context get --diff
+```
+
+Returns topics that are stale or partially covered across the changed files.
+
+## GitHub Actions example
+
+```yaml
+name: Driftless Context Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  context-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Driftless CLI
+        run: npm install -g @driftless-sh/cli
+
+      - name: Sync context
+        run: driftless sync
+        env:
+          DRIFTLESS_API_KEY: ${{ secrets.DRIFTLESS_API_KEY }}
+
+      - name: Check diff for violations
+        run: driftless scan --diff
+        env:
+          DRIFTLESS_API_KEY: ${{ secrets.DRIFTLESS_API_KEY }}
+
+      - name: Context doctor
+        run: driftless context doctor
+        env:
+          DRIFTLESS_API_KEY: ${{ secrets.DRIFTLESS_API_KEY }}
+        continue-on-error: true
+```
+
+<Note>
+  Driftless is **not a PR gate** — it never blocks merges. The CI integration is informational. Use `continue-on-error: true` or omit the check entirely if you don't want visibility into context health in CI.
+</Note>
+
+<Tip>
+  Store your API key as a GitHub Actions secret (`DRIFTLESS_API_KEY`) rather than setting the `DRIFTLESS_API_KEY` env var in the workflow file directly.
+</Tip>
