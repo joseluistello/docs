@@ -85,17 +85,17 @@
             "icon": "terminal",
             "groups": [
               {
-                "group": "Setup",
+                "group": "Installation",
                 "icon": "download",
                 "pages": ["cli/installation"]
               },
               {
-                "group": "CLI",
-                "icon": "terminal",
-                "pages": ["cli/reference"]
+                "group": "CLI Reference",
+                "icon": "square-terminal",
+                "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync"]
               },
               {
-                "group": "Agents",
+                "group": "Agent Setup",
                 "icon": "bot",
                 "pages": ["agents/setup"]
               }
@@ -106,9 +106,14 @@
             "icon": "braces",
             "groups": [
               {
-                "group": "REST API",
+                "group": "Overview",
+                "icon": "book-marked",
+                "pages": ["api/overview"]
+              },
+              {
+                "group": "Endpoints",
                 "icon": "server",
-                "pages": ["api/reference"]
+                "pages": ["api/workspaces", "api/repos", "api/topics", "api/integrations"]
               }
             ]
           },
@@ -135,12 +140,12 @@
             ]
           },
           {
-            "tab": "Changelog",
-            "icon": "clock",
+            "tab": "Release Notes",
+            "icon": "sparkles",
             "groups": [
               {
-                "group": "Release Notes",
-                "icon": "sparkles",
+                "group": "Changelog",
+                "icon": "clock",
                 "pages": ["changelog/index"]
               }
             ]
@@ -173,8 +178,8 @@
       {
         "header": "Reference",
         "items": [
-          { "label": "CLI Reference", "href": "/cli/reference" },
-          { "label": "API Reference", "href": "/api/reference" },
+          { "label": "CLI Reference", "href": "/cli/setup" },
+          { "label": "API Reference", "href": "/api/overview" },
           { "label": "Agent Setup", "href": "/agents/setup" }
         ]
       },
@@ -189,8 +194,16 @@
   },
   "redirects": [
     {
-      "source": "/quickstart",
-      "destination": "/quickstart"
+      "source": "/cli/reference",
+      "destination": "/cli/setup"
+    },
+    {
+      "source": "/api/reference",
+      "destination": "/api/overview"
+    },
+    {
+      "source": "/changelog",
+      "destination": "/changelog/index"
     }
   ]
 }

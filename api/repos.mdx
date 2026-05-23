@@ -1,0 +1,32 @@
+---
+title: 'Repositories &amp; Scans'
+description: 'Register repos, upload scan results, and query architecture data.'
+---
+
+## Repositories
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/repos` | List repositories |
+| `POST` | `/workspaces/:slug/repos` | Register a repository |
+| `GET` | `/workspaces/:slug/repos/:id` | Get repository details |
+| `PATCH` | `/workspaces/:slug/repos/:id` | Update repository metadata |
+| `DELETE` | `/workspaces/:slug/repos/:id` | Delete a repository |
+
+## Scans
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/workspaces/:slug/repos/:id/components` | Upload extracted components |
+| `POST` | `/workspaces/:slug/repos/:id/baseline` | Upload a baseline scan |
+| `POST` | `/workspaces/:slug/repos/:id/scan` | Upload a scan result |
+
+## Architecture &amp; Graph
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/repos/:id/architecture-summary` | Architecture summary |
+| `GET` | `/workspaces/:slug/repos/:id/components/:componentName` | Component detail |
+| `POST` | `/workspaces/:slug/repos/:id/context/load` | Match files to context |
+| `GET` | `/workspaces/:slug/repos/:id/graph/file` | File graph |
+| `GET` | `/workspaces/:slug/repos/:id/graph/impact` | Impact graph |

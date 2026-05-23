@@ -1,0 +1,37 @@
+---
+title: 'Setup &amp; Auth'
+description: 'Install, authenticate, and initialize the Driftless CLI.'
+---
+
+The CLI is the primary interface for developers and agents. Run commands from a Git repository root unless a command explicitly says otherwise.
+
+<Note>
+  Set `DRIFTLESS_API_KEY` for non-interactive environments. Set `DRIFTLESS_API_URL` only when targeting staging or a local API.
+</Note>
+
+## Auth and setup
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `login` | `--key <key>`, `--url <url>` | Authenticate with API key | `driftless login --key drift_xxx` |
+| `init` | `--src <path>`, `--framework <fw>`, `--suggest` | Scan repo, upload baseline, install skill | `driftless init --src apps/api --suggest` |
+| `doctor` | `--json` | 8 health checks | `driftless doctor` |
+| `install-skill` | none | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
+
+## Global
+
+| Command | Flags | Description |
+|---|---|---|
+| `--version` / `-v` | none | Print version |
+| `--help` / `-h` | none | Full help |
+| `<cmd> --help` | none | Command-specific help |
+
+<AccordionGroup>
+  <Accordion title="Environment Variables">
+    | Variable | Description |
+    |---|---|
+    | `DRIFTLESS_API_KEY` | API key (wins over config file) |
+    | `DRIFTLESS_API_URL` | API server URL (default: `https://api.driftless.icu/api/v1`) |
+    | `DRIFTLESS_MAX_FILE_BYTES` | Per-file scan cap for the scanner |
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,46 @@
+---
+title: 'API Overview'
+description: 'Base URL, authentication, and public endpoints.'
+---
+
+Base URL:
+
+```text
+https://api.driftless.icu/api/v1
+```
+
+## Authentication
+
+Most endpoints require either a Clerk session from the dashboard or an API key from the CLI.
+
+```bash
+curl https://api.driftless.icu/api/v1/workspaces/acme/repos \
+  -H "x-api-key: drift_your_api_key_here"
+```
+
+<Warning>
+  Treat API keys as secrets. Driftless stores keys encrypted and only shows the raw value once when created.
+</Warning>
+
+## Public endpoints
+
+These endpoints do not require authentication:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/health` | Runtime health check |
+| `GET` | `/version` | API version and deploy metadata |
+| `POST` | `/workspaces` | Workspace bootstrap |
+| `GET` | `/blog/posts` | Public blog index |
+| `GET` | `/blog/posts/:slug` | Public blog post |
+| `POST` | `/webhooks/github` | GitHub App webhook receiver |
+| `POST` | `/webhooks/clerk` | Clerk webhook receiver |
+
+## Auth and API keys
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/me` | Current identity and workspace context |
+| `POST` | `/auth/api-keys` | Create an API key |
+| `GET` | `/auth/api-keys` | List API keys for the workspace |
+| `DELETE` | `/auth/api-keys/:id` | Revoke an API key |

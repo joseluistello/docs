@@ -1,0 +1,38 @@
+---
+title: 'Context Commands'
+description: 'Create, read, update, and delete context topics from the CLI.'
+---
+
+## List &amp; Search
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context list` | `--stale`, `--docs`, `--auto`, `--manual`, `--status`, `--kind`, `--repo`, `--json` | List topics with filters | `driftless context list --stale --auto` |
+| `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
+| `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
+| `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
+| `context search` | query, `--json` | Full-text search | `driftless context search "payment"` |
+
+## Create &amp; Update
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context add` | `--what`, `--how`, `--pattern`, `--kind`, `--tags`, `--rel`, `--content`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --what "Stripe checkout" --pattern "src/billing/**" --kind code-context` |
+| `context update` | `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`, `--rel`, `--dry-run` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
+| `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
+
+## Load &amp; Link
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context load` | `--files "a,b"`, `--dry-run`, `--json` | Context + coverage | `driftless context load --files "src/auth/guard.ts,src/auth/service.ts"` |
+| `context link` | `--dry-run`, `--json` | Cross-repo linkage | `driftless context link payment-flow` |
+| `context sync` | `--doc <path>` or `--note "..."` | Anchor doc or add note | `driftless context sync payment-flow --doc docs/billing.md` |
+
+## Health &amp; Graph
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context doctor` | `--json` | Audit context health | `driftless context doctor` |
+| `context relations` | `--json` | List typed relations | `driftless context relations payment-flow` |
+| `context graph` | `--depth N`, `--json` | Topic knowledge graph | `driftless context graph payment-flow --depth 2` |

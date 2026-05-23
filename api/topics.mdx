@@ -1,0 +1,37 @@
+---
+title: 'Topics'
+description: 'CRUD operations for context topics, relations, and the knowledge graph.'
+---
+
+## Core CRUD
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/watchers` | List topics |
+| `POST` | `/workspaces/:slug/watchers` | Create a topic |
+| `GET` | `/workspaces/:slug/watchers/:watcherSlug` | Get topic detail |
+| `PATCH` | `/workspaces/:slug/watchers/:watcherSlug` | Update a topic |
+| `DELETE` | `/workspaces/:slug/watchers/:watcherSlug` | Delete a topic |
+
+## Search &amp; Matching
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/watchers/search` | Search topics |
+| `POST` | `/workspaces/:slug/watchers/match-files` | Match files to topics |
+
+## Health &amp; Graph
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/watchers/audit` | Context health audit |
+| `GET` | `/workspaces/:slug/watchers/events` | Topic event timeline |
+| `GET` | `/workspaces/:slug/watchers/graph` | Topic graph |
+
+## Relations
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/workspaces/:slug/watchers/:watcherSlug/relations` | Add a relation |
+| `GET` | `/workspaces/:slug/watchers/:watcherSlug/relations` | List relations |
+| `DELETE` | `/workspaces/:slug/watchers/:watcherSlug/relations/:relationId` | Delete a relation |
