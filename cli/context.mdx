@@ -3,7 +3,7 @@ title: 'Context Commands'
 description: 'Create, read, update, and delete context topics from the CLI.'
 ---
 
-## List &amp; Search
+## List & Search
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
@@ -13,7 +13,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
 | `context search` | query, `--json` | Full-text search | `driftless context search "payment"` |
 
-## Create &amp; Update
+## Create & Update
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
@@ -21,7 +21,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context update` | `--what`, `--gotcha`, `--decision`, `--invariant`, `--add-pattern`, `--remove-pattern`, `--rel`, `--dry-run` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
 
-## Load &amp; Link
+## Load & Link
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
@@ -29,7 +29,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context link` | `--dry-run`, `--json` | Cross-repo linkage | `driftless context link payment-flow` |
 | `context sync` | `--doc <path>` or `--note "..."` | Anchor doc or add note | `driftless context sync payment-flow --doc docs/billing.md` |
 
-## Health &amp; Graph
+## Health & Graph
 
 | Command | Flags | Description | Example |
 |---|---|---|---|

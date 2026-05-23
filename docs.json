@@ -58,9 +58,14 @@
             "icon": "home",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "Introduction",
+                "icon": "book-open",
+                "pages": ["index"]
+              },
+              {
+                "group": "Quickstart",
                 "icon": "rocket",
-                "pages": ["index", "quickstart"]
+                "pages": ["quickstart"]
               }
             ]
           },
@@ -69,14 +74,24 @@
             "icon": "brain",
             "groups": [
               {
-                "group": "The Loop",
+                "group": "The Driftless Loop",
                 "icon": "repeat",
                 "pages": ["concepts/core-loop"]
               },
               {
-                "group": "Knowledge Layer",
+                "group": "Topics & Knowledge Graph",
                 "icon": "network",
-                "pages": ["concepts/topics", "concepts/drift", "concepts/coverage"]
+                "pages": ["concepts/topics"]
+              },
+              {
+                "group": "Drift Detection",
+                "icon": "radar",
+                "pages": ["concepts/drift"]
+              },
+              {
+                "group": "Context Coverage",
+                "icon": "scan-search",
+                "pages": ["concepts/coverage"]
               }
             ]
           },
@@ -85,14 +100,24 @@
             "icon": "terminal",
             "groups": [
               {
-                "group": "Installation",
+                "group": "CLI Setup",
                 "icon": "download",
-                "pages": ["cli/installation"]
+                "pages": ["cli/setup"]
               },
               {
-                "group": "CLI Reference",
-                "icon": "square-terminal",
-                "pages": ["cli/setup", "cli/context", "cli/graph", "cli/sync"]
+                "group": "Context Commands",
+                "icon": "notebook-tabs",
+                "pages": ["cli/context"]
+              },
+              {
+                "group": "Graph & Impact",
+                "icon": "git-graph",
+                "pages": ["cli/graph"]
+              },
+              {
+                "group": "Sync & Branches",
+                "icon": "refresh-cw",
+                "pages": ["cli/sync"]
               },
               {
                 "group": "Agent Setup",
@@ -111,9 +136,24 @@
                 "pages": ["api/overview"]
               },
               {
-                "group": "Endpoints",
-                "icon": "server",
-                "pages": ["api/workspaces", "api/repos", "api/topics", "api/integrations"]
+                "group": "Workspaces",
+                "icon": "building",
+                "pages": ["api/workspaces"]
+              },
+              {
+                "group": "Repositories & Scans",
+                "icon": "folder-git",
+                "pages": ["api/repos"]
+              },
+              {
+                "group": "Topics",
+                "icon": "notebook-tabs",
+                "pages": ["api/topics"]
+              },
+              {
+                "group": "Integrations & PR Activity",
+                "icon": "plug",
+                "pages": ["api/integrations"]
               }
             ]
           },
@@ -195,6 +235,10 @@
   "redirects": [
     {
       "source": "/cli/reference",
+      "destination": "/cli/setup"
+    },
+    {
+      "source": "/cli/installation",
       "destination": "/cli/setup"
     },
     {

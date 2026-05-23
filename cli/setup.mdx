@@ -1,15 +1,54 @@
 ---
-title: 'Setup &amp; Auth'
+title: 'CLI Setup'
 description: 'Install, authenticate, and initialize the Driftless CLI.'
 ---
 
-The CLI is the primary interface for developers and agents. Run commands from a Git repository root unless a command explicitly says otherwise.
+## Install
+
+```bash
+npm install -g @driftless-sh/cli
+```
+
+## Authenticate
+
+Run `driftless login` to open your browser to the Driftless dashboard, where you can copy your API key:
+
+```bash
+driftless login
+```
+
+For non-interactive environments (e.g., CI), pass the key directly:
+
+```bash
+driftless login --key drift_xxxxxxxxxxxxxxxxx
+```
+
+## Initialize a repo
+
+```bash
+driftless init
+```
+
+`driftless init` scans the current repository, uploads a baseline to Driftless Cloud, and installs the agent skill (AGENTS.md + CLAUDE.md) so agents automatically load context before editing. See [Agent Setup](/agents/setup) for details.
 
 <Note>
   Set `DRIFTLESS_API_KEY` for non-interactive environments. Set `DRIFTLESS_API_URL` only when targeting staging or a local API.
 </Note>
 
-## Auth and setup
+## Config File
+
+The CLI stores its state in `~/.driftless/config.json`:
+
+```json
+{
+  "api_key": "drift_xxxxxxxxxxxxxxxxx",
+  "api_url": "https://api.driftless.icu/api/v1",
+  "workspace_slug": "acme-corp",
+  "workspace_id": "ws_abc123"
+}
+```
+
+## Command reference
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
@@ -18,13 +57,13 @@ The CLI is the primary interface for developers and agents. Run commands from a 
 | `doctor` | `--json` | 8 health checks | `driftless doctor` |
 | `install-skill` | none | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
 
-## Global
+## Global flags
 
-| Command | Flags | Description |
-|---|---|---|
-| `--version` / `-v` | none | Print version |
-| `--help` / `-h` | none | Full help |
-| `<cmd> --help` | none | Command-specific help |
+| Flag | Description |
+|---|---|
+| `--version` / `-v` | Print version |
+| `--help` / `-h` | Full help |
+| `<cmd> --help` | Command-specific help |
 
 <AccordionGroup>
   <Accordion title="Environment Variables">
