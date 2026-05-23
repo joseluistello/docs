@@ -5,8 +5,8 @@
   "theme": "aspen",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
-    "light": "/logo.svg",
-    "dark": "/logo.svg",
+    "light": "/new_logo.png",
+    "dark": "/new_logo.png",
     "href": "https://driftless.icu"
   },
   "colors": {
@@ -37,10 +37,6 @@
     }
   },
   "navbar": {
-    "links": [
-      { "label": "Dashboard", "href": "https://driftless.icu" },
-      { "label": "GitHub", "href": "https://github.com/driftless-sh/driftless" }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
