@@ -87,14 +87,50 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 - Tokens are never logged or returned after initial issuance
 - The MCP server does not import `@driftless/db`, `@driftless/scanner`, `typeorm`, or any internal library — it calls the REST API exclusively
 
-## Local development
+## Connecting your AI client
 
-For local development and CLI workflows, you can continue using the existing API key authentication:
+### Claude Desktop
 
-```bash
-# Already works — no OAuth needed for CLI/CI
-driftless login --key drift_xxx
-driftless context get my-topic --json
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "https://api.driftless.icu/mcp",
+      "headers": {
+        "Authorization": "Bearer drift_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+### ChatGPT / Copilot / other clients
+
+Use the MCP endpoint URL directly:
+
+```
+https://api.driftless.icu/mcp
+```
+
+Authenticate with a `Bearer` token in the `Authorization` header — either an API key (`drift_...`) for local/CI use, or an OAuth access token for published apps.
+
+### Local development
+
+For local development, the MCP server runs on `http://localhost:3020/mcp`:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "http://localhost:3020/mcp",
+      "headers": {
+        "Authorization": "Bearer drift_your_api_key_here"
+      }
+    }
+  }
+}
 ```
 
 OAuth is for **published AI client apps** (ChatGPT, Claude) that need per-user consent. CLI and CI continue to use API keys.
