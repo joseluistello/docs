@@ -1,0 +1,113 @@
+---
+title: 'MCP & OAuth'
+description: 'Connect ChatGPT, Claude, and other AI clients to your Driftless workspace via the Model Context Protocol.'
+---
+
+Driftless ships an MCP (Model Context Protocol) server that exposes your workspace context to AI clients. ChatGPT, Claude, Copilot, and any MCP-compatible client can read and write topics through it.
+
+## How it works
+
+The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing Driftless REST API. It is a **protocol adapter only** — it never accesses Postgres, internal libraries, or workspace admin operations directly.
+
+```
+AI Client (ChatGPT / Claude / Copilot)
+    │
+    ▼ OAuth 2.0 bearer token
+MCP Server (apps/mcp)
+    │
+    ▼ REST API calls
+Driftless API (apps/api)
+    │
+    ▼
+Postgres (Supabase)
+```
+
+## Available tools
+
+| Tool | Description |
+|------|-------------|
+| `driftless_context_search` | Full-text search across topics |
+| `driftless_context_list` | List topics with filters |
+| `driftless_context_get` | Retrieve a single topic by slug |
+| `driftless_context_load_for_files` | Match topics to file paths |
+| `driftless_context_create` | Create a new topic |
+| `driftless_context_update` | Update an existing topic (append-safe) |
+| `driftless_context_diff` | Get topics matching your local diff |
+
+All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations.
+
+## OAuth 2.0 setup
+
+Third-party AI clients authorize through OAuth 2.0 with PKCE support.
+
+### For AI client developers
+
+Register your client:
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/oauth/register \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My AI Client",
+    "redirect_uris": ["https://myapp.com/oauth/callback"],
+    "scopes": ["context:read", "topics:create", "topics:write"]
+  }'
+```
+
+### OAuth scopes
+
+| Scope | Description |
+|-------|-------------|
+| `context:read` | Read topics and context |
+| `topics:create` | Create new topics |
+| `topics:write` | Update existing topics |
+| `context:diff` | Read topic diff for local changes |
+
+### Authorization flow
+
+1. Redirect the user to `https://api.driftless.icu/api/v1/oauth/authorize?client_id=...&response_type=code&redirect_uri=...&scope=context:read+topics:write`
+2. The user consents in the dashboard at `https://driftless.icu/oauth/authorize`
+3. The dashboard redirects back to your `redirect_uri` with an authorization code
+4. Exchange the code at `https://api.driftless.icu/api/v1/oauth/token` for an access token
+5. Use the bearer token in MCP tool calls
+
+### Endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/oauth/authorize` | Authorization consent screen |
+| `POST` | `/oauth/token` | Exchange code for access token |
+| `POST` | `/oauth/register` | Register an OAuth client |
+| `POST` | `/oauth/revoke` | Revoke an access token |
+
+## Token security
+
+- Authorization codes, access tokens, and refresh tokens are stored as **hashes only** — never plaintext
+- Tokens are never logged or returned after initial issuance
+- The MCP server does not import `@driftless/db`, `@driftless/scanner`, `typeorm`, or any internal library — it calls the REST API exclusively
+
+## Local development
+
+For local development and CLI workflows, you can continue using the existing API key authentication:
+
+```bash
+# Already works — no OAuth needed for CLI/CI
+driftless login --key drift_xxx
+driftless context get my-topic --json
+```
+
+OAuth is for **published AI client apps** (ChatGPT, Claude) that need per-user consent. CLI and CI continue to use API keys.
+
+## Roadmap
+
+| Feature | Status |
+|---------|--------|
+| MCP server with 7 context tools | Shipped (pending external review) |
+| OAuth 2.0 authorize/token/register/revoke | Shipped (pending external review) |
+| Dashboard consent screen `/oauth/authorize` | Shipped (pending external review) |
+| ChatGPT app submission | Pending |
+| Claude integration testing | Pending |
+| `pre_edit_check` tool | Planned |
+| `freshness` tool | Planned |
+| `suggest_topic` tool | Planned |

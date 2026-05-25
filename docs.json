@@ -115,17 +115,22 @@
         ]
       },
       {
-        "tab": "More",
+        "tab": "Security",
         "groups": [
           {
             "group": "Security",
             "icon": "shield-check",
             "pages": ["security/overview"]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "MCP",
+        "groups": [
           {
-            "group": "Roadmap",
-            "icon": "map",
-            "pages": ["roadmap"]
+            "group": "MCP & OAuth",
+            "icon": "plug",
+            "pages": ["mcp/overview"]
           }
         ]
       }
@@ -176,6 +181,10 @@
     {
       "source": "/dashboard/overview",
       "destination": "/concepts/core-loop"
+    },
+    {
+      "source": "/roadmap",
+      "destination": "/mcp/overview"
     }
   ]
 }
