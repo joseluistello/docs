@@ -36,22 +36,57 @@ Postgres (Supabase)
 
 All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations.
 
-## OAuth 2.0 setup
+## Authentication
 
-Third-party AI clients authorize through OAuth 2.0 with PKCE support.
+All MCP requests require authentication. Unauthenticated requests receive HTTP 401 with a `WWW-Authenticate` header pointing to the OAuth discovery endpoints.
 
-### For AI client developers
+There are two ways to authenticate:
 
-Register your client:
+- **API key** — pass your Driftless API key in the `X-API-Key` header. Best for CLI, agents, and CI.
+- **OAuth 2.0** — for published AI clients (ChatGPT, Claude) that need per-user consent. The server supports dynamic client registration and PKCE.
+
+### Connecting with an API key
+
+Add this to your `claude_desktop_config.json` or equivalent:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "https://api.driftless.icu/mcp",
+      "headers": {
+        "X-API-Key": "drift_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+For local development, use `http://localhost:3020/mcp` and your local API key.
+
+### Connecting with OAuth (Claude.ai, ChatGPT)
+
+Published clients use OAuth 2.0 with PKCE. The flow is fully automatic for Claude.ai:
+
+1. Enter `https://api.driftless.icu/mcp` as the MCP endpoint in Claude.ai
+2. Claude.ai discovers the OAuth endpoints automatically via `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`
+3. You authorize in the Driftless consent screen
+4. Claude.ai receives a bearer token and uses it for all MCP tool calls
+
+No manual configuration needed — Claude.ai handles registration, PKCE, and token refresh.
+
+## OAuth 2.0 reference
+
+### Dynamic client registration
+
+Any client can register without authentication:
 
 ```bash
 curl -X POST https://api.driftless.icu/api/v1/oauth/register \
-  -H "x-api-key: drift_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "My AI Client",
-    "redirect_uris": ["https://myapp.com/oauth/callback"],
-    "scopes": ["context:read", "topics:create", "topics:write"]
+    "client_name": "My AI Client",
+    "redirect_uris": ["https://myapp.com/oauth/callback"]
   }'
 ```
 
@@ -63,87 +98,22 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `topics:create` | Create new topics |
 | `topics:write` | Update existing topics |
 | `context:diff` | Read topic diff for local changes |
-
-### Authorization flow
-
-1. Redirect the user to `https://api.driftless.icu/api/v1/oauth/authorize?client_id=...&response_type=code&redirect_uri=...&scope=context:read+topics:write`
-2. The user consents in the dashboard at `https://driftless.icu/oauth/authorize`
-3. The dashboard redirects back to your `redirect_uri` with an authorization code
-4. Exchange the code at `https://api.driftless.icu/api/v1/oauth/token` for an access token
-5. Use the bearer token in MCP tool calls
+| `offline_access` | Refresh access without reconnecting |
 
 ### Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `GET` | `/oauth/authorize` | Authorization consent screen |
-| `POST` | `/oauth/token` | Exchange code for access token |
-| `POST` | `/oauth/register` | Register an OAuth client |
-| `POST` | `/oauth/revoke` | Revoke an access token |
+| `GET` | `/.well-known/oauth-protected-resource` | MCP resource metadata (RFC 9728) |
+| `GET` | `/.well-known/oauth-authorization-server` | Authorization server metadata (RFC 8414) |
+| `GET` | `/.well-known/openid-configuration` | OIDC-compatible discovery alias |
+| `GET` | `/api/v1/oauth/authorize` | Authorization consent screen (redirects to dashboard) |
+| `POST` | `/api/v1/oauth/token` | Exchange code for access token |
+| `POST` | `/api/v1/oauth/register` | Register an OAuth client (RFC 7591) |
+| `POST` | `/api/v1/oauth/revoke` | Revoke an access token |
 
 ## Token security
 
 - Authorization codes, access tokens, and refresh tokens are stored as **hashes only** — never plaintext
 - Tokens are never logged or returned after initial issuance
 - The MCP server does not import `@driftless/db`, `@driftless/scanner`, `typeorm`, or any internal library — it calls the REST API exclusively
-
-## Connecting your AI client
-
-### Claude Desktop
-
-Add this to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "driftless": {
-      "url": "https://api.driftless.icu/mcp",
-      "headers": {
-        "Authorization": "Bearer drift_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### ChatGPT / Copilot / other clients
-
-Use the MCP endpoint URL directly:
-
-```
-https://api.driftless.icu/mcp
-```
-
-Authenticate with a `Bearer` token in the `Authorization` header — either an API key (`drift_...`) for local/CI use, or an OAuth access token for published apps.
-
-### Local development
-
-For local development, the MCP server runs on `http://localhost:3020/mcp`:
-
-```json
-{
-  "mcpServers": {
-    "driftless": {
-      "url": "http://localhost:3020/mcp",
-      "headers": {
-        "Authorization": "Bearer drift_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-OAuth is for **published AI client apps** (ChatGPT, Claude) that need per-user consent. CLI and CI continue to use API keys.
-
-## Roadmap
-
-| Feature | Status |
-|---------|--------|
-| MCP server with 7 context tools | Shipped (pending external review) |
-| OAuth 2.0 authorize/token/register/revoke | Shipped (pending external review) |
-| Dashboard consent screen `/oauth/authorize` | Shipped (pending external review) |
-| ChatGPT app submission | Pending |
-| Claude integration testing | Pending |
-| `pre_edit_check` tool | Planned |
-| `freshness` tool | Planned |
-| `suggest_topic` tool | Planned |
