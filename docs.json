@@ -182,9 +182,6 @@
       "source": "/dashboard/overview",
       "destination": "/concepts/core-loop"
     },
-    {
-      "source": "/roadmap",
-      "destination": "/mcp/overview"
-    }
+    
   ]
 }
