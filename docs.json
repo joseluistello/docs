@@ -181,7 +181,6 @@
     {
       "source": "/dashboard/overview",
       "destination": "/concepts/core-loop"
-    },
-    
+    }
   ]
 }
