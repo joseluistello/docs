@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
-  "description": "Shared codebase memory for engineering teams and coding agents.",
+  "description": "Shared context layer for engineering teams and coding agents.",
   "theme": "linden",
   "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
   "logo": {
@@ -70,7 +70,7 @@
           {
             "group": "Context integrity",
             "icon": "radar",
-            "pages": ["concepts/drift", "concepts/coverage"]
+            "pages": ["concepts/drift", "concepts/pr-bot"]
           }
         ]
       },
@@ -85,7 +85,7 @@
           {
             "group": "Daily workflow",
             "icon": "refresh-cw",
-            "pages": ["cli/sync", "cli/context", "cli/graph"]
+            "pages": ["cli/sync", "cli/context"]
           },
           {
             "group": "Agents",
@@ -115,12 +115,17 @@
         ]
       },
       {
-        "tab": "Security",
+        "tab": "More",
         "groups": [
           {
             "group": "Security",
             "icon": "shield-check",
             "pages": ["security/overview"]
+          },
+          {
+            "group": "Roadmap",
+            "icon": "map",
+            "pages": ["roadmap"]
           }
         ]
       }
@@ -159,6 +164,18 @@
     {
       "source": "/api/reference",
       "destination": "/api/overview"
+    },
+    {
+      "source": "/cli/graph",
+      "destination": "/cli/context"
+    },
+    {
+      "source": "/concepts/coverage",
+      "destination": "/concepts/pr-bot"
+    },
+    {
+      "source": "/dashboard/overview",
+      "destination": "/concepts/core-loop"
     }
   ]
 }

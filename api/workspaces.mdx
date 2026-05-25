@@ -1,13 +1,12 @@
 ---
 title: 'Workspaces'
-description: 'Manage workspace details, members, and health.'
+description: 'Manage workspace details, members, and integrations.'
 ---
 
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/:slug` | Get workspace details |
 | `PATCH` | `/workspaces/:slug` | Update workspace settings |
-| `GET` | `/workspaces/:slug/health` | Workspace health summary |
 | `GET` | `/workspaces/:slug/members` | List members |
 | `POST` | `/workspaces/:slug/members` | Invite a member |
 | `DELETE` | `/workspaces/:slug/members/:memberId` | Remove a member |

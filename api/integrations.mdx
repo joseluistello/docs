@@ -16,3 +16,5 @@ description: 'Manage GitHub App integration and observed pull request activity.'
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/:slug/pr-activity` | Observed pull request activity |
+
+PR observations are matched by topic pattern intersection with PR file lists — not by scanner-derived components. Each PR observation records which topics matched, which files were touched, and the coverage breakdown.

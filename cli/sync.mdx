@@ -3,7 +3,7 @@ title: 'Sync & Branches'
 description: 'See what drifted around your topics before starting work.'
 ---
 
-`driftless sync` is the first command to run when you open a coding session.
+`driftless sync` is the command to run when you start a coding session and the repo is already connected to Driftless Cloud.
 
 It does not scan your local diff and it does not load file-specific context. It pulls the repo memory state from Driftless Cloud and answers one question:
 
@@ -13,7 +13,7 @@ It does not scan your local diff and it does not load file-specific context. It 
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `sync` | `--json` | Show stale topics, recent PR activity, suggested topics, and tracked branches | `driftless sync` |
+| `sync` | `--json` | Show stale topics, recent PR activity, and tracked branches | `driftless sync` |
 
 ```bash
 driftless sync
@@ -30,12 +30,6 @@ Typical output:
    auth-boundaries
      src/auth/session.ts changed
      → review the change; if it changed how this works: driftless context update auth-boundaries --what "..." --how "..."
-
-Team activity (2 PRs via GitHub App):
-  [medium] #412 refactor auth middleware  → touched auth-boundaries
-
-3 suggested topics from init — review and confirm:
-  driftless context list --suggested
 ```
 
 ## What sync checks
@@ -44,7 +38,6 @@ Team activity (2 PRs via GitHub App):
 |---|---|---|
 | **Stale topics** | GitHub push events on tracked branches | Review the changed code and update the topic if the behavior changed |
 | **Recent PR activity** | GitHub App observations | Read the touched topics before working in the same area |
-| **Suggested topics** | `driftless init` suggestions | Confirm, enrich, merge, or delete them |
 | **Tracked branches** | Repo settings in Driftless Cloud | Use `driftless branches` to see or change drift scope |
 
 ## When to use sync
@@ -58,7 +51,7 @@ driftless sync
 Then load context for the files you plan to edit:
 
 ```bash
-driftless context load --files "src/auth/session.ts,src/auth/token.ts"
+driftless context get --files "src/auth/session.ts,src/auth/token.ts"
 ```
 
 If you already have local changes and want matching topics for the diff:
@@ -84,7 +77,6 @@ The JSON output includes:
 | `tracking` | Default branch and extra tracked branches |
 | `stale_topics` | Topics whose anchored code changed |
 | `pr_activity` | Recent PR observations and touched topics |
-| `suggested_pending` | Count of suggested topics waiting for review |
 
 ## Branches
 

@@ -1,35 +1,13 @@
 ---
 title: 'The Driftless loop'
-description: 'Scan, observe, contextualize, deliver, and check.'
+description: 'Create, observe, deliver, and check.'
 ---
 
-The Driftless loop has five phases. Every command, every event, every scan fits into one of them.
+The Driftless loop has four phases. Every command and event fits into one of them.
 
-## Phase 1: Scan
+## Phase 1: Create
 
-The scanner extracts components from your TypeScript codebase. It reads the AST and identifies:
-
-- **NestJS**: endpoints, guards, services, modules, DTOs, interceptors, pipes
-- **Next.js**: pages, layouts, route handlers, server actions, middleware
-- **React**: components and hooks
-
-Scans happen in two ways:
-- **On demand**: `driftless init`
-- **On push**: The GitHub App triggers a scan when code is pushed to tracked branches
-
-```bash
-driftless init              # full baseline scan, uploads to Cloud
-```
-
-## Phase 2: Observe
-
-The GitHub App watches pushes and PRs. On every push to a tracked branch, it matches changed files against team topics. On PRs, it posts sticky context comments listing the relevant topics for the changed files.
-
-Pushes to tracked branches can mark topics as stale. PRs themselves do not trigger staleness; they trigger observation only.
-
-## Phase 3: Contextualize
-
-The API stores extracted facts and the team writes context on top of them. Topics are created with what/how/decisions/gotchas, anchored to files via patterns or explicit paths. Typed relations connect topics into a knowledge graph.
+Start with topics — durable engineering memory. Create what you know:
 
 ```bash
 driftless context add "auth-flow" \
@@ -45,29 +23,37 @@ driftless context update auth-flow \
   --rel depends_on:token-refresh
 ```
 
-Wiki-links (`[[slug]]`) inside any free-text field are auto-parsed into forward and backward references in the graph.
+## Phase 2: Observe
 
-## Phase 4: Deliver
+The GitHub App watches pushes and PRs. On every push to a tracked branch, it matches changed files against all workspace topics. Any topic whose anchored patterns overlap with the changed files gets marked **stale** with a human-readable reason.
+
+On PRs, the bot posts a sticky comment listing matched topics and the coverage breakdown: how many files in the PR are covered by a topic, how many are outside any topic, and which files are unanchored — along with suggested next steps to close the gap.
+
+Pushes to tracked branches can mark topics as stale. PRs themselves do not trigger staleness; they trigger observation only.
+
+See [PR Bot](/concepts/pr-bot) for how coverage feedback works.
+
+## Phase 3: Deliver
 
 Context reaches agents and humans through CLI commands:
 
 ```bash
 driftless sync                              # what drifted since you last looked
-driftless context get auth-flow             # full context for one topic
+driftless context get auth-flow              # full context for one topic
 driftless context get --diff                # context for your current local changes
-driftless context load --files "a.ts,b.ts"  # topics + coverage for specific files
-driftless graph file src/auth/guard.ts      # entrypoints, upstream, downstream, contracts
-driftless graph impact --files "a.ts,b.ts"  # what these changes can break
+driftless context get --files "a.ts,b.ts"  # topics matching specific files
 ```
 
-## Phase 5: Check
+`context load` also works but is deprecated — prefer `context get --files`.
 
-When code changes on tracked branches, topics whose anchored files overlap get marked stale. The staleness reason lists the specific files and commit that triggered it.
+## Phase 4: Check
+
+When code changes on tracked branches, topics whose anchored patterns overlap get marked stale. The staleness reason lists the specific files and commit that triggered it.
 
 ```bash
 driftless sync                    # shows stale topics alongside other changes
-driftless context doctor          # full health audit: staleness, coverage, orphaned topics
+driftless context doctor          # full health audit: staleness, zombie, orphaned topics
 driftless context get --diff      # staleness status for your current local changes
 ```
 
-Structural staleness goes beyond file matching. It detects deleted endpoint files, removed guards, and services that no longer exist in the codebase. Coverage reports show what is documented vs. what is not, with risk-based prioritization.
+`context doctor` audits the topic layer itself — it flags `stale`, `orphaned` (repo deleted), `zombie` (anchor patterns no longer match any file), `draft` (suggested, never confirmed), and `docs_pending` topics.

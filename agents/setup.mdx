@@ -3,11 +3,26 @@ title: 'Agent setup'
 description: 'Teach coding agents to sync, load, and persist Driftless context.'
 ---
 
-Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing, inspect impact, and persist durable discoveries.
+Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing and persist durable discoveries.
 
-## Auto-install via init
+## Agent workflow
 
-`driftless init` runs the agent setup automatically. No separate step needed when setting up a new repo.
+The default agent workflow is topic-first:
+
+1. **Sync before work** — `driftless sync`
+2. **Load topic context** — `driftless context get <slug>` or `driftless context get --files "src/auth/**"`
+3. **If no topic exists, propose or create one** — `driftless context add "my-area" --kind code-context --what "..." --how "..."`
+4. **Add relations if useful** — `driftless context update <slug> --rel depends_on:other-topic`
+5. **Use JSON output when acting as an agent** — `driftless context get <slug> --json`
+6. **Persist what you learned** — `driftless context update <slug> --gotcha "..." --decision "..."`
+
+## Install the agent skill
+
+```bash
+driftless install-skill
+```
+
+This installs AGENTS.md and CLAUDE.md into the current repo. Use this when you want agent context loading without any additional setup.
 
 If you need to re-run it later (e.g., to update the skill instructions after a CLI upgrade):
 
@@ -38,25 +53,11 @@ The Driftless block teaches agents this workflow:
     Agent runs `driftless doctor` to check API key, workspace, Git remote, and skill installation.
   </Step>
 
-  <Step title="Sync on session start">
-    ```bash
-    driftless sync
-    ```
-    Agent sees stale topics, changed context, PR activity, and suggested topics before touching files.
-  </Step>
-
   <Step title="Load context before editing">
     ```bash
-    driftless context load --files "src/auth/guard.ts,src/users/service.ts"
+    driftless context get --files "src/auth/guard.ts,src/users/service.ts"
     ```
-    Agent gets matching topics, coverage, and recommended actions for the files it is about to modify.
-  </Step>
-
-  <Step title="Check blast radius">
-    ```bash
-    driftless graph impact --files "src/auth/guard.ts,src/users/service.ts"
-    ```
-    Graph shows upstream and downstream components affected by the change.
+    Agent gets matching topics for the files it is about to modify. Use `--json` for structured output.
   </Step>
 
   <Step title="Persist discoveries">

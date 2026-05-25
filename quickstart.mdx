@@ -1,14 +1,13 @@
 ---
 title: 'Quickstart'
-description: 'Install the CLI, link a repo, and load context before editing code.'
+description: 'Create your first context topic and start building engineering memory.'
 ---
 
-Driftless works in two ways — pick the one that fits how your team operates. Both paths converge on the same knowledge graph.
+Driftless starts with topics — durable engineering memory created by humans and agents. No repo scan required.
 
 ## Prerequisites
 
 - Node.js 22 or later
-- A Git repository with a remote
 - A Driftless workspace at [driftless.icu](https://driftless.icu)
 
 <Steps>
@@ -40,59 +39,77 @@ Driftless works in two ways — pick the one that fits how your team operates. B
     </Tip>
   </Step>
 
-  <Step title="Initialize the repo">
+  <Step title="Install the agent skill">
+    Install Driftless context instructions so coding agents automatically load topics before editing:
+
     ```bash
-    driftless init
+    driftless install-skill
     ```
 
-    This scans your codebase, uploads a baseline, auto-generates suggested topics from your AST, and installs the agent skill (AGENTS.md + CLAUDE.md) so agents automatically load context before editing.
+    This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic-loading instructions every session.
   </Step>
 
-  <Step title="Choose your path">
-    ### Path A — Scan your code
-
-    `driftless init` auto-generates topics from your AST. Review and refine them:
+  <Step title="Create your first topic">
+    Start by capturing what you know about a part of your system:
 
     ```bash
-    driftless context list --auto          # see auto-generated topics
-    driftless context get my-auth          # inspect a topic
-    driftless context update my-auth \     # add team knowledge
-      --decision "We use RS256 keys — services verify without shared secret" \
-      --gotcha "Guard decodes JWT but doesn't verify roles"
+    driftless context add onboarding-context \
+      --kind domain-map \
+      --what "Shared context map for this repo or workflow." \
+      --how "Captures what humans and agents need to know before working here."
     ```
 
-    When code changes on tracked branches, topics go stale — you know what to review.
-
-    ### Path B — Write context manually
-
-    Create topics by hand. Build a team knowledge graph connected by typed relations and wiki-links:
-
-    ```bash
-    driftless context add "auth-flow" \
-      --what "JWT validation and role-based access control" \
-      --how "RS256 asymmetric keys, guard decodes, role decorator checks" \
-      --pattern "src/auth/**" \
-      --tags auth,security \
-      --rel depends_on:token-refresh
-    ```
-
-    Anchor documents, link topics across repos, and use `[[wiki-links]]` to cross-reference.
+    This creates a durable topic in Driftless Cloud.
   </Step>
 
-  <Step title="Load before editing">
-    Retrieve a topic directly:
+  <Step title="Add structured context">
+    Enrich the topic with decisions, gotchas, invariants, and required checks:
 
     ```bash
-    driftless context get my-auth
+    driftless context update onboarding-context \
+      --gotcha "WorkspaceGuard is global — use @Public() only for explicit public routes" \
+      --decision "RS256 keys for JWTs so services verify without shared secret" \
+      --invariant "All routes require auth unless explicitly marked @Public()" \
+      --check "Verify role decorator matches the guard's expected metadata"
     ```
+  </Step>
 
-    For targeted loading based on the files you're about to edit:
+  <Step title="Add relations">
+    Connect topics to each other with typed edges:
 
     ```bash
-    driftless context load --files "src/auth/guard.ts,src/auth/service.ts"
+    driftless context update onboarding-context \
+      --rel relates_to:api-and-auth-architecture
+
+    driftless context relations onboarding-context
     ```
 
-    Returns matching topics, coverage status, and recommended actions.
+    Relation types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`.
+  </Step>
+
+  <Step title="Get topic as JSON">
+    Retrieve the topic in machine-readable format:
+
+    ```bash
+    driftless context get onboarding-context --json
+    ```
+
+    Agents use JSON output by default. Use `--human` for readable output.
+  </Step>
+
+  <Step title="Anchor to file paths">
+    Anchor topics to code paths for drift tracking and file-matched loading:
+
+    ```bash
+    driftless context update onboarding-context \
+      --pattern "apps/*/src/**" \
+      --pattern "docs/**" \
+      --pattern "AGENTS.md"
+    ```
+
+    The CLI validates each pattern against your local checkout. A pattern that matches zero files is blocked; one that matches over 100 files gets an over-broad warning.
+
+    Anchors make topics appear automatically in `context get --files` and `context get --diff`.
   </Step>
 </Steps>
 
@@ -100,9 +117,33 @@ Driftless works in two ways — pick the one that fits how your team operates. B
 
 ```bash
 driftless doctor
+driftless context doctor
 ```
 
-`doctor` checks the API key, workspace, Git remote, baseline, AGENTS.md installation, and GitHub App status.
+`doctor` checks the API key, workspace, Git remote, and AGENTS.md installation. `context doctor` audits the topic layer (stale / orphaned / zombie / draft topics).
+
+## Working with existing topics
+
+If this repo is already connected to Driftless Cloud, pull the latest state before working:
+
+```bash
+driftless sync
+```
+
+Then load context for the files you are about to edit:
+
+```bash
+driftless context get --files "src/auth/guard.ts,src/auth/service.ts"
+```
+
+## Topic-first workflow
+
+Driftless works without a repo scan. The default workflow is:
+
+1. **Create** topics for what you know — decisions, gotchas, invariants, runbooks.
+2. **Anchor** topics to code paths when ready — patterns like `src/auth/**`.
+3. **Connect** topics with relations — `depends_on`, `relates_to`, `supersedes`.
+4. **Grow** coverage through the PR bot — every PR comment tells you which files are unanchored and suggests next steps.
 
 ## Next
 

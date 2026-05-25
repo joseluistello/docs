@@ -31,8 +31,16 @@ Install from the dashboard:
 On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` events:
 
 1. Fetches the list of changed files via the GitHub API
-2. Matches each file against all workspace topic patterns
-3. Posts a **sticky comment** listing matched topics with their "what" summary and links to the dashboard
+2. Matches each file against all workspace topic patterns using glob intersection
+3. Posts a **sticky comment** with two halves:
+
+**Per-topic coverage:** Each matched topic gets a block showing its `what` summary, relevant decisions, and gotchas.
+
+**Coverage retro line:** A summary showing how many files in the PR are covered by topics, how many are outside any topic, and the percentage covered. When files are unanchored, the comment suggests up to 6 specific file paths and the CLI commands to anchor them:
+
+```text
+8 files changed · 5 covered · 3 outside any topic (37%)
+```
 
 The comment is updated in place on new commits. It is never re-posted.
 
@@ -40,7 +48,7 @@ The comment is updated in place on new commits. It is never re-posted.
 
 On `push` events to tracked branches (default branch plus any custom branches):
 
-1. Matches changed files against topics
+1. Matches changed files against topics using glob pattern intersection
 2. Marks matching topics as **stale** with a reason (e.g., "3 files changed in commit abc1234")
 
 Add custom tracked branches:
@@ -59,6 +67,13 @@ auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
 how: 2 endpoints, 1 service, 1 guard
 decisions: Multi-tenant, uses org_id from token
 gotchas: All endpoints require auth; do not add @Public() without review
+
+8 files changed · 5 covered · 3 outside any topic (37%)
+
+Unanchored paths:
+  src/auth/middleware.ts — context update auth-boundaries --add-pattern "src/auth/middleware/**"
+  src/auth/types.ts — context update auth-boundaries --add-pattern "src/auth/types/**"
+  src/auth/index.ts — context add auth-entry --pattern "src/auth/index.ts"
 ```
 
 Each matched topic gets its own block. The HTML marker (`<!-- driftless-context -->`) lets Driftless find and update the comment on subsequent pushes.

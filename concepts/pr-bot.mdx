@@ -1,0 +1,67 @@
+---
+title: 'PR Bot'
+description: 'How the Driftless PR bot surfaces coverage gaps on every pull request.'
+---
+
+The Driftless PR bot is the growth engine for team context. Every time a pull request touches code, the bot matches the changed files against all workspace topics and posts a sticky comment with two halves: per-topic context and a coverage retro.
+
+## How it works
+
+When a PR is opened or updated, the bot:
+
+1. Fetches the list of changed files from GitHub
+2. Intersects each file path against every workspace topic's anchor patterns (globs)
+3. Posts a single sticky comment with matched topics and a coverage summary
+
+The matching is **glob-only** — each topic's `patterns` are matched against the PR file list. No scanner or code analysis is involved.
+
+## Per-topic context
+
+For every topic whose patterns match at least one file in the PR, the comment includes:
+
+- The topic slug and a link to the dashboard
+- `what` — a one-line summary
+- Key decisions and gotchas relevant to the changed files
+- Which specific files in the PR fall under this topic
+
+```text
+### auth-boundaries
+**Applies to:** src/auth/session.ts, src/auth/tenant.ts
+**How:** 2 endpoints, 1 service, 1 guard
+**Decisions:** Multi-tenant, uses org_id from token
+**Gotchas:** All endpoints require auth; do not add @Public() without review
+```
+
+## Coverage retro
+
+Below the per-topic blocks, the comment includes a coverage summary line and gap suggestions for unanchored files:
+
+```text
+8 files changed · 5 covered · 3 outside any topic (37%)
+
+Unanchored paths:
+  src/auth/middleware.ts — `context update auth-boundaries --add-pattern "src/auth/middleware/**"`
+  src/auth/types.ts — `context update auth-boundaries --add-pattern "src/auth/types/**"`
+  src/auth/index.ts — `context add auth-entry --pattern "src/auth/index.ts"`
+```
+
+When files are not covered by any topic, the bot suggests up to 6 unanchored paths and the CLI commands to anchor them — either by extending an existing topic (`context update --add-pattern`) or creating a new one (`context add --pattern`).
+
+This is how the context layer grows over time: the PR bot tells the team exactly which files lack coverage and what to do about it. No background scanner needed.
+
+## Two sides of the comment
+
+| Section | Purpose |
+|---------|---------|
+| **Per-topic blocks** | Tell reviewers what context exists for the code they are reviewing. Decisions and gotchas surface directly in the PR. |
+| **Coverage retro** | Tell the team where gaps exist and suggest how to close them. |
+
+## Configuration
+
+- The bot is active on any repo where the GitHub App is installed and the repo is linked to a workspace.
+- The comment is updated in place on new commits — never re-posted.
+- Only files changed in the PR are matched; the bot does not scan the entire repo.
+
+<Note>
+  The PR bot uses topic patterns only. It does not depend on any scanner, code analysis, or component extraction. Coverage is measured by glob pattern intersection with PR file lists.
+</Note>

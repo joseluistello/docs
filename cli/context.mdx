@@ -7,7 +7,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context list` | `--stale`, `--docs`, `--auto`, `--manual`, `--suggested`, `--status`, `--kind`, `--repo`, `--json` | List topics with filters | `driftless context list --stale --auto` |
+| `context list` | `--stale`, `--docs`, `--auto`, `--manual`, `--status`, `--kind`, `--repo`, `--json` | List topics with filters | `driftless context list --stale --auto` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
@@ -21,18 +21,27 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--kind`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
 
-## Load & Link
+## Pattern validation
+
+Every `--pattern` and `--add-pattern` is validated against your local checkout before the API call:
+
+| Result | Meaning |
+|---|---|
+| `✓ pattern "src/auth/**" matches 12 files` | Healthy anchor |
+| `⚠ over-broad anchor` | Matches over 100 files; consider splitting the topic |
+| `✗ pattern matches 0 files` | Blocked; fix the glob or use `--where` for an explicit path |
+
+## Link & Health
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context load` | `--files "a,b"`, `--dry-run`, `--json` | Context + coverage | `driftless context load --files "src/auth/guard.ts,src/auth/service.ts"` |
 | `context link` | `--dry-run`, `--json` | Cross-repo linkage | `driftless context link payment-flow` |
-| `context sync` | `--doc <path>`, `--note "..."`, `--files "a,b"`, `--pattern`, `--dry-run`, `--json` | Anchor doc or add note | `driftless context sync payment-flow --doc docs/billing.md` |
-
-## Health & Graph
-
-| Command | Flags | Description | Example |
-|---|---|---|---|
 | `context doctor` | `--json` | Audit context health | `driftless context doctor` |
 | `context relations` | `--json` | List typed relations | `driftless context relations payment-flow` |
-| `context graph` | `--depth N`, `--json` | Topic knowledge graph | `driftless context graph payment-flow --depth 2` |
+| `context graph` | `--depth N`, `--json` | Topic relation graph | `driftless context graph payment-flow --depth 2` |
+
+`context doctor` audits the topic layer for zombie (patterns match zero files), orphaned (repo deleted), stale, and draft topics.
+
+## Deprecated: context load
+
+`context load` still works but is deprecated. Prefer `context get --files` for matching topics by path. The `load` command no longer returns scanner-derived fields (coverage tiers, graph facts, recommended actions).

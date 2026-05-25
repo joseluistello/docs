@@ -44,3 +44,14 @@ These endpoints do not require authentication:
 | `POST` | `/auth/api-keys` | Create an API key |
 | `GET` | `/auth/api-keys` | List API keys for the workspace |
 | `DELETE` | `/auth/api-keys/:id` | Revoke an API key |
+
+## OAuth
+
+OAuth 2.0 endpoints for MCP client applications:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/oauth/authorize` | Authorization consent screen |
+| `POST` | `/oauth/token` | Exchange authorization code for access token |
+| `POST` | `/oauth/register` | Register an OAuth client |
+| `POST` | `/oauth/revoke` | Revoke an access token |

@@ -1,6 +1,6 @@
 ---
 title: 'Security'
-description: 'How Driftless handles encryption, API keys, and data protection.'
+description: 'How Driftless handles encryption, API keys, OAuth, and data protection.'
 ---
 
 ## Encryption
@@ -11,6 +11,7 @@ All secrets stored in Driftless are encrypted with **AES-256-GCM** before they r
 - Webhook secrets
 - GitHub App credentials
 - Model provider keys (BYOM)
+- OAuth tokens and authorization codes
 
 The encryption key is derived from environment variables and never stored in the database.
 
@@ -34,6 +35,33 @@ Create keys from the dashboard under **Settings > API Keys** or via the CLI:
 driftless login
 ```
 
+## OAuth & MCP
+
+Driftless supports OAuth 2.0 authorization for MCP (Model Context Protocol) client applications such as ChatGPT and Claude. OAuth allows third-party AI clients to access your workspace context with explicit user consent.
+
+### OAuth scopes
+
+| Scope | Description |
+|---|---|
+| `context:read` | Read topics and context |
+| `topics:create` | Create new topics |
+| `topics:write` | Update existing topics |
+| `context:diff` | Read topic diff for local changes |
+
+### OAuth flow
+
+1. The MCP client redirects the user to `/api/v1/oauth/authorize` on the Driftless API
+2. The user consents in the dashboard at `/oauth/authorize`
+3. The API issues an authorization code (PKCE-supported)
+4. The client exchanges the code for an access token at `/api/v1/oauth/token`
+5. The client uses the bearer token to call MCP tools
+
+### Token security
+
+- Authorization codes, access tokens, and refresh tokens are stored as hashes only — never plaintext
+- Tokens are never logged or returned after initial issuance
+- The MCP server (`apps/mcp`) is a protocol adapter that calls the existing Driftless REST API. It never accesses Postgres or internal libraries directly.
+
 ## Data handling
 
 | Data | Storage | Encryption |
@@ -41,10 +69,10 @@ driftless login
 | Topic content | Postgres | At rest (Supabase) |
 | API keys | Postgres (hashed) | Hashed + encrypted |
 | GitHub tokens | Postgres | AES-256-GCM |
-| Scan results | Postgres | At rest (Supabase) |
+| OAuth tokens | Postgres (hashed) | Hashed + encrypted |
 | Source code | Never stored | N/A |
 
-Driftless **never stores** your source code. The scanner extracts metadata (endpoints, guards, services, modules) and uploads only the structural facts. File contents are never transmitted.
+Driftless **never stores** your source code. Only structural metadata from topics anchors (file patterns) and PR file lists are stored.
 
 ## GitHub App permissions
 

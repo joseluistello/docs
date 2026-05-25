@@ -5,7 +5,7 @@ description: 'How Driftless detects when code has changed relative to team conte
 
 ## How staleness works
 
-When a push arrives on a tracked branch, the API matches changed files against all workspace topics. Any topic whose anchored files or patterns overlap with the changed files gets marked **stale** with a human-readable reason.
+When a push arrives on a tracked branch, the API matches changed files against all workspace topics using glob pattern intersection. Any topic whose anchored patterns overlap with the changed files gets marked **stale** with a human-readable reason.
 
 For example, if a push to `main` changes `src/auth/guard.ts` and `src/auth/service.ts`, the `auth-flow` topic anchored to `src/auth/**` becomes:
 
@@ -23,17 +23,6 @@ driftless branches rm staging
 ```
 
 Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Staleness is reserved for branches where changes signal durable context shifts.
-
-## Structural staleness
-
-Beyond simple file matching, Driftless detects structural changes:
-
-- **Deleted endpoint files** — An endpoint that was extracted in a previous scan no longer exists
-- **Removed guards** — A guard that was protecting an endpoint has been removed
-- **Deleted services** — A service class no longer exists in the codebase
-- **Module restructuring** — Files moved between modules
-
-These structural signals are more informative than file-level diffs because they describe *what changed architecturally*, not just *which files were touched*.
 
 ## Lifecycle
 
@@ -67,7 +56,7 @@ driftless context get --diff            # staleness for current local (uncommitt
   <Accordion title="Can I manually mark a topic as stale?">
     Yes. Run `driftless context update <slug> --status draft` to mark it for review, or update the content and set `--status reviewed` to clear staleness. You can also let the next push naturally trigger a staleness check.
   </Accordion>
-  <Accordion title="What happens if I delete a topic's anchored files?">
-    The scanner detects missing files during the next scan and reports them as structural staleness. The topic stays stale until someone either updates its anchors or confirms the context is no longer relevant.
+  <Accordion title="What happens if a topic's anchored files are deleted?">
+    The topic becomes stale on the next push. If the glob patterns no longer match any file in the repo, `context doctor` flags it as a **zombie** — an anchor pointing at nothing. Fix the patterns or archive the topic.
   </Accordion>
 </AccordionGroup>

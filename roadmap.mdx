@@ -1,0 +1,54 @@
+---
+title: 'Roadmap'
+description: 'What is shipped, pending review, and planned for Driftless.'
+---
+
+## Shipped (pending external review)
+
+### MCP server for ChatGPT and Claude
+
+Driftless ships a Model Context Protocol (MCP) server that exposes workspace context to AI clients via a standard protocol. The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing Driftless REST API — it never accesses Postgres or internal libraries directly.
+
+**Protocol:** JSON-RPC over HTTPS (Streamable HTTP transport)
+**Tools:** `driftless_context_search`, `driftless_context_list`, `driftless_context_get`, `driftless_context_load_for_files`, `driftless_context_create`, `driftless_context_update`, `driftless_context_diff`
+
+**OAuth 2.0 endpoints** for client authorization:
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/v1/oauth/authorize` | Authorization consent screen |
+| `POST /api/v1/oauth/token` | Exchange code for access token |
+| `POST /api/v1/oauth/register` | Register an OAuth client |
+| `POST /api/v1/oauth/revoke` | Revoke an access token |
+
+**OAuth scopes:**
+
+| Scope | Description |
+|---|---|
+| `context:read` | Read topics and context |
+| `topics:create` | Create new topics |
+| `topics:write` | Update existing topics |
+| `context:diff` | Read topic diff for local changes |
+
+**Dashboard consent screen:** `/oauth/authorize` — users approve MCP client access to their workspace context.
+
+**Architecture boundary:** `apps/mcp` is a protocol adapter only. It calls the Driftless REST API for all business behavior. `apps/api` remains the source of truth for auth, workspace resolution, topic lifecycle, and audit behavior.
+
+**Token security:** Authorization codes, access tokens, and refresh tokens are stored as hashes only — never plaintext, never logged, never returned after initial issuance.
+
+**Pending before public submission:**
+- End-to-end OAuth browser smoke test (PKCE flow: authorize → consent → token exchange → MCP tool call)
+- ChatGPT app review submission
+- Claude integration testing
+
+## Planned
+
+These features are on the roadmap but not yet implemented:
+
+| Feature | Description |
+|---------|-------------|
+| Dashboard improvements | Enhanced topic editing, advanced search and filtering, topic templates from the UI |
+| `pre_edit_check` | Pre-flight context check before an agent starts editing — returns whether the topic layer is healthy for the target files |
+| `freshness` | Automatic staleness scoring for topics based on time since last review and frequency of code changes |
+| `suggest_topic` | AI-assisted topic creation that suggests what, how, and anchors based on the files you select |
+| Additional MCP tool surfaces | Expand MCP tools beyond context:read/write based on user demand |

@@ -1,6 +1,6 @@
 ---
 title: 'CLI Setup'
-description: 'Install, authenticate, and initialize the Driftless CLI.'
+description: 'Install, authenticate, and start creating context topics.'
 ---
 
 ## Install
@@ -23,13 +23,53 @@ For non-interactive environments (e.g., CI), pass the key directly:
 driftless login --key drift_xxxxxxxxxxxxxxxxx
 ```
 
-## Initialize a repo
+## Install the agent skill
+
+Install Driftless context instructions so coding agents automatically load topics before editing:
 
 ```bash
-driftless init
+driftless install-skill
 ```
 
-`driftless init` scans the current repository, uploads a baseline to Driftless Cloud, and installs the agent skill (AGENTS.md + CLAUDE.md) so agents automatically load context before editing. See [Agent Setup](/agents/setup) for details.
+This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic-loading instructions every session.
+
+## Create your first topic
+
+Driftless starts with topics — durable engineering memory — without requiring a repo scan:
+
+```bash
+driftless context add onboarding-context \
+  --kind domain-map \
+  --what "Shared context map for this repo or workflow." \
+  --how "Captures what humans and agents need to know before working here."
+```
+
+Enrich with structured context:
+
+```bash
+driftless context update onboarding-context \
+  --gotcha "WorkspaceGuard is global — use @Public() only for explicit public routes" \
+  --decision "RS256 keys so services verify without shared secret" \
+  --invariant "All routes require auth unless explicitly marked @Public()" \
+  --check "Verify role decorator matches the guard's expected metadata"
+```
+
+Connect topics with typed relations:
+
+```bash
+driftless context update onboarding-context --rel relates_to:api-auth-architecture
+driftless context get onboarding-context --json
+```
+
+Anchor to file paths for drift tracking:
+
+```bash
+driftless context update onboarding-context \
+  --pattern "apps/*/src/**" \
+  --pattern "docs/**"
+```
+
+The CLI validates each pattern against your local checkout at write time. A pattern that matches zero files is blocked; one that matches over 100 files gets an over-broad warning.
 
 <Note>
   Set `DRIFTLESS_API_KEY` for non-interactive environments. Set `DRIFTLESS_API_URL` only when targeting staging or a local API.
@@ -53,7 +93,6 @@ The CLI stores its state in `~/.driftless/config.json`:
 | Command | Flags | Description | Example |
 |---|---|---|---|
 | `login` | `--key <key>` | Authenticate with API key | `driftless login --key drift_xxx` |
-| `init` | `--src <path>`, `--framework <fw>`, `--suggest` | Scan repo, upload baseline, install skill | `driftless init --src apps/api --suggest` |
 | `doctor` | `--json` | 8 health checks | `driftless doctor` |
 | `install-skill` | none | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
 
@@ -71,6 +110,5 @@ The CLI stores its state in `~/.driftless/config.json`:
     |---|---|
     | `DRIFTLESS_API_KEY` | API key (wins over config file) |
     | `DRIFTLESS_API_URL` | API server URL (default: `https://api.driftless.icu/api/v1`) |
-    | `DRIFTLESS_MAX_FILE_BYTES` | Per-file scan cap for the scanner |
   </Accordion>
 </AccordionGroup>

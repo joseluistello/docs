@@ -1,6 +1,6 @@
 ---
 title: 'Dashboard overview'
-description: 'Where to inspect workspace health, topics, architecture, and integrations.'
+description: 'Where to inspect topics, PR activity, and workspace settings.'
 ---
 
 The dashboard is the visual companion to the CLI. Use it when you need workspace-level visibility instead of terminal output.
@@ -9,13 +9,13 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 
 | Area | Use it for |
 |---|---|
-| Ecosystem | Workspace health, repositories, activity, and setup state |
+| Overview | Workspace repositories and setup state |
 | Context | Browse, edit, and review topics |
-| Architecture | Inspect repo structure, components, and coverage overlays |
-| PR activity | See observed pull requests and context matches |
-| Settings | Manage API keys, GitHub, members, and model configuration |
+| Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) |
+| PR Activity | See observed pull requests and context matches |
+| Settings | Manage API keys, GitHub integration, OAuth apps, and members |
 
-## Context wiki
+## Context detail
 
 Each topic has a detail page with:
 
@@ -23,16 +23,22 @@ Each topic has a detail page with:
 - Anchored files, patterns, repos, and documents
 - Stale status and reason
 - References and backlinks from wiki-links
+- Typed relations (depends_on, relates_to, supersedes, etc.)
 - Copy for AI output for agent prompts
 
-## Architecture map
+{/* TODO(screenshot): topic detail page showing what/how/gotchas/anchors/relations */}
 
-The architecture map answers two questions:
+## Topic graph
 
-- What exists in this repo?
-- Which parts have durable context?
+The topic graph renders all topics as nodes connected by typed relation edges. Click any node to jump to its full context.
 
-Coverage overlays highlight covered files, partial coverage, gaps, and critical gaps. Treat it as an operational map, not a static diagram.
+{/* TODO(screenshot): topic graph visualization showing nodes connected by depends_on, relates_to edges */}
+
+## PR activity
+
+The PR activity feed shows every observed pull request, which topics matched, and the coverage breakdown per PR.
+
+{/* TODO(screenshot): PR activity feed showing recent PRs with topic matches */}
 
 ## Settings
 
@@ -40,9 +46,14 @@ Use settings to manage:
 
 - API keys for CLI and CI
 - GitHub App installation
+- OAuth apps (MCP integrations for ChatGPT, Claude, and other AI clients)
 - Workspace members and invitations
 - BYOM model URL, key, and model name
 
 <Note>
   Driftless never hardcodes a model provider. Workspace model configuration controls any model-backed behavior.
 </Note>
+
+## MCP integrations
+
+The dashboard includes an OAuth consent screen at `/oauth/authorize` for authorizing MCP client applications (ChatGPT, Claude, and other AI tools) to access your workspace context. See [Roadmap](/roadmap) for details on MCP and OAuth support.
