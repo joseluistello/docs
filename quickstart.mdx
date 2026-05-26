@@ -3,7 +3,7 @@ title: 'Quickstart'
 description: 'Create your first context topic and start building engineering memory.'
 ---
 
-Driftless starts with topics — durable engineering memory created by humans and agents. No repo scan required.
+Driftless starts with topics: durable engineering memory created by humans and agents, anchored to the files and workflows where it matters.
 
 ## Prerequisites
 
@@ -40,13 +40,13 @@ Driftless starts with topics — durable engineering memory created by humans an
   </Step>
 
   <Step title="Install the agent skill">
-    Install Driftless context instructions so coding agents automatically load topics before editing:
+    Install Driftless context instructions so coding agents automatically retrieve topics before editing:
 
     ```bash
     driftless install-skill
     ```
 
-    This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic-loading instructions every session.
+    This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic retrieval instructions every session.
   </Step>
 
   <Step title="Create your first topic">
@@ -98,7 +98,7 @@ Driftless starts with topics — durable engineering memory created by humans an
   </Step>
 
   <Step title="Anchor to file paths">
-    Anchor topics to code paths for drift tracking and file-matched loading:
+    Anchor topics to code paths for drift tracking and file-matched retrieval:
 
     ```bash
     driftless context update onboarding-context \
@@ -130,7 +130,7 @@ If this repo is already connected to Driftless Cloud, pull the latest state befo
 driftless sync
 ```
 
-Then load context for the files you are about to edit:
+Then retrieve context for the files you are about to edit:
 
 ```bash
 driftless context get --files "src/auth/guard.ts,src/auth/service.ts"
@@ -138,7 +138,7 @@ driftless context get --files "src/auth/guard.ts,src/auth/service.ts"
 
 ## Topic-first workflow
 
-Driftless works without a repo scan. The default workflow is:
+The default workflow is:
 
 1. **Create** topics for what you know — decisions, gotchas, invariants, runbooks.
 2. **Anchor** topics to code paths when ready — patterns like `src/auth/**`.

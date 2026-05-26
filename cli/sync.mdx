@@ -5,7 +5,7 @@ description: 'See what drifted around your topics before starting work.'
 
 `driftless sync` is the command to run when you start a coding session and the repo is already connected to Driftless Cloud.
 
-It does not scan your local diff and it does not load file-specific context. It pulls the repo memory state from Driftless Cloud and answers one question:
+It does not inspect your local diff and it does not retrieve file-specific context. It pulls the repo memory state from Driftless Cloud and answers one question:
 
 > What changed around this repo's topics since I last looked?
 
@@ -48,7 +48,7 @@ Run `sync` at the start of a work session:
 driftless sync
 ```
 
-Then load context for the files you plan to edit:
+Then retrieve context for the files you plan to edit:
 
 ```bash
 driftless context get --files "src/auth/session.ts,src/auth/token.ts"

@@ -5,7 +5,7 @@ description: 'How topics connect code to team knowledge.'
 
 ## What is a topic?
 
-A topic is the atomic unit of context in Driftless. It connects a slice of your codebase to the team's shared knowledge about it.
+A topic is the atomic unit of context in Driftless. It connects a slice of your system to the team's shared knowledge about it. The slice can be TypeScript, Python, Rust, Go, docs, config, infrastructure, or a workflow that spans repos.
 
 A topic has:
 
@@ -25,9 +25,29 @@ A topic has:
 | **relations** | Typed links to other topics |
 | **classification** | Origin (`manual`, `agent`, `doc`), status (`reviewed`, `draft`), and kind |
 
+## Create your first topic
+
+Start with the smallest useful topic: a durable note that explains one area well enough for a future human or agent to work there.
+
+```bash
+driftless context add onboarding-context \
+  --kind domain-map \
+  --what "Shared context map for this repo or workflow." \
+  --how "Captures what humans and agents need to know before working here."
+```
+
+Then enrich it as reality becomes clear:
+
+```bash
+driftless context update onboarding-context \
+  --gotcha "..." \
+  --decision "..." \
+  --check "..."
+```
+
 ## Anchoring topics to code
 
-Topics are connected to code through glob patterns and file paths. When anchored code changes, the topic goes stale.
+Topics are connected to code through glob patterns and file paths. This is language-agnostic: Driftless matches paths, not ASTs. When anchored code changes, the topic goes stale.
 
 ```bash
 # Anchor by glob pattern
@@ -123,6 +143,8 @@ Both `billing-webhook` and `stripe-webhook-ingest` will show each other in their
 ## Cross-repo context
 
 A topic can span multiple repositories. When you run `driftless context update <slug>` from any repo, that repo is added to the topic's `where_repos` list. Topics accumulate repos organically without manual wiring.
+
+Use one cross-repo topic when the same concept truly spans repos, for example `billing-contracts` across an API repo, worker repo, and frontend repo. Use separate topics plus relations when each repo has its own implementation details, for example `billing-api` `depends_on:billing-worker`.
 
 To explicitly link the current repo to a topic:
 

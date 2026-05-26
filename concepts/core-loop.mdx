@@ -44,8 +44,6 @@ driftless context get --diff                # context for your current local cha
 driftless context get --files "a.ts,b.ts"  # topics matching specific files
 ```
 
-`context load` also works but is deprecated — prefer `context get --files`.
-
 ## Phase 4: Check
 
 When code changes on tracked branches, topics whose anchored patterns overlap get marked stale. The staleness reason lists the specific files and commit that triggered it.

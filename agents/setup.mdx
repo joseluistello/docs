@@ -1,6 +1,6 @@
 ---
 title: 'Agent setup'
-description: 'Teach coding agents to sync, load, and persist Driftless context.'
+description: 'Teach coding agents to sync, retrieve, and persist Driftless context.'
 ---
 
 Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing and persist durable discoveries.
@@ -10,7 +10,7 @@ Driftless installs repo-local instructions for coding agents. The instructions t
 The default agent workflow is topic-first:
 
 1. **Sync before work** — `driftless sync`
-2. **Load topic context** — `driftless context get <slug>` or `driftless context get --files "src/auth/**"`
+2. **Retrieve topic context** — `driftless context get <slug>` or `driftless context get --files "src/auth/**"`
 3. **If no topic exists, propose or create one** — `driftless context add "my-area" --kind code-context --what "..." --how "..."`
 4. **Add relations if useful** — `driftless context update <slug> --rel depends_on:other-topic`
 5. **Use JSON output when acting as an agent** — `driftless context get <slug> --json`
@@ -22,7 +22,7 @@ The default agent workflow is topic-first:
 driftless install-skill
 ```
 
-This installs AGENTS.md and CLAUDE.md into the current repo. Use this when you want agent context loading without any additional setup.
+This installs AGENTS.md and CLAUDE.md into the current repo. Use this when you want agents to retrieve Driftless topics from their normal workflow.
 
 If you need to re-run it later (e.g., to update the skill instructions after a CLI upgrade):
 
@@ -53,7 +53,7 @@ The Driftless block teaches agents this workflow:
     Agent runs `driftless doctor` to check API key, workspace, Git remote, and skill installation.
   </Step>
 
-  <Step title="Load context before editing">
+  <Step title="Retrieve context before editing">
     ```bash
     driftless context get --files "src/auth/guard.ts,src/users/service.ts"
     ```

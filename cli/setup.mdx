@@ -25,17 +25,17 @@ driftless login --key drift_xxxxxxxxxxxxxxxxx
 
 ## Install the agent skill
 
-Install Driftless context instructions so coding agents automatically load topics before editing:
+Install Driftless context instructions so coding agents automatically retrieve topics before editing:
 
 ```bash
 driftless install-skill
 ```
 
-This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic-loading instructions every session.
+This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic retrieval instructions every session.
 
 ## Create your first topic
 
-Driftless starts with topics — durable engineering memory — without requiring a repo scan:
+Driftless starts with topics: durable engineering memory anchored to the files and workflows where it matters.
 
 ```bash
 driftless context add onboarding-context \

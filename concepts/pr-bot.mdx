@@ -13,7 +13,7 @@ When a PR is opened or updated, the bot:
 2. Intersects each file path against every workspace topic's anchor patterns (globs)
 3. Posts a single sticky comment with matched topics and a coverage summary
 
-The matching is **glob-only** — each topic's `patterns` are matched against the PR file list. No scanner or code analysis is involved.
+The matching is **glob-only** — each topic's `patterns` are matched against the PR file list. No language parser or code analysis is involved.
 
 ## Per-topic context
 
@@ -47,7 +47,7 @@ Unanchored paths:
 
 When files are not covered by any topic, the bot suggests up to 6 unanchored paths and the CLI commands to anchor them — either by extending an existing topic (`context update --add-pattern`) or creating a new one (`context add --pattern`).
 
-This is how the context layer grows over time: the PR bot tells the team exactly which files lack coverage and what to do about it. No background scanner needed.
+This is how the context layer grows over time: the PR bot tells the team exactly which files lack coverage and what to do about it.
 
 ## Two sides of the comment
 
@@ -60,8 +60,8 @@ This is how the context layer grows over time: the PR bot tells the team exactly
 
 - The bot is active on any repo where the GitHub App is installed and the repo is linked to a workspace.
 - The comment is updated in place on new commits — never re-posted.
-- Only files changed in the PR are matched; the bot does not scan the entire repo.
+- Only files changed in the PR are matched; the bot does not inspect the entire repo.
 
 <Note>
-  The PR bot uses topic patterns only. It does not depend on any scanner, code analysis, or component extraction. Coverage is measured by glob pattern intersection with PR file lists.
+  The PR bot uses topic patterns only. It does not depend on language analysis or component extraction. Coverage is measured by glob pattern intersection with PR file lists.
 </Note>

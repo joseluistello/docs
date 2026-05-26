@@ -41,7 +41,3 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 | `context graph` | `--depth N`, `--json` | Topic relation graph | `driftless context graph payment-flow --depth 2` |
 
 `context doctor` audits the topic layer for zombie (patterns match zero files), orphaned (repo deleted), stale, and draft topics.
-
-## Deprecated: context load
-
-`context load` still works but is deprecated. Prefer `context get --files` for matching topics by path. The `load` command no longer returns scanner-derived fields (coverage tiers, graph facts, recommended actions).
