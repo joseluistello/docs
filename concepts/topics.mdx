@@ -25,6 +25,12 @@ A topic has:
 | **relations** | Typed links to other topics |
 | **classification** | Origin (`manual`, `agent`, `doc`), status (`reviewed`, `draft`), and kind |
 
+The schema is universal, but the shape changes by `kind`. `code-context`,
+`integration-note`, and `domain-map` usually lead with structured fields.
+`decision`, `roadmap`, `runbook`, `docs-note`, `operational-note`, and
+`customer-insight` usually lead with `content` markdown and use structured
+fields as short summaries or durable review signals.
+
 ## Create your first topic
 
 Start with the smallest useful topic: a durable note that explains one area well enough for a future human or agent to work there.
@@ -92,6 +98,24 @@ driftless context update auth-flow --remove-pattern "src/old-auth/**"
 | `docs-note` | Notes attached from a documentation file |
 | `customer-insight` | Customer-facing behavior or UX pattern |
 | `operational-note` | Deployment, infra, or operational knowledge |
+
+### Recommended shape by kind
+
+| Kind | Primary shape | Use structured fields for |
+|------|---------------|---------------------------|
+| `code-context` | Structured fields first | `what`, `how`, gotchas, decisions, invariants, checks |
+| `integration-note` | Structured fields first | service contract, auth, quirks, failure modes |
+| `domain-map` | Structured fields first | boundaries, related areas, ownership, anchors |
+| `decision` | Markdown content first | one-line `what`, durable decisions, consequences |
+| `roadmap` | Markdown content first | thesis, direction, phases, next moves |
+| `runbook` | Markdown content first | procedure, required checks, rollback, gotchas |
+| `docs-note` | Markdown content first | source-of-truth document and related topics |
+| `operational-note` | Markdown content first | operational narrative plus checks |
+| `customer-insight` | Markdown content first | customer behavior and product implication |
+
+For document-first topics, keep `--what` to one sentence and put the full
+narrative in `--content`. Do not force empty gotchas or decisions just because
+the fields exist.
 
 ### Status
 
