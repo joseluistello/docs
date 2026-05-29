@@ -1,152 +1,64 @@
 ---
 title: 'Quickstart'
-description: 'Create your first context topic and start building engineering memory.'
+description: "Add Driftless to your coding agent and watch your first team memory appear — in about a minute."
 ---
 
-Driftless starts with topics: durable engineering memory created by humans and agents, anchored to the files and workflows where it matters.
-
-## Prerequisites
-
-- Node.js 22 or later
-- A Driftless workspace at [driftless.icu](https://driftless.icu)
+Driftless is shared memory for your codebase. Your coding agent reads what the team already knows before it edits, and writes back what it learns. You don't learn a system — your agent does. Here's the whole setup.
 
 <Steps>
-  <Step title="Install the CLI">
+  <Step title="Install and log in">
     ```bash
     npm install -g @driftless-sh/cli
-    ```
-
-    ```bash
-    driftless --version
-    ```
-  </Step>
-
-  <Step title="Log in">
-    Authenticate from the terminal:
-
-    ```bash
     driftless login
     ```
 
-    For CI or non-interactive setup, pass an API key from the dashboard:
-
-    ```bash
-    driftless login --key drift_your_api_key_here
-    ```
-
     <Tip>
-      Store your key as `DRIFTLESS_API_KEY` in your environment to skip `--key` on every command.
+      For CI or non-interactive setup, pass a key instead: `driftless login --key drift_your_api_key_here` (create one at [driftless.icu](https://driftless.icu) → Settings → API Keys).
     </Tip>
   </Step>
 
-  <Step title="Install the agent skill">
-    Install Driftless context instructions so coding agents automatically retrieve topics before editing:
-
+  <Step title="Teach your agent">
     ```bash
     driftless install-skill
     ```
 
-    This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic retrieval instructions every session.
+    This writes `AGENTS.md` and `CLAUDE.md` into your repo. From now on, any coding agent that opens the repo knows the loop: pull team context before editing, persist what it learns after.
   </Step>
 
-  <Step title="Create your first topic">
-    Start by capturing what you know about a part of your system:
-
-    ```bash
-    driftless context add onboarding-context \
-      --kind domain-map \
-      --what "Shared context map for this repo or workflow." \
-      --how "Captures what humans and agents need to know before working here."
-    ```
-
-    This creates a durable topic in Driftless Cloud.
-  </Step>
-
-  <Step title="Add structured context">
-    Enrich the topic with decisions, gotchas, invariants, and required checks:
-
-    ```bash
-    driftless context update onboarding-context \
-      --gotcha "WorkspaceGuard is global — use @Public() only for explicit public routes" \
-      --decision "RS256 keys for JWTs so services verify without shared secret" \
-      --invariant "All routes require auth unless explicitly marked @Public()" \
-      --check "Verify role decorator matches the guard's expected metadata"
-    ```
-  </Step>
-
-  <Step title="Add relations">
-    Connect topics to each other with typed edges:
-
-    ```bash
-    driftless context update onboarding-context \
-      --rel relates_to:api-and-auth-architecture
-
-    driftless context relations onboarding-context
-    ```
-
-    Relation types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`.
-  </Step>
-
-  <Step title="Get topic as JSON">
-    Retrieve the topic in machine-readable format:
-
-    ```bash
-    driftless context get onboarding-context --json
-    ```
-
-    Agents use JSON output by default. Use `--human` for readable output.
-  </Step>
-
-  <Step title="Anchor to file paths">
-    Anchor topics to code paths for drift tracking and file-matched retrieval:
-
-    ```bash
-    driftless context update onboarding-context \
-      --pattern "apps/*/src/**" \
-      --pattern "docs/**" \
-      --pattern "AGENTS.md"
-    ```
-
-    The CLI validates each pattern against your local checkout. A pattern that matches zero files is blocked; one that matches over 100 files gets an over-broad warning.
-
-    Anchors make topics appear automatically in `context get --files` and `context get --diff`.
+  <Step title="Go code">
+    Work as you normally would. Your agent pulls context before it touches an area, and saves new gotchas and decisions as it learns them. Come back to [your dashboard](https://driftless.icu) and watch your first memory show up.
   </Step>
 </Steps>
 
-## Verify setup
+That's it. Pull before, persist after — that's Driftless.
 
-```bash
-driftless doctor
-driftless context doctor
+## The whole loop, in one prompt
+
+Prefer not to install the skill, or want to drop the behavior into any agent directly? This is all it needs:
+
+```text
+This repository uses Driftless for shared team memory.
+
+BEFORE you edit code, pull what the team already knows about the files
+you're touching:
+    driftless context get --files "<files you're about to change>"
+Read the gotchas, decisions and invariants before writing anything.
+
+AFTER you learn something durable — a gotcha that cost you time, a decision
+you made, a constraint that must hold — write it back:
+    driftless context update <topic> --gotcha "..." --decision "..."
+    # or, if no topic fits the area yet:
+    driftless context add <name> --pattern "<glob>" --what "..." --how "..."
+
+That's the whole loop: pull before, persist after. Do it as part of your work.
 ```
 
-`doctor` checks the API key, workspace, Git remote, and AGENTS.md installation. `context doctor` audits the topic layer (stale / orphaned / zombie / draft topics).
+## Going deeper
 
-## Working with existing topics
+You don't need any of this to start. Reach for it once you have a few topics and want more out of them:
 
-If this repo is already connected to Driftless Cloud, pull the latest state before working:
-
-```bash
-driftless sync
-```
-
-Then retrieve context for the files you are about to edit:
-
-```bash
-driftless context get --files "src/auth/guard.ts,src/auth/service.ts"
-```
-
-## Topic-first workflow
-
-The default workflow is:
-
-1. **Create** topics for what you know — decisions, gotchas, invariants, runbooks.
-2. **Anchor** topics to code paths when ready — patterns like `src/auth/**`.
-3. **Connect** topics with relations — `depends_on`, `relates_to`, `supersedes`.
-4. **Grow** coverage through the PR bot — every PR comment tells you which files are unanchored and suggests next steps.
-
-## Next
-
-- Read [The Driftless loop](/concepts/core-loop).
-- Install [agent instructions](/agents/setup).
-- Keep the [CLI reference](/cli/setup) open while you work.
+- [The Driftless loop](/concepts/core-loop) — how memory compounds across a team.
+- [Topics & kinds](/concepts/topics) — decisions, runbooks, integration notes, and the fields each one carries.
+- [Drift & freshness](/concepts/drift) — how a topic flags itself when its code moves underneath it.
+- [The CLI](/cli/context) — anchoring topics to files, file-matched retrieval, relations.
+- [Agent setup in depth](/agents/setup) — wiring Driftless into specific coding agents.
