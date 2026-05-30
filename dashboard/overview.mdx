@@ -10,10 +10,20 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 | Area | Use it for |
 |---|---|
 | Overview | Workspace repositories and setup state |
+| Review Queue | The curation surface — approve proposed signals and re-review drifted context |
 | Context | Browse, edit, and review topics |
 | Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) |
 | PR Activity | See observed pull requests and context matches |
 | Settings | Manage API keys, GitHub integration, OAuth apps, and members |
+
+## Review Queue
+
+The Review Queue is where a **signal becomes context**. Two lanes:
+
+- **Needs review** — topics an agent or teammate proposed (`draft` / `proposed`), routed to the projects you can vouch in. Approve to make them reviewed truth, or reject.
+- **Needs re-review** — `reviewed` topics whose code **drifted**. Confirm they still hold (clears the drift flag) or open to update.
+
+Inbox-zero means your team's memory is healthy. Vouching follows [project roles](/concepts/governance#who-can-vouch--project-roles) — only maintainers/owners approve in private projects.
 
 ## Context detail
 

@@ -10,7 +10,8 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context list` | `--stale`, `--status`, `--repo`, `--docs`, `--auto`, `--manual`, `--json` | List topics with filters | `driftless context list --stale` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
-| `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
+| `context get --diff` | `--json`, `--mark` | Topics for current changes | `driftless context get --diff` |
+| `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** (local-git drift source — no GitHub App needed) | `driftless context get --diff --mark` |
 | `context search` | query, `--json` | Full-text search | `driftless context search "payment"` |
 
 ## Create & Update

@@ -24,6 +24,21 @@ driftless branches rm staging
 
 Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Drift is reserved for branches where changes signal durable context shifts.
 
+## Second drift source — local git (no GitHub App)
+
+Drift normally comes from push webhooks, so a team without the GitHub App installed gets no signal. To close that gap, the CLI can report drift from your **local** checkout:
+
+```bash
+driftless context get --diff          # show topics matching local changes (display only)
+driftless context get --diff --mark   # …and flag those topics drifted on Cloud
+```
+
+`--mark` is **opt-in and explicit** — plain `--diff` only displays, so work-in-progress never flips team state unless you ask. It is idempotent (already-drifted topics are left alone).
+
+## A nudge, not an alarm
+
+Drift is framed as a **nudge** — "the code under this topic moved, worth a look" — not an error. It tolerates false positives by design: trust the code, and only update the topic if the change actually altered how the area works. A deleted anchor file produces a distinct nudge: *"anchored file deleted — re-anchor or archive this topic."*
+
 ## Lifecycle
 
 ```

@@ -29,6 +29,19 @@ driftless context reject <slug>      # proposed → draft
 driftless context archive <slug>     # retire it
 ```
 
+## Who can vouch — project roles
+
+Vouching authority is the **project**, not the workspace. Each member of a project carries a role (CODEOWNERS-for-knowledge):
+
+| Role | Can |
+|---|---|
+| `contributor` | Read + **propose** (create signals) |
+| `maintainer` / `owner` | …+ **vouch** — approve, merge, reject, archive, and clear drift |
+
+In a **private** project, `approve`/`merge`/`reject`/`archive` (and re-vouching a drifted topic) require the `maintainer` or `owner` role — a contributor proposes but does not bless. **Public** and unassigned topics stay open to any human workspace member. Only an `owner` can grant the `owner` role, and a project's last owner can't be demoted or removed. Manage roles in the dashboard's project members panel.
+
+Permissions gate **vouching and visibility only — never coding**. Driftless informs; it never blocks a developer from writing code.
+
 ## The trust signal
 
 The whole point of approval is that the agent can tell **truth from hint**. Every `context get` carries it in the canonical response:
