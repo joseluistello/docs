@@ -70,7 +70,7 @@
           {
             "group": "Context integrity",
             "icon": "radar",
-            "pages": ["concepts/drift", "concepts/pr-bot"]
+            "pages": ["concepts/drift", "concepts/pr-bot", "concepts/automations"]
           },
           {
             "group": "Governance & access",
