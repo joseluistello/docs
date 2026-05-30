@@ -24,9 +24,9 @@ A topic has:
 | **anchors** | Patterns, files, and repos that link this topic to code |
 | **tags** | Labels for discovery (e.g., `auth`, `security`, `billing`) |
 | **relations** | Typed links to other topics |
-| **classification** | Origin (`manual`, `agent`, `doc`), status (`reviewed`, `draft`), and kind |
+| **classification** | Status (`reviewed`, `draft`) |
 
-Topics are **content-first**: the markdown `content` body IS the topic, for every kind. The structured fields (`gotcha` / `decision` / `invariant` / `check`) are optional highlights layered on top — add one only when you want that specific thing surfaced to the machine (the PR bot, a future agent's brief). `kind` is just a label (icon + filter), not a different shape.
+Topics are **content-first**: the markdown `content` body IS the topic. The structured fields (`gotcha` / `decision` / `invariant` / `check`) are optional highlights layered on top — add one only when you want that specific thing surfaced to the machine (the PR bot, a future agent's brief). Use `tags` to label and group topics.
 
 ## Create your first topic
 
@@ -34,7 +34,6 @@ Start with the smallest useful topic: a durable note that explains one area well
 
 ```bash
 driftless context add onboarding-context \
-  --kind reference \
   --what "Shared context map for this repo or workflow." \
   --how "Captures what humans and agents need to know before working here."
 ```
@@ -50,7 +49,7 @@ driftless context update onboarding-context \
 
 ## Anchoring topics to code
 
-Topics are connected to code through glob patterns and file paths. This is language-agnostic: Driftless matches paths, not ASTs. When anchored code changes, the topic goes stale.
+Topics are connected to code through glob patterns and file paths. This is language-agnostic: Driftless matches paths, not ASTs. When anchored code changes, the topic drifts.
 
 ```bash
 # Anchor by glob pattern
@@ -82,19 +81,7 @@ driftless context update auth-flow --remove-pattern "src/old-auth/**"
 
 ## Topic classification
 
-### Kinds — a label, not a schema
-
-`kind` is a label (icon + filter), not a different shape — every topic is content-first. There are five:
-
-| Kind | Use for |
-|------|---------|
-| `reference` | Code, systems, integrations, domain maps — the default and most common |
-| `decision` | An architecture/product decision (ADR-style) |
-| `roadmap` | Forward plan, thesis, phased rollout |
-| `runbook` | An operational scenario — trigger, diagnosis, resolution, rollback |
-| `insight` | Product/customer learning that informs engineering |
-
-Keep `--what` to one sentence and put the real explanation in `--content`. Don't invent empty gotchas or decisions just because the flags exist.
+A topic is content-first — the markdown `content` body IS the topic. Use `tags` to label and group topics. The only trust axis is `status`.
 
 ### Status — governance lifecycle
 
@@ -108,17 +95,9 @@ A topic is **reviewed only if approved**: `draft → proposed → reviewed → a
 | `archived` | Retired |
 | `orphaned` | Code-driven (repo deleted) — orthogonal to governance |
 
-### Lifecycle class & project
+### Project
 
-Two more axes, orthogonal to `kind` and `status`: **`lifecycle_class`** (`durable` vs `ephemeral` — canonical knowledge vs work/notes) and the **project** a topic belongs to (its privacy boundary — see [Projects & privacy](/concepts/projects)).
-
-### Origin
-
-| Origin | Meaning |
-|--------|---------|
-| `manual` | Written by a human |
-| `agent` | Written by a coding agent |
-| `doc` | Anchored from a document file |
+A topic belongs to a **project** — its privacy boundary (see [Projects & privacy](/concepts/projects)).
 
 ## Typed relations
 

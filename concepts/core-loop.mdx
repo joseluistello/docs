@@ -13,8 +13,7 @@ After a session, write down what was durable — a gotcha, a decision, an invari
 driftless context add "auth-flow" \
   --content "## What\nJWT validation + RBAC\n\n## How\nRS256 keys; guard decodes; role decorator checks" \
   --pattern "src/auth/**" \
-  --tags auth,security \
-  --kind reference
+  --tags auth,security
 
 driftless context update auth-flow \
   --decision "Chose RS256 over HS256 so services verify without a shared secret" \

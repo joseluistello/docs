@@ -7,7 +7,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context list` | `--stale`, `--docs`, `--auto`, `--manual`, `--status`, `--kind`, `--repo`, `--json` | List topics with filters | `driftless context list --stale --auto` |
+| `context list` | `--stale`, `--status`, `--repo`, `--docs`, `--auto`, `--manual`, `--json` | List topics with filters | `driftless context list --stale` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json` | Topics for current changes | `driftless context get --diff` |
@@ -17,8 +17,8 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--kind`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**" --kind reference` |
-| `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--kind`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
+| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**"` |
+| `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
 
 ## Pattern validation

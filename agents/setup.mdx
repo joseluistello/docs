@@ -10,7 +10,7 @@ Driftless installs repo-local instructions for coding agents. The instructions t
 The default agent workflow is topic-first:
 
 1. **Pull context before editing** — `driftless context get --files "src/auth/**"` (drift shows as a freshness badge inline; no `sync` needed). Read the `what / how / gotchas / decisions / invariants` and the `governance.authoritative` flag.
-2. **If no topic exists, create one** — `driftless context add "my-area" --kind reference --content "..."` (it lands as a draft).
+2. **If no topic exists, create one** — `driftless context add "my-area" --content "..."` (it lands as a draft).
 3. **Persist what you learned** — `driftless context update <slug> --gotcha "..." --decision "..."`; for an already-approved topic, open a topic-PR instead: `driftless context pr <slug> --open --summary "..." --content @file`.
 4. **Add relations if useful** — `driftless context update <slug> --rel depends_on:other-topic`.
 5. **Use JSON output when acting as an agent** — `driftless context get <slug> --json`.

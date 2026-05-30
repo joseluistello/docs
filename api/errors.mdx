@@ -35,7 +35,7 @@ Every error from the Driftless API — whether you reach it through the CLI, the
 
 Input that's wrong shouldn't reach the agent as an opaque `500`. Two layers guarantee that:
 
-1. **Validation** rejects a bad enum (`status`, `kind`, `visibility`) with a field-level `400` *before* it touches the database.
+1. **Validation** rejects a bad enum (`status`, `visibility`) with a field-level `400` *before* it touches the database.
 2. **A Postgres-error translator** catches any constraint violation that slips through and turns it into a coded `4xx` — never a generic `500`.
 
 After those two, a `500` means what it should: a real bug or an outage. That's also the only time `retryable` is `true`.
