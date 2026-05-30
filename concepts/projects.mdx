@@ -37,6 +37,10 @@ From the CLI or the dashboard:
 
 Create a private project, add the teammates who should see it, and move or create topics inside it. Members can read and write; project ownership and finer roles build on the same `project_members` model.
 
+<Note>
+Creating a **private** project requires a human identity (a human-owned API key or the dashboard) — its creator is auto-added as the first member. An ownerless agent/OAuth key cannot create a private project (it would have no member, leaving it invisible even to its creator). Agent keys can still create and use **public** projects.
+</Note>
+
 ## Tags
 
 Tags live at the **workspace** level — they're the team's shared vocabulary, so they aren't fragmented per project. But a tag's visibility follows project access: a tag that only exists on topics in private projects you can't see is invisible to you.
