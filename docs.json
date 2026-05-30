@@ -71,6 +71,11 @@
             "group": "Context integrity",
             "icon": "radar",
             "pages": ["concepts/drift", "concepts/pr-bot"]
+          },
+          {
+            "group": "Governance & access",
+            "icon": "shield-check",
+            "pages": ["concepts/governance", "concepts/projects"]
           }
         ]
       },
@@ -85,7 +90,7 @@
           {
             "group": "Daily workflow",
             "icon": "refresh-cw",
-            "pages": ["cli/sync", "cli/context"]
+            "pages": ["cli/context", "cli/sync"]
           },
           {
             "group": "Agents",
@@ -105,7 +110,7 @@
           {
             "group": "Core resources",
             "icon": "database",
-            "pages": ["api/workspaces", "api/repos", "api/topics"]
+            "pages": ["api/workspaces", "api/repos", "api/topics", "api/projects"]
           },
           {
             "group": "Integrations",

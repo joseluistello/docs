@@ -1,0 +1,64 @@
+---
+title: 'Governance'
+description: 'A topic is authoritative only if approved. Agents propose, humans approve.'
+---
+
+Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes authoritative only when a human approves it. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
+
+## The lifecycle
+
+Every topic moves through a governed state machine:
+
+```text
+draft  →  proposed  →  reviewed  →  archived
+```
+
+| Status | Meaning |
+|---|---|
+| `draft` | Captured, not yet blessed. The agent treats it as a **hint**, not truth. |
+| `proposed` | Submitted for review, awaiting a human's approval. |
+| `reviewed` | **Authoritative.** A human approved it. The read response carries `governance.authoritative: true` plus `approved_by` and `approved_at`. The agent treats this as **truth**. |
+| `archived` | Retired. Hidden from the default list. |
+
+The model is **agents propose, humans approve**. `approve`, `reject`, and `merge` require a human identity — an ownerless agent key can propose, but never bless.
+
+```bash
+driftless context propose <slug>     # draft → proposed
+driftless context approve <slug>     # → reviewed (authoritative)
+driftless context reject <slug>      # proposed → draft
+driftless context archive <slug>     # retire it
+```
+
+## The trust signal
+
+The whole point of approval is that the agent can tell **truth from hint**. Every `context get` carries it in the canonical response:
+
+```json
+{
+  "classification": { "status": "reviewed" },
+  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
+}
+```
+
+An agent should consume `reviewed` topics as truth and `draft`/`proposed` ones as suggestions. Governance without the agent consuming this signal would just be a wiki.
+
+## topic-PR — changing approved truth
+
+Don't overwrite an approved topic. To change canonical truth, open a **topic-PR**: a proposed content change that a human reviews and merges.
+
+```bash
+driftless context pr <slug>                                     # list open proposals
+driftless context pr <slug> --open --summary "why" --content @new.md
+driftless context pr <slug> --merge <id>                        # apply + re-approve (human)
+driftless context pr <slug> --reject <id>                       # close without applying
+```
+
+A proposal carries a **content patch** (whitelisted to content fields — it can never forge approval or move a topic between projects). Merging applies the patch and makes the topic authoritative again, attributed to the approver.
+
+## Why deterministic
+
+Approval is a human act; everything around it is deterministic and auditable — who approved what, when, and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
+
+<Note>
+In a future release, platform agents (drift, freshness) will **propose** topic-PRs automatically. They plug into the same proposal queue — humans still approve. The authoring of intelligent proposals is the only piece that waits.
+</Note>

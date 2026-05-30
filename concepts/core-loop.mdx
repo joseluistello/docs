@@ -1,57 +1,58 @@
 ---
 title: 'The Driftless loop'
-description: 'Create, observe, deliver, and check.'
+description: 'Persist, deliver, govern, drift — the everyday loop.'
 ---
 
-The Driftless loop has four phases. Every command and event fits into one of them.
+The everyday loop is two moves: **persist what you learn after a session, pull it back before you touch that area again.** Governance and drift wrap around those two.
 
-## Phase 1: Create
+## 1. Persist
 
-Start with topics — durable engineering memory. Create what you know:
+After a session, write down what was durable — a gotcha, a decision, an invariant. It lands as a **draft** (not yet authoritative).
 
 ```bash
 driftless context add "auth-flow" \
-  --what "JWT validation and role-based access control" \
-  --how "RS256 asymmetric keys, guard decodes, role decorator checks" \
+  --content "## What\nJWT validation + RBAC\n\n## How\nRS256 keys; guard decodes; role decorator checks" \
   --pattern "src/auth/**" \
   --tags auth,security \
-  --kind code-context
+  --kind reference
 
 driftless context update auth-flow \
-  --decision "Chose RS256 over HS256 so services can verify without shared secret" \
+  --decision "Chose RS256 over HS256 so services verify without a shared secret" \
   --gotcha "Token refresh is NOT handled by this guard; see [[token-refresh]]" \
   --rel depends_on:token-refresh
 ```
 
-## Phase 2: Observe
+## 2. Deliver
 
-The GitHub App watches pushes and PRs. On every push to a tracked branch, it matches changed files against all workspace topics. Any topic whose anchored patterns overlap with the changed files gets marked **stale** with a human-readable reason.
-
-On PRs, the bot posts a sticky comment listing matched topics and the coverage breakdown: how many files in the PR are covered by a topic, how many are outside any topic, and which files are unanchored — along with suggested next steps to close the gap.
-
-Pushes to tracked branches can mark topics as stale. PRs themselves do not trigger staleness; they trigger observation only.
-
-See [PR Bot](/concepts/pr-bot) for how coverage feedback works.
-
-## Phase 3: Deliver
-
-Context reaches agents and humans through CLI commands:
+Before you edit an area, pull what the team already knows. Drifted topics carry a freshness badge inline — no separate step.
 
 ```bash
-driftless sync                              # what drifted since you last looked
-driftless context get auth-flow              # full context for one topic
-driftless context get --diff                # context for your current local changes
-driftless context get --files "a.ts,b.ts"  # topics matching specific files
+driftless context get --files "src/auth/guard.ts"   # match topics to files you're about to touch
+driftless context get auth-flow                      # full context for one topic
+driftless context get --diff                         # context for your local uncommitted changes
 ```
 
-## Phase 4: Check
+Read the `what / how / gotchas / decisions / invariants` — and the `governance.authoritative` flag — before writing anything.
 
-When code changes on tracked branches, topics whose anchored patterns overlap get marked stale. The staleness reason lists the specific files and commit that triggered it.
+## 3. Govern
+
+A topic is **authoritative only if approved**. Agents propose; humans approve. The agent treats `reviewed` as truth, `draft`/`proposed` as a hint.
 
 ```bash
-driftless sync                    # shows stale topics alongside other changes
-driftless context doctor          # full health audit: staleness, zombie, orphaned topics
-driftless context get --diff      # staleness status for your current local changes
+driftless context propose auth-flow     # draft → proposed
+driftless context approve auth-flow     # → reviewed (authoritative)
+driftless context pr auth-flow --open --summary "..." --content @new.md   # change an approved topic
 ```
 
-`context doctor` audits the topic layer itself — it flags `stale`, `orphaned` (repo deleted), `zombie` (anchor patterns no longer match any file), `draft` (suggested, never confirmed), and `docs_pending` topics.
+See [Governance](/concepts/governance).
+
+## 4. Drift
+
+When code changes on a tracked branch, topics whose anchors overlap the changed files get marked **stale**, with a human-readable reason. Drift reaches you as a badge when you `context get` the area — you don't go fetch it. On a PR that touches a documented area, the bot delivers the team's recorded context to the reviewer.
+
+```bash
+driftless context doctor          # health audit: stale, zombie, orphaned, draft
+driftless sync                    # optional team-wide digest of what drifted
+```
+
+`driftless sync` is an **optional** digest — you almost never need it; drift already reaches you inline. `context doctor` audits the topic layer itself: `stale`, `orphaned` (repo deleted), `zombie` (anchors match no file), `draft`.

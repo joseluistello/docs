@@ -32,15 +32,11 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 
 1. Fetches the list of changed files via the GitHub API
 2. Matches each file against all workspace topic patterns using glob intersection
-3. Posts a **sticky comment** with two halves:
+3. Posts a **sticky comment** that delivers the matched topics' recorded context to the reviewer
 
-**Per-topic coverage:** Each matched topic gets a block showing its `what` summary, relevant decisions, and gotchas.
+**Recorded context:** Each matched topic gets a block showing its `what` summary, relevant decisions, gotchas, and invariants — plus whether it's authoritative (`reviewed`) or just a hint (`draft`), and whether it's stale. The reviewer reviews *with* the team's context instead of without it.
 
-**Coverage retro line:** A summary showing how many files in the PR are covered by topics, how many are outside any topic, and the percentage covered. When files are unanchored, the comment suggests up to 6 specific file paths and the CLI commands to anchor them:
-
-```text
-8 files changed · 5 covered · 3 outside any topic (37%)
-```
+The comment **informs; it never blocks** — no coverage score, no "uncovered files," no homework for the author. If your change altered how an area works, update the topic (or open a topic-PR) so the note stays true.
 
 The comment is updated in place on new commits. It is never re-posted.
 
@@ -63,17 +59,11 @@ driftless branches add staging
 <!-- driftless-context -->
 ### Driftless · context for this PR
 
-auth-boundaries applies to: src/auth/session.ts, src/auth/tenant.ts
+auth-boundaries  ✓ authoritative   applies to: src/auth/session.ts, src/auth/tenant.ts
 how: 2 endpoints, 1 service, 1 guard
 decisions: Multi-tenant, uses org_id from token
 gotchas: All endpoints require auth; do not add @Public() without review
-
-8 files changed · 5 covered · 3 outside any topic (37%)
-
-Unanchored paths:
-  src/auth/middleware.ts — context update auth-boundaries --add-pattern "src/auth/middleware/**"
-  src/auth/types.ts — context update auth-boundaries --add-pattern "src/auth/types/**"
-  src/auth/index.ts — context add auth-entry --pattern "src/auth/index.ts"
+invariants: Webhook handlers must be idempotent
 ```
 
 Each matched topic gets its own block. The HTML marker (`<!-- driftless-context -->`) lets Driftless find and update the comment on subsequent pushes.

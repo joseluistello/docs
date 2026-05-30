@@ -1,0 +1,46 @@
+---
+title: 'Projects & privacy'
+description: 'Workspace ⊃ Project ⊃ Topic. Projects are the privacy boundary.'
+---
+
+A workspace is shared by your whole team. But not every piece of context should be visible to everyone — so topics live inside **projects**, and a project is the unit of privacy.
+
+```text
+Workspace            the team / tenant
+  └─ Project         the privacy boundary  (public | private)
+       └─ Topic      lives in exactly one project
+```
+
+## Visibility
+
+| Visibility | Who can see it |
+|---|---|
+| `public` | Everyone in the workspace |
+| `private` | Only the project's members |
+
+Every workspace has a public **"General"** project by default — new topics land there unless you put them somewhere else. The model mirrors Google Drive / Notion: if you don't have access to a private project, you don't even know it exists. A topic in a private project you're not a member of simply doesn't appear in lists, search, or the graph — and a direct read returns `404`, never revealing that it's there.
+
+## Who sees what
+
+Visibility is enforced on **every** read surface — list, search, file-matching, get, relations, graph, the events feed, and the audit. There is one access decision point; the API does the filtering, so a private topic can never leak through a side door.
+
+**Agents inherit their creator's access.** An API key remembers who created it (`created_by`); an agent using that key acts *as* that human and sees exactly the projects they can. An ownerless key (or an MCP token with no user) sees only public projects.
+
+## Managing projects
+
+From the CLI or the dashboard:
+
+```bash
+# (dashboard) create a project, set public/private, add or remove members,
+# move a topic between projects
+```
+
+Create a private project, add the teammates who should see it, and move or create topics inside it. Members can read and write; project ownership and finer roles build on the same `project_members` model.
+
+## Tags
+
+Tags live at the **workspace** level — they're the team's shared vocabulary, so they aren't fragmented per project. But a tag's visibility follows project access: a tag that only exists on topics in private projects you can't see is invisible to you.
+
+<Note>
+Containment is also how the dashboard separates **canonical memory** (durable, governed topics) from **work in progress** — see the `lifecycle_class` (durable vs ephemeral) axis on a topic.
+</Note>

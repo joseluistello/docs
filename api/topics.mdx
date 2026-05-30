@@ -1,37 +1,74 @@
 ---
 title: 'Topics'
-description: 'CRUD operations for context topics, relations, and the topic graph.'
+description: 'CRUD, governance, relations, and the topic graph.'
 ---
+
+<Note>
+The canonical path is `/topics`. `/watchers` still works as a deprecated alias for old CLIs and is removed in a later release.
+</Note>
 
 ## Core CRUD
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/watchers` | List topics |
-| `POST` | `/workspaces/:slug/watchers` | Create a topic |
-| `GET` | `/workspaces/:slug/watchers/:watcherSlug` | Get topic detail |
-| `PATCH` | `/workspaces/:slug/watchers/:watcherSlug` | Update a topic |
-| `DELETE` | `/workspaces/:slug/watchers/:watcherSlug` | Delete a topic |
+| `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller) |
+| `POST` | `/workspaces/:slug/topics` | Create a topic (assigned to a project; `project_id` optional) |
+| `GET` | `/workspaces/:slug/topics/:topic` | Get topic detail |
+| `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic (incl. `project_id` to move it) |
+| `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
+
+The read response is the canonical context. It includes `classification.status` and a `governance` block — the trust signal an agent consumes:
+
+```json
+{
+  "classification": { "status": "reviewed", "kind": "reference" },
+  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
+}
+```
 
 ## Search & Matching
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/watchers/search` | Search topics |
-| `POST` | `/workspaces/:slug/watchers/match-files` | Match files to topics |
+| `GET` | `/workspaces/:slug/topics/search` | Full-text search |
+| `POST` | `/workspaces/:slug/topics/match-files` | Match files to topics |
 
 ## Health & Graph
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/watchers/audit` | Context health audit |
-| `GET` | `/workspaces/:slug/watchers/events` | Topic event timeline |
-| `GET` | `/workspaces/:slug/watchers/graph` | Topic graph |
+| `GET` | `/workspaces/:slug/topics/audit` | Context health audit |
+| `GET` | `/workspaces/:slug/topics/events` | Topic event timeline |
+| `GET` | `/workspaces/:slug/topics/graph` | Topic graph |
+
+## Governance
+
+A topic is authoritative only if approved. See [Governance](/concepts/governance). `approve` / `reject` and proposal `merge` / `reject` require a human identity.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/workspaces/:slug/topics/:topic/propose` | `draft → proposed` |
+| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (authoritative) |
+| `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
+| `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
+| `GET` | `/workspaces/:slug/topics/:topic/proposals` | List topic-PRs |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Open a topic-PR (`{ summary, patch }`) |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Apply + approve a topic-PR |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Close a topic-PR |
 
 ## Relations
 
 | Method | Path | Purpose |
 |---|---|---|
-| `POST` | `/workspaces/:slug/watchers/:watcherSlug/relations` | Add a relation |
-| `GET` | `/workspaces/:slug/watchers/:watcherSlug/relations` | List relations |
-| `DELETE` | `/workspaces/:slug/watchers/:watcherSlug/relations/:relationId` | Delete a relation |
+| `POST` | `/workspaces/:slug/topics/:topic/relations` | Add a typed relation |
+| `GET` | `/workspaces/:slug/topics/:topic/relations` | List relations |
+| `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Delete a relation |
+
+## Share
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/workspaces/:slug/topics/:topic/share` | Create a public read-only link |
+| `DELETE` | `/workspaces/:slug/topics/:topic/share` | Revoke the link |
+| `GET` | `/s/:token` | Public page (no auth) |
+| `GET` | `/s/:token/raw` | Public markdown (no auth) |

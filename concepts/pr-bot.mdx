@@ -1,60 +1,46 @@
 ---
 title: 'PR Bot'
-description: 'How the Driftless PR bot surfaces coverage gaps on every pull request.'
+description: 'Delivers the team’s recorded context to whoever reviews a PR.'
 ---
 
-The Driftless PR bot is the growth engine for team context. Every time a pull request touches code, the bot matches the changed files against all workspace topics and posts a sticky comment with two halves: per-topic context and a coverage retro.
+When a pull request touches a documented area, the Driftless PR bot posts one comment that **delivers the team's recorded context to the reviewer**. The reviewer sees the gotchas, decisions, and invariants the team wrote down for that area — so they review *with* the context instead of without it. It informs; it never blocks, and it does not score coverage.
 
 ## How it works
 
 When a PR is opened or updated, the bot:
 
-1. Fetches the list of changed files from GitHub
-2. Intersects each file path against every workspace topic's anchor patterns (globs)
-3. Posts a single sticky comment with matched topics and a coverage summary
+1. Fetches the list of changed files from GitHub.
+2. Intersects each file path against every workspace topic's anchor patterns (globs).
+3. Posts a single sticky comment with the matched topics' recorded context.
 
 The matching is **glob-only** — each topic's `patterns` are matched against the PR file list. No language parser or code analysis is involved.
 
-## Per-topic context
+## What the comment delivers
 
-For every topic whose patterns match at least one file in the PR, the comment includes:
-
-- The topic slug and a link to the dashboard
-- `what` — a one-line summary
-- Key decisions and gotchas relevant to the changed files
-- Which specific files in the PR fall under this topic
+For every topic whose patterns match a file in the PR, the comment surfaces what the team recorded:
 
 ```text
-### auth-boundaries
+### auth-boundaries  ✓ authoritative
 **Applies to:** src/auth/session.ts, src/auth/tenant.ts
 **How:** 2 endpoints, 1 service, 1 guard
 **Decisions:** Multi-tenant, uses org_id from token
 **Gotchas:** All endpoints require auth; do not add @Public() without review
+**Invariants:** Webhook handlers must be idempotent
 ```
 
-## Coverage retro
+If a matched topic is **stale** (its covered code changed since the context was written), the comment flags it so the reviewer knows the note may be behind. If it's still a `draft` (not yet approved), it's shown as a hint, not authority.
 
-Below the per-topic blocks, the comment includes a coverage summary line and gap suggestions for unanchored files:
+## It informs, never blocks
 
-```text
-8 files changed · 5 covered · 3 outside any topic (37%)
+The PR bot is **context for the reviewer** — not a coverage score, not homework for the author. It does not count "uncovered" files, assign a percentage, or demand new topics. The way the context layer grows is the everyday loop (persist after a session, pull before editing), not a gate on the PR.
 
-Unanchored paths:
-  src/auth/middleware.ts — `context update auth-boundaries --add-pattern "src/auth/middleware/**"`
-  src/auth/types.ts — `context update auth-boundaries --add-pattern "src/auth/types/**"`
-  src/auth/index.ts — `context add auth-entry --pattern "src/auth/index.ts"`
+If your change altered how an area works, update the topic so the note stays true:
+
+```bash
+driftless context update auth-boundaries --gotcha "..." --decision "..."
+# or open a topic-PR if it's already approved:
+driftless context pr auth-boundaries --open --summary "..." --content @new.md
 ```
-
-When files are not covered by any topic, the bot suggests up to 6 unanchored paths and the CLI commands to anchor them — either by extending an existing topic (`context update --add-pattern`) or creating a new one (`context add --pattern`).
-
-This is how the context layer grows over time: the PR bot tells the team exactly which files lack coverage and what to do about it.
-
-## Two sides of the comment
-
-| Section | Purpose |
-|---------|---------|
-| **Per-topic blocks** | Tell reviewers what context exists for the code they are reviewing. Decisions and gotchas surface directly in the PR. |
-| **Coverage retro** | Tell the team where gaps exist and suggest how to close them. |
 
 ## Configuration
 
@@ -63,5 +49,5 @@ This is how the context layer grows over time: the PR bot tells the team exactly
 - Only files changed in the PR are matched; the bot does not inspect the entire repo.
 
 <Note>
-  The PR bot uses topic patterns only. It does not depend on language analysis or component extraction. Coverage is measured by glob pattern intersection with PR file lists.
+The PR bot respects governance: it labels authoritative (`reviewed`) topics as truth and flags stale or draft ones. The reviewer always sees *which* context is blessed and *which* is just a hint.
 </Note>

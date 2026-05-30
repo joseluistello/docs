@@ -17,7 +17,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--kind`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**" --kind code-context` |
+| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--kind`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**" --kind reference` |
 | `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--kind`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
 
@@ -41,3 +41,24 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 | `context graph` | `--depth N`, `--json` | Topic relation graph | `driftless context graph payment-flow --depth 2` |
 
 `context doctor` audits the topic layer for zombie (patterns match zero files), orphaned (repo deleted), stale, and draft topics.
+
+## Governance
+
+A topic is authoritative only if approved. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; humans approve. See [Governance](/concepts/governance).
+
+| Command | Description | Example |
+|---|---|---|
+| `context propose <topic>` | Submit a draft for review | `driftless context propose payment-flow` |
+| `context approve <topic>` | Make it authoritative (human) | `driftless context approve payment-flow` |
+| `context reject <topic>` | Send a proposed topic back to draft | `driftless context reject payment-flow` |
+| `context archive <topic>` | Retire a topic | `driftless context archive payment-flow` |
+| `context pr <topic>` | List topic-PRs (proposed changes) | `driftless context pr payment-flow` |
+| `context pr <topic> --open` | Open a topic-PR (`--summary` + content flags) | `driftless context pr payment-flow --open --summary "..." --content @new.md` |
+| `context pr <topic> --merge <id>` | Apply + approve a topic-PR (human) | `driftless context pr payment-flow --merge <id>` |
+| `context pr <topic> --reject <id>` | Close a topic-PR without applying (human) | `driftless context pr payment-flow --reject <id>` |
+
+## Share
+
+| Command | Description | Example |
+|---|---|---|
+| `context share <topic>` | Public read-only link (`--revoke` to turn off) | `driftless context share payment-flow` |

@@ -25,11 +25,7 @@ A topic has:
 | **relations** | Typed links to other topics |
 | **classification** | Origin (`manual`, `agent`, `doc`), status (`reviewed`, `draft`), and kind |
 
-The schema is universal, but the shape changes by `kind`. `code-context`,
-`integration-note`, and `domain-map` usually lead with structured fields.
-`decision`, `roadmap`, `runbook`, `docs-note`, `operational-note`, and
-`customer-insight` usually lead with `content` markdown and use structured
-fields as short summaries or durable review signals.
+Topics are **content-first**: the markdown `content` body IS the topic, for every kind. The structured fields (`gotcha` / `decision` / `invariant` / `check`) are optional highlights layered on top — add one only when you want that specific thing surfaced to the machine (the PR bot, a future agent's brief). `kind` is just a label (icon + filter), not a different shape.
 
 ## Create your first topic
 
@@ -37,7 +33,7 @@ Start with the smallest useful topic: a durable note that explains one area well
 
 ```bash
 driftless context add onboarding-context \
-  --kind domain-map \
+  --kind reference \
   --what "Shared context map for this repo or workflow." \
   --how "Captures what humans and agents need to know before working here."
 ```
@@ -85,45 +81,35 @@ driftless context update auth-flow --remove-pattern "src/old-auth/**"
 
 ## Topic classification
 
-### Kinds
+### Kinds — a label, not a schema
 
-| Kind | Purpose |
+`kind` is a label (icon + filter), not a different shape — every topic is content-first. There are five:
+
+| Kind | Use for |
 |------|---------|
-| `code-context` | How a module/service/package works (default) |
-| `domain-map` | Overview of a business domain and its boundaries |
-| `decision` | Architecture decision and rationale |
-| `roadmap` | Planned changes or migration path |
-| `runbook` | Operational procedures, incident response |
-| `integration-note` | How a third-party integration works |
-| `docs-note` | Notes attached from a documentation file |
-| `customer-insight` | Customer-facing behavior or UX pattern |
-| `operational-note` | Deployment, infra, or operational knowledge |
+| `reference` | Code, systems, integrations, domain maps — the default and most common |
+| `decision` | An architecture/product decision (ADR-style) |
+| `roadmap` | Forward plan, thesis, phased rollout |
+| `runbook` | An operational scenario — trigger, diagnosis, resolution, rollback |
+| `insight` | Product/customer learning that informs engineering |
 
-### Recommended shape by kind
+Keep `--what` to one sentence and put the real explanation in `--content`. Don't invent empty gotchas or decisions just because the flags exist.
 
-| Kind | Primary shape | Use structured fields for |
-|------|---------------|---------------------------|
-| `code-context` | Structured fields first | `what`, `how`, gotchas, decisions, invariants, checks |
-| `integration-note` | Structured fields first | service contract, auth, quirks, failure modes |
-| `domain-map` | Structured fields first | boundaries, related areas, ownership, anchors |
-| `decision` | Markdown content first | one-line `what`, durable decisions, consequences |
-| `roadmap` | Markdown content first | thesis, direction, phases, next moves |
-| `runbook` | Markdown content first | procedure, required checks, rollback, gotchas |
-| `docs-note` | Markdown content first | source-of-truth document and related topics |
-| `operational-note` | Markdown content first | operational narrative plus checks |
-| `customer-insight` | Markdown content first | customer behavior and product implication |
+### Status — governance lifecycle
 
-For document-first topics, keep `--what` to one sentence and put the full
-narrative in `--content`. Do not force empty gotchas or decisions just because
-the fields exist.
-
-### Status
+A topic is **authoritative only if approved**: `draft → proposed → reviewed → archived`. `reviewed` is the authoritative state; the read response carries `governance.authoritative`. Agents propose, humans approve. See [Governance](/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
-| `reviewed` | Actively maintained, confirmed accurate |
-| `draft` | Written but not yet reviewed |
-| `orphaned` | No repo claims this topic anymore |
+| `draft` | Captured, not yet blessed — a hint, not truth |
+| `proposed` | Submitted for review |
+| `reviewed` | **Authoritative** — a human approved it; the agent treats it as truth |
+| `archived` | Retired |
+| `orphaned` | Code-driven (repo deleted) — orthogonal to governance |
+
+### Lifecycle class & project
+
+Two more axes, orthogonal to `kind` and `status`: **`lifecycle_class`** (`durable` vs `ephemeral` — canonical knowledge vs work/notes) and the **project** a topic belongs to (its privacy boundary — see [Projects & privacy](/concepts/projects)).
 
 ### Origin
 

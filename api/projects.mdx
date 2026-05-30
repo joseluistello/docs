@@ -1,0 +1,30 @@
+---
+title: 'Projects'
+description: 'Projects are the privacy boundary. Manage them and their members.'
+---
+
+Every topic belongs to exactly one **project** — `public` (visible to the whole workspace) or `private` (only its members). See [Projects & privacy](/concepts/projects). The API only ever returns projects (and the topics inside them) the caller can see.
+
+## Projects
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/projects` | List projects visible to the caller |
+| `POST` | `/workspaces/:slug/projects` | Create a project (`{ name, visibility }`) — private auto-adds the creator |
+| `GET` | `/workspaces/:slug/projects/:id` | Get a project (`404` if not visible) |
+| `PATCH` | `/workspaces/:slug/projects/:id` | Rename / change visibility |
+| `DELETE` | `/workspaces/:slug/projects/:id` | Delete a project (its topics fall back to no project) |
+
+## Members
+
+Managing a private project requires being a member.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/projects/:id/members` | List members |
+| `POST` | `/workspaces/:slug/projects/:id/members` | Add a member (`{ clerk_user_id, role }`) |
+| `DELETE` | `/workspaces/:slug/projects/:id/members/:memberId` | Remove a member |
+
+<Note>
+Move a topic between projects with `PATCH /workspaces/:slug/topics/:topic` and `{ "project_id": "..." }`. The target project is validated to the workspace.
+</Note>
