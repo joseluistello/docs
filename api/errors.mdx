@@ -1,0 +1,81 @@
+---
+title: 'Errors'
+description: 'The error envelope is part of the agent contract — branch on `code`, never on the message.'
+---
+
+Every error from the Driftless API — whether you reach it through the CLI, the MCP server, or directly — comes back as the **same JSON envelope**. An agent should branch on the machine-readable `code`, not parse the human `message`.
+
+## The envelope
+
+```json
+{
+  "statusCode": 403,
+  "code": "MISSING_HUMAN_IDENTITY",
+  "message": "Creating a private project requires a human identity. Use a human-owned key or the dashboard, or create it as public.",
+  "request_id": "a1b2c3d4",
+  "retryable": false,
+  "endpoint": "POST /api/v1/workspaces/acme/projects"
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `statusCode` | HTTP status. |
+| `code` | **Stable, machine-readable** error code (this list is additive-only). |
+| `message` | Human-readable, actionable — tells you how to fix it. May change; don't match on it. |
+| `request_id` | Correlation id — quote it when reporting an issue. |
+| `retryable` | `true` only for genuine transient failures (5xx). A `4xx` is a definitive answer — retrying won't help. |
+| `endpoint` | The method + path that produced the error. |
+
+<Note>
+`retryable` is honest: the CLI auto-retries a GET once on a transient failure but never re-sends a write, and never retries a 4xx. If you build your own client, do the same.
+</Note>
+
+## Why a `code` at all
+
+Input that's wrong shouldn't reach the agent as an opaque `500`. Two layers guarantee that:
+
+1. **Validation** rejects a bad enum (`status`, `kind`, `visibility`) with a field-level `400` *before* it touches the database.
+2. **A Postgres-error translator** catches any constraint violation that slips through and turns it into a coded `4xx` — never a generic `500`.
+
+After those two, a `500` means what it should: a real bug or an outage. That's also the only time `retryable` is `true`.
+
+## Code catalog
+
+### Validation & input
+| `code` | Status | When |
+|---|---|---|
+| `VALIDATION_FAILED` | 422 / 400 | A request body field failed validation (e.g. `status must be one of: draft, proposed, reviewed, …`). |
+| `BAD_REQUEST` | 400 | A generic bad request with no more specific code. |
+| `INVALID_VALUE` | 400 | A value violates a database CHECK constraint. |
+| `INVALID_ID` | 400 | A path/body identifier is not a valid UUID. |
+| `REQUIRED_FIELD` | 400 | A required field was missing. |
+| `FK_VIOLATION` | 400 | References a record that does not exist. |
+
+### Access & identity
+| `code` | Status | When |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Missing or invalid API key / token. → `driftless login --key <key>`. |
+| `FORBIDDEN` | 403 | Authenticated, but not allowed. |
+| `MISSING_HUMAN_IDENTITY` | 403 | An ownerless agent key tried a human-gated action (create a private project, approve a topic). Re-issue the key from the dashboard so it carries your identity, or do it as a human. |
+| `NOT_A_MEMBER` | 403 | You are not a member of this private project. |
+| `NOT_FOUND` | 404 | The resource doesn't exist — or is in a private project you can't see (we return 404, never 403, to avoid revealing it). |
+
+### Governance & conflicts
+| `code` | Status | When |
+|---|---|---|
+| `DUPLICATE` | 409 | A record with these values already exists. |
+| `DUPLICATE_TOPIC` | 409 | A topic with that slug already exists in the workspace. |
+| `VERSION_CONFLICT` | 409 | `expected_version` didn't match — someone wrote since you read. Re-read and retry. |
+| `CONFLICT` | 409 | A generic state conflict. |
+| `PROTECTED_RESOURCE` | 403 | The default "General" project can't be modified or deleted. |
+| `RATE_LIMITED` | 429 | Too many requests — back off. |
+
+### Server
+| `code` | Status | When |
+|---|---|---|
+| `INTERNAL` | 500 | An unexpected failure. `retryable: true`. Quote `request_id` if it persists. |
+
+## Observability
+
+Every captured error is also emitted to PostHog (`api_error` server-side, `cli_command_error` from the CLI) with `code`, `status_code`, and `endpoint` as properties — so the error surface is one queryable map, sliceable by type and endpoint rather than free-text.

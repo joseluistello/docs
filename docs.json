@@ -105,7 +105,7 @@
           {
             "group": "Overview",
             "icon": "book-open",
-            "pages": ["api/overview"]
+            "pages": ["api/overview", "api/errors"]
           },
           {
             "group": "Core resources",
