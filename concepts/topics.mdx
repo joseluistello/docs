@@ -98,13 +98,13 @@ Keep `--what` to one sentence and put the real explanation in `--content`. Don't
 
 ### Status — governance lifecycle
 
-A topic is **authoritative only if approved**: `draft → proposed → reviewed → archived`. `reviewed` is the authoritative state; the read response carries `governance.authoritative`. Agents propose, humans approve. See [Governance](/concepts/governance).
+A topic is **reviewed only if approved**: `draft → proposed → reviewed → archived`. `reviewed` is the reviewed state; the read response carries `governance.authoritative`. Agents propose, humans approve. See [Governance](/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
 | `draft` | Captured, not yet blessed — a hint, not truth |
 | `proposed` | Submitted for review |
-| `reviewed` | **Authoritative** — a human approved it; the agent treats it as truth |
+| `reviewed` | **Reviewed** — a human approved it; the agent treats it as truth |
 | `archived` | Retired |
 | `orphaned` | Code-driven (repo deleted) — orthogonal to governance |
 

@@ -1,9 +1,9 @@
 ---
 title: 'Auto-pull (experimental)'
-description: 'A deterministic Claude Code hook that injects authoritative context before every edit — the gate, paying off.'
+description: 'A deterministic Claude Code hook that injects reviewed context before every edit — the gate, paying off.'
 ---
 
-The skill *asks* the agent to pull context before editing (UC1). **Auto-pull** makes it deterministic: a Claude Code **PreToolUse hook** injects the team's **authoritative System context** for a file *before every edit* — no one has to remember.
+The skill *asks* the agent to pull context before editing (UC1). **Auto-pull** makes it deterministic: a Claude Code **PreToolUse hook** injects the team's **reviewed System context** for a file *before every edit* — no one has to remember.
 
 <Note>
 Experimental, and **Claude Code only** (hooks are a Claude Code feature). Off by default.
@@ -15,7 +15,7 @@ Experimental, and **Claude Code only** (hooks are a Claude Code feature). Off by
 1. You go to edit src/billing/refund.ts
 2. Claude Code fires the PreToolUse hook → driftless hook pre-edit   (always, deterministic)
 3. The glue checks the workspace toggle. Off → no-op, exits.
-4. On → it matches topics for the file and injects ONLY authoritative
+4. On → it matches topics for the file and injects ONLY reviewed
    System context (gotchas / invariants / decisions) as additionalContext
 5. The agent edits already knowing the team's rules — not blind
 ```
@@ -33,16 +33,16 @@ To remove the hook from a machine entirely, run `driftless hooks disable` there.
 
 ## Why it's the payoff of governance
 
-Only **authoritative** (reviewed) topics auto-inject. A draft is a hint, not the team's truth — it never reaches the agent automatically. So **approving a topic is literally what makes your agents start coding with it.** The human gate and the hook are the same loop: review → approve → the hook delivers it → the agent gets it right.
+Only **reviewed** (reviewed) topics auto-inject. A draft is a hint, not the team's truth — it never reaches the agent automatically. So **approving a topic is literally what makes your agents start coding with it.** The human gate and the hook are the same loop: review → approve → the hook delivers it → the agent gets it right.
 
 ## Cost & safety
 
 Built so it can't run away with your tokens — or block your editor:
 
-- **Authoritative + System only.** Drafts and early-stage notes never inject.
+- **Reviewed + System only.** Drafts and early-stage notes never inject.
 - **Deduped per session.** Edit the same area five times → its context injects once, not five.
 - **Size-capped.** A brief (gotchas/invariants/decisions), not the whole topic; a couple of topics max.
-- **No-op on miss or slowness.** No matching authoritative topic, or a slow API → nothing injected.
+- **No-op on miss or slowness.** No matching reviewed topic, or a slow API → nothing injected.
 - **Never blocks.** The hook always exits cleanly; a failure can't stop your edit.
 
 Combined with prompt caching (the injected prefix is cheap to re-send), a deduped brief costs cents over a session, not dollars.

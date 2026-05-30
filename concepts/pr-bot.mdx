@@ -20,7 +20,7 @@ The matching is **glob-only** — each topic's `patterns` are matched against th
 For every topic whose patterns match a file in the PR, the comment surfaces what the team recorded:
 
 ```text
-### auth-boundaries  ✓ authoritative
+### auth-boundaries  ✓ reviewed
 **Applies to:** src/auth/session.ts, src/auth/tenant.ts
 **How:** 2 endpoints, 1 service, 1 guard
 **Decisions:** Multi-tenant, uses org_id from token
@@ -49,5 +49,5 @@ driftless context pr auth-boundaries --open --summary "..." --content @new.md
 - Only files changed in the PR are matched; the bot does not inspect the entire repo.
 
 <Note>
-The PR bot respects governance: it labels authoritative (`reviewed`) topics as truth and flags stale or draft ones. The reviewer always sees *which* context is blessed and *which* is just a hint.
+The PR bot respects governance: it labels reviewed (`reviewed`) topics as truth and flags stale or draft ones. The reviewer always sees *which* context is blessed and *which* is just a hint.
 </Note>

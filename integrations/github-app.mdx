@@ -34,7 +34,7 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 2. Matches each file against all workspace topic patterns using glob intersection
 3. Posts a **sticky comment** that delivers the matched topics' recorded context to the reviewer
 
-**Recorded context:** Each matched topic gets a block showing its `what` summary, relevant decisions, gotchas, and invariants — plus whether it's authoritative (`reviewed`) or just a hint (`draft`), and whether it's stale. The reviewer reviews *with* the team's context instead of without it.
+**Recorded context:** Each matched topic gets a block showing its `what` summary, relevant decisions, gotchas, and invariants — plus whether it's reviewed (`reviewed`) or just a hint (`draft`), and whether it's stale. The reviewer reviews *with* the team's context instead of without it.
 
 The comment **informs; it never blocks** — no coverage score, no "uncovered files," no homework for the author. If your change altered how an area works, update the topic (or open a topic-PR) so the note stays true.
 
@@ -59,7 +59,7 @@ driftless branches add staging
 <!-- driftless-context -->
 ### Driftless · context for this PR
 
-auth-boundaries  ✓ authoritative   applies to: src/auth/session.ts, src/auth/tenant.ts
+auth-boundaries  ✓ reviewed   applies to: src/auth/session.ts, src/auth/tenant.ts
 how: 2 endpoints, 1 service, 1 guard
 decisions: Multi-tenant, uses org_id from token
 gotchas: All endpoints require auth; do not add @Public() without review

@@ -44,12 +44,12 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 
 ## Governance
 
-A topic is authoritative only if approved. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; humans approve. See [Governance](/concepts/governance).
+A topic is reviewed only if approved. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; humans approve. See [Governance](/concepts/governance).
 
 | Command | Description | Example |
 |---|---|---|
 | `context propose <topic>` | Submit a draft for review | `driftless context propose payment-flow` |
-| `context approve <topic>` | Make it authoritative (human) | `driftless context approve payment-flow` |
+| `context approve <topic>` | Make it reviewed (human) | `driftless context approve payment-flow` |
 | `context reject <topic>` | Send a proposed topic back to draft | `driftless context reject payment-flow` |
 | `context archive <topic>` | Retire a topic | `driftless context archive payment-flow` |
 | `context pr <topic>` | List topic-PRs (proposed changes) | `driftless context pr payment-flow` |

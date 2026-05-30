@@ -22,7 +22,7 @@ The read response is the canonical context. It includes `classification.status` 
 ```json
 {
   "classification": { "status": "reviewed", "kind": "reference" },
-  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
+  "governance": { "reviewed": true, "approved_by": "u_cto", "approved_at": "..." }
 }
 ```
 
@@ -43,12 +43,12 @@ The read response is the canonical context. It includes `classification.status` 
 
 ## Governance
 
-A topic is authoritative only if approved. See [Governance](/concepts/governance). `approve` / `reject` and proposal `merge` / `reject` require a human identity.
+A topic is reviewed only if approved. See [Governance](/concepts/governance). `approve` / `reject` and proposal `merge` / `reject` require a human identity.
 
 | Method | Path | Purpose |
 |---|---|---|
 | `POST` | `/workspaces/:slug/topics/:topic/propose` | `draft → proposed` |
-| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (authoritative) |
+| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (reviewed) |
 | `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
 | `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
 | `GET` | `/workspaces/:slug/topics/:topic/proposals` | List topic-PRs |

@@ -7,7 +7,7 @@ The everyday loop is two moves: **persist what you learn after a session, pull i
 
 ## 1. Persist
 
-After a session, write down what was durable — a gotcha, a decision, an invariant. It lands as a **draft** (not yet authoritative).
+After a session, write down what was durable — a gotcha, a decision, an invariant. It lands as a **draft** (not yet reviewed).
 
 ```bash
 driftless context add "auth-flow" \
@@ -36,11 +36,11 @@ Read the `what / how / gotchas / decisions / invariants` — and the `governance
 
 ## 3. Govern
 
-A topic is **authoritative only if approved**. Agents propose; humans approve. The agent treats `reviewed` as truth, `draft`/`proposed` as a hint.
+A topic is **reviewed only if approved**. Agents propose; humans approve. The agent treats `reviewed` as truth, `draft`/`proposed` as a hint.
 
 ```bash
 driftless context propose auth-flow     # draft → proposed
-driftless context approve auth-flow     # → reviewed (authoritative)
+driftless context approve auth-flow     # → reviewed (reviewed)
 driftless context pr auth-flow --open --summary "..." --content @new.md   # change an approved topic
 ```
 
