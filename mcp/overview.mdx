@@ -20,8 +20,14 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_context_create` | Create a new topic |
 | `driftless_context_update` | Update an existing topic (append-safe) |
 | `driftless_context_diff` | Get topics matching your local diff |
+| `driftless_context_delete` | Delete a topic (destructive) |
+| `driftless_context_propose` | Submit a draft topic for human review (draft → proposed) |
 
-All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations.
+All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. The MCP caller only ever sees topics in projects it can access (private projects it isn't a member of are invisible — see [Projects & privacy](/concepts/projects)).
+
+### Governance from the MCP
+
+A topic is authoritative only once a human approves it. An MCP client can **propose** a draft for review (`driftless_context_propose`), but **cannot approve** — `approve` requires a human identity, and an MCP/OAuth caller has none. Agents propose; humans approve. See [Governance](/concepts/governance).
 
 ## Authentication
 
