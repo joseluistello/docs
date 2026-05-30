@@ -17,13 +17,18 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_context_list` | List topics with filters |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to file paths |
-| `driftless_context_create` | Create a new topic |
+| `driftless_context_create` | Create a new topic (accepts `title`, and `project` to target a project) |
+| `driftless_context_projects` | List the projects you can see (to pass as `project` on create) |
 | `driftless_context_update` | Update an existing topic (append-safe) |
 | `driftless_context_diff` | Get topics matching your local diff |
 | `driftless_context_delete` | Delete a topic (destructive) |
 | `driftless_context_propose` | Submit a draft topic for human review (draft → proposed) |
 
 All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. The MCP caller only ever sees topics in projects it can access (private projects it isn't a member of are invisible — see [Projects & privacy](/concepts/projects)).
+
+### Targeting a project
+
+MCP is stateless, so there's no "active project" like the CLI. To put a topic in a specific project, the agent passes `project` (name or id) on `driftless_context_create` — discover the options with `driftless_context_projects`. Omit it and the topic lands in **General**. Identity-based access comes from the auth token: an OAuth-connected user (or an owned API key) sees and can write to their private projects; an ownerless key sees only public ones.
 
 ### Governance from the MCP
 

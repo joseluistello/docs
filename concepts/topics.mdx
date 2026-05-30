@@ -11,7 +11,8 @@ A topic has:
 
 | Field | Description |
 |-------|-------------|
-| **slug** | Unique name within the workspace (e.g., `auth-flow`, `billing-webhook`) |
+| **slug** | Unique kebab-case **id** within the workspace (e.g., `auth-flow`, `billing-webhook`) |
+| **title** | Short human display name — a noun like a diagram node (`Auth`, `Billing`). Keep it to one or two words; the explanation goes in `what`/`content`, never the title |
 | **what** | Short summary of what this code does |
 | **how** | Technical detail: the mechanism, the pattern |
 | **decisions** | Why choices were made (architecture decisions) |
