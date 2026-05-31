@@ -3,30 +3,37 @@
   "name": "Driftless",
   "description": "Shared context layer for engineering teams and coding agents.",
   "theme": "linden",
-  "favicon": "https://media.brand.dev/0113d1c7-09f1-4cd5-94a4-dda27d42796f.png",
+  "favicon": "/favicon.png",
   "logo": {
     "light": "/terminal-icon.png",
     "dark": "/terminal-icon.png",
-    "href": "https://driftless.icu"
+    "href": "https://driftless.icu",
+    "favicon": "/favicon.png"
   },
   "colors": {
-    "primary": "#b8e87a",
-    "light": "#8aaf5b",
-    "dark": "#0a0b0c"
+    "primary": "#38632c",
+    "light": "#5f9a4a",
+    "dark": "#2c4f22"
   },
   "background": {
     "color": {
-      "light": "#0a0b0c",
-      "dark": "#0a0b0c"
+      "light": "#faf8f3",
+      "dark": "#181712"
     }
   },
   "appearance": {
-    "default": "dark",
-    "strict": true
+    "default": "light",
+    "strict": false
   },
   "fonts": {
-    "family": "Geist Mono",
-    "weight": 400
+    "heading": {
+      "family": "Hanken Grotesk",
+      "weight": 600
+    },
+    "body": {
+      "family": "Hanken Grotesk",
+      "weight": 400
+    }
   },
   "icons": {
     "library": "lucide"
@@ -34,12 +41,15 @@
   "styling": {
     "eyebrows": "breadcrumbs",
     "codeblocks": {
-      "theme": "github-dark"
+      "theme": "github-light"
     }
   },
   "navbar": {
     "links": [
-      { "label": "Blog", "href": "https://driftless.icu/blog" }
+      {
+        "label": "Blog",
+        "href": "https://driftless.icu/blog"
+      }
     ],
     "primary": {
       "type": "button",
@@ -48,95 +58,59 @@
     }
   },
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Start",
-        "groups": [
-          {
-            "group": "Start here",
-            "icon": "rocket",
-            "pages": ["index", "quickstart"]
-          }
+        "group": "Getting started",
+        "icon": "rocket",
+        "pages": [
+          "index",
+          "quickstart"
         ]
       },
       {
-        "tab": "Concepts",
-        "groups": [
-          {
-            "group": "Repo memory",
-            "icon": "brain",
-            "pages": ["concepts/topics", "concepts/core-loop"]
-          },
-          {
-            "group": "Context integrity",
-            "icon": "radar",
-            "pages": ["concepts/drift", "concepts/pr-bot", "concepts/automations"]
-          },
-          {
-            "group": "Governance & access",
-            "icon": "shield-check",
-            "pages": ["concepts/governance", "concepts/projects"]
-          }
+        "group": "Concepts",
+        "icon": "brain",
+        "pages": [
+          "concepts/topics",
+          "concepts/core-loop",
+          "concepts/governance",
+          "concepts/projects",
+          "concepts/drift",
+          "concepts/pr-bot",
+          "concepts/automations"
         ]
       },
       {
-        "tab": "CLI",
-        "groups": [
-          {
-            "group": "Setup",
-            "icon": "wrench",
-            "pages": ["cli/setup"]
-          },
-          {
-            "group": "Daily workflow",
-            "icon": "refresh-cw",
-            "pages": ["cli/context", "cli/sync"]
-          },
-          {
-            "group": "Agents",
-            "icon": "bot",
-            "pages": ["agents/setup", "agents/agentic-layer"]
-          }
+        "group": "CLI & agents",
+        "icon": "terminal",
+        "pages": [
+          "cli/setup",
+          "cli/context",
+          "cli/sync",
+          "agents/setup",
+          "agents/agentic-layer"
         ]
       },
       {
-        "tab": "API",
-        "groups": [
-          {
-            "group": "Overview",
-            "icon": "book-open",
-            "pages": ["api/overview", "api/errors"]
-          },
-          {
-            "group": "Core resources",
-            "icon": "database",
-            "pages": ["api/workspaces", "api/repos", "api/topics", "api/projects"]
-          },
-          {
-            "group": "Integrations",
-            "icon": "plug",
-            "pages": ["api/integrations", "integrations/github-app"]
-          }
+        "group": "API",
+        "icon": "code",
+        "pages": [
+          "api/overview",
+          "api/errors",
+          "api/workspaces",
+          "api/repos",
+          "api/topics",
+          "api/projects",
+          "api/integrations",
+          "integrations/github-app"
         ]
       },
       {
-        "tab": "Security",
-        "groups": [
-          {
-            "group": "Security",
-            "icon": "shield-check",
-            "pages": ["security/overview"]
-          }
-        ]
-      },
-      {
-        "tab": "MCP",
-        "groups": [
-          {
-            "group": "MCP & OAuth",
-            "icon": "plug",
-            "pages": ["mcp/overview"]
-          }
+        "group": "Platform",
+        "icon": "shield-check",
+        "pages": [
+          "mcp/overview",
+          "security/overview"
         ]
       }
     ]
@@ -156,8 +130,14 @@
       {
         "header": "Driftless",
         "items": [
-          { "label": "Dashboard", "href": "https://driftless.icu" },
-          { "label": "Blog", "href": "https://driftless.icu/blog" }
+          {
+            "label": "Dashboard",
+            "href": "https://driftless.icu"
+          },
+          {
+            "label": "Blog",
+            "href": "https://driftless.icu/blog"
+          }
         ]
       }
     ]
@@ -187,5 +167,15 @@
       "source": "/dashboard/overview",
       "destination": "/concepts/core-loop"
     }
-  ]
+  ],
+  "seo": {
+    "metatags": {
+      "og:image": "https://driftless.icu/opengraph.png",
+      "og:image:width": "1200",
+      "og:image:height": "630",
+      "twitter:image": "https://driftless.icu/opengraph.png",
+      "twitter:card": "summary_large_image"
+    },
+    "indexing": "all"
+  }
 }
