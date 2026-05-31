@@ -95,7 +95,7 @@
           {
             "group": "Agents",
             "icon": "bot",
-            "pages": ["agents/setup"]
+            "pages": ["agents/setup", "agents/agentic-layer"]
           }
         ]
       },

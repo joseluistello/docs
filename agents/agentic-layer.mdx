@@ -1,0 +1,46 @@
+---
+title: 'Audit & Architect agents'
+description: 'Server-side agents that keep your team context honest and grow it — they propose, a human approves.'
+---
+
+<Note>
+**Coming soon.** You can pre-configure the agents now in **Settings → Agents**, but they don't run yet — we'll enable the runner shortly.
+</Note>
+
+Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; a human **approves**.
+
+- **The Auditor** keeps existing context honest when code changes.
+- **The Architect** grows context where it's missing.
+
+## The Auditor
+
+When a pull request (or drift) touches files that a **reviewed** topic anchors, the Auditor reads the change and the current code, and compares it claim-by-claim against what the team recorded.
+
+- **Contradicts a claim** → it proposes a minimal update, citing the file/line and *why* the claim is now wrong (e.g. *"this diff removes the idempotency check the `billing-flow` invariant requires"*).
+- **Unsure** → it flags a question (no patch) for a human to look at — it never fabricates a confident edit.
+- **No impact** → it does nothing. Silence is the common, correct outcome.
+
+It only ever audits against **Institutional Context** (`reviewed`). A draft Note is an unvouched idea, never something to enforce.
+
+## The Architect
+
+On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and proposes new topics — clustered by concept, with a narrow anchor (5–40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-propose: a missed gap is cheap, a spam topic erodes trust.
+
+## How they run — BYOM
+
+The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out — it's used server-side only.
+
+- **Read-only.** The agents read and reason; they never execute, edit, or write code.
+- **Propose-only, human-gated.** Everything they produce lands as a **draft** or **proposal** in your Review Queue. Only a human approves it into Institutional Context. An agent can never self-bless authoritative truth.
+
+## Configure them
+
+In the dashboard: **Settings → Agents**.
+
+1. Paste your **OpenCode API key**.
+2. Pick a **model** — or a comma-separated priority list (e.g. `opencode/claude-sonnet-4-6, opencode/big-pickle`); the runner rotates to the next on a rate-limit or credit error.
+3. Toggle the **Auditor** and **Architect** on.
+
+## See what they did
+
+The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), the model, tokens used, proposals created, and a code-free summary of what the agent concluded — including `no-op` runs (a healthy signal: the agent looked and found nothing to change).
