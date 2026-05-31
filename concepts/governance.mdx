@@ -3,31 +3,35 @@ title: 'Governance'
 description: 'A topic is reviewed only if approved. Agents propose, humans approve.'
 ---
 
-Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes reviewed only when a human approves it. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
+Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes Institutional Context only when a human approves it. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
 
-## The lifecycle
+## Everything is one topic that evolves
 
-Every topic moves through a governed state machine:
+There is a single primitive — a **topic** — and it matures along one trust axis. The names are stages of the *same object*, not different types:
 
 ```text
-draft  →  proposed  →  reviewed  →  archived
+Note  →  Proposal  →  Institutional Context     (+ Archived)
+(draft)   (proposed)   (reviewed)
 ```
 
-| Status | Meaning |
-|---|---|
-| `draft` | Captured, not yet blessed. The agent treats it as a **hint**, not truth. |
-| `proposed` | Submitted for review, awaiting a human's approval. |
-| `reviewed` | **Reviewed.** A human approved it. The read response carries `governance.authoritative: true` plus `approved_by` and `approved_at`. The agent treats this as **truth**. |
-| `archived` | Retired. Hidden from the default list. |
+- **Note** — your private scratch. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here.
+- **Proposal** — a Note promoted for review. Pending a human's vouch; lives in the Proposals queue and can be sent back with a reason.
+- **Institutional Context** — the final evolution. A human approved it, so it joins the team's **living, code-anchored knowledge graph** — the multi-context map of the whole codebase. This is the durable truth an agent consumes.
+
+`reviewed` topics carry `governance.authoritative: true` + `approved_by`/`approved_at`. Internally the status enum stays `draft`/`proposed`/`reviewed`/`archived`; the names above are the product language.
 
 The model is **agents propose, humans approve**. `approve`, `reject`, and `merge` require a human identity — an ownerless agent key can propose, but never bless.
 
 ```bash
-driftless context propose <slug>     # draft → proposed
-driftless context approve <slug>     # → reviewed (reviewed)
-driftless context reject <slug>      # proposed → draft
+driftless context propose <slug>     # Note → Proposal
+driftless context approve <slug>     # → Institutional Context
+driftless context reject <slug> --reason "..."   # → Note (with feedback)
 driftless context archive <slug>     # retire it
 ```
+
+## Three surfaces
+
+The dashboard mirrors the three stages: **Context** (the Institutional Context graph — reviewed only), **Proposals** (the approve/reject queue + re-review of drifted context), and **Notes** (your private workspace, with share controls and "expiring soon").
 
 ## Who can vouch — project roles
 

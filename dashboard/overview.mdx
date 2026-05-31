@@ -10,20 +10,27 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 | Area | Use it for |
 |---|---|
 | Overview | Workspace repositories and setup state |
-| Review Queue | The curation surface — approve proposed signals and re-review drifted context |
-| Context | Browse, edit, and review topics |
+| Context | The **Institutional Context** graph — vouched, reviewed topics only |
+| Proposals | The approve/reject queue — pending Proposals + re-review of drifted context |
+| Notes | Your **private** workspace — draft notes only you see, with share controls |
 | Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) |
 | PR Activity | See observed pull requests and context matches |
 | Settings | Manage API keys, GitHub integration, OAuth apps, and members |
 
-## Review Queue
+The three surfaces mirror the one-topic-that-evolves model ([Governance](/concepts/governance)): **Note → Proposal → Institutional Context**.
 
-The Review Queue is where a **signal becomes context**. Two lanes:
+## Proposals
 
-- **Needs review** — topics an agent or teammate proposed (`draft` / `proposed`), routed to the projects you can vouch in. Approve to make them reviewed truth, or reject.
-- **Needs re-review** — `reviewed` topics whose code **drifted**. Confirm they still hold (clears the drift flag) or open to update.
+Where a **Proposal becomes Institutional Context**. Two lanes:
+
+- **Pending review** — Proposals (`proposed`) routed to the projects you can vouch in. Approve to vouch into the graph, or **send back with a reason** (the author sees it on their Note).
+- **Needs re-review** — Institutional Context whose code **drifted**. Confirm it still holds (clears the drift flag) or open to update.
 
 Inbox-zero means your team's memory is healthy. Vouching follows [project roles](/concepts/governance#who-can-vouch--project-roles) — only maintainers/owners approve in private projects.
+
+## Notes
+
+Your **private** scratch: draft topics only you can see, excluded from search. Promote a note to a **Proposal** when it's ready for the team, or **share** it to the project for early feedback. Untouched notes auto-archive after ~14 days (recoverable, never deleted).
 
 ## Context detail
 
