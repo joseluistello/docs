@@ -23,7 +23,7 @@
   },
   "appearance": {
     "default": "light",
-    "strict": false
+    "strict": true
   },
   "fonts": {
     "heading": {
