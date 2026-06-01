@@ -1,8 +1,8 @@
-/* ─── Minimal footer ─── */
+/* ─── Paper footer (matches DESIGN.md §7) ─── */
 footer {
   padding-top: 2rem !important;
   padding-bottom: 2rem !important;
-  border-top: 1px solid #23252a !important;
+  border-top: 1px solid #e6e2d7 !important;
 }
 
 footer .grid {
@@ -28,21 +28,21 @@ footer ul li {
 }
 
 footer ul li a {
-  color: #7a7d77 !important;
+  color: #8c897e !important;
   font-size: 0.85rem !important;
   text-decoration: none !important;
 }
 
 footer ul li a:hover {
-  color: #b8e87a !important;
+  color: #38632c !important;
 }
 
 footer .ld-foot-bottom,
 footer > div > div:last-child {
   margin-top: 1.5rem !important;
   padding-top: 1rem !important;
-  border-top: 1px solid #23252a !important;
+  border-top: 1px solid #e6e2d7 !important;
   text-align: center !important;
   font-size: 0.8rem !important;
-  color: #4a4d49 !important;
+  color: #8c897e !important;
 }

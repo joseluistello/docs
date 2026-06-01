@@ -5,8 +5,8 @@
   "theme": "linden",
   "favicon": "/favicon.png",
   "logo": {
-    "light": "/terminal-icon.png",
-    "dark": "/terminal-icon.png",
+    "light": "/brand-icon.svg",
+    "dark": "/brand-icon.svg",
     "href": "https://driftless.icu",
     "favicon": "/favicon.png"
   },
@@ -170,10 +170,10 @@
   ],
   "seo": {
     "metatags": {
-      "og:image": "https://driftless.icu/opengraph.png",
+      "og:image": "https://driftless.icu/opengraph.jpg",
       "og:image:width": "1200",
       "og:image:height": "630",
-      "twitter:image": "https://driftless.icu/opengraph.png",
+      "twitter:image": "https://driftless.icu/opengraph.jpg",
       "twitter:card": "summary_large_image"
     },
     "indexing": "all"

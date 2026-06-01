@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#9AE600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- corner brackets -->
+  <path d="M11 4 H6 A2 2 0 0 0 4 6 V11" />
+  <path d="M21 4 H26 A2 2 0 0 1 28 6 V11" />
+  <path d="M28 21 V26 A2 2 0 0 1 26 28 H21" />
+  <path d="M11 28 H6 A2 2 0 0 1 4 26 V21" />
+  <!-- side ticks -->
+  <path d="M3 16 H6.5" />
+  <path d="M25.5 16 H29" />
+  <!-- prompt: chevron + underscore -->
+  <path d="M12.5 12 L17 16 L12.5 20" />
+  <path d="M19.5 20 H23.5" />
+</svg>
