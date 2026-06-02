@@ -33,16 +33,16 @@ driftless context archive <slug>     # retire it
 
 The dashboard mirrors the three stages: **Context** (the Institutional Context graph — reviewed only), **Proposals** (the approve/reject queue + re-review of drifted context), and **Notes** (your private workspace, with share controls and "expiring soon").
 
-## Who can vouch — project roles
+## Who can vouch — workspace roles
 
-Vouching authority is the **project**, not the workspace. Each member of a project carries a role (CODEOWNERS-for-knowledge):
+Vouching authority is a **workspace role**. Each member carries one:
 
 | Role | Can |
 |---|---|
-| `contributor` | Read + **propose** (create signals) |
-| `maintainer` / `owner` | …+ **vouch** — approve, merge, reject, archive, and clear drift |
+| `member` | Read + **propose** (create signals) |
+| `admin` / `owner` | …+ **vouch** — approve, reject, archive, and clear drift |
 
-In a **private** project, `approve`/`merge`/`reject`/`archive` (and re-vouching a drifted topic) require the `maintainer` or `owner` role — a contributor proposes but does not bless. **Public** and unassigned topics stay open to any human workspace member. Only an `owner` can grant the `owner` role, and a project's last owner can't be demoted or removed. Manage roles in the dashboard's project members panel.
+`approve`/`reject`/`archive` (and re-vouching a drifted topic) require the `admin` or `owner` role — a member proposes but does not bless. Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
 
 Permissions gate **vouching and visibility only — never coding**. Driftless informs; it never blocks a developer from writing code.
 
@@ -70,7 +70,7 @@ driftless context pr <slug> --merge <id>                        # apply + re-app
 driftless context pr <slug> --reject <id>                       # close without applying
 ```
 
-A proposal carries a **content patch** (whitelisted to content fields — it can never forge approval or move a topic between projects). Merging applies the patch and makes the topic reviewed again, attributed to the approver.
+A proposal carries a **content patch** (whitelisted to content fields — it can never forge approval). Merging applies the patch and makes the topic reviewed again, attributed to the approver.
 
 ## Why deterministic
 

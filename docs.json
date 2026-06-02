@@ -73,9 +73,7 @@
         "pages": [
           "concepts/topics",
           "concepts/core-loop",
-          "concepts/governance",
-          "concepts/projects",
-          "concepts/drift",
+          "concepts/governance",          "concepts/drift",
           "concepts/pr-bot",
           "concepts/automations"
         ]
@@ -99,9 +97,7 @@
           "api/errors",
           "api/workspaces",
           "api/repos",
-          "api/topics",
-          "api/projects",
-          "api/integrations",
+          "api/topics",          "api/integrations",
           "integrations/github-app"
         ]
       },

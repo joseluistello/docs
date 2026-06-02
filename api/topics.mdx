@@ -12,9 +12,9 @@ The canonical path is `/topics`. `/watchers` still works as a deprecated alias f
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller) |
-| `POST` | `/workspaces/:slug/topics` | Create a topic (assigned to a project; `project_id` optional) |
+| `POST` | `/workspaces/:slug/topics` | Create a topic (draft, or `status: proposed`) |
 | `GET` | `/workspaces/:slug/topics/:topic` | Get topic detail |
-| `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic (incl. `project_id` to move it) |
+| `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
 | `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
 
 The read response is the canonical context. It includes `classification.status` and a `governance` block — the trust signal an agent consumes:

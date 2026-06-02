@@ -11,10 +11,10 @@ Every error from the Driftless API — whether you reach it through the CLI, the
 {
   "statusCode": 403,
   "code": "MISSING_HUMAN_IDENTITY",
-  "message": "Creating a private project requires a human identity. Use a human-owned key or the dashboard, or create it as public.",
+  "message": "Vouching requires a human identity — agents propose, humans approve.",
   "request_id": "a1b2c3d4",
   "retryable": false,
-  "endpoint": "POST /api/v1/workspaces/acme/projects"
+  "endpoint": "POST /api/v1/workspaces/acme/topics/auth-flow/approve"
 }
 ```
 
@@ -57,9 +57,9 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 |---|---|---|
 | `UNAUTHORIZED` | 401 | Missing or invalid API key / token. → `driftless login --key <key>`. |
 | `FORBIDDEN` | 403 | Authenticated, but not allowed. |
-| `MISSING_HUMAN_IDENTITY` | 403 | An ownerless agent key tried a human-gated action (create a private project, approve a topic). Re-issue the key from the dashboard so it carries your identity, or do it as a human. |
-| `NOT_A_MEMBER` | 403 | You are not a member of this private project. |
-| `NOT_FOUND` | 404 | The resource doesn't exist — or is in a private project you can't see (we return 404, never 403, to avoid revealing it). |
+| `MISSING_HUMAN_IDENTITY` | 403 | An ownerless agent key tried a human-gated action (approving a topic). Re-issue the key from the dashboard so it carries your identity, or do it as a human. |
+| `INSUFFICIENT_ROLE` | 403 | You lack the workspace role for this action — only an owner/admin can approve. Ask one to promote you in Settings → Members. |
+| `NOT_FOUND` | 404 | The resource doesn't exist (or another member's private draft you can't see — we return 404, never 403). |
 
 ### Governance & conflicts
 | `code` | Status | When |
@@ -68,7 +68,7 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `DUPLICATE_TOPIC` | 409 | A topic with that slug already exists in the workspace. |
 | `VERSION_CONFLICT` | 409 | `expected_version` didn't match — someone wrote since you read. Re-read and retry. |
 | `CONFLICT` | 409 | A generic state conflict. |
-| `PROTECTED_RESOURCE` | 403 | The default "General" project can't be modified or deleted. |
+| `PROTECTED_RESOURCE` | 403 | A protected/default resource can't be modified or deleted. |
 | `RATE_LIMITED` | 429 | Too many requests — back off. |
 
 ### Server
