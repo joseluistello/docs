@@ -41,9 +41,9 @@ These endpoints do not require authentication:
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/me` | Current identity and workspace context |
-| `POST` | `/auth/api-keys` | Create an API key |
-| `GET` | `/auth/api-keys` | List API keys for the workspace |
-| `DELETE` | `/auth/api-keys/:id` | Revoke an API key |
+| `POST` | `/workspaces/:slug/api-keys` | Create an API key for that workspace |
+| `GET` | `/workspaces/:slug/api-keys` | List a workspace's API keys |
+| `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoke an API key |
 
 ## OAuth
 
