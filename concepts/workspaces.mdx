@@ -1,0 +1,56 @@
+---
+title: 'Workspaces'
+description: 'The top-level container for context — belong to many, switch freely, move topics between them.'
+---
+
+## What is a workspace?
+
+A workspace is the top-level container for everything in Driftless: topics, their governance lifecycle, members, repos, and integrations all live inside one. Every topic belongs to **exactly one** workspace, and access is always scoped to it.
+
+A user can belong to **many** workspaces and switch between them — in the dashboard, the CLI, or an MCP client — without signing in again.
+
+## Identity vs. membership
+
+Clerk authenticates the **person** (the verified session). Belonging to a workspace is a separate fact, stored in Driftless as a `workspace_members` row with a role. This decoupling is deliberate: the workspace is the product's core unit, so it isn't bound to a billable, capped external resource.
+
+Authorization is a direct membership check: *does this verified user have a membership row for the workspace in the URL?* A non-member gets a 404 (the workspace reads as if it doesn't exist), never another tenant's data.
+
+| Role | Can |
+|---|---|
+| **owner** | Everything, including granting the owner role and managing members |
+| **admin** | Approve/vouch context, invite members, manage roles (not owner) |
+| **member** | Propose context (agents propose; humans approve) |
+
+## How each surface picks the active workspace
+
+| Surface | Authenticates with | Active workspace comes from |
+|---|---|---|
+| **Dashboard** | Clerk session (the human) | The URL — `app.driftless.icu/w/:slug`. The sidebar switcher just changes the slug. |
+| **CLI** | API key | The local registry; `driftless workspace switch` changes it. |
+| **MCP** | OAuth token | The token's primary workspace, or an optional `workspace` argument on a tool call. |
+
+## Scoped credentials
+
+A single credential can be authorized for **several** workspaces, so you authenticate once and reach all of them — without a "super key" that opens everything.
+
+- **API keys**: when you create a key in the dashboard (Settings → API keys), choose its **Authorized workspaces**. `driftless login` then registers every workspace the key reaches, and `workspace switch` flips between them locally.
+- **OAuth tokens (MCP)**: the consent screen lets you grant additional workspaces; each tool call can target any of them.
+
+Two rules keep this safe:
+
+1. **Membership is the truth.** A scoped credential can only reach a workspace while its human is *currently* a member. Removing someone from a workspace revokes their credentials there immediately — no reissue needed.
+2. **No escalation.** Inside each workspace, a credential acts with that human's live role there, never a higher one.
+
+## Invitations
+
+Owners and admins invite teammates by email (Settings → Members, or the API). Driftless creates a single-use, 7-day invitation and emails a link. The invitee signs in and joins as a member — no external organization required.
+
+## Moving a topic between workspaces
+
+A topic lives in one workspace, but you can re-home it:
+
+```bash
+driftless context move <topic> --to <workspace-slug>
+```
+
+Moving **resets the topic to a draft** in its new workspace — a vouch is workspace-specific and doesn't carry across — and drops workspace-local anchors (repo links, relations). It requires owner/admin in the source workspace and membership in the target.

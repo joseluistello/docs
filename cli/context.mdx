@@ -21,6 +21,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**"` |
 | `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
+| `context move` | `--to <workspace>`, `--dry-run`, `--json` | Re-home a topic to another workspace you belong to | `driftless context move payment-flow --to acme-platform` |
 
 ## Pattern validation
 
@@ -63,3 +64,17 @@ A topic is reviewed only if approved. Lifecycle: `draft → proposed → reviewe
 | Command | Description | Example |
 |---|---|---|
 | `context share <topic>` | Public read-only link (`--revoke` to turn off) | `driftless context share payment-flow` |
+
+## Workspaces
+
+A workspace is the top-level container for context; you can belong to several and switch between them without re-authenticating. One `driftless login` registers every workspace you belong to under a single [scoped key](/concepts/workspaces#scoped-credentials).
+
+| Command | Description | Example |
+|---|---|---|
+| `workspace list` | The workspaces you belong to (● = active) | `driftless workspace list` |
+| `workspace current` | The active workspace | `driftless workspace current` |
+| `workspace switch <slug>` | Operate on another one (no re-login) | `driftless workspace switch acme-platform` |
+| `workspace add --key <drift_…>` | Register a workspace by its API key | `driftless workspace add --key drift_…` |
+| `context move <topic> --to <slug>` | Re-home a topic to another workspace | `driftless context move payment-flow --to acme-platform` |
+
+`context move` resets the topic to a draft in its new workspace (a vouch doesn't carry across workspaces) and requires owner/admin in the source plus membership in the target. See [Workspaces](/concepts/workspaces).
