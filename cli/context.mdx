@@ -7,12 +7,12 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context list` | `--stale`, `--status`, `--repo`, `--docs`, `--auto`, `--manual`, `--json` | List topics with filters | `driftless context list --stale` |
+| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | List topics with filters. Defaults to the **40 most relevant** (drifted first); prints `Showing N of M` — use `--all` / `--limit N` for more (`--json` is uncapped). `--suggested` = not-yet-authoritative (draft + proposed). | `driftless context list --suggested` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics for current changes | `driftless context get --diff` |
 | `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** (local-git drift source — no GitHub App needed) | `driftless context get --diff --mark` |
-| `context search` | query, `--json`, `--include-notes` | Full-text search (Institutional Context + Proposals; Notes excluded unless `--include-notes`) | `driftless context search "payment"` |
+| `context search` | query, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation` — narrow with more terms rather than paging. Institutional Context + Proposals; Notes excluded unless `--include-notes`. | `driftless context search "payment"` |
 
 ## Create & Update
 
