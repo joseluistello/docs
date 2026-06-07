@@ -13,8 +13,8 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 
 | Tool | Description |
 |------|-------------|
-| `driftless_context_search` | Full-text search across topics |
-| `driftless_context_list` | List topics with filters |
+| `driftless_context_search` | Full-text search across topics — relevance-ranked, capped at 50 |
+| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`, or raise `limit`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to file paths |
 | `driftless_context_create` | Create a new topic (accepts `title`; defaults to a Proposal for review) |
