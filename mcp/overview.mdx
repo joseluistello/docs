@@ -13,8 +13,10 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 
 | Tool | Description |
 |------|-------------|
-| `driftless_context_search` | Full-text search across topics — relevance-ranked, capped at 50 |
-| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`, or raise `limit`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
+| `driftless_context_search` | Full-text search across topics — relevance-ranked, capped at 50. Accepts `tags` to scope the search to a category (e.g. `["billing"]`) |
+| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`/`tags`, or raise `limit`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
+| `driftless_tags_list` | The workspace tag registry with per-tag topic counts — paginated, most-used first |
+| `driftless_tags_create` | Pre-create a tag with an optional description (idempotent; names normalize to lowercase, spaces→dashes) |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to file paths |
 | `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to a Proposal for review) |
@@ -52,7 +54,7 @@ Types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 Remote agents have no local checkout, so write responses carry `anchor_validation` — per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs.
 
 <Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up — otherwise new parameters like `rels` won't be available.
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up — otherwise new parameters like `rels` or `tags` won't be available.
 </Note>
 
 ### Governance from the MCP

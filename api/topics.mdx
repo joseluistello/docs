@@ -30,8 +30,21 @@ The read response is the canonical context. It includes `classification.status` 
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics/search` | Full-text search |
+| `GET` | `/workspaces/:slug/topics/search` | Full-text search. `?tags=a,b` scopes to topics carrying ANY of those tags |
 | `POST` | `/workspaces/:slug/topics/match-files` | Match files to topics |
+
+`GET /workspaces/:slug/topics` also accepts `?tags=a,b` (comma-separated, OR semantics). Tag names are normalized server-side (lowercase, whitespace→dashes).
+
+## Tags
+
+The workspace tag registry — tags as first-class objects so they can be pre-created with a description before any topic uses them. Attaching an unregistered tag via a topic write auto-registers it.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/workspaces/:slug/tags` | List with per-tag topic counts — paginated (`?limit=&offset=`, default 50, most-used first), returns `{ tags, total, has_more }` |
+| `POST` | `/workspaces/:slug/tags` | Create `{ name, description? }` — idempotent (existing tag merges the description) |
+| `PATCH` | `/workspaces/:slug/tags/:name` | Rename (`{ name }` — rewrites every topic carrying the tag; owner/admin) and/or describe (`{ description }`) |
+| `DELETE` | `/workspaces/:slug/tags/:name` | Delete + detach from every topic (owner/admin) |
 
 ## Health & Graph
 

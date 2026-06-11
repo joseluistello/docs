@@ -13,9 +13,11 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 | Context | The **Institutional Context** graph — vouched, reviewed topics only |
 | Proposals | The approve/reject queue — pending Proposals + re-review of drifted context |
 | Notes | Your **private** workspace — draft notes only you see, with share controls |
-| Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) |
+| Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) — pick a tag to light up that category (everything else dims) |
 | PR Activity | See observed pull requests and context matches |
-| Settings | Manage API keys, GitHub integration, OAuth apps, and members |
+| Settings | Manage API keys, GitHub integration, OAuth apps, members, and the tag registry |
+
+**Tags filter every list surface**: tag chips on Knowledge (most-used first, with counts), a tag select on the Inbox tab row, and the tag scope on the Topic Graph. Manage the vocabulary itself in **Settings → Tags** — register a tag with a description before any topic uses it, rename it everywhere (rewrites the topics that carry it), or delete it (detaches from every topic).
 
 The three surfaces mirror the one-topic-that-evolves model ([Governance](/concepts/governance)): **Note → Proposal → Institutional Context**.
 
@@ -65,6 +67,7 @@ Use settings to manage:
 - GitHub App installation
 - OAuth apps (MCP integrations for ChatGPT, Claude, and other AI clients)
 - Workspace members and invitations
+- The tag registry — pre-create, describe, rename, or delete the workspace's category tags
 - BYOM model URL, key, and model name
 
 <Note>
