@@ -17,13 +17,43 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`, or raise `limit`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to file paths |
-| `driftless_context_create` | Create a new topic (accepts `title`; defaults to a Proposal for review) |
-| `driftless_context_update` | Update an existing topic (append-safe) |
+| `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to a Proposal for review) |
+| `driftless_context_update` | Update an existing topic (append-safe; accepts `rels`) |
 | `driftless_context_diff` | Get topics matching your local diff |
 | `driftless_context_delete` | Delete a topic (destructive) |
 | `driftless_context_propose` | Submit a draft topic for human review (draft → proposed) |
+| `driftless_context_create_proposal` | Propose a content change to an existing topic (a topic-PR) |
+| `driftless_context_proposals` | List pending proposals (the review queue) |
+| `driftless_context_relations` | A topic's typed relations — incoming and outgoing |
+| `driftless_context_graph` | The local relation graph around a topic (configurable depth) |
+| `driftless_context_doctor` | Audit the context layer (stale / zombie / orphaned / drafts) |
+| `driftless_context_coverage` | Coverage map — which source areas have NO topic (the gap-finder) |
+| `driftless_context_events` | Recent context activity for a topic |
+| `driftless_agent_stats` | Agent proposal stats |
+| `driftless_workspaces` | List the workspaces your credential can target |
 
 All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. Topics live in the workspace and are visible to its members; another's private drafts stay hidden.
+
+### Typed relations from the MCP
+
+`create` and `update` accept `rels` — typed graph edges, the same seven types as the CLI's `--rel`:
+
+```json
+{ "topic": "refund-flow", "rels": [
+  { "to": "billing-flow", "type": "depends_on" },
+  { "to": "stripe-webhook-ingest", "type": "relates_to" }
+] }
+```
+
+Types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`. Each edge is created with per-relation tolerance: a bad edge reports `{ok: false, error}` in the tool result without losing the topic or the remaining edges. Both endpoints must exist and be visible to you.
+
+### Server-side anchor validation
+
+Remote agents have no local checkout, so write responses carry `anchor_validation` — per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs.
+
+<Note>
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up — otherwise new parameters like `rels` won't be available.
+</Note>
 
 ### Governance from the MCP
 

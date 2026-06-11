@@ -32,13 +32,11 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 
 1. Fetches the list of changed files via the GitHub API
 2. Matches each file against all workspace topic patterns using glob intersection
-3. Posts a **sticky comment** that delivers the matched topics' recorded context to the reviewer
+3. **Records** every PR↔topic match (powers the dashboard's PR activity) and **queues the Auditor**
 
-**Recorded context:** Each matched topic gets a block showing its `what` summary, relevant decisions, gotchas, and invariants — plus whether it's reviewed (`reviewed`) or just a hint (`draft`), and whether it's stale. The reviewer reviews *with* the team's context instead of without it.
+The only comment Driftless posts is the **Auditor's**, and only when it has a finding — the affected topics' recorded context (gotchas, decisions, invariants, stale flags) rides along with it. A clean PR, or a workspace without the Auditor configured (no model key), gets no comment. See [PR Comments](/concepts/pr-bot).
 
-The comment **informs; it never blocks** — no coverage score, no "uncovered files," no homework for the author. If your change altered how an area works, update the topic (or open a topic-PR) so the note stays true.
-
-The comment is updated in place on new commits. It is never re-posted.
+The comment **informs; it never blocks** — findings land as proposals a human approves. It is updated in place on new commits, never re-posted.
 
 ### Push staleness
 
@@ -56,24 +54,29 @@ driftless branches add staging
 ### PR comment format
 
 ```text
-<!-- driftless-context -->
-### Driftless · context for this PR
+<!-- driftless-auditor -->
+## 🔎 Driftless Auditor
 
-auth-boundaries  ✓ reviewed   applies to: src/auth/session.ts, src/auth/tenant.ts
-how: 2 endpoints, 1 service, 1 guard
-decisions: Multi-tenant, uses org_id from token
-gotchas: All endpoints require auth; do not add @Public() without review
-invariants: Webhook handlers must be idempotent
+This change may affect 1 thing the team recorded. Queued for review —
+these are proposals; a human approves.
+
+- `auth-boundaries` (needs a human) — new route bypasses the workspace guard
+
+### What the team already knows
+
+#### `auth-boundaries` — workspace-scoped auth
+**Gotchas**
+- All endpoints require auth; do not add @Public() without review
 ```
 
-Each matched topic gets its own block. The HTML marker (`<!-- driftless-context -->`) lets Driftless find and update the comment on subsequent pushes.
+The HTML marker (`<!-- driftless-auditor -->`) lets Driftless find and update the comment on subsequent pushes.
 
 ## Permissions
 
 | Permission | Level | Reason |
 |---|---|---|
 | **Contents** | Read | Fetch changed files in PRs and pushes |
-| **Pull requests** | Read & write | Post and update context comments |
+| **Pull requests** | Read & write | Post and update the Auditor's comment |
 | **Issues** | Read & write | PR comments use the Issues API |
 | **Metadata** | Read | Required by GitHub for all apps |
 
@@ -84,5 +87,5 @@ The app never clones your repository and never reads secrets or environment file
 Remove the integration from **Settings > GitHub Integration**, or uninstall the app directly on GitHub. The `installation/deleted` webhook automatically deactivates the integration in your workspace.
 
 <Note>
-  The CLI works without the GitHub App. PR comments and push-driven staleness require the app to be installed.
+  The CLI works without the GitHub App. Auditor PR comments and push-driven staleness require the app to be installed.
 </Note>

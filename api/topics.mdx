@@ -64,6 +64,10 @@ A topic is reviewed only if approved. See [Governance](/concepts/governance). `a
 | `GET` | `/workspaces/:slug/topics/:topic/relations` | List relations |
 | `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Delete a relation |
 
+<Note>
+`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation` — per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write, and it's omitted when no repo is linked. `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
+</Note>
+
 ## Share
 
 | Method | Path | Purpose |

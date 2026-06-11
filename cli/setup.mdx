@@ -38,15 +38,18 @@ This writes `AGENTS.md` and `CLAUDE.md` into your repo. Agents will see topic re
 Driftless starts with topics: durable engineering memory anchored to the files and workflows where it matters.
 
 ```bash
-driftless context add onboarding-context \
-  --what "Shared context map for this repo or workflow." \
-  --how "Captures what humans and agents need to know before working here."
+# First topic = something REAL you already know, anchored to the module it governs:
+driftless context add api-auth --title "Auth" \
+  --what "Every API request is workspace-scoped by a global guard." \
+  --pattern "src/auth/**"
 ```
+
+Nothing concrete to record yet? Skip it — work first and persist what you learn. A generic placeholder topic documents nothing and rots on day one.
 
 Enrich with structured context:
 
 ```bash
-driftless context update onboarding-context \
+driftless context update api-auth \
   --gotcha "WorkspaceGuard is global — use @Public() only for explicit public routes" \
   --decision "RS256 keys so services verify without shared secret" \
   --invariant "All routes require auth unless explicitly marked @Public()" \
@@ -56,16 +59,15 @@ driftless context update onboarding-context \
 Connect topics with typed relations:
 
 ```bash
-driftless context update onboarding-context --rel relates_to:api-auth-architecture
-driftless context get onboarding-context --json
+driftless context update api-auth --rel relates_to:api-architecture
+driftless context get api-auth --json
 ```
 
 Anchor to file paths for drift tracking:
 
 ```bash
-driftless context update onboarding-context \
-  --pattern "apps/*/src/**" \
-  --pattern "docs/**"
+driftless context update api-auth \
+  --add-pattern "src/auth/guards/**"
 ```
 
 The CLI validates each pattern against your local checkout at write time. A pattern that matches zero files is blocked; one that matches over 100 files gets an over-broad warning.

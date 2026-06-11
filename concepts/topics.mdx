@@ -33,15 +33,18 @@ Topics are **content-first**: the markdown `content` body IS the topic. The stru
 Start with the smallest useful topic: a durable note that explains one area well enough for a future human or agent to work there.
 
 ```bash
-driftless context add onboarding-context \
-  --what "Shared context map for this repo or workflow." \
-  --how "Captures what humans and agents need to know before working here."
+# The first topic should be something REAL — the gotcha that bit you, the
+# invariant nothing may break — anchored to the module it governs:
+driftless context add billing-webhooks --title "Webhooks" \
+  --what "Stripe webhook ingestion and its idempotency rules." \
+  --gotcha "Stripe delivers at-least-once — handlers must short-circuit on a seen event.id" \
+  --pattern "src/billing/webhooks/**"
 ```
 
 Then enrich it as reality becomes clear:
 
 ```bash
-driftless context update onboarding-context \
+driftless context update billing-webhooks \
   --gotcha "..." \
   --decision "..." \
   --check "..."

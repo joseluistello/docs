@@ -66,7 +66,7 @@ driftless context get --diff            # drift for current local (uncommitted) 
 
 <AccordionGroup>
   <Accordion title="What triggers drift?">
-    Only pushes to tracked branches. PRs do **not** trigger drift; they trigger PR observation instead (sticky context comments listing relevant topics). This distinction keeps drift meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
+    Only pushes to tracked branches. PRs do **not** trigger drift; they trigger PR observation instead (the match is recorded, and the Auditor — if configured — reviews and comments only when it has a finding). This distinction keeps drift meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
   </Accordion>
   <Accordion title="Can I manually mark a topic as drifted?">
     Yes. Run `driftless context update <slug> --status draft` to mark it for review, or update the content and set `--status reviewed` to clear drift. You can also let the next push naturally trigger a drift check.
