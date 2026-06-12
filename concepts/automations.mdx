@@ -41,7 +41,7 @@ Built so it can't run away with your tokens — or block your editor:
 
 - **Reviewed + System only.** Drafts and early-stage notes never inject.
 - **Deduped per session.** Edit the same area five times → its context injects once, not five.
-- **Size-capped.** A brief (gotchas/invariants/decisions), not the whole topic; a couple of topics max.
+- **Size-capped.** A signal-first brief under a fixed ~2k-token budget — every matched topic's invariants and gotchas before any topic's decisions, drawn round-robin so one verbose topic can't crowd out the rest. Never the whole topic.
 - **No-op on miss or slowness.** No matching reviewed topic, or a slow API → nothing injected.
 - **Never blocks.** The hook always exits cleanly; a failure can't stop your edit.
 
