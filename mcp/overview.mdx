@@ -13,15 +13,15 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 
 | Tool | Description |
 |------|-------------|
-| `driftless_context_search` | Full-text search across topics — relevance-ranked, capped at 50. Accepts `tags` to scope the search to a category (e.g. `["billing"]`) |
-| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`/`tags`, or raise `limit`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
+| `driftless_context_search` | Full-text search across topics — relevance-ranked. Returns the top **5** by default (raise `limit`, max 20) with `has_more` when more match: read the top few, then `driftless_context_get` the one you want rather than pulling the whole set. Returns lightweight summaries; archived topics are never returned. Accepts `tags` to scope the search to a category (e.g. `["billing"]`) |
+| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`/`tags`, or raise `limit`. Archived topics are hidden unless you pass `status: archived`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
 | `driftless_tags_list` | The workspace tag registry with per-tag topic counts — paginated, most-used first |
 | `driftless_tags_create` | Pre-create a tag with an optional description (idempotent; names normalize to lowercase, spaces→dashes) |
 | `driftless_context_get` | Retrieve a single topic by slug |
-| `driftless_context_get_for_files` | Match topics to file paths |
+| `driftless_context_get_for_files` | Match topics to a list of file paths — full topic bodies, drifted ones first, bounded to the top 10 (raise `limit`, max 25, if more are anchored) |
 | `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to a Proposal for review) |
 | `driftless_context_update` | Update an existing topic (append-safe; accepts `rels`) |
-| `driftless_context_diff` | Get topics matching your local diff |
+| `driftless_context_diff` | Get topics matching your local diff — same bounded, drifted-first response as `get_for_files` |
 | `driftless_context_delete` | Delete a topic (destructive) |
 | `driftless_context_propose` | Submit a draft topic for human review (draft → proposed) |
 | `driftless_context_create_proposal` | Propose a content change to an existing topic (a topic-PR) |

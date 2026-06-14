@@ -11,7 +11,7 @@ The canonical path is `/topics`. `/watchers` still works as a deprecated alias f
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller) |
+| `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller), relevance-ranked (drifted-first). `?limit=&offset=` bounds the page; archived topics are hidden unless `?status=archived` |
 | `POST` | `/workspaces/:slug/topics` | Create a topic (draft, or `status: proposed`) |
 | `GET` | `/workspaces/:slug/topics/:topic` | Get topic detail |
 | `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
@@ -30,7 +30,7 @@ The read response is the canonical context. It includes `classification.status` 
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics/search` | Full-text search. `?tags=a,b` scopes to topics carrying ANY of those tags |
+| `GET` | `/workspaces/:slug/topics/search` | Full-text search, relevance-ranked. `?tags=a,b` scopes to topics carrying ANY of those tags; `?limit=` caps the result set (default 50); archived topics are never returned |
 | `POST` | `/workspaces/:slug/topics/match-files` | Match files to topics |
 
 `GET /workspaces/:slug/topics` also accepts `?tags=a,b` (comma-separated, OR semantics). Tag names are normalized server-side (lowercase, whitespace→dashes).

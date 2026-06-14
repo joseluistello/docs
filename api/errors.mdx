@@ -51,6 +51,7 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `INVALID_ID` | 400 | A path/body identifier is not a valid UUID. |
 | `REQUIRED_FIELD` | 400 | A required field was missing. |
 | `FK_VIOLATION` | 400 | References a record that does not exist. |
+| `SECRET_DETECTED` | 400 | A topic field looked like a credential (API key, token, private key) and the write was blocked. Remove it, or set `allow_secrets: true` (CLI `--allow-secrets`) to override. The error masks the match — it never echoes the secret. |
 
 ### Access & identity
 | `code` | Status | When |
