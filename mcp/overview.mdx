@@ -13,7 +13,7 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 
 | Tool | Description |
 |------|-------------|
-| `driftless_context_search` | Full-text search across topics — relevance-ranked. Returns the top **5** by default (raise `limit`, max 20) with `has_more` when more match: read the top few, then `driftless_context_get` the one you want rather than pulling the whole set. Returns lightweight summaries; archived topics are never returned. Accepts `tags` to scope the search to a category (e.g. `["billing"]`) |
+| `driftless_context_search` | Full-text search across topics — relevance-ranked. Returns the top **5** by default (raise `limit`, max 20) with `has_more` when more match: read the top few, then `driftless_context_get` the one you want rather than pulling the whole set. Returns lightweight summaries; archived topics are never returned. Accepts `tags` to scope to a category (e.g. `["billing"]`) and `stale` to filter by freshness (`true` = only drifted, `false` = only fresh) |
 | `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`/`tags`, or raise `limit`. Archived topics are hidden unless you pass `status: archived`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
 | `driftless_tags_list` | The workspace tag registry with per-tag topic counts — paginated, most-used first |
 | `driftless_tags_create` | Pre-create a tag with an optional description (idempotent; names normalize to lowercase, spaces→dashes) |
@@ -35,6 +35,8 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_workspaces` | List the workspaces your credential can target |
 
 All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. Topics live in the workspace and are visible to its members; another's private drafts stay hidden.
+
+Every result (search, list, get) carries a flat **`trust`** field — `reviewed` | `proposed` | `draft` — so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is approved, institutional truth; `proposed`/`draft` are hints.
 
 ### Typed relations from the MCP
 

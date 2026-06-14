@@ -17,12 +17,13 @@ The canonical path is `/topics`. `/watchers` still works as a deprecated alias f
 | `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
 | `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
 
-The read response is the canonical context. It includes `classification.status` and a `governance` block — the trust signal an agent consumes:
+The read response is the canonical context. It includes a flat `trust` verdict (`reviewed` | `proposed` | `draft`) plus `classification.status` and a `governance` block — the trust signal an agent consumes. Key on `trust` directly:
 
 ```json
 {
+  "trust": "reviewed",
   "classification": { "status": "reviewed" },
-  "governance": { "reviewed": true, "approved_by": "u_cto", "approved_at": "..." }
+  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
 }
 ```
 
@@ -30,7 +31,7 @@ The read response is the canonical context. It includes `classification.status` 
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics/search` | Full-text search, relevance-ranked. `?tags=a,b` scopes to topics carrying ANY of those tags; `?limit=` caps the result set (default 50); archived topics are never returned |
+| `GET` | `/workspaces/:slug/topics/search` | Full-text search, relevance-ranked. `?tags=a,b` scopes to topics carrying ANY of those tags; `?limit=` caps the result set (default 50); `?stale=true\|false` filters by freshness; archived topics are never returned |
 | `POST` | `/workspaces/:slug/topics/match-files` | Match files to topics |
 
 `GET /workspaces/:slug/topics` also accepts `?tags=a,b` (comma-separated, OR semantics). Tag names are normalized server-side (lowercase, whitespace→dashes).
