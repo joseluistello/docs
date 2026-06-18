@@ -22,9 +22,9 @@ When a PR is opened or updated:
 ## 🔎 Driftless Auditor
 
 This change may affect 2 things the team recorded. Queued for review —
-these are proposals; a human approves.
+these are Suggested edits; a human merges them.
 
-- `billing-flow` (proposed update) — refund window changed 7d→30d
+- `billing-flow` (Suggested edit) — refund window changed 7d→30d
 - `auth-boundaries` (needs a human) — new route bypasses the workspace guard
 
 ### What the team already knows
@@ -42,17 +42,17 @@ Stale topics are flagged inside the comment ("trust the code over the note, then
 
 - **No finding → no comment.** Silence is the default, and it's information too.
 - **No model key → no comment.** The Auditor is BYOM; without a key the PR is still observed and recorded, just not commented.
-- **It informs; it never blocks.** Findings land as proposals in the Review Queue — a human approves. No coverage score, no homework.
+- **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue — a human merges them. No coverage score, no homework.
 - **Gap-finding lives in the coverage map**, not in PR comments: `driftless_context_coverage` over the MCP, or the dashboard.
 
 If your change altered how an area works, update the topic so the note stays true:
 
 ```bash
 driftless context update auth-boundaries --gotcha "..." --decision "..."
-# or open a topic-PR if it's already approved:
+# or open a Suggested edit if it's already Knowledge:
 driftless context pr auth-boundaries --open --summary "..." --content @new.md
 ```
 
 <Note>
-The comment respects governance: findings are proposals, never auto-applied, and the context it surfaces distinguishes reviewed truth from drafts. See [Governance](/concepts/governance) and [Agents](/agents/agentic-layer).
+The comment respects governance: findings are Suggested edits, never auto-applied, and the context it surfaces distinguishes Knowledge from Notes. See [Governance](/concepts/governance) and [Agents](/agents/agentic-layer).
 </Note>

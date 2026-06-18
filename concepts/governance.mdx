@@ -1,50 +1,50 @@
 ---
 title: 'Governance'
-description: 'A topic is reviewed only if approved. Agents propose, humans approve.'
+description: 'A topic is Knowledge only once a human merges it in. Agents write notes, humans add them to knowledge.'
 ---
 
-Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes Institutional Context only when a human approves it. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
+Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes Knowledge only once a human merges it in. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
 
 ## Everything is one topic that evolves
 
-There is a single primitive — a **topic** — and it matures along one trust axis. The names are stages of the *same object*, not different types:
+There is a single primitive — a **topic** — and it matures along one trust axis: **Note → Knowledge**. A **Note** is a draft (private by default; share it to the workspace and it's **Up for review**). **Knowledge** is the team's source of truth — *a note becomes knowledge once it's merged in*, and only a human can merge (agents write notes; an owner/admin merges). To change existing Knowledge, open a **Suggested edit** — a human merges it.
 
 ```text
-Note  →  Proposal  →  Institutional Context     (+ Archived)
-(draft)   (proposed)   (reviewed)
+Note  →  Up for review  →  Knowledge     (+ Archived)
+(draft)    (proposed)      (reviewed)
 ```
 
-- **Note** — your private scratch. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here.
-- **Proposal** — a Note promoted for review. Pending a human's vouch; lives in the Proposals queue and can be sent back with a reason.
-- **Institutional Context** — the final evolution. A human approved it, so it joins the team's **living, code-anchored knowledge graph** — the multi-context map of the whole codebase. This is the durable truth an agent consumes.
+- **Note** — a draft / private observation. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here. Share it to the workspace and it's **Up for review**.
+- **Up for review** — a Note put up for human review. Awaiting a merge; lives in the review queue and can be sent back with a reason.
+- **Knowledge** — the team's source of truth — the notes merged in. A human added it to knowledge, so it joins the team's **living, code-anchored knowledge graph** — the multi-context map of the whole codebase. This is the durable truth an agent consumes.
 
 `reviewed` topics carry `governance.authoritative: true` + `approved_by`/`approved_at`. Internally the status enum stays `draft`/`proposed`/`reviewed`/`archived`; the names above are the product language.
 
-The model is **agents propose, humans approve**. `approve`, `reject`, and `merge` require a human identity — an ownerless agent key can propose, but never bless.
+The model is **agents write notes, humans add them to knowledge**. `approve`, `reject`, and `merge` require a human identity — an ownerless agent key writes notes, but never merges them in.
 
 ```bash
-driftless context propose <slug>     # Note → Proposal
-driftless context approve <slug>     # → Institutional Context
-driftless context reject <slug> --reason "..."   # → Note (with feedback)
+driftless context propose <slug>     # Note → Up for review
+driftless context approve <slug>     # add to knowledge (merge it in)
+driftless context reject <slug> --reason "..."   # → back to a Note (with feedback)
 driftless context archive <slug>     # retire it
 ```
 
 ## Three surfaces
 
-The dashboard mirrors the three stages: **Context** (the Institutional Context graph — reviewed only), **Proposals** (the approve/reject queue + re-review of drifted context), and **Notes** (your private workspace, with share controls and "expiring soon").
+The dashboard mirrors the three stages: **Knowledge** (the Knowledge graph — merged-in notes only), **Review queue** (the merge/reject queue + re-review of drifted context), and **Notes** (your private workspace, with share controls and "expiring soon").
 
-## Who can vouch — workspace roles
+## Who can merge — workspace roles
 
-Vouching authority is a **workspace role**. Each member carries one:
+Merge authority is a **workspace role**. Each member carries one:
 
 | Role | Can |
 |---|---|
-| `member` | Read + **propose** (create signals) |
-| `admin` / `owner` | …+ **vouch** — approve, reject, archive, and clear drift |
+| `member` | Read + **put notes up for review** |
+| `admin` / `owner` | …+ **merge** — add to knowledge, reject, archive, and clear drift |
 
-`approve`/`reject`/`archive` (and re-vouching a drifted topic) require the `admin` or `owner` role — a member proposes but does not bless. Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
+Merging a note into Knowledge (and re-confirming a drifted topic) requires the `admin` or `owner` role — a member puts notes up for review but does not merge them in. Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
 
-Permissions gate **vouching and visibility only — never coding**. Driftless informs; it never blocks a developer from writing code.
+Permissions gate **merging and visibility only — never coding**. Driftless informs; it never blocks a developer from writing code.
 
 ## The trust signal
 
@@ -57,25 +57,25 @@ The whole point of approval is that the agent can tell **truth from hint**. Ever
 }
 ```
 
-An agent should consume `reviewed` topics as truth and `draft`/`proposed` ones as suggestions. Governance without the agent consuming this signal would just be a wiki.
+An agent should consume `reviewed` topics (Knowledge) as truth and `draft`/`proposed` ones (Notes) as suggestions. Governance without the agent consuming this signal would just be a wiki.
 
-## topic-PR — changing approved truth
+## Suggested edit — changing the team's source of truth
 
-Don't overwrite an approved topic. To change canonical truth, open a **topic-PR**: a proposed content change that a human reviews and merges.
+Don't overwrite a Knowledge topic. To change the team's source of truth, open a **Suggested edit**: a proposed content change that a human reviews and merges in.
 
 ```bash
-driftless context pr <slug>                                     # list open proposals
+driftless context pr <slug>                                     # list open Suggested edits
 driftless context pr <slug> --open --summary "why" --content @new.md
-driftless context pr <slug> --merge <id>                        # apply + re-approve (human)
-driftless context pr <slug> --reject <id>                       # close without applying
+driftless context pr <slug> --merge <id>                        # merge it in (human)
+driftless context pr <slug> --reject <id>                       # close without merging
 ```
 
-A proposal carries a **content patch** (whitelisted to content fields — it can never forge approval). Merging applies the patch and makes the topic reviewed again, attributed to the approver.
+A Suggested edit carries a **content patch** (whitelisted to content fields — it can never forge approval). Merging applies the patch and makes the topic Knowledge again, attributed to whoever merged it.
 
 ## Why deterministic
 
-Approval is a human act; everything around it is deterministic and auditable — who approved what, when, and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
+Merging is a human act; everything around it is deterministic and auditable — who merged what, when, and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
 
 <Note>
-In a future release, platform agents (drift, freshness) will **propose** topic-PRs automatically. They plug into the same proposal queue — humans still approve. The authoring of intelligent proposals is the only piece that waits.
+In a future release, platform agents (drift, freshness) will open **Suggested edits** automatically. They plug into the same review queue — humans still merge. The authoring of intelligent Suggested edits is the only piece that waits.
 </Note>

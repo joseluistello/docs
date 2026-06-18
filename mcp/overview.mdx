@@ -19,24 +19,24 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_tags_create` | Pre-create a tag with an optional description (idempotent; names normalize to lowercase, spaces→dashes) |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to a list of file paths — full topic bodies, drifted ones first, bounded to the top 10 (raise `limit`, max 25, if more are anchored) |
-| `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to a Proposal for review) |
+| `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to Up for review) |
 | `driftless_context_update` | Update an existing topic (append-safe; accepts `rels`) |
 | `driftless_context_diff` | Get topics matching your local diff — same bounded, drifted-first response as `get_for_files` |
 | `driftless_context_delete` | Delete a topic (destructive) |
-| `driftless_context_propose` | Submit a draft topic for human review (draft → proposed) |
-| `driftless_context_create_proposal` | Propose a content change to an existing topic (a topic-PR) |
-| `driftless_context_proposals` | List pending proposals (the review queue) |
+| `driftless_context_propose` | Put a Note up for review (draft → proposed) |
+| `driftless_context_create_proposal` | Open a Suggested edit to an existing topic |
+| `driftless_context_proposals` | List Notes up for review (the review queue) |
 | `driftless_context_relations` | A topic's typed relations — incoming and outgoing |
 | `driftless_context_graph` | The local relation graph around a topic (configurable depth) |
 | `driftless_context_doctor` | Audit the context layer (stale / zombie / orphaned / drafts) |
 | `driftless_context_coverage` | Coverage map — which source areas have NO topic (the gap-finder) |
 | `driftless_context_events` | Recent context activity for a topic |
-| `driftless_agent_stats` | Agent proposal stats |
+| `driftless_agent_stats` | Agent note stats |
 | `driftless_workspaces` | List the workspaces your credential can target |
 
 All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. Topics live in the workspace and are visible to its members; another's private drafts stay hidden.
 
-Every result (search, list, get) carries a flat **`trust`** field — `reviewed` | `proposed` | `draft` — so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is approved, institutional truth; `proposed`/`draft` are hints.
+Every result (search, list, get) carries a flat **`trust`** field — `reviewed` | `proposed` | `draft` — so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is Knowledge, the team's source of truth; `proposed`/`draft` are Notes (hints).
 
 ### Typed relations from the MCP
 
@@ -61,7 +61,7 @@ MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. A
 
 ### Governance from the MCP
 
-A topic is reviewed only once a human approves it. An MCP client can **propose** a draft for review (`driftless_context_propose`), but **cannot approve** — `approve` requires a human identity, and an MCP/OAuth caller has none. Agents propose; humans approve. See [Governance](/concepts/governance).
+A topic becomes Knowledge only once a human merges it in. An MCP client can **put a Note up for review** (`driftless_context_propose`), but **cannot merge** — `approve` requires a human identity, and an MCP/OAuth caller has none. Agents write notes; humans add them to knowledge. See [Governance](/concepts/governance).
 
 ## Authentication
 

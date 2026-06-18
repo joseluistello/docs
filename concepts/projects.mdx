@@ -1,0 +1,59 @@
+---
+title: 'Projects'
+description: 'A shared execution environment for humans and agents. Cards are the unit of work — created and moved from the CLI, the API, or the board.'
+---
+
+A **project** is where work happens in a Driftless workspace. It is a shared execution environment for humans and their agents: the project holds **cards** (the unit of work), and the same board is operable from the CLI, the REST API, and the dashboard. The product lives in the headless surface; the board is occasional visibility for the human.
+
+This is the half of Driftless that isn't documentation. Topics capture what the team *knows*; projects capture what the team is *doing* — and because both live in the same workspace, an agent moving a card can pull the Knowledge anchored to the code it's about to touch.
+
+## Projects and cards
+
+- A **project** belongs to one workspace and has a status: `active`, `done`, or `archived`.
+- A **card** belongs to one project and moves through a status lane. Card statuses: `todo` · `in_progress` · `blocked` · `review` · `done`.
+- A card can carry an owner (a workspace member) and can be moved between projects.
+
+## From the CLI
+
+Projects and cards are first-class CLI citizens — an agent runs the same commands a human would.
+
+| Command | Description |
+|---|---|
+| `project add <title>` | Create a project |
+| `project list [--status active\|done\|archived]` | List projects |
+| `project get <id>` | Project detail + card index |
+| `project update <id> [--status …] [--title "…"]` | Update a project |
+| `project cards <project-id> [--status s] [--limit n]` | List cards (priority order) |
+| `project card add <project-id> --title "…" [--description "…"] [--owner <id>]` | Create a card |
+| `project card get <project-id> <card-id>` | Card detail |
+| `project card status <project-id> <card-id> <status>` | Change a card's status |
+| `project card move <project-id> <card-id> <to-project-id>` | Move a card to another project |
+| `project card rm <project-id> <card-id>` | Delete a card |
+
+```bash
+# Spin up a project and drop in the first card
+driftless project add "Refunds revamp"
+driftless project card add prj_abc --title "Idempotent webhook handler" --owner mem_123
+driftless project card status prj_abc card_xyz in_progress
+```
+
+Cards are scanned for secrets on write, like topics — pass `--allow-secrets` only when you intend to store one. Add `--json` to any command for machine output.
+
+## From the REST API
+
+Everything above maps to REST under the workspace:
+
+| Method | Path |
+|---|---|
+| `POST` / `GET` | `/workspaces/:slug/projects` |
+| `GET` / `PATCH` | `/workspaces/:slug/projects/:id` |
+| `POST` / `GET` | `/workspaces/:slug/projects/:projectId/cards` |
+| `GET` / `PATCH` / `DELETE` | `/workspaces/:slug/projects/:projectId/cards/:cardId` |
+
+## On the dashboard
+
+The board renders the same projects and cards as a kanban — columns are the card statuses, and dragging a card calls the same `PATCH` the CLI does. It is a visibility surface, not a separate source of truth: a card created by an agent from the CLI shows up on the board immediately.
+
+<Note>
+Projects and cards live in the workspace and are visible to its members. They are governed by [workspace roles](/concepts/workspaces#identity-vs-membership), not by the Note → Knowledge lifecycle — that lifecycle is for **topics**. See [Governance](/concepts/governance).
+</Note>

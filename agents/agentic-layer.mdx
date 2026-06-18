@@ -1,9 +1,9 @@
 ---
 title: 'Audit & Architect agents'
-description: 'Server-side agents that keep your team context honest and grow it — they propose, a human approves.'
+description: 'Server-side agents that keep your team context honest and grow it — they write notes, a human adds them to knowledge.'
 ---
 
-Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; a human **approves**.
+Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **write notes**; a human **adds them to knowledge**.
 
 - **The Auditor** keeps existing context honest when code changes.
 - **The Architect** grows context where it's missing.
@@ -12,22 +12,22 @@ Driftless can run two specialized agents on your codebase. They don't replace a 
 
 When a pull request (or drift) touches files that a **reviewed** topic anchors, the Auditor reads the change and the current code, and compares it claim-by-claim against what the team recorded.
 
-- **Contradicts a claim** → it proposes a minimal update, citing the file/line and *why* the claim is now wrong (e.g. *"this diff removes the idempotency check the `billing-flow` invariant requires"*).
+- **Contradicts a claim** → it opens a Suggested edit, citing the file/line and *why* the claim is now wrong (e.g. *"this diff removes the idempotency check the `billing-flow` invariant requires"*).
 - **Unsure** → it flags a question (no patch) for a human to look at — it never fabricates a confident edit.
 - **No impact** → it does nothing. Silence is the common, correct outcome.
 
-It only ever audits against **Institutional Context** (`reviewed`). A draft Note is an unvouched idea, never something to enforce.
+It only ever audits against **Knowledge** (`reviewed`). A Note is an unmerged idea, never something to enforce.
 
 ## The Architect
 
-On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and proposes new topics — clustered by concept, with a narrow anchor (5–40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-propose: a missed gap is cheap, a spam topic erodes trust.
+On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and suggests new topics — clustered by concept, with a narrow anchor (5–40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-suggest: a missed gap is cheap, a spam topic erodes trust.
 
 ## How they run — BYOM
 
 The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out — it's used server-side only.
 
 - **Read-only.** The agents read and reason; they never execute, edit, or write code.
-- **Propose-only, human-gated.** Everything they produce lands as a **draft** or **proposal** in your Review Queue. Only a human approves it into Institutional Context. An agent can never self-bless authoritative truth.
+- **Propose-only, human-gated.** Everything they produce lands as a **Note** or **Suggested edit** in your Review Queue. Only a human merges it into Knowledge. An agent can never merge its own work in.
 
 ## Configure them
 

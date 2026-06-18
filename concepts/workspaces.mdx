@@ -5,9 +5,14 @@ description: 'The top-level container for context — belong to many, switch fre
 
 ## What is a workspace?
 
-A workspace is the top-level container for everything in Driftless: topics, their governance lifecycle, members, repos, and integrations all live inside one. Every topic belongs to **exactly one** workspace, and access is always scoped to it.
+A workspace is where a small team and its agents do the work. It is the top-level container for everything in Driftless:
 
-A user can belong to **many** workspaces and switch between them — in the dashboard, the CLI, or an MCP client — without signing in again.
+- **[Projects](/concepts/projects)** and their cards — the work in flight.
+- **[Areas](/concepts/areas)** — the navigation domains the system is mapped into.
+- **[Topics](/concepts/topics)** and **[notes](/concepts/notes-sharing)** — what the team knows, with the Note → Knowledge lifecycle.
+- **Members**, repos, and integrations.
+
+Everything belongs to **exactly one** workspace, and access is always scoped to it. A user can belong to **many** workspaces and switch between them — in the dashboard, the CLI, or an MCP client — without signing in again.
 
 ## Identity vs. membership
 
@@ -18,8 +23,8 @@ Authorization is a direct membership check: *does this verified user have a memb
 | Role | Can |
 |---|---|
 | **owner** | Everything, including granting the owner role and managing members |
-| **admin** | Approve/vouch context, invite members, manage roles (not owner) |
-| **member** | Propose context (agents propose; humans approve) |
+| **admin** | Merge context into Knowledge, invite members, manage roles (not owner) |
+| **member** | Write notes (agents write notes; humans add them to knowledge) |
 
 ## How each surface picks the active workspace
 
@@ -53,4 +58,4 @@ A topic lives in one workspace, but you can re-home it:
 driftless context move <topic> --to <workspace-slug>
 ```
 
-Moving **resets the topic to a draft** in its new workspace — a vouch is workspace-specific and doesn't carry across — and drops workspace-local anchors (repo links, relations). It requires owner/admin in the source workspace and membership in the target.
+Moving **resets the topic to a Note** in its new workspace — Knowledge status is workspace-specific and doesn't carry across — and drops workspace-local anchors (repo links, relations). It requires owner/admin in the source workspace and membership in the target.

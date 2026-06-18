@@ -12,7 +12,7 @@ The canonical path is `/topics`. `/watchers` still works as a deprecated alias f
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller), relevance-ranked (drifted-first). `?limit=&offset=` bounds the page; archived topics are hidden unless `?status=archived` |
-| `POST` | `/workspaces/:slug/topics` | Create a topic (draft, or `status: proposed`) |
+| `POST` | `/workspaces/:slug/topics` | Create a topic (a Note, or `status: proposed` to put it up for review) |
 | `GET` | `/workspaces/:slug/topics/:topic` | Get topic detail |
 | `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
 | `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
@@ -57,7 +57,7 @@ The workspace tag registry — tags as first-class objects so they can be pre-cr
 
 ## Governance
 
-A topic is reviewed only if approved. See [Governance](/concepts/governance). `approve` / `reject` and proposal `merge` / `reject` require a human identity.
+A topic becomes Knowledge only once a human merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require a human identity.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -65,10 +65,10 @@ A topic is reviewed only if approved. See [Governance](/concepts/governance). `a
 | `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (reviewed) |
 | `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
 | `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
-| `GET` | `/workspaces/:slug/topics/:topic/proposals` | List topic-PRs |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Open a topic-PR (`{ summary, patch }`) |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Apply + approve a topic-PR |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Close a topic-PR |
+| `GET` | `/workspaces/:slug/topics/:topic/proposals` | List Suggested edits |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Open a Suggested edit (`{ summary, patch }`) |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Merge a Suggested edit |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Close a Suggested edit |
 
 ## Relations
 

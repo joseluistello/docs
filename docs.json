@@ -1,12 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
-  "description": "Shared context layer for engineering teams and coding agents.",
+  "description": "The agent-native workspace for builders — where your team and its agents do the work, on memory that doesn't rot.",
   "theme": "linden",
   "favicon": "/favicon.png",
   "logo": {
-    "light": "/brand-icon.svg",
-    "dark": "/brand-icon.svg",
+    "light": "/brand-mark.png",
+    "dark": "/brand-mark.png",
     "href": "https://driftless.icu",
     "favicon": "/favicon.png"
   },
@@ -71,10 +71,14 @@
         "group": "Concepts",
         "icon": "brain",
         "pages": [
-          "concepts/topics",
           "concepts/workspaces",
+          "concepts/projects",
+          "concepts/areas",
+          "concepts/topics",
+          "concepts/notes-sharing",
+          "concepts/governance",
           "concepts/core-loop",
-          "concepts/governance",          "concepts/drift",
+          "concepts/drift",
           "concepts/pr-bot",
           "concepts/automations"
         ]

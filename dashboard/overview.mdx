@@ -10,8 +10,8 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 | Area | Use it for |
 |---|---|
 | Overview | Workspace repositories and setup state |
-| Context | The **Institutional Context** graph — vouched, reviewed topics only |
-| Proposals | The approve/reject queue — pending Proposals + re-review of drifted context |
+| Knowledge | The **Knowledge** graph — the notes merged in (reviewed topics only) |
+| Review queue | The merge queue — Notes up for review + re-review of drifted Knowledge |
 | Notes | Your **private** workspace — draft notes only you see, with share controls |
 | Topic Graph | Visualize topic relationships (depends_on, relates_to, supersedes, etc.) — pick a tag to light up that category (everything else dims) |
 | PR Activity | See observed pull requests and context matches |
@@ -19,20 +19,20 @@ The dashboard is the visual companion to the CLI. Use it when you need workspace
 
 **Tags filter every list surface**: tag chips on Knowledge (most-used first, with counts), a tag select on the Inbox tab row, and the tag scope on the Topic Graph. Manage the vocabulary itself in **Settings → Tags** — register a tag with a description before any topic uses it, rename it everywhere (rewrites the topics that carry it), or delete it (detaches from every topic).
 
-The three surfaces mirror the one-topic-that-evolves model ([Governance](/concepts/governance)): **Note → Proposal → Institutional Context**.
+The three surfaces mirror the one-topic-that-evolves model ([Governance](/concepts/governance)): **Note → Up for review → Knowledge**.
 
-## Proposals
+## Review queue
 
-Where a **Proposal becomes Institutional Context**. Two lanes:
+Where a **Note up for review is added to Knowledge**. Two lanes:
 
-- **Pending review** — Proposals (`proposed`). Approve to vouch into the graph, or **send back with a reason** (the author sees it on their draft).
-- **Needs re-review** — Institutional Context whose code **drifted**. Confirm it still holds (clears the drift flag) or open to update.
+- **Pending review** — Notes up for review (`proposed`). Merge to add it to Knowledge, or **send back with a reason** (the author sees it on their draft).
+- **Needs re-review** — Knowledge whose code **drifted**. Confirm it still holds (clears the drift flag) or open to update.
 
-Inbox-zero means your team's memory is healthy. Vouching follows [workspace roles](/concepts/governance#who-can-vouch--workspace-roles) — only admins/owners approve.
+Inbox-zero means your team's memory is healthy. Merging follows [workspace roles](/concepts/governance#who-can-merge--workspace-roles) — only admins/owners merge.
 
-## Drafts
+## Notes
 
-Your **private** scratch: draft topics only you can see, excluded from search. Promote a draft to a **Proposal** when it's ready for the team. Untouched drafts auto-archive after ~14 days (recoverable, never deleted).
+Your **private** scratch: draft topics only you can see, excluded from search. Put a Note up for review when it's ready for the team. Untouched Notes auto-archive after ~14 days (recoverable, never deleted).
 
 ## Context detail
 

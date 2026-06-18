@@ -88,19 +88,19 @@ A topic is content-first — the markdown `content` body IS the topic. Use `tags
 
 ### Status — governance lifecycle
 
-A topic is **reviewed only if approved**: `draft → proposed → reviewed → archived`. `reviewed` is the reviewed state; the read response carries `governance.authoritative`. Agents propose, humans approve. See [Governance](/concepts/governance).
+A note becomes Knowledge once it's merged in: `draft → proposed → reviewed → archived`. `reviewed` is Knowledge; the read response carries `governance.authoritative`. Agents write notes, humans add them to knowledge. See [Governance](/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
-| `draft` | Captured, not yet blessed — a hint, not truth |
-| `proposed` | Submitted for review |
-| `reviewed` | **Reviewed** — a human approved it; the agent treats it as truth |
+| `draft` | Captured, not yet merged in — a hint (a Note), not truth |
+| `proposed` | Up for review |
+| `reviewed` | **Knowledge** — a human merged it in; the agent treats it as truth |
 | `archived` | Retired |
 | `orphaned` | Code-driven (repo deleted) — orthogonal to governance |
 
 ### Visibility
 
-A topic lives in the **workspace** and is visible to all its members. The exception is a **private draft** (a draft with `is_private` set), visible only to its creator until proposed or un-marked. Need isolation between groups? use a separate workspace.
+A topic lives in the **workspace** and is visible to all its members. The exception is a **private Note** (a draft with `is_private` set), visible only to its creator until put up for review or un-marked. Need isolation between groups? use a separate workspace.
 
 ## Typed relations
 

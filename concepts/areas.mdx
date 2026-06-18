@@ -1,0 +1,43 @@
+---
+title: 'Areas'
+description: 'The navigation domains topics file under — Billing, Auth, Infra. The map a new teammate or agent reads first.'
+---
+
+An **area** is a navigation domain inside a workspace — `Billing`, `Auth`, `Infra`, `Payments`. Topics file under an area, so the workspace reads like a map of the system instead of a flat list of slugs. It's the first thing a new teammate or agent scans to orient.
+
+Areas are a **curation surface**, not a permission boundary: filing a topic into an area changes where it shows up, never who can see it. Because renaming or deleting an area re-homes other people's topics, those operations are gated to **owner/admin** — creating one and filing into it is open to any member.
+
+## Filing topics into an area
+
+A topic carries an optional area. Set it when you create or update the topic:
+
+```bash
+driftless context add billing-webhooks \
+  --area Billing \
+  --what "Stripe webhook ingestion and idempotency." \
+  --pattern "src/billing/webhooks/**"
+
+driftless context update refund-flow --area Billing
+```
+
+`--area` accepts an area **name or id** — an unknown name is created on the spot, so filing is never blocked by a missing area.
+
+## Managing areas
+
+| Command | Description |
+|---|---|
+| `area list` | List areas with topic counts |
+| `area add <name> [--description "…"]` | Create an area |
+| `area rename <id> <new-name>` | Rename an area (owner/admin) |
+| `area rm <id>` | Delete an area (owner/admin) |
+
+```bash
+driftless area add Billing --description "Charges, refunds, reconciliation"
+driftless area list
+```
+
+Add `--json` for machine output. The same areas are available over REST at `/workspaces/:slug/areas` (`GET` / `POST`, plus `PATCH` / `DELETE` by id for owner/admin) and render in the dashboard's left rail.
+
+<Note>
+An area groups topics for navigation; a [topic's anchors](/concepts/topics) (`--pattern`) are what tie it to specific files and drive drift. The two are independent axes: an area says *where it lives in the map*, an anchor says *which code it governs*.
+</Note>

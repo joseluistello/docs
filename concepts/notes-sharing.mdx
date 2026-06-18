@@ -1,0 +1,48 @@
+---
+title: 'Notes & Sharing'
+description: 'Jot a private note, share it with a teammate inbox, or merge it into Knowledge for the whole team.'
+---
+
+A **note** is the entry point to everything in Driftless: a private draft only you see. From there it can travel two ways — *up* the trust axis to become team Knowledge, or *sideways* to a specific teammate's inbox. They're independent, and neither blocks anyone from coding.
+
+## Jotting a note
+
+The fastest capture is a one-liner from the CLI — no anchors, no ceremony:
+
+```bash
+driftless note add --content "OAuth tokens expire every 2h in IHCE — refresh before sending"
+driftless note add --content @notes/today.md --json
+```
+
+A note is a topic in its **draft** state: private to you, excluded from search, and auto-archived after ~14 days if untouched (recoverable). Think here, then decide where it goes.
+
+## Sideways — sharing with a teammate
+
+Share a note directly with one or more workspace members. It lands in their **inbox** ("shared with me") without becoming team-wide Knowledge — the right move for "you specifically should see this."
+
+| Action | Surface |
+|---|---|
+| Share a note with members | `POST /workspaces/:slug/topics/:topicSlug/share-with` with `{ "recipients": ["user_…"] }` |
+| Your inbox (shared with me) | `GET /workspaces/:slug/shared` (`?unread=true` for the unattended feed) |
+| Mark one read / all read | `POST /workspaces/:slug/shared/:id/read` · `POST /workspaces/:slug/shared/read-all` |
+
+Recipients must be **members of the workspace** — sharing with a non-member is rejected. The dashboard's **Inbox** renders this feed; sharing and reading are also operable over REST for agents.
+
+## Up — merging into Knowledge
+
+When a note is durable enough for the whole team, it climbs the trust axis: **Note → Up for review → Knowledge**. Only a human merges it in. This is the team's source of truth that agents pull before they edit. See [Governance](/concepts/governance) for the full lifecycle and the merge commands.
+
+## A public read-only link (different thing)
+
+Sharing *with a teammate* (above) is internal and member-gated. To hand a topic to someone **outside** the workspace, mint a public read-only link instead:
+
+```bash
+driftless context share <topic>           # create a public link
+driftless context share <topic> --revoke  # turn it off
+```
+
+| | Share with a teammate | Public link (`context share`) |
+|---|---|---|
+| Audience | a workspace member's inbox | anyone with the URL |
+| Auth | member-gated | unauthenticated, read-only |
+| Use when | "you should see this note" | "show this to someone outside the team" |
