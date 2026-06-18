@@ -3,17 +3,29 @@ title: 'The Driftless loop'
 description: 'Persist, deliver, govern, drift — the everyday loop.'
 ---
 
-The everyday loop is two moves: **persist what you learn after a session, pull it back before you touch that area again.** Governance and drift wrap around those two.
+Driftless is a **vault**: you read it before you work and write clean notes into it as you learn. The everyday loop is two moves — **pull what the team knows before you touch an area, persist what you learn after.** Most of what you write stays a Note (that's healthy and expected); a few notes become Knowledge. Because there's no approval gate you must clear, **quality is enforced at write time** — by the six rules in *Persist* below. Governance and drift wrap around the two moves.
 
 ## 1. Persist
 
-After a session, write down what was durable — a gotcha, a decision, an invariant. It lands as a **Note** (not yet Knowledge).
+After a session, write down what was durable — a gotcha, a decision, an invariant. It lands as a **Note** (not yet Knowledge). A Note is first-class: write it clean, because there's no gate to fix it later.
+
+**The six rules every write follows:**
+
+1. **One concept per note** — tempted to cover two? Write two.
+2. **Always file it into an area** (`--area`) — never leave it Unassigned, that's where vaults rot.
+3. **Anchor narrow** (`--pattern`, ~5–40 files, never `src/**`) — for non-code, anchor the doc/system.
+4. **Trust is a signal, not a gate** — Knowledge is truth, a Note is a hint; both are real. Write a good note, don't chase approval.
+5. **Rewrite to consolidate; append to add** — never stack a wall.
+6. **Content is the durable _why_, not a changelog** — no dates, "shipped", or PR refs; that lives in git.
+
+The litmus for whether something deserves a note at all: *would a future code change meaningfully contradict it?*
 
 ```bash
 driftless context add "auth-flow" \
   --content "## What\nJWT validation + RBAC\n\n## How\nRS256 keys; guard decodes; role decorator checks" \
+  --area auth \
   --pattern "src/auth/**" \
-  --tags auth,security
+  --tags security
 
 driftless context update auth-flow \
   --decision "Chose RS256 over HS256 so services verify without a shared secret" \
@@ -35,7 +47,7 @@ Read the `what / how / gotchas / decisions / invariants` — and the `governance
 
 ## 3. Govern
 
-A note becomes Knowledge once it's merged in. Agents write notes, humans add them to knowledge. The agent treats `reviewed` as truth, `draft`/`proposed` as a hint.
+A note becomes Knowledge once it's merged in. Agents write notes, humans add them to knowledge. The agent treats `reviewed` as truth, `draft`/`proposed` as a hint. **Most notes stay notes — that's expected;** promotion to Knowledge is for the few cross-cutting truths the whole team relies on, not a step you must complete on every note.
 
 ```bash
 driftless context propose auth-flow     # draft → proposed
