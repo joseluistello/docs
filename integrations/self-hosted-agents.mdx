@@ -1,0 +1,150 @@
+---
+title: 'Self-hosted agents (OpenClaw & Hermes)'
+description: 'Connect Driftless to self-hosted agents like OpenClaw and Hermes Agent — via the CLI skill or the remote MCP endpoint.'
+---
+
+[OpenClaw](https://openclaw.ai/) and [Hermes Agent](https://hermes-agent.nousresearch.com/) are self-hosted, always-on AI agents. Both run on your own machine or a server, have **shell access**, read an **`AGENTS.md`** instruction file, support a **skills** system, and speak **MCP**. That gives you two ways to plug them into Driftless — pick one or use both.
+
+## Which path?
+
+<CardGroup cols={2}>
+  <Card title="CLI + skill" icon="terminal">
+    The agent runs the `driftless` CLI from its shell and follows the installed skill — the full context loop (pull before editing, persist what it learns). Best when the agent already works in a repo.
+  </Card>
+  <Card title="Remote MCP" icon="plug">
+    The agent calls Driftless tools (`driftless_context_*`, `project`, `tags`, …) over the hosted MCP endpoint — no shell or repo checkout required. Best for chat-surface agents.
+  </Card>
+</CardGroup>
+
+They compose: the CLI skill drives the read-before / write-after loop in a repo, while MCP exposes the same topics and work surface as tool calls. Both authenticate as **you** (your API key) and respect the same governance — agents propose, humans approve.
+
+### Shared connection facts
+
+| | Value |
+|---|---|
+| MCP endpoint | `https://api.driftless.icu/mcp` (Streamable HTTP) |
+| MCP auth (agents) | `X-API-Key: drift_…` header |
+| CLI package | `@driftless-sh/cli` |
+| API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.driftless.icu) |
+
+<Note>
+An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (projects, cards, tags, areas) need the key's owner to have `work:write`; **approving/merging Knowledge stays human-only** — an agent can propose but never bless its own notes.
+</Note>
+
+---
+
+## OpenClaw
+
+OpenClaw runs as a self-hosted **gateway** (`~/.openclaw/`) with a workspace at `~/.openclaw/workspace`, a `bash`/`process` sandbox, injected prompt files (`AGENTS.md`, `SOUL.md`, `TOOLS.md`), and skills at `~/.openclaw/workspace/skills/<skill>/SKILL.md`.
+
+### Option A — CLI + skill
+
+Run these in the gateway's environment (the host that executes OpenClaw's shell):
+
+<Steps>
+  <Step title="Install the CLI">
+    ```bash
+    npm install -g @driftless-sh/cli
+    ```
+  </Step>
+  <Step title="Authenticate">
+    ```bash
+    driftless login --key drift_your_api_key_here
+    ```
+  </Step>
+  <Step title="Install the skill into the workspace">
+    From the repo (or workspace root) the agent operates in:
+    ```bash
+    cd ~/.openclaw/workspace        # or your project directory
+    driftless install-skill
+    ```
+    This writes `AGENTS.md`, `CLAUDE.md`, and `.driftless/` — OpenClaw picks up `AGENTS.md` as an injected prompt, so the agent now follows the Driftless loop.
+  </Step>
+</Steps>
+
+### Option B — Remote MCP
+
+Use the `mcp add` command (it writes the correct entry in `~/.openclaw/openclaw.json` and avoids hand-editing pitfalls):
+
+```bash
+openclaw mcp add driftless \
+  --url https://api.driftless.icu/mcp \
+  --transport streamable-http \
+  --header X-API-Key:drift_your_api_key_here
+```
+
+Then reload and confirm the `driftless_*` tools appear. The equivalent config entry looks like:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "https://api.driftless.icu/mcp",
+      "transport": "streamable-http",
+      "headers": { "X-API-Key": "drift_your_api_key_here" }
+    }
+  }
+}
+```
+
+<Warning>
+OpenClaw has known issues forwarding custom headers on the streamable-http transport ([#65590](https://github.com/openclaw/openclaw/issues/65590)) and does not expand `${ENV_VAR}` inside `headers` ([#70901](https://github.com/openclaw/openclaw/issues/70901)) — put the key **inline** and verify a `driftless_context_search` call actually authenticates (a 401 means the header isn't reaching us). Prefer the `mcp add` command over editing the JSON by hand, and keep the key out of any committed config.
+</Warning>
+
+---
+
+## Hermes Agent
+
+Hermes runs on your infrastructure (a `$5` VPS up to serverless), with `execute_code`/terminal access, `AGENTS.md` support, and an [agentskills.io](https://agentskills.io)-compatible skills system. Config lives at `~/.hermes/config.yaml`.
+
+### Option A — CLI + skill
+
+Same three steps, run where Hermes executes its shell:
+
+```bash
+npm install -g @driftless-sh/cli
+driftless login --key drift_your_api_key_here
+cd /path/to/your/project && driftless install-skill   # writes AGENTS.md + .driftless/
+```
+
+Hermes reads `AGENTS.md` and can run `driftless` from its terminal tools, so the read-before / write-after loop works without any further wiring.
+
+### Option B — Remote MCP
+
+Add Driftless under `mcp_servers` in `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  driftless:
+    url: "https://api.driftless.icu/mcp"
+    headers:
+      X-API-Key: "drift_your_api_key_here"
+    tools:
+      resources: false
+      prompts: false
+```
+
+Reload MCP from a Hermes session:
+
+```
+/reload-mcp
+```
+
+<Tip>
+To scope the agent tightly, whitelist tools with `tools.include: [driftless_context_search, driftless_context_get, driftless_context_create]` and add more as you trust it. Start small.
+</Tip>
+
+---
+
+## Verify the connection
+
+Ask the agent to do one of these and confirm it returns your workspace's topics:
+
+- **CLI path:** “Run `driftless context search <a keyword from your repo>`.”
+- **MCP path:** “Call `driftless_context_search` for `<keyword>`.”
+
+A `401` on the MCP path means the `X-API-Key` header isn't reaching Driftless (re-check the inline value and, for OpenClaw, the header-forwarding caveat above).
+
+<Note>
+MCP clients cache the tool list per session. After Driftless ships new or renamed tools, **reconnect / reload** the MCP server (OpenClaw: re-run `mcp add` or restart the gateway; Hermes: `/reload-mcp`) so the agent sees them. The work-surface tools (`driftless_tags`, `driftless_areas`, `driftless_project`, `driftless_project_card`) are action-based — pass `action` to select the operation. See [MCP overview](/mcp/overview) for the full tool list.
+</Note>
