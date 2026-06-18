@@ -15,13 +15,16 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 |------|-------------|
 | `driftless_context_search` | Full-text search across topics — relevance-ranked. Returns the top **5** by default (raise `limit`, max 20) with `has_more` when more match: read the top few, then `driftless_context_get` the one you want rather than pulling the whole set. Returns lightweight summaries; archived topics are never returned. Accepts `tags` to scope to a category (e.g. `["billing"]`) and `stale` to filter by freshness (`true` = only drifted, `false` = only fresh) |
 | `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist — narrow with `status`/`stale`/`tags`, or raise `limit`. Archived topics are hidden unless you pass `status: archived`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
-| `driftless_tags_list` | The workspace tag registry with per-tag topic counts — paginated, most-used first |
-| `driftless_tags_create` | Pre-create a tag with an optional description (idempotent; names normalize to lowercase, spaces→dashes) |
+| `driftless_tags` | The tag registry — one tool, `action`: `list` (per-tag counts, paginated), `create` (pre-register with optional description, idempotent), `delete` (detach from every topic; curation, needs `work:write`) |
+| `driftless_areas` | The area registry (domains topics are filed under) — one tool, `action`: `list`, `create`, `update` (rename/describe), `delete` (un-files its topics; curation, needs `work:write`) |
 | `driftless_context_get` | Retrieve a single topic by slug |
 | `driftless_context_get_for_files` | Match topics to a list of file paths — full topic bodies, drifted ones first, bounded to the top 10 (raise `limit`, max 25, if more are anchored) |
 | `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to Up for review) |
+| `driftless_note_add` | Capture a private note (stays a draft; never submitted for review) |
+| `driftless_context_share` | Share a topic — publish a public web page (`to_web`) and/or share privately `with_members` |
+| `driftless_project` | Projects — one tool, `action`: `list`, `get`, `set` (create when no `id`, update when given) |
+| `driftless_project_card` | Project cards (units of work) — one tool, `action`: `list`, `get`, `add`, `set` (status/owner), `move`, `delete`. Needs `work:write` |
 | `driftless_context_update` | Update an existing topic (append-safe; accepts `rels`) |
-| `driftless_context_diff` | Get topics matching your local diff — same bounded, drifted-first response as `get_for_files` |
 | `driftless_context_delete` | Delete a topic (destructive) |
 | `driftless_context_propose` | Put a Note up for review (draft → proposed) |
 | `driftless_context_create_proposal` | Open a Suggested edit to an existing topic |
@@ -34,7 +37,7 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_agent_stats` | Agent note stats |
 | `driftless_workspaces` | List the workspaces your credential can target |
 
-All tools are **context-only** — no workspace admin, no repo registration, no key management, no mutation of integrations. Topics live in the workspace and are visible to its members; another's private drafts stay hidden.
+The surface covers **context** (topics, governance, the graph) and the **work surface** (projects, cards, tags, areas) — but never workspace admin, repo registration, key management, mutation of integrations, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; approving/merging Knowledge stays human-only.
 
 Every result (search, list, get) carries a flat **`trust`** field — `reviewed` | `proposed` | `draft` — so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is Knowledge, the team's source of truth; `proposed`/`draft` are Notes (hints).
 
@@ -56,7 +59,7 @@ Types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 Remote agents have no local checkout, so write responses carry `anchor_validation` — per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs.
 
 <Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up — otherwise new parameters like `rels` or `tags` won't be available.
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up — otherwise new parameters or tools won't be available. The work-surface tools (`tags`, `areas`, `project`, `project_card`) are **action-based** — pass `action` to pick the operation; if your client still shows the old per-operation tool names (e.g. `driftless_tags_create`), reconnect to refresh.
 </Note>
 
 ### Governance from the MCP
