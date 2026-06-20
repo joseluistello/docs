@@ -1,17 +1,63 @@
 ---
 title: 'Projects'
-description: 'A shared execution environment for humans and agents. Cards are the unit of work — created and moved from the CLI, the API, or the board.'
+description: 'A shared execution environment for humans and agents. Cards are the unit of work, and an agent walks the board in a loop — pulling team context per card and writing learnings back.'
 ---
 
 A **project** is where work happens in a Driftless workspace. It is a shared execution environment for humans and their agents: the project holds **cards** (the unit of work), and the same board is operable from the CLI, the REST API, and the dashboard. The product lives in the headless surface; the board is occasional visibility for the human.
 
-This is the half of Driftless that isn't documentation. Topics capture what the team *knows*; projects capture what the team is *doing* — and because both live in the same workspace, an agent moving a card can pull the Knowledge anchored to the code it's about to touch.
+This is the half of Driftless that isn't documentation. Topics capture what the team *knows*; projects capture what the team is *doing* — and because both live in the same workspace, an agent picking up a card pulls the Knowledge anchored to the code it's about to touch, and the gotchas it learns flow back into the vault.
 
 ## Projects and cards
 
-- A **project** belongs to one workspace and has a status: `active`, `done`, or `archived`.
-- A **card** belongs to one project and moves through a status lane. Card statuses: `todo` · `in_progress` · `blocked` · `review` · `done`.
-- A card can carry an owner (a workspace member) and can be moved between projects.
+- A **project** belongs to one workspace and has a status: `active`, `done`, or `archived`. It can carry a **goal** (the definition of done for the whole project) and a **playbook** (a topic the agent reads to learn how to run it).
+- A **card** belongs to one project and moves through a status lane: `todo` · `in_progress` · `blocked` · `review` · `done`. A card can carry:
+  - an **owner** (a workspace member),
+  - an **`acceptance`** criterion — what "done" means, checked before the card is closed,
+  - a **`validate`** command — a shell command that must exit zero,
+  - **`depends_on`** — other cards that must be `done` before this one becomes actionable.
+
+## The agent loop
+
+A project is a board an agent walks in a loop, repeating four steps until the project is done:
+
+<Steps>
+<Step title="Ask for the next card">
+`project card next <project-id>` returns the next actionable card **plus its context bundle** in one call — `{ card, context_bundle, project_done }`. The bundle merges the card's own context refs with the project's, deduplicated: the team's recorded memory for that card's area, so the agent doesn't re-derive what the team already knows.
+</Step>
+<Step title="Work the card">
+The agent works with the bundle loaded. This is the differentiator over an ordinary task queue — the card arrives anchored to the Knowledge around it, not as a bare title.
+</Step>
+<Step title="Validate against acceptance">
+If the card has a `validate` command, the agent runs it. A non-zero exit is **stop-and-fix**: do not mark the card done, repair and re-validate. `acceptance` is the human-readable definition of done the agent checks against.
+</Step>
+<Step title="Write back and close">
+Persist anything durable learned, mark the card `done`, and ask for the next card. Repeat until `project_done` is true.
+</Step>
+</Steps>
+
+**Dep-gating** orders the loop without micro-management: a `todo` card with unmet dependencies never appears in `next` — it becomes "ready" only once every card in its `depends_on` list is `done`. When no cards are ready and none are in flight, `project_done` is `true`.
+
+**Blocked, not guessed:** if the agent cannot proceed without a human decision, it sets the card to `blocked` rather than marking it done.
+
+<Note>
+Verification is **report-and-surface**, not enforcement. The agent reports the result of running `validate`; Driftless stores and surfaces it — it never runs the command itself. A `done` transition without a passing result is allowed by default (the card is surfaced as "needs verification"), unless the workspace opts in to blocking via `require_card_validation`.
+</Note>
+
+## Write-back mid-loop
+
+A gotcha discovered *while* working a card shouldn't wait for the end. Attach it to the card as a note:
+
+```bash
+driftless note add \
+  --content "Webhook deliveries arrive out of order — idempotency key required" \
+  --project prj_abc --card card_xyz
+```
+
+That note rides the card's `next` context bundle (the next loop tick sees it), and when the project closes, the **compact** synthesizes the card's attached notes into a draft Topic — sent to the Inbox for a human to merge into Knowledge. Work boundaries are where memory should attach: `next` is the moment to inject context, card-close is the moment to capture it.
+
+<Note>
+`--card` requires `--project` (a card lives inside a project). Over MCP, `driftless_note_add` takes the same `project_id` and `card_id`.
+</Note>
 
 ## From the CLI
 
@@ -24,17 +70,27 @@ Projects and cards are first-class CLI citizens — an agent runs the same comma
 | `project get <id>` | Project detail + card index |
 | `project update <id> [--status …] [--title "…"]` | Update a project |
 | `project cards <project-id> [--status s] [--limit n]` | List cards (priority order) |
-| `project card add <project-id> --title "…" [--description "…"] [--owner <id>]` | Create a card |
+| `project card next <project-id>` | **Next actionable card + context bundle (the loop tick)** |
+| `project card add <project-id> --title "…" [--description "…"\|@file] [--acceptance "…"] [--validate "cmd"] [--dep <card-id>] [--owner <id>]` | Create a card |
+| `project card add <project-id> --file @cards.json` | Batch-create cards (`depends_on` by title or id) |
+| `project card update <project-id> <card-id> […]` | Update a card |
 | `project card get <project-id> <card-id>` | Card detail |
 | `project card status <project-id> <card-id> <status>` | Change a card's status |
 | `project card move <project-id> <card-id> <to-project-id>` | Move a card to another project |
 | `project card rm <project-id> <card-id>` | Delete a card |
 
 ```bash
-# Spin up a project and drop in the first card
+# Spin up a project with an acceptance-checked, validated card
 driftless project add "Refunds revamp"
-driftless project card add prj_abc --title "Idempotent webhook handler" --owner mem_123
-driftless project card status prj_abc card_xyz in_progress
+driftless project card add prj_abc \
+  --title "Idempotent webhook handler" \
+  --acceptance "Duplicate webhook deliveries are a no-op" \
+  --validate "npm test -- webhooks" \
+  --owner mem_123
+
+# Then walk it
+driftless project card next prj_abc          # card + its context bundle
+driftless project card status prj_abc card_xyz done
 ```
 
 Cards are scanned for secrets on write, like topics — pass `--allow-secrets` only when you intend to store one. Add `--json` to any command for machine output.
@@ -48,12 +104,15 @@ Everything above maps to REST under the workspace:
 | `POST` / `GET` | `/workspaces/:slug/projects` |
 | `GET` / `PATCH` | `/workspaces/:slug/projects/:id` |
 | `POST` / `GET` | `/workspaces/:slug/projects/:projectId/cards` |
+| `GET` | `/workspaces/:slug/projects/:projectId/cards/next` |
 | `GET` / `PATCH` / `DELETE` | `/workspaces/:slug/projects/:projectId/cards/:cardId` |
+
+A card `PATCH` accepts `add_context` to attach a note or topic to the card mid-loop, mirroring the project's own `add_context`.
 
 ## On the dashboard
 
-The board renders the same projects and cards as a kanban — columns are the card statuses, and dragging a card calls the same `PATCH` the CLI does. It is a visibility surface, not a separate source of truth: a card created by an agent from the CLI shows up on the board immediately.
+The board renders the same projects and cards as a kanban — columns are the card statuses, and dragging a card calls the same `PATCH` the CLI does. The project header surfaces its goal and playbook; cards show `verified` and `ready` badges and their acceptance / validate in detail. Marking a project done opens the **compact** — pick the cards whose learnings become Topic drafts in your Inbox; the rest retire with the project. It is a visibility surface, not a separate source of truth: a card created by an agent from the CLI shows up immediately.
 
 <Note>
-Projects and cards live in the workspace and are visible to its members. They are governed by [workspace roles](/concepts/workspaces#identity-vs-membership), not by the Note → Knowledge lifecycle — that lifecycle is for **topics**. See [Governance](/concepts/governance).
+Projects and cards live in the workspace and are visible to its members. They are governed by [workspace roles](/concepts/workspaces#identity-vs-membership), not by the Note → Knowledge lifecycle — that lifecycle is for **topics**. The compact's draft topics, however, do enter that lifecycle. See [Governance](/concepts/governance).
 </Note>
