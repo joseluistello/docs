@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
-  "description": "The agent-native workspace for builders — where your team and its agents do the work, on memory that doesn't rot.",
+  "description": "The workspace where humans and AI agents work from the same living context — code, decisions, and operations in one shared system.",
   "theme": "linden",
   "favicon": "/favicon.png",
   "logo": {
@@ -73,8 +73,10 @@
         "pages": [
           "concepts/workspaces",
           "concepts/projects",
+          "concepts/collections",
           "concepts/areas",
           "concepts/topics",
+          "concepts/comments",
           "concepts/notes-sharing",
           "concepts/governance",
           "concepts/core-loop",

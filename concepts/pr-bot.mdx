@@ -22,7 +22,7 @@ When a PR is opened or updated:
 ## 🔎 Driftless Auditor
 
 This change may affect 2 things the team recorded. Queued for review —
-these are Suggested edits; a human merges them.
+these are Suggested edits; an owner/admin merges them.
 
 - `billing-flow` (Suggested edit) — refund window changed 7d→30d
 - `auth-boundaries` (needs a human) — new route bypasses the workspace guard
@@ -42,7 +42,7 @@ Stale topics are flagged inside the comment ("trust the code over the note, then
 
 - **No finding → no comment.** Silence is the default, and it's information too.
 - **No model key → no comment.** The Auditor is BYOM; without a key the PR is still observed and recorded, just not commented.
-- **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue — a human merges them. No coverage score, no homework.
+- **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue — an owner/admin merges them. No coverage score, no homework.
 - **Gap-finding lives in the coverage map**, not in PR comments: `driftless_context_coverage` over the MCP, or the dashboard.
 
 If your change altered how an area works, update the topic so the note stays true:

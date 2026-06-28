@@ -88,13 +88,13 @@ A topic is content-first — the markdown `content` body IS the topic. Use `tags
 
 ### Status — governance lifecycle
 
-A note becomes Knowledge once it's merged in: `draft → proposed → reviewed → archived`. `reviewed` is Knowledge; the read response carries `governance.authoritative`. Agents write notes, humans add them to knowledge. See [Governance](/concepts/governance).
+A note becomes Knowledge once it's merged in: `draft → proposed → reviewed → archived`. `reviewed` is Knowledge; the read response carries `governance.authoritative`. Agents propose; merging is an owner/admin act (an agent runs it only when explicitly asked). See [Governance](/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
 | `draft` | Captured, not yet merged in — a hint (a Note), not truth |
 | `proposed` | Up for review |
-| `reviewed` | **Knowledge** — a human merged it in; the agent treats it as truth |
+| `reviewed` | **Knowledge** — an owner/admin merged it in (or an agent did on their request); the agent treats it as truth |
 | `archived` | Retired |
 | `orphaned` | Code-driven (repo deleted) — orthogonal to governance |
 

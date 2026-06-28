@@ -37,7 +37,7 @@ The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing
 | `driftless_agent_stats` | Agent note stats |
 | `driftless_workspaces` | List the workspaces your credential can target |
 
-The surface covers **context** (topics, governance, the graph) and the **work surface** (projects, cards, tags, areas) — but never workspace admin, repo registration, key management, mutation of integrations, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; approving/merging Knowledge stays human-only.
+The surface covers **context** (topics, governance, the graph) and the **work surface** (projects, cards, tags, areas) — but never workspace admin, repo registration, key management, mutation of integrations, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; merging into Knowledge needs owner/admin authority — the MCP client runs it only when the authorizing owner/admin explicitly asks.
 
 Every result (search, list, get) carries a flat **`trust`** field — `reviewed` | `proposed` | `draft` — so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is Knowledge, the team's source of truth; `proposed`/`draft` are Notes (hints).
 
@@ -64,7 +64,7 @@ MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. A
 
 ### Governance from the MCP
 
-A topic becomes Knowledge only once a human merges it in. An MCP client can **put a Note up for review** (`driftless_context_propose`), but **cannot merge** — `approve` requires a human identity, and an MCP/OAuth caller has none. Agents write notes; humans add them to knowledge. See [Governance](/concepts/governance).
+A topic becomes Knowledge only once an owner/admin merges it in. An MCP client always **puts a Note up for review** (`driftless_context_propose`); it can also **merge** (`driftless_context_approve`) — but only with owner/admin authority. The MCP token acts as the human who authorized it, so `approve` succeeds only when that human is an owner/admin, and the client should run it **only when they explicitly ask** (a member's or faceless token is refused). The merge is stamped `approved_via: agent`. See [Governance](/concepts/governance).
 
 ## Authentication
 

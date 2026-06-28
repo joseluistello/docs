@@ -57,7 +57,7 @@ The workspace tag registry — tags as first-class objects so they can be pre-cr
 
 ## Governance
 
-A topic becomes Knowledge only once a human merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require a human identity.
+A topic becomes Knowledge only once an owner/admin merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require owner/admin authority — they succeed for an owner/admin principal on any surface (dashboard, owned CLI key, or an OAuth/MCP token the owner/admin authorized), and the merge is stamped `approved_via` (`human` or `agent`). A faceless or non-owner principal is rejected.
 
 | Method | Path | Purpose |
 |---|---|---|

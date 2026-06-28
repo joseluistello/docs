@@ -15,7 +15,7 @@ The default agent workflow is topic-first:
 4. **Add relations if useful** — `driftless context update <slug> --rel depends_on:other-topic`.
 5. **Use JSON output when acting as an agent** — `driftless context get <slug> --json`.
 
-A note becomes Knowledge only once a human merges it in (`reviewed`) — treat `reviewed` as truth, `draft`/`proposed` as a hint. See [Governance](/concepts/governance).
+A note becomes Knowledge only once an owner/admin merges it in (`reviewed`) — treat `reviewed` as truth, `draft`/`proposed` as a hint. (An agent can run that merge, but only when an owner/admin explicitly asks.) See [Governance](/concepts/governance).
 
 ## Install the agent skill
 

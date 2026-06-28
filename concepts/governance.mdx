@@ -1,13 +1,13 @@
 ---
 title: 'Governance'
-description: 'A topic is Knowledge only once a human merges it in. Agents write notes, humans add them to knowledge.'
+description: 'A topic is Knowledge only once an owner/admin merges it in. Agents propose; merging is an owner/admin act — runnable by an agent only when explicitly asked.'
 ---
 
-Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes Knowledge only once a human merges it in. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
+Driftless governs **understanding** the way GitHub governs code. A topic is not "the truth" the moment anyone writes it — it becomes Knowledge only once an owner/admin merges it in. That distinction is what makes the context an agent receives trustworthy instead of a wiki that rots.
 
 ## Everything is one topic that evolves
 
-There is a single primitive — a **topic** — and it matures along one trust axis: **Note → Knowledge**. A **Note** is a draft (private by default; share it to the workspace and it's **Up for review**). **Knowledge** is the team's source of truth — *a note becomes knowledge once it's merged in*, and only a human can merge (agents write notes; an owner/admin merges). To change existing Knowledge, open a **Suggested edit** — a human merges it.
+There is a single primitive — a **topic** — and it matures along one trust axis: **Note → Knowledge**. A **Note** is a draft (private by default; share it to the workspace and it's **Up for review**). **Knowledge** is the team's source of truth — *a note becomes knowledge once it's merged in*. Merging is an **owner/admin** act: an owner/admin can merge it themselves, or explicitly ask an agent to run the merge on their behalf — same authority either way. To change existing Knowledge, open a **Suggested edit** — an owner/admin merges it.
 
 ```text
 Note  →  Up for review  →  Knowledge     (+ Archived)
@@ -16,11 +16,11 @@ Note  →  Up for review  →  Knowledge     (+ Archived)
 
 - **Note** — a draft / private observation. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here. Share it to the workspace and it's **Up for review**.
 - **Up for review** — a Note put up for human review. Awaiting a merge; lives in the review queue and can be sent back with a reason.
-- **Knowledge** — the team's source of truth — the notes merged in. A human added it to knowledge, so it joins the team's **living, code-anchored knowledge graph** — the multi-context map of the whole codebase. This is the durable truth an agent consumes.
+- **Knowledge** — the team's source of truth — the notes merged in. An owner/admin's authority added it to knowledge, so it joins the team's **living, code-anchored knowledge graph** — the multi-context map of the whole codebase. This is the durable truth an agent consumes.
 
-`reviewed` topics carry `governance.authoritative: true` + `approved_by`/`approved_at`. Internally the status enum stays `draft`/`proposed`/`reviewed`/`archived`; the names above are the product language.
+`reviewed` topics carry `governance.authoritative: true` + `approved_by`/`approved_at` + `approved_via` (`human` if a person merged it, `agent` if an agent ran the merge on an owner/admin's request). Internally the status enum stays `draft`/`proposed`/`reviewed`/`archived`; the names above are the product language.
 
-The model is **agents write notes, humans add them to knowledge**. `approve`, `reject`, and `merge` require a human identity — an ownerless agent key writes notes, but never merges them in.
+The model is **agents propose; merging into Knowledge is an owner/admin act**. `approve`, `reject`, and `merge` require owner/admin authority — an ownerless agent key or a non-owner writes notes but is refused the merge. An agent *can* run the merge, but only when an owner/admin explicitly asks it to — never on its own initiative.
 
 ```bash
 driftless context propose <slug>     # Note → Up for review
@@ -42,7 +42,7 @@ Merge authority is a **workspace role**. Each member carries one:
 | `member` | Read + **put notes up for review** |
 | `admin` / `owner` | …+ **merge** — add to knowledge, reject, archive, and clear drift |
 
-Merging a note into Knowledge (and re-confirming a drifted topic) requires the `admin` or `owner` role — a member puts notes up for review but does not merge them in. Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
+Merging a note into Knowledge (and re-confirming a drifted topic) requires the `admin` or `owner` role — a member puts notes up for review but does not merge them in. The role is the authority; an agent acting on an owner/admin's explicit request runs the merge under that authority (and it's stamped `approved_via: agent`). Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
 
 Permissions gate **merging and visibility only — never coding**. Driftless informs; it never blocks a developer from writing code.
 
@@ -66,7 +66,7 @@ Don't overwrite a Knowledge topic. To change the team's source of truth, open a 
 ```bash
 driftless context pr <slug>                                     # list open Suggested edits
 driftless context pr <slug> --open --summary "why" --content @new.md
-driftless context pr <slug> --merge <id>                        # merge it in (human)
+driftless context pr <slug> --merge <id>                        # merge it in (owner/admin)
 driftless context pr <slug> --reject <id>                       # close without merging
 ```
 
@@ -74,8 +74,8 @@ A Suggested edit carries a **content patch** (whitelisted to content fields — 
 
 ## Why deterministic
 
-Merging is a human act; everything around it is deterministic and auditable — who merged what, when, and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
+Merging is an owner/admin act; everything around it is deterministic and auditable — who merged what, when, on whose authority (`approved_by`), by which hand (`approved_via`: a person or an agent they asked), and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
 
 <Note>
-In a future release, platform agents (drift, freshness) will open **Suggested edits** automatically. They plug into the same review queue — humans still merge. The authoring of intelligent Suggested edits is the only piece that waits.
+In a future release, platform agents (drift, freshness) will open **Suggested edits** automatically. They plug into the same review queue, and an owner/admin still decides what merges. The authoring of intelligent Suggested edits is the only piece that waits.
 </Note>

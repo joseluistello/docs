@@ -53,7 +53,7 @@ driftless note add \
   --project prj_abc --card card_xyz
 ```
 
-That note rides the card's `next` context bundle (the next loop tick sees it), and when the project closes, the **compact** synthesizes the card's attached notes into a draft Topic — sent to the Inbox for a human to merge into Knowledge. Work boundaries are where memory should attach: `next` is the moment to inject context, card-close is the moment to capture it.
+That note rides the card's `next` context bundle (the next loop tick sees it), and when the project closes, the **compact** synthesizes the card's attached notes into a draft Topic — sent to the Inbox for an owner/admin to merge into Knowledge (themselves, or via an agent they ask). Work boundaries are where memory should attach: `next` is the moment to inject context, card-close is the moment to capture it.
 
 <Note>
 `--card` requires `--project` (a card lives inside a project). Over MCP, `driftless_note_add` takes the same `project_id` and `card_id`.

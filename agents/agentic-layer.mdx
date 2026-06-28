@@ -1,9 +1,9 @@
 ---
 title: 'Audit & Architect agents'
-description: 'Server-side agents that keep your team context honest and grow it — they write notes, a human adds them to knowledge.'
+description: 'Server-side agents that keep your team context honest and grow it — they propose; an owner/admin adds the result to knowledge.'
 ---
 
-Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **write notes**; a human **adds them to knowledge**.
+Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; an owner/admin **adds the result to knowledge**.
 
 - **The Auditor** keeps existing context honest when code changes.
 - **The Architect** grows context where it's missing.
@@ -27,7 +27,7 @@ On new areas of a PR and on a nightly sweep, the Architect looks for **source ar
 The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out — it's used server-side only.
 
 - **Read-only.** The agents read and reason; they never execute, edit, or write code.
-- **Propose-only, human-gated.** Everything they produce lands as a **Note** or **Suggested edit** in your Review Queue. Only a human merges it into Knowledge. An agent can never merge its own work in.
+- **Propose-only.** Everything these autonomous agents produce lands as a **Note** or **Suggested edit** in your Review Queue — they never merge. Merging into Knowledge is an owner/admin act, and these autonomous agents never merge their own work in (separation of powers stays). That's distinct from *your own* agent (CLI/MCP, acting under your identity), which you can explicitly ask to run a merge on your behalf.
 
 ## Configure them
 

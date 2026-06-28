@@ -57,18 +57,18 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 
 ## Governance
 
-A topic becomes Knowledge only once it's merged in. Lifecycle: `draft → proposed → reviewed → archived`. Agents write notes; humans add them to knowledge. See [Governance](/concepts/governance).
+A topic becomes Knowledge only once it's merged in. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; merging is an owner/admin act — an agent runs it only when an owner/admin explicitly asks. See [Governance](/concepts/governance).
 
 | Command | Description | Example |
 |---|---|---|
 | `context propose <topic>` | Put a Note up for review | `driftless context propose payment-flow` |
-| `context approve <topic>` | Add it to knowledge (human) | `driftless context approve payment-flow` |
+| `context approve <topic>` | Add it to knowledge (owner/admin; only when asked) | `driftless context approve payment-flow` |
 | `context reject <topic>` | Send it back to a Note | `driftless context reject payment-flow` |
 | `context archive <topic>` | Retire a topic | `driftless context archive payment-flow` |
 | `context pr <topic>` | List Suggested edits | `driftless context pr payment-flow` |
 | `context pr <topic> --open` | Open a Suggested edit (`--summary` + content flags) | `driftless context pr payment-flow --open --summary "..." --content @new.md` |
-| `context pr <topic> --merge <id>` | Merge a Suggested edit (human) | `driftless context pr payment-flow --merge <id>` |
-| `context pr <topic> --reject <id>` | Close a Suggested edit without merging (human) | `driftless context pr payment-flow --reject <id>` |
+| `context pr <topic> --merge <id>` | Merge a Suggested edit (owner/admin) | `driftless context pr payment-flow --merge <id>` |
+| `context pr <topic> --reject <id>` | Close a Suggested edit without merging (owner/admin) | `driftless context pr payment-flow --reject <id>` |
 
 ## Share
 

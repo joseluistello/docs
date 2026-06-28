@@ -16,7 +16,7 @@ description: 'Connect Driftless to self-hosted agents like OpenClaw and Hermes A
   </Card>
 </CardGroup>
 
-They compose: the CLI skill drives the read-before / write-after loop in a repo, while MCP exposes the same topics and work surface as tool calls. Both authenticate as **you** (your API key) and respect the same governance — agents propose, humans approve.
+They compose: the CLI skill drives the read-before / write-after loop in a repo, while MCP exposes the same topics and work surface as tool calls. Both authenticate as **you** (your API key) and respect the same governance — agents propose, and merging into Knowledge is an owner/admin act the agent runs only when you explicitly ask.
 
 ### Shared connection facts
 
@@ -28,7 +28,7 @@ They compose: the CLI skill drives the read-before / write-after loop in a repo,
 | API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.driftless.icu) |
 
 <Note>
-An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (projects, cards, tags, areas) need the key's owner to have `work:write`; **approving/merging Knowledge stays human-only** — an agent can propose but never bless its own notes.
+An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (projects, cards, tags, areas) need the key's owner to have `work:write`; **merging into Knowledge needs owner/admin authority** — if the key's owner is an owner/admin, the agent can run the merge on your explicit request (stamped `approved_via: agent`); an ownerless or non-owner key can propose but is refused the merge.
 </Note>
 
 ---
