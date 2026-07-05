@@ -1,0 +1,95 @@
+---
+title: 'Guías'
+description: "Elige un resultado y corre un workflow real de Driftless de punta a punta. Cada guía combina Knowledge, Operations, Work e Integrations en pasos que puedes seguir, sin tener que descubrir por tu cuenta cómo encajan las primitivas."
+---
+
+Los [Conceptos](/es/concepts/core-loop) explican qué es cada primitiva, y las referencias de [CLI](/es/cli/context) y [API](/es/api/overview) listan cada comando y endpoint. Una guía vive entre ambos: toma un resultado real y te lleva a través de él, para que no tengas que descubrir por tu cuenta cómo se combinan Knowledge, Operations, Work e Integrations para llegar ahí.
+
+Cada guía está anclada en las mismas superficies shipped que documentan las páginas de referencia. Donde una capacidad está gated, en beta o no disponible, la guía lo dice y te muestra el límite en vez de fingir que está viva.
+
+## Qué es una guía
+
+Una guía es un resultado más el camino exacto hacia él. Eliges un resultado, cargas el contexto que el equipo ya registró, inspeccionas el estado actual, actúas y dejas el workspace un poco más capaz de lo que lo encontraste. Responde las preguntas que una referencia no puede: cuándo correr esto, qué objetos participan, qué leer primero, qué esperar después de cada paso y qué debería (y qué no debería) convertirse en Knowledge del equipo.
+
+## Guía, Concepto o Referencia
+
+Tres tipos de página, tres trabajos:
+
+- Un **Concepto** explica qué *es* una primitiva y por qué funciona como funciona. Léelo para construir el modelo mental.
+- Una **Referencia** (CLI, API, MCP) lista cada comando, flag y endpoint. Léela para buscar un parámetro exacto.
+- Una **Guía** combina primitivas en un workflow que alcanza un resultado. Léela para *lograr algo*.
+
+Las guías deliberadamente no repiten la referencia. Cada paso muestra el único comando que necesitas, una explicación breve, el resultado a esperar y un link a la referencia completa cuando quieras profundizar. Deberías poder terminar un workflow sin leer una página de referencia entera, sabiendo siempre dónde encontrar una.
+
+## El loop compartido
+
+Cada guía es una variación del mismo loop de seis pasos. Apréndelo una vez y cada workflow se lee como una especialización suya:
+
+1. **Resolve.** Encuentra o crea el objeto que estás trabajando: un Project, una Card, una Collection, un Record, una Entity o una Connection.
+2. **Read governed context.** Tira del Knowledge durable que debe guiar la acción, entregado con el trabajo, no buscado a ciegas.
+3. **Inspect live state.** Lee el estado operacional o de trabajo actual: status de la card, fields del record, salud de la connection.
+4. **Act.** Haz el único cambio que el paso pide.
+5. **Write back.** Registra el nuevo estado en la primitiva correcta.
+6. **Preserve learning.** Deja una Nota limpia cuando aprendiste algo durable, para que el próximo agente empiece adelantado.
+
+## Topics informan cada workflow
+
+Cada workflow está informado por los Topics relevantes, pero no todo empieza con una búsqueda global, y no todo lo que aprendes se convierte en Topic. La regla que lo mantiene en orden:
+
+> Los Topics contienen el **contexto durable** que debe guiar acciones futuras. Projects, Cards, Collections, Records, Entities y Connections contienen **estado y ejecución**. Skills y Guías enseñan cómo combinarlos.
+
+Por eso cada guía lleva dos secciones obligatorias que aplican la regla:
+
+**Context preflight** explica qué contexto durable leer antes de actuar, y cómo llega hasta ti: mediante el contexto de un Project, el context bundle de una Card, el criterion de una Collection, el criterion de una Connection o una búsqueda dirigida. El contexto se entrega *con el trabajo* siempre que se puede, así rara vez necesitas cargar el workspace entero. Cuando el contexto entregado tiene una brecha, el preflight te dice cómo detectarla y cuándo buscar un Topic adicional.
+
+**Knowledge write-back** explica dónde pertenece cada tipo de aprendizaje, para que la actividad transitoria nunca se haga pasar por verdad institucional:
+
+| Qué aprendiste | Dónde va |
+| --- | --- |
+| Estado operacional actual | un Record |
+| Trabajo que sigue | una Card |
+| Una identidad compartida | una Entity |
+| Una observación o aprendizaje sin revisar | una Nota |
+| Un cambio a Knowledge existente | una Edición sugerida |
+| Feedback sobre un objeto | un Comment |
+| Verdad institucional | Knowledge, pero solo tras revisión humana |
+
+El output de una ejecución, un snapshot tirado de una herramienta externa o un valor de una sola vez no es Knowledge. Se queda como estado operacional o Nota hasta que una persona lo revisa. Ver [Gobernanza](/es/concepts/governance).
+
+## Elige tu workflow
+
+Elige por intención:
+
+| Quiero... | Guía |
+| --- | --- |
+| Continuar un objetivo con otro agente | [Project across agents](/es/guides/project-across-agents) |
+| Operar clientes, leads, contenido o señales | [Operate a Collection](/es/guides/operate-a-collection) |
+| Preservar lo que un agente aprendió | [Govern agent learning](/es/guides/govern-agent-learning) |
+| Auditar y limpiar contexto de forma segura | [Clean workspace context](/es/guides/clean-workspace-context) |
+| Usar evidencia que vive en una herramienta externa | [External context with Broker](/es/guides/external-context-with-broker) |
+
+<CardGroup cols={2}>
+  <Card title="Project across agents" icon="git-branch" href="/es/guides/project-across-agents">
+    Continúa un objetivo aunque cambie el modelo, la sesión o el agente. El Project es dueño del estado, no el modelo.
+  </Card>
+  <Card title="Operate a Collection" icon="table" href="/es/guides/operate-a-collection">
+    Trabaja un lead, cliente, ítem de contenido o señal de producto con los criterios del equipo cargados, no como una tabla aislada.
+  </Card>
+  <Card title="Govern agent learning" icon="shield-check" href="/es/guides/govern-agent-learning">
+    Convierte una observación de agente en una Nota, una Edición sugerida o Knowledge revisado, con un humano decidiendo qué se vuelve verdad.
+  </Card>
+  <Card title="Clean workspace context" icon="broom" href="/es/guides/clean-workspace-context">
+    Audita el vault y prepara una limpieza segura que nunca destruye Knowledge por su cuenta.
+  </Card>
+  <Card title="External context with Broker" icon="plug" href="/es/guides/external-context-with-broker">
+    Tira evidencia de una herramienta conectada hacia el trabajo operacional, sin confundirla con Knowledge.
+  </Card>
+</CardGroup>
+
+## Referencia relacionada
+
+- [El loop de Driftless](/es/concepts/core-loop) - los tres tipos de estado y el loop entre ellos.
+- [Proyectos](/es/concepts/projects) y [Colecciones](/es/concepts/collections) - las primitivas de Work y Operations.
+- [Gobernanza](/es/concepts/governance) - Nota, Edición sugerida y Knowledge.
+- [Integraciones](/es/integrations/overview) y [Broker](/es/integrations/broker) - acceso gobernado a sistemas externos.
+- [CLI](/es/cli/context), [API](/es/api/overview) y [MCP](/es/mcp/overview) - las superficies completas de comandos, endpoints y tools.

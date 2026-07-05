@@ -1,0 +1,95 @@
+---
+title: 'Guides'
+description: "Pick an outcome and run a real Driftless workflow end to end. Each guide combines Knowledge, Operations, Work, and Integrations into steps you can follow, without having to figure out how the primitives fit together."
+---
+
+The [Concepts](/concepts/core-loop) explain what each primitive is, and the [CLI](/cli/context) and [API](/api/overview) references list every command and endpoint. A guide sits between them: it takes one real outcome and walks you through it, so you do not have to discover on your own how Knowledge, Operations, Work, and Integrations combine to get there.
+
+Every guide is grounded in the same shipped surfaces the reference pages document. Where a capability is gated, beta, or not available, the guide says so and shows you the boundary instead of pretending it is live.
+
+## What a guide is
+
+A guide is an outcome plus the exact path to it. You choose a result, load the context the team already recorded, inspect the current state, act, and leave the workspace a little more capable than you found it. It answers the questions a reference cannot: when to run this, which objects take part, what to read first, what to expect after each step, and what should (and should not) become team Knowledge.
+
+## Guide, Concept, or Reference
+
+Three kinds of page, three jobs:
+
+- A **Concept** explains what a primitive *is* and why it works the way it does. Read it to build the mental model.
+- A **Reference** (CLI, API, MCP) lists every command, flag, and endpoint. Read it to look up an exact parameter.
+- A **Guide** combines primitives into a workflow that reaches an outcome. Read it to *get something done*.
+
+Guides deliberately do not restate the reference. Each step shows the one command you need, a short explanation, the result to expect, and a link to the full reference when you want to go deeper. You should be able to finish a workflow without reading an entire reference page, while always knowing where to find one.
+
+## The shared loop
+
+Every guide is a variation on the same six-step loop. Learn it once and each workflow reads as a specialization of it:
+
+1. **Resolve.** Find or create the object you are working: a Project, a Card, a Collection, a Record, an Entity, or a Connection.
+2. **Read governed context.** Pull the durable Knowledge that should guide the action, delivered with the work, not searched for blindly.
+3. **Inspect live state.** Read the current operational or work state: card status, record fields, connection health.
+4. **Act.** Make the one change the step calls for.
+5. **Write back.** Record the new state in the right primitive.
+6. **Preserve learning.** Leave a clean Note when you learned something durable, so the next agent starts ahead.
+
+## Topics inform every workflow
+
+Every workflow is informed by the relevant Topics, but not everything starts with a global search, and not everything you learn becomes a Topic. The rule that keeps this straight:
+
+> Topics hold the **durable context** that should guide future actions. Projects, Cards, Collections, Records, Entities, and Connections hold **state and execution**. Skills and Guides teach how to combine them.
+
+So each guide carries two required sections that apply the rule:
+
+**Context preflight** explains which durable context to read before acting, and how it reaches you: through a Project's context, a Card's context bundle, a Collection's criterion, a Connection's criterion, or a directed search. Context is delivered *with the work* wherever possible, so you rarely need to load the whole workspace. When the delivered context has a gap, the preflight tells you how to spot it and when to search for an additional Topic.
+
+**Knowledge write-back** explains where each kind of learning belongs, so transient activity never masquerades as institutional truth:
+
+| What you learned | Where it goes |
+| --- | --- |
+| Current operational state | a Record |
+| Work that comes next | a Card |
+| A shared identity | an Entity |
+| An unreviewed observation or learning | a Note |
+| A change to existing Knowledge | a Suggested edit |
+| Feedback on an object | a Comment |
+| Institutional truth | Knowledge, but only after human review |
+
+A run's output, a snapshot pulled from an external tool, or a one-off value is not Knowledge. It stays operational state or a Note until a person reviews it. See [Governance](/concepts/governance).
+
+## Choose your workflow
+
+Pick by intent:
+
+| I want to... | Guide |
+| --- | --- |
+| Continue a goal with another agent | [Project across agents](/guides/project-across-agents) |
+| Operate customers, leads, content, or signals | [Operate a Collection](/guides/operate-a-collection) |
+| Preserve what an agent learned | [Govern agent learning](/guides/govern-agent-learning) |
+| Audit and clean context safely | [Clean workspace context](/guides/clean-workspace-context) |
+| Use evidence that lives in an external tool | [External context with Broker](/guides/external-context-with-broker) |
+
+<CardGroup cols={2}>
+  <Card title="Project across agents" icon="git-branch" href="/guides/project-across-agents">
+    Continue one goal even when the model, session, or agent changes. The Project owns the state, not the model.
+  </Card>
+  <Card title="Operate a Collection" icon="table" href="/guides/operate-a-collection">
+    Work a lead, customer, content item, or product signal with the team's criteria loaded, not as an isolated table.
+  </Card>
+  <Card title="Govern agent learning" icon="shield-check" href="/guides/govern-agent-learning">
+    Turn an agent observation into a Note, a Suggested edit, or reviewed Knowledge, with a human deciding what becomes true.
+  </Card>
+  <Card title="Clean workspace context" icon="broom" href="/guides/clean-workspace-context">
+    Audit the vault and prepare a safe cleanup that never destroys Knowledge on its own.
+  </Card>
+  <Card title="External context with Broker" icon="plug" href="/guides/external-context-with-broker">
+    Pull evidence from a connected tool into operational work, without confusing it with Knowledge.
+  </Card>
+</CardGroup>
+
+## Related reference
+
+- [The Driftless loop](/concepts/core-loop) - the three kinds of state and the loop between them.
+- [Projects](/concepts/projects) and [Collections](/concepts/collections) - the Work and Operations primitives.
+- [Governance](/concepts/governance) - Note, Suggested edit, and Knowledge.
+- [Integrations](/integrations/overview) and [Broker](/integrations/broker) - governed access to external systems.
+- [CLI](/cli/context), [API](/api/overview), and [MCP](/mcp/overview) - the full command, endpoint, and tool surfaces.

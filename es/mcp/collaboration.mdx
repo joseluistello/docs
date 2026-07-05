@@ -1,0 +1,70 @@
+---
+title: 'MCP: Workspace y colaboración'
+description: 'Las tools de colaboración por MCP: deja y resuelve comments sobre cualquier objeto de la spine, lista members y workspaces, y lee las estadísticas de resultado de propuestas.'
+---
+
+Estas tools dejan que un humano y un agente coordinen sobre el mismo workspace: anotar un objeto sin editarlo, encontrar los members y workspaces que una credencial puede alcanzar, y ver cómo les fue a las propuestas de agentes. Las escrituras de comment requieren el scope `work:write`; las tools de listado son lecturas de nivel member.
+
+## Comments
+
+Un **comment** apunta A un objeto de la spine (un topic, record o card) y opcionalmente a un field. No lleva governance y se resuelve en una edición; su texto nunca entra al cuerpo del topic. Los comments escritos por agentes son lo que hace al workspace colaborativo entre humanos y agentes.
+
+| Tool | Actions | Params principales | Notas |
+| --- | --- | --- | --- |
+| `driftless_context_comment` | `add`, `list`, `resolve` | `target_kind`, `target_id`, `field_key`, `body` | `open → resolved → wont_fix` |
+
+Permisos: `add` / `resolve` requieren `work:write`; `list` es de nivel member. Disponibilidad: Available.
+
+```text
+driftless_context_comment action:'add' target_kind:'topic' target_id:'billing-flow' field_key:'decisions' body:'This contradicts the refund invariant'
+```
+
+La ubicación clave es el gate de Nota a Knowledge: fija una objeción precisa a nivel de field en la revisión en vez de un approve o reject grueso.
+
+## Members y workspaces
+
+Úsalas para resolver los identificadores que esperan las tools de escritura: un `owner_clerk_id` para asignar una card o record, o el slug de workspace al que una credencial puede apuntar.
+
+| Tool | Propósito | Devuelve |
+| --- | --- | --- |
+| `driftless_members` | Lista los members del workspace | member id, rol, email |
+| `driftless_workspaces` | Lista los workspaces a los que puede apuntar tu credencial | slugs de workspace |
+
+Permisos: lecturas de nivel member. Disponibilidad: Available. Cada tool acepta un argumento opcional `workspace` para apuntar a otro workspace al que tu credencial está autorizada.
+
+```text
+driftless_members   → [ { id, role, email } ]   (los valores válidos de owner_clerk_id)
+```
+
+## Agent stats
+
+`driftless_agent_stats` reporta los resultados de propuestas: cuántas propuestas de agentes (las Ediciones sugeridas del Auditor) se integraron frente a las rechazadas, para que puedas leer la tasa de aprobación.
+
+| Tool | Propósito | Devuelve |
+| --- | --- | --- |
+| `driftless_agent_stats` | Estadísticas de resultado de propuestas | conteos integradas vs rechazadas, tasa de aprobación |
+
+Permiso: lectura de nivel member. Disponibilidad: Available. Esta es la única señal de agent-runs en la superficie de MCP; la config y el trigger de agent-runs no son alcanzables por OAuth/MCP.
+
+## Permisos
+
+| Scope | Cubre |
+| --- | --- |
+| `work:write` | `comment` add y resolve |
+| member (lectura) | `comment` list, `members`, `workspaces`, `agent_stats` |
+
+## Disponibilidad
+
+| Capacidad | Estado |
+| --- | --- |
+| Comments (`add`, `list`, `resolve`) | Available |
+| Listas de members y workspaces | Available |
+| Estadísticas de propuestas de agentes | Available |
+| Trigger manual de agent-run por MCP | Not available (solo se expone `agent_stats`) |
+
+## Relacionado
+
+- [Comentarios](/es/concepts/comments), [Workspaces](/es/concepts/workspaces) - los conceptos.
+- [Govern agent learning](/es/guides/govern-agent-learning) - comments en el gate de revisión.
+- [CLI: Context Commands](/es/cli/context) - comments y members desde la terminal.
+- [MCP & OAuth](/es/mcp/overview) - setup, auth y scopes.

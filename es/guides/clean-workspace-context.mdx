@@ -1,0 +1,184 @@
+---
+title: 'Auditar y limpiar el contexto del workspace de forma segura'
+description: "Corre la auditoría de salud del vault, lee lo que marca y prepara una limpieza segura. Cada reparación aquí es revisable y reversible; nada destruye Knowledge por su cuenta."
+---
+
+Un vault solo sirve mientras se mantiene verdadero. Con el tiempo algunos Topics entran en drift, otros se duplican, otros nunca se archivaron. Esta guía audita el workspace con `context doctor`, lee lo que marca y prepara una limpieza que arregla la capa sin nunca borrar ni fusionar Knowledge por iniciativa propia.
+
+La regla de principio a fin: un agente (o un member) inspecciona, propone y archiva. Los movimientos destructivos y de autoridad (integrar en Knowledge, consolidar, borrar) esperan a que un owner o admin los pida.
+
+## Resultado
+
+Un workspace cuyo contexto vuelves a poder confiar: claims stale triados, duplicados reales marcados para consolidar, Topics sin archivar con un hogar, y todo lo incierto aparcado para un humano, sin destruir Knowledge en el camino.
+
+## Cuándo usarlo
+
+- El retrieve devuelve resultados stale o fuera de tema y quieres saber por qué.
+- Estás por apoyarte fuerte en la capa de contexto y quieres revisar su salud primero.
+- Higiene periódica: el vault creció y sospechas drift y duplicación.
+
+## Disponibilidad y prerrequisitos
+
+| Ítem | Estado |
+| --- | --- |
+| `context doctor` (la auditoría) | Available |
+| Ediciones sugeridas, Comments, archivar en áreas | Available |
+| Integrar en Knowledge, re-confirmar drift | Available, solo con autoridad de owner/admin |
+| `context merge` y `context delete` (destructivos) | Available, y solo con instrucción humana explícita |
+
+Necesitas la CLI instalada y con login. Auditar y proponer son de nivel member; consolidar, borrar e integrar en Knowledge son actos de owner/admin.
+
+## Objetos involucrados
+
+| Objeto | Rol en este workflow |
+| --- | --- |
+| **Reporte de doctor** | La auditoría: stale, orphaned, zombie, draft, duplicate, unassigned, mis-shaped, docs_pending. |
+| **Topic** | La unidad que inspeccionas y reparas. |
+| **Área** | El hogar que necesita un Topic sin archivar. |
+| **Edición sugerida** | La forma segura y revisada de corregir Knowledge. |
+| **Comment** | Donde aparcas una incertidumbre para un humano. |
+| **Project y Cards** | Donde una limpieza grande se vuelve Work rastreado. |
+
+## Antes de empezar
+
+Corre la auditoría. Cuenta y nombra lo que necesita atención, así triás desde evidencia, no desde una corazonada.
+
+```bash
+driftless context doctor
+```
+
+Lee cada categoría por lo que significa:
+
+- **stale**: el código bajo el anchor del topic cambió; el porqué registrado quizá ya no se sostiene.
+- **orphaned**: el repo al que el topic ancló ya no está.
+- **zombie**: los globs del anchor coinciden con cero archivos, un anchor que apunta a la nada.
+- **draft / proposed**: una Nota o un topic En revisión, todavía no Knowledge. No es un defecto, solo sin bendecir.
+- **duplicate**: comparte un título o un set de anchors idéntico con otro topic. Quizá el mismo concepto, quizá no.
+- **unassigned**: archivado en ninguna área, donde se pudren los vaults.
+- **mis-shaped**: un field malformado (por ejemplo un `how` que es un doc pegado en vez de una nota corta).
+
+## Context preflight
+
+Nunca repares un Topic que no leíste. Antes de tocar un topic marcado, carga el claim, su actividad reciente y el código que ancla, así juzgas desde evidencia.
+
+```bash
+driftless context get <topic-slug>    # el claim, sus anchors, la razón del drift y su historial
+driftless context events              # actividad de contexto reciente en el workspace
+```
+
+Lee el claim durable y pregúntate si el código actual de verdad lo contradice. El drift tolera falsos positivos por diseño: si el cambio no alteró cómo funciona el área, el topic sigue siendo verdadero y solo necesita re-confirmarse (un acto de owner/admin), no reescribirse.
+
+## Workflow paso a paso
+
+<Steps>
+<Step title="Prioriza por impacto">
+Ordena el trabajo antes de hacerlo. Un topic `reviewed` en stale sobre un hot path desorienta a los agentes ahora, así que gana sobre un draft sin tocar. Atiende primero el drift en Knowledge, luego los duplicados, luego las notas sin archivar y mis-shaped.
+</Step>
+
+<Step title="Tría un Topic stale: anchor drift vs content drift">
+Compara el claim contra el código que gobierna, y decide qué tipo de drift es.
+
+```bash
+driftless context get --files "apps/api/src/topics/**"
+```
+
+**Anchor drift**: el glob ahora coincide con los archivos equivocados o con ninguno. El arreglo es re-anclar (ajustar el pattern), una edición de topic que, para un topic `reviewed`, re-confirma un owner o admin. **Content drift**: el código cambió cómo funciona el área, así que el porqué registrado está mal. El arreglo es una Edición sugerida.
+</Step>
+
+<Step title="Corrige un claim stale con una Edición sugerida">
+Para una corrección comprobable a Knowledge, abre una Edición sugerida. Lleva el trigger y el rationale en el summary y el cambio en el content, y un humano la integra.
+
+```bash
+driftless context pr <topic-slug> --open --summary "Qué cambió y por qué" --content @patch.md
+```
+
+Si no estás seguro de que el claim esté mal, deja un Comment en el field en vez de un parche, y deja que un humano decida.
+</Step>
+
+<Step title="Consolida un duplicado real, solo si es el mismo concepto">
+Un título compartido es una pista, no una prueba. Lee ambos topics; consolida solo cuando de verdad cubren un concepto. La consolidación es destructiva (archiva la fuente), así que previsualízala y córrela solo cuando un owner o admin lo pida.
+
+```bash
+driftless context merge <source-slug> --into <survivor-slug> --dry-run
+```
+
+Si los dos solo comparten un nombre pero cubren conceptos distintos, retitula uno en vez de fusionar.
+</Step>
+
+<Step title="Archiva un Topic sin asignar en el Área correcta">
+Un topic sin archivar pertenece a un dominio real, no a uno inventado sobre la marcha. Lista las áreas existentes, luego archívalo en la que encaja.
+
+```bash
+driftless area list
+driftless context update <topic-slug> --area <area-name>
+```
+</Step>
+
+<Step title="Escala una limpieza grande a un Project de higiene">
+Cuando el backlog es más que unos pocos arreglos, vuélvelo Work rastreado. Un Project con cards de higiene convierte "el vault está desordenado" en un board ordenado y verificable.
+
+```bash
+driftless project add "Vault hygiene" --goal "No stale reviewed topics on core paths"
+driftless project card add <project-id> --title "Re-anchor drifted topic-query topics"
+```
+</Step>
+</Steps>
+
+<Warning>
+Algunos movimientos necesitan que un owner o admin los pida de forma explícita, y un agente nunca los hace por iniciativa propia: **integrar** una nota en Knowledge (`approve`), **re-confirmar** un topic en drift como `reviewed`, **consolidar** duplicados (`context merge`) y **borrar** un topic (`context delete`). Auditar no es autofix.
+</Warning>
+
+## Estados esperados
+
+| Momento | Qué deberías ver |
+| --- | --- |
+| Tras `context doctor` | Conteos y slugs por categoría. |
+| Tras una Edición sugerida | Una Edición sugerida abierta a la espera de una integración de owner o admin. |
+| Tras `context update --area` | El topic queda archivado; sale de la lista unassigned en la próxima auditoría. |
+| Tras `context merge --dry-run` | Una vista previa del fold; nada archivado todavía. |
+| Un topic `reviewed` que re-confirmas | Solo limpia el drift si tienes autoridad de owner/admin. |
+
+## Knowledge write-back
+
+La limpieza misma produce aprendizaje que vale conservar, enrutado igual que cualquier otro:
+
+- **Una corrección a un claim existente** es una Edición sugerida, no una reescritura en el lugar.
+- **Una incertidumbre** es un Comment en el field, para que la ambigüedad llegue a un humano en vez de adivinarse.
+- **Una limpieza que no pudiste terminar** es una Card en el Project de higiene, para que no se pierda.
+- **Una regla de higiene recurrente** que descubres (una convención de nombres, un pattern de anchor que el equipo sigue equivocando) puede volverse una Nota, y después Knowledge tras revisión. No escribas los hallazgos de la auditoría en sí en Knowledge; son estado transitorio, no un porqué durable.
+
+## Qué no hacer
+
+- **No corras una limpieza masiva automática.** Tría y repara por topic; la auditoría es un mapa, no un botón de autofix.
+- **No fusiones duplicados por coincidencia de título.** Lee ambos; consolida solo un concepto único genuino.
+- **No inventes un Área para archivar un huérfano.** Usa un dominio existente; un área inventada es donde se pudre el próximo vault.
+- **No sobrescribas un topic de Knowledge para arreglarlo.** Abre una Edición sugerida para que el cambio se revise y se atribuya.
+- **No borres ni consolides sin un pedido explícito.** Esos son actos de owner/admin, y destructivos.
+
+## Troubleshooting
+
+- **Un topic está marcado stale pero el claim todavía se sostiene.** Ese es un falso positivo esperado. Necesita re-confirmarse (owner/admin), no una reescritura; para cualquier otro, propón la confirmación como una Edición sugerida.
+- **Un topic es zombie (los anchors no coinciden con nada).** El glob apunta a archivos que se movieron o se borraron. Re-ancla a donde vive el código ahora, o archiva el topic si el concepto desapareció.
+- **Los duplicados reaparecen después de consolidar.** Puede que estés fusionando por título mientras los conceptos difieren. Vuelve a leer ambos y retitula en su lugar.
+- **No estás seguro de que la auditoría esté actualizada.** Vuelve a correrla; refleja el último estado del workspace cada vez.
+
+```bash
+driftless context doctor --json
+```
+
+## Límites y truth states
+
+| Capacidad | Estado |
+| --- | --- |
+| Auditoría de `context doctor` | Available |
+| Ediciones sugeridas, Comments, archivar en áreas | Available |
+| Re-confirmar drift, integrar en Knowledge | Available, solo owner/admin |
+| `context merge`, `context delete` | Available, solo con instrucción humana explícita |
+| Limpieza automática o autofix | Not available (por diseño) |
+
+## Referencia relacionada
+
+- [Detección de Drift](/es/concepts/drift) - qué significan stale, zombie y orphaned.
+- [Gobernanza](/es/concepts/governance) - Ediciones sugeridas, roles y quién puede integrar.
+- [CLI: Context Commands](/es/cli/context) - doctor, merge, area y los verbos de gobernanza.
+- [Govern agent learning](/es/guides/govern-agent-learning) - las rutas de Nota, Edición sugerida y Knowledge.

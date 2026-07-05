@@ -1,0 +1,70 @@
+---
+title: 'MCP: Workspace and collaboration'
+description: 'The collaboration tools over MCP: leave and resolve comments on any spine object, list workspace members and workspaces, and read proposal outcome stats.'
+---
+
+These tools let a human and an agent coordinate over the same workspace: annotate an object without editing it, find the members and workspaces a credential can reach, and see how agent proposals fared. Comment writes need the `work:write` scope; the list tools are member-level reads.
+
+## Comments
+
+A **comment** points AT a spine object (a topic, record, or card) and optionally at one field. It carries no governance and resolves into an edit; its text never enters the topic body. Agent-authored comments are what make the workspace collaborative between humans and agents.
+
+| Tool | Actions | Main params | Notes |
+| --- | --- | --- | --- |
+| `driftless_context_comment` | `add`, `list`, `resolve` | `target_kind`, `target_id`, `field_key`, `body` | `open → resolved → wont_fix` |
+
+Permissions: `add` / `resolve` need `work:write`; `list` is member-level. Availability: Available.
+
+```text
+driftless_context_comment action:'add' target_kind:'topic' target_id:'billing-flow' field_key:'decisions' body:'This contradicts the refund invariant'
+```
+
+The killer placement is the Note to Knowledge gate: pin a precise, field-level objection at review time instead of a coarse approve or reject.
+
+## Members and workspaces
+
+Use these to resolve the identifiers the write tools expect: an `owner_clerk_id` for assigning a card or record, or the workspace slug a credential can target.
+
+| Tool | Purpose | Returns |
+| --- | --- | --- |
+| `driftless_members` | List the workspace's members | member id, role, email |
+| `driftless_workspaces` | List the workspaces your credential can target | workspace slugs |
+
+Permissions: member-level reads. Availability: Available. Every tool accepts an optional `workspace` argument to target another workspace your credential is authorized for.
+
+```text
+driftless_members   → [ { id, role, email } ]   (the valid owner_clerk_id values)
+```
+
+## Agent stats
+
+`driftless_agent_stats` reports proposal outcomes: how many agent proposals (the Auditor's Suggested edits) merged versus were rejected, so you can read the approval rate.
+
+| Tool | Purpose | Returns |
+| --- | --- | --- |
+| `driftless_agent_stats` | Proposal outcome stats | merged vs rejected counts, approval rate |
+
+Permission: member-level read. Availability: Available. This is the only agent-runs signal on the MCP surface; the agent-runs config and trigger surface is not reachable over OAuth/MCP.
+
+## Permissions
+
+| Scope | Covers |
+| --- | --- |
+| `work:write` | `comment` add and resolve |
+| member (read) | `comment` list, `members`, `workspaces`, `agent_stats` |
+
+## Availability
+
+| Capability | State |
+| --- | --- |
+| Comments (`add`, `list`, `resolve`) | Available |
+| Members and workspaces lists | Available |
+| Agent proposal stats | Available |
+| Manual agent-run trigger over MCP | Not available (only `agent_stats` is exposed) |
+
+## Related
+
+- [Comments](/concepts/comments), [Workspaces](/concepts/workspaces) - the concepts.
+- [Govern agent learning](/guides/govern-agent-learning) - comments at the review gate.
+- [CLI: Context Commands](/cli/context) - comments and members from the terminal.
+- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

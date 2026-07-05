@@ -1,0 +1,74 @@
+---
+title: 'MCP: Integrations and Broker'
+description: 'Operate an already-connected provider over MCP with the driftless_broker tool: discover operations, read synced data, and materialize external content. Gated, governed, and audited.'
+---
+
+One tool covers external systems over MCP: **`driftless_broker`**. It operates a [Connection](/integrations/overview) that already exists, and never connects or disconnects one (setup is a human-led flow in the dashboard or CLI, not on the MCP surface). If an agent needs an operation the tool does not list, it must report the missing capability, never author a script.
+
+<Warning>
+The Broker is **gated**: off by default in production (`DRIFTLESS_BROKER_ENABLED`), with a separate external lane (`DRIFTLESS_BROKER_ROLLOUT`) and per-principal grants. A listed action is not a usable one: a faceless OAuth/MCP caller with no grant gets an empty result even against a healthy connection.
+</Warning>
+
+## The broker tool
+
+`driftless_broker` is action-based: pass `action` to pick the operation. Credentials resolve server-side and every call is audited. Setup (connect / disconnect) and authoring Nango scripts are separate, human-only lanes not reachable here.
+
+## Actions
+
+| Action | Purpose | Effect |
+| --- | --- | --- |
+| `connections` | List the workspace's Connections with health and criterion | read |
+| `operations` | List a provider's operations, or search across providers | read |
+| `capabilities` | The capability directory (kinds, effects, states, gates) | read |
+| `inspect` | Full spec of one operation (schema, effect, risk, idempotency) | read |
+| `invoke` | Execute one named operation inline (read or write) | read / write |
+| `models` | Importable record models (enabled syncs) | read |
+| `records` | Read a synced model's records from the mirror | read |
+| `page-content` | Read one page's bounded, citeable text, live | read |
+| `index-preview` | Dry-run index: candidate counts and samples | read |
+| `index` | Materialize connector documents (Driftless-owned) | write (internal) |
+| `events` | The inbound provider event feed | read |
+| `attach-criterion` / `detach-criterion` | Attach or remove a Knowledge criterion slug on a Connection | admin |
+
+```text
+driftless_broker action:'connections'
+driftless_broker action:'capabilities' provider:'notion'   → only a `ready` capability is usable
+```
+
+## Gates and permissions
+
+Three independent, fail-closed gates apply to an external caller, in order: the master switch (`DRIFTLESS_BROKER_ENABLED`), the external lane (`DRIFTLESS_BROKER_ROLLOUT`), and a per-principal grant. An operation must also be policy-allowed; in production the policy registry ships empty, so no write is invokable.
+
+| Scope | Covers |
+| --- | --- |
+| `broker:read` | `connections`, `operations`, `capabilities`, `inspect`, `models`, `records`, `page-content`, `events` |
+| `broker:invoke` | `invoke` (a read or write operation) |
+| `broker:admin` | `attach-criterion` / `detach-criterion`; grants are owner/admin |
+
+The `broker:*` scopes are enforced only when the Broker is enabled, and they gate the lane on top of rollout and grants. An internal caller (an owned API key or dashboard session) skips the grant gate but still needs the rest.
+
+## Reads and materialization
+
+The reads differ in whether they hit the provider live and what they create. `records` reads the mirror/cache; `page-content` reads live; `index` materializes Driftless-owned connector documents; `import` (a REST route, not an MCP action) maps mirror records into Collection Records. Normal context retrieve never queries a provider.
+
+```text
+driftless_broker action:'records' provider:'notion' model:'ContentMetadata' limit:5   → from the mirror
+driftless_broker action:'page-content' page_id:'<pageId>'                              → live, bounded, cited
+```
+
+## Availability
+
+| Capability | State |
+| --- | --- |
+| `driftless_broker` tool listed | Only when `DRIFTLESS_BROKER_ENABLED` is on |
+| Notion reads (`records`, `page-content`, `index`) | Beta, read-only |
+| Broker writes (`invoke` a write op) in production | Not available (policy registry ships empty) |
+| Synthesized per-workspace read tools (`driftless_<provider>_records`) | Available only when synthesis is enabled and a capability is `ready` |
+| Write-capability synthesis | Not available (never synthesized) |
+
+## Related
+
+- [Integrations and Connections](/integrations/overview), [Broker](/integrations/broker) - the model and semantics.
+- [Use external context in operational work](/guides/external-context-with-broker) - the workflow.
+- [CLI: Integrations and Broker](/cli/integrations), [API: Broker and Connections](/api/broker) - the other surfaces.
+- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

@@ -1,0 +1,192 @@
+---
+title: 'Turn agent learning into governed Knowledge'
+description: "Route an agent observation to the right place: a clean Note, a Suggested edit against existing Knowledge, or reviewed Knowledge, with a person deciding what the team commits to as true."
+---
+
+An agent can discover something true, and it can state a wrong interpretation with equal confidence. So writing a claim and making it the team's Knowledge are separate acts. This guide takes a raw observation and routes it correctly: a Note stays a hint, a change to existing Knowledge goes through a Suggested edit, and only a person merges anything into the team's source of truth.
+
+There are two routes, depending on whether the learning is new or contradicts something already recorded. Both end with a human deciding.
+
+## Outcome
+
+A learning that lands where it belongs and is trusted at the right level: a clean Note the agent reads as a hint, a Suggested edit an owner or admin can merge, or, after review, reviewed Knowledge, with authorship and provenance intact.
+
+## When to use it
+
+- An agent (or you) learned something durable and you are deciding what to do with it.
+- A Topic looks outdated and you want to change it without clobbering it.
+- You are tempted to "just update the wiki," which is exactly when governance matters.
+
+## Availability and prerequisites
+
+| Item | State |
+| --- | --- |
+| Notes, `propose`, Suggested edits, Comments | Available |
+| Merge into Knowledge (`approve`, `pr --merge`) | Available, owner/admin authority only |
+| An agent running the merge when explicitly asked | Available (stamped `approved_via: agent`) |
+| Platform agents opening Suggested edits automatically | Not available (a future release) |
+
+You need the CLI installed and logged in. Anyone can write a Note and open a Suggested edit; merging requires the `admin` or `owner` role. An agent merges only when an owner or admin explicitly asks it to.
+
+## Objects involved
+
+| Object | Role in this workflow |
+| --- | --- |
+| **Note** | A private draft; the agent reads it as a hint. |
+| **Up for review** | A Note proposed to the team; still a hint, now in the queue. |
+| **Knowledge** (`reviewed`) | The team's source of truth, the notes merged in. |
+| **Suggested edit** | A content patch proposing a change to existing Knowledge. |
+| **Comment** | Field-level feedback at the review gate; resolves into an edit. |
+
+## Before you begin
+
+You have an observation in hand. First ask the litmus question: *would a future code change meaningfully contradict it?* If yes, it is durable and worth capturing. If it just restates the code or is a transient value, let it go.
+
+```bash
+driftless context search "refund window"    # does a Topic already cover this?
+```
+
+## Context preflight
+
+Which route you take depends on what already exists, so read first:
+
+- **No Topic covers it** and it is durable: this is the **new observation** route. Capture a clean Note.
+- **A Topic covers it** and looks wrong or drifted: this is the **change to existing Knowledge** route. Open a Suggested edit, do not overwrite.
+
+Read the candidate Topic's trust and drift before you decide. `reviewed` is Knowledge (truth); `draft` or `proposed` is a Note (a hint). A drift badge means the code under it moved and the recorded why may no longer hold.
+
+```bash
+driftless context get billing-flow    # read trust, drift, and the fields you might change
+```
+
+## Step-by-step workflow
+
+### New observation
+
+<Steps>
+<Step title="Capture it as a Note (or a full Topic)">
+A one-liner Note is enough for a hint. If it is clearly durable, write it as an anchored Topic: one concept, filed into an area, anchored narrow.
+
+```bash
+# A quick hint stays a private Note
+driftless note add --content "RS256 lets services verify tokens without a shared secret"
+
+# Or a full Topic when it is clearly durable: one idea, one area, a narrow anchor
+driftless context add token-verification \
+  --title "Token verification" \
+  --content @note.md \
+  --area auth \
+  --pattern "src/auth/**" \
+  --rel depends_on:token-refresh
+```
+
+The Note stays a hint, private and excluded from search, until you decide it is worth the team's eyes.
+</Step>
+
+<Step title="Propose it for review, when it earns it">
+When the Note is durable enough for the whole team, put it up for review. This does not make it truth; it enters the queue as a hint awaiting a human.
+
+```bash
+driftless context propose token-verification    # Note -> Up for review
+```
+
+A person reviews the evidence, scope, durability, and any contradictions, and decides. Most Notes stay Notes, and that is healthy: a clean hint is valuable even if it is never merged.
+</Step>
+</Steps>
+
+### Change to existing Knowledge
+
+<Steps>
+<Step title="Review drift, evidence, and relations">
+Read the Topic and the code it anchors before proposing anything. Confirm the change is real, not a misread.
+
+```bash
+driftless context get billing-flow
+driftless context get --files "src/billing/**"
+```
+</Step>
+
+<Step title="Open a Suggested edit, with a patch or a question">
+Do not overwrite Knowledge. Open a Suggested edit carrying a checkable content patch. If you are uncertain, leave a Comment at the field instead of a patch, so a human resolves the ambiguity.
+
+```bash
+# A checkable patch: trigger + rationale in the summary, the change in the content
+driftless context pr billing-flow --open \
+  --summary "Refund window moved from 30 to 60 days; update the decision" \
+  --content @patch.md
+
+# Or, when uncertain, a pointed question with no patch
+driftless context comment add billing-flow \
+  --body "This decision may contradict the new refund window; can someone confirm?" \
+  --field decisions
+```
+
+The agent does not approve its own interpretation. A human reviews the Suggested edit and merges it, or resolves the Comment.
+</Step>
+</Steps>
+
+<Note>
+Same over MCP: `driftless_context_propose`, `driftless_context_create_proposal` (the Suggested edit), and `driftless_context_comment`. `driftless_context_approve` exists too, but it is owner/admin authority only and the client runs it only when the authorizing person explicitly asks. See [Governance](/concepts/governance).
+</Note>
+
+## Expected states
+
+| Moment | What you should see |
+| --- | --- |
+| After `note add` | A private draft, visible only to you, excluded from search. |
+| After `context propose` | The Note is Up for review, in the queue, still a hint. |
+| After an owner or admin merges | `trust: reviewed`, with `approved_by` and `approved_via` set. |
+| After `context pr --open` | A Suggested edit awaiting an owner or admin merge. |
+| Agent runs `approve` without authority | Refused: a member or faceless token cannot merge. |
+
+## Knowledge write-back
+
+The routing *is* the write-back here. Merging is the one act reserved for a person:
+
+```bash
+driftless context approve token-verification    # owner/admin only; run only when explicitly asked
+```
+
+- **A hint** stays a Note. It reaches the agent weighted as a suggestion, and that is enough for most learning.
+- **A change to truth** goes through a Suggested edit, never a direct overwrite. The patch is whitelisted to content fields, so it can never forge approval.
+- **Institutional truth** is what an owner or admin merges. Do not merge on your own initiative, even if you have the authority; propose, and merge only when asked.
+
+Keep the *why*, not a changelog. A Topic holds the durable decision, invariant, or gotcha. Dates, "shipped", and PR references belong in git, not in Knowledge.
+
+## What not to do
+
+- **Do not let an agent declare truth.** Generating a claim and merging it are separate acts; the merge is a human decision.
+- **Do not overwrite a Knowledge Topic.** Open a Suggested edit so the change is reviewed and attributed.
+- **Do not force a Topic where a hint will do.** If a future code change would not contradict it, it is not durable; leave a Note or nothing.
+- **Do not stack two concepts in one note.** One idea per note; file it into an area; anchor it narrow. A loose anchor leaks the note into work it has nothing to say about.
+- **Do not write a changelog into a field.** The durable why belongs in Knowledge; the history belongs in git.
+
+## Troubleshooting
+
+- **`approve` was refused.** Your key lacks owner/admin authority, or no one asked you to merge. Propose instead and leave the merge to a person.
+
+```bash
+driftless context list --suggested    # what's not yet Knowledge: notes and up-for-review
+```
+
+- **Two Notes cover the same thing.** Consolidate rather than stacking a third. See [Clean workspace context](/guides/clean-workspace-context).
+- **A Suggested edit is ambiguous.** Add a field-scoped Comment so the reviewer can pin the exact objection before merging.
+- **A drifted Topic still holds.** Re-confirming it (setting it `reviewed` again) is an owner/admin act; for anyone else, propose the confirmation as a Suggested edit.
+
+## Limits and truth states
+
+| Capability | State |
+| --- | --- |
+| Notes, propose, Suggested edits, Comments | Available |
+| Merge into Knowledge | Available, owner/admin authority only |
+| Agent-run merge when explicitly asked | Available (`approved_via: agent`) |
+| Automatic merge or auto-approval | Not available (a person always decides) |
+| Platform agents authoring Suggested edits | Not available (a future release) |
+
+## Related reference
+
+- [Governance](/concepts/governance) - the Note to Knowledge lifecycle and roles.
+- [Notes & Sharing](/concepts/notes-sharing) - capturing and sharing a Note.
+- [Comments](/concepts/comments) - field-level feedback at the review gate.
+- [CLI: Context Commands](/cli/context) - propose, approve, pr, and comment.
+- [Clean workspace context](/guides/clean-workspace-context) - auditing and consolidating the vault.

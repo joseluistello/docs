@@ -1,0 +1,184 @@
+---
+title: 'Audit and clean workspace context safely'
+description: "Run the vault health audit, read what it flags, and prepare a safe cleanup. Every repair here is reviewable and reversible; nothing destroys Knowledge on its own."
+---
+
+A vault is only useful while it stays true. Over time some Topics drift, some duplicate, some never got filed. This guide audits the workspace with `context doctor`, reads what it flags, and prepares a cleanup that fixes the layer without ever deleting or merging Knowledge on its own initiative.
+
+The rule throughout: an agent (or a member) inspects, proposes, and files. The destructive and authoritative moves (merge into Knowledge, consolidate, delete) wait for an owner or admin to ask.
+
+## Outcome
+
+A workspace whose context you can trust again: stale claims triaged, real duplicates flagged for consolidation, unfiled Topics given a home, and everything uncertain parked for a human, with no Knowledge destroyed along the way.
+
+## When to use it
+
+- Retrieval is returning stale or off-topic results and you want to know why.
+- You are about to rely heavily on the context layer and want to check its health first.
+- Periodic hygiene: the vault has grown and you suspect drift and duplication.
+
+## Availability and prerequisites
+
+| Item | State |
+| --- | --- |
+| `context doctor` (the audit) | Available |
+| Suggested edits, Comments, filing into areas | Available |
+| Merge into Knowledge, re-confirming drift | Available, owner/admin authority only |
+| `context merge` and `context delete` (destructive) | Available, and only on explicit human instruction |
+
+You need the CLI installed and logged in. Auditing and proposing are member-level; consolidating, deleting, and merging into Knowledge are owner/admin acts.
+
+## Objects involved
+
+| Object | Role in this workflow |
+| --- | --- |
+| **doctor report** | The audit: stale, orphaned, zombie, draft, duplicate, unassigned, mis-shaped, docs_pending. |
+| **Topic** | The unit you inspect and repair. |
+| **Area** | The home an unassigned Topic needs. |
+| **Suggested edit** | The safe, reviewed way to correct Knowledge. |
+| **Comment** | Where you park an uncertainty for a human. |
+| **Project and Cards** | Where a large cleanup becomes tracked Work. |
+
+## Before you begin
+
+Run the audit. It counts and names what needs attention, so you triage from evidence, not a hunch.
+
+```bash
+driftless context doctor
+```
+
+Read each category for what it means:
+
+- **stale**: code under the topic's anchor changed; the recorded why may no longer hold.
+- **orphaned**: the repo the topic anchored to is gone.
+- **zombie**: the anchor globs match zero files, an anchor pointing at nothing.
+- **draft / proposed**: a Note or an Up-for-review topic, not yet Knowledge. Not a defect, just unblessed.
+- **duplicate**: shares a title or an identical anchor set with another topic. Maybe the same concept, maybe not.
+- **unassigned**: filed into no area, where vaults rot.
+- **mis-shaped**: a malformed field (for example a `how` that is a pasted doc instead of a short note).
+
+## Context preflight
+
+Never repair a Topic you have not read. Before you touch a flagged topic, load the claim, its recent activity, and the code it anchors, so you judge from evidence.
+
+```bash
+driftless context get <topic-slug>    # the claim, its anchors, its drift reason, and its history
+driftless context events              # recent context activity across the workspace
+```
+
+Read the durable claim and ask whether the current code actually contradicts it. Drift tolerates false positives by design: if the change did not alter how the area works, the topic is still true and only needs re-confirming (an owner/admin act), not rewriting.
+
+## Step-by-step workflow
+
+<Steps>
+<Step title="Prioritize by impact">
+Sort the work before doing it. A stale `reviewed` topic on a hot path misleads agents now, so it outranks an untouched draft. Handle drift on Knowledge first, then duplicates, then unfiled and mis-shaped notes.
+</Step>
+
+<Step title="Triage a stale Topic: anchor drift vs content drift">
+Compare the claim against the code it governs, and decide which kind of drift it is.
+
+```bash
+driftless context get --files "apps/api/src/topics/**"
+```
+
+**Anchor drift**: the glob now matches the wrong files or none. The fix is re-anchoring (adjusting the pattern), a topic edit that, for a `reviewed` topic, an owner or admin re-confirms. **Content drift**: the code changed how the area works, so the recorded why is wrong. The fix is a Suggested edit.
+</Step>
+
+<Step title="Correct a stale claim with a Suggested edit">
+For a checkable correction to Knowledge, open a Suggested edit. It carries the trigger and rationale in the summary and the change in the content, and a human merges it.
+
+```bash
+driftless context pr <topic-slug> --open --summary "What changed and why" --content @patch.md
+```
+
+If you are not sure the claim is wrong, leave a Comment on the field instead of a patch, and let a human decide.
+</Step>
+
+<Step title="Consolidate a real duplicate, only if it is the same concept">
+A shared title is a hint, not proof. Read both topics; consolidate only when they truly cover one concept. Consolidation is destructive (it archives the source), so preview it and run it only when an owner or admin asks.
+
+```bash
+driftless context merge <source-slug> --into <survivor-slug> --dry-run
+```
+
+If the two only share a name but cover different concepts, retitle one instead of merging.
+</Step>
+
+<Step title="File an unassigned Topic into the right Area">
+An unfiled topic belongs to a real domain, not a new one invented on the spot. List the existing areas, then file it into the one that fits.
+
+```bash
+driftless area list
+driftless context update <topic-slug> --area <area-name>
+```
+</Step>
+
+<Step title="Escalate a large cleanup to a hygiene Project">
+When the backlog is more than a few fixes, make it tracked Work. A Project with hygiene cards turns "the vault is messy" into an ordered, verifiable board.
+
+```bash
+driftless project add "Vault hygiene" --goal "No stale reviewed topics on core paths"
+driftless project card add <project-id> --title "Re-anchor drifted topic-query topics"
+```
+</Step>
+</Steps>
+
+<Warning>
+Some moves need an owner or admin to ask for them explicitly, and an agent never does them on its own initiative: **merging** a note into Knowledge (`approve`), **re-confirming** a drifted topic as `reviewed`, **consolidating** duplicates (`context merge`), and **deleting** a topic (`context delete`). Auditing is not autofix.
+</Warning>
+
+## Expected states
+
+| Moment | What you should see |
+| --- | --- |
+| After `context doctor` | Counts and slugs per category. |
+| After a Suggested edit | An open Suggested edit awaiting an owner or admin merge. |
+| After `context update --area` | The topic is filed; it leaves the unassigned list on the next audit. |
+| After `context merge --dry-run` | A preview of the fold; nothing archived yet. |
+| A `reviewed` topic you re-confirm | Only clears drift if you have owner/admin authority. |
+
+## Knowledge write-back
+
+Cleanup itself produces learning worth keeping, routed the same way as any other:
+
+- **A correction to an existing claim** is a Suggested edit, not a rewrite in place.
+- **An uncertainty** is a Comment on the field, so the ambiguity reaches a human instead of being guessed.
+- **A cleanup you could not finish** is a Card on the hygiene Project, so it is not lost.
+- **A recurring hygiene rule** you discover (a naming convention, an anchor pattern the team keeps getting wrong) may become a Note, and later Knowledge after review. Do not write the audit's findings themselves into Knowledge; they are transient state, not a durable why.
+
+## What not to do
+
+- **Do not run a mass automatic cleanup.** Triage and repair per topic; the audit is a map, not an autofix button.
+- **Do not merge duplicates on a title match.** Read both; consolidate only a genuine single concept.
+- **Do not invent an Area to file an orphan.** Use an existing domain; a made-up area is where the next vault rots.
+- **Do not overwrite a Knowledge topic to fix it.** Open a Suggested edit so the change is reviewed and attributed.
+- **Do not delete or consolidate without an explicit ask.** Those are owner/admin acts, and destructive.
+
+## Troubleshooting
+
+- **A topic is flagged stale but the claim still holds.** That is an expected false positive. It needs re-confirming (owner/admin), not a rewrite; for anyone else, propose the confirmation as a Suggested edit.
+- **A topic is zombie (anchors match nothing).** The glob points at files that moved or were deleted. Re-anchor to where the code lives now, or archive the topic if the concept is gone.
+- **Duplicates keep reappearing after you consolidate.** You may be merging by title while the concepts differ. Re-read both and retitle instead.
+- **You are not sure the audit is current.** Re-run it; it reflects the latest workspace state each time.
+
+```bash
+driftless context doctor --json
+```
+
+## Limits and truth states
+
+| Capability | State |
+| --- | --- |
+| `context doctor` audit | Available |
+| Suggested edits, Comments, filing into areas | Available |
+| Re-confirming drift, merging into Knowledge | Available, owner/admin only |
+| `context merge`, `context delete` | Available, on explicit human instruction only |
+| Automatic cleanup or autofix | Not available (by design) |
+
+## Related reference
+
+- [Drift Detection](/concepts/drift) - what stale, zombie, and orphaned mean.
+- [Governance](/concepts/governance) - Suggested edits, roles, and who can merge.
+- [CLI: Context Commands](/cli/context) - doctor, merge, area, and the governance verbs.
+- [Govern agent learning](/guides/govern-agent-learning) - the Note, Suggested edit, and Knowledge routes.

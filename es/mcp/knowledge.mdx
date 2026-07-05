@@ -1,0 +1,101 @@
+---
+title: 'MCP: Knowledge y gobernanza'
+description: 'Las tools de contexto por MCP: recupera y lee Topics, escríbelos y edítalos, recorre el grafo, audita la salud y mueve una Nota por el ciclo de vida Nota a Knowledge.'
+---
+
+Este es el plano de Knowledge por MCP: las tools que un cliente de IA usa para leer el contexto del equipo antes de actuar y para escribir una Nota limpia después de aprender. Para setup, autenticación y los OAuth scopes que se referencian abajo, ver [MCP & OAuth](/es/mcp/overview).
+
+Cada lectura lleva un campo plano **`trust`** (`reviewed` = Knowledge, la fuente de verdad del equipo; `proposed` / `draft` = una Nota, una pista), para que un cliente pueda basarse en `trust === "reviewed"` directamente.
+
+## Recuperación y lectura
+
+Empieza con `driftless_context_retrieve` cuando tienes una tarea pero no un slug. Los cuerpos vuelven **brief** por defecto (el porqué durable, no el `content` completo); trae un cuerpo completo con `driftless_context_get`.
+
+| Tool | Propósito | Params principales | Devuelve |
+| --- | --- | --- | --- |
+| `driftless_context_retrieve` | Contexto ordenado, con lo drifteado primero, para una tarea y/o archivos | `task`, `files`, `view`, `limit` | `{ shown, has_more, next_action, results[] }` |
+| `driftless_context_search` | Búsqueda de texto completo, ordenada por relevancia | `query`, `tags`, `stale`, `limit` | 5 primeros summaries, `has_more` |
+| `driftless_context_list` | Lista topics, drifteados primero | `status`, `stale`, `tags`, `limit` | 40 primeros summaries |
+| `driftless_context_get` | Un topic por slug (cuerpo completo) | `topic`, `view` | el topic completo |
+| `driftless_context_get_for_files` | Empareja topics con rutas de archivo | `files`, `view`, `limit` | 10 primeros, brief |
+
+Permiso: `context:read`. Disponibilidad: Available.
+
+```text
+driftless_context_retrieve task:'harden the webhook handler' files:['src/webhooks/handler.ts']
+  → { results: [ { slug, trust, why_matched, confidence } ], has_more }
+```
+
+## Escritura y edición
+
+| Tool | Propósito | Params principales | Notas |
+| --- | --- | --- | --- |
+| `driftless_context_create` | Crea un topic (por defecto queda En revisión) | `title`, `content`, `pattern`, `rels` | devuelve `anchor_validation` |
+| `driftless_note_add` | Captura una Nota privada (se queda en draft) | `content`, `project_id`, `card_id` | nunca se envía sola |
+| `driftless_context_update` | Update seguro para append | `topic`, fields, `rels` | devuelve `anchor_validation` |
+| `driftless_context_delete` | Elimina un topic (destructivo) | `topic` | irreversible |
+| `driftless_context_merge` | Funde un duplicado en su superviviente | `source`, `into` | archiva el origen |
+| `driftless_context_share` | Publica una página pública y/o comparte con members | `topic`, `to_web`, `with_members` | compartir, no mergear |
+
+Permisos: `topics:create` / `topics:write`; `work:write` para merge y share. Disponibilidad: Available. Las respuestas de escritura llevan `anchor_validation` (`ok` / `overbroad` / `zero`), que nunca bloquea la escritura.
+
+```json
+{ "topic": "refund-flow", "rels": [ { "to": "billing-flow", "type": "depends_on" } ] }
+```
+
+## Grafo y salud
+
+| Tool | Propósito | Params principales | Devuelve |
+| --- | --- | --- | --- |
+| `driftless_context_relations` | Las relaciones tipadas de un topic | `topic` | entrantes + salientes |
+| `driftless_context_graph` | Grafo local de relaciones | `topic`, `depth` | nodos + aristas |
+| `driftless_context_doctor` | Audita la capa de contexto | (ninguno) | stale / zombie / orphaned / draft |
+| `driftless_context_coverage` | Áreas de código sin topic | (ninguno) | los huecos de cobertura |
+| `driftless_context_events` | Actividad reciente de un topic | `topic` | el stream de eventos |
+
+Permiso: `context:read`. Disponibilidad: Available.
+
+## Registros: tags y areas
+
+| Tool | Actions | Propósito |
+| --- | --- | --- |
+| `driftless_tags` | `list`, `create`, `delete` | El registro de tags (conteos por tag; curación) |
+| `driftless_areas` | `list`, `create`, `update`, `delete` | El registro de areas (los dominios bajo los que se archivan los topics) |
+
+Permisos: `list` es de nivel member; `create` / `update` / `delete` requieren `work:write`. Disponibilidad: Available.
+
+## Gobernanza
+
+Un topic se vuelve Knowledge solo cuando un owner o admin lo integra. Un cliente MCP siempre propone; puede integrar solo con autoridad de owner/admin, y solo cuando la persona que autoriza lo pide de forma explícita.
+
+| Tool | Propósito | Params principales | Permiso |
+| --- | --- | --- | --- |
+| `driftless_context_propose` | Pone una Nota en revisión (draft → proposed) | `topic` | `work:write` |
+| `driftless_context_approve` | Integra en Knowledge (proposed → reviewed) | `topic` | owner/admin, solo cuando lo piden |
+| `driftless_context_create_proposal` | Abre una Edición sugerida a Knowledge existente | `topic`, `summary`, `content` | `work:write` |
+| `driftless_context_proposals` | Lista las Notas en revisión (la cola de revisión) | (ninguno) | member |
+
+Disponibilidad: Available. La integración automática o auto-aprobación es Not available: una persona siempre decide.
+
+```text
+driftless_context_propose topic:'token-verification'
+```
+
+## Permisos
+
+| Scope | Cubre |
+| --- | --- |
+| `context:read` | Leer topics, retrieve, search, list, graph, doctor, coverage, events |
+| `topics:create` | Crear topics |
+| `topics:write` | Actualizar topics existentes |
+| `work:write` | Curación de tags/areas, merge, share, propose y Ediciones sugeridas |
+| `context:diff` | Leer el diff de topics para cambios locales |
+
+Integrar en Knowledge además requiere autoridad de owner/admin, no solo un scope.
+
+## Relacionado
+
+- [Topics](/es/concepts/topics), [Gobernanza](/es/concepts/governance), [Drift](/es/concepts/drift) - los conceptos.
+- [Govern agent learning](/es/guides/govern-agent-learning), [Clean workspace context](/es/guides/clean-workspace-context) - los workflows.
+- [CLI: Context Commands](/es/cli/context) - la misma superficie desde la terminal.
+- [MCP & OAuth](/es/mcp/overview) - setup, auth y scopes.

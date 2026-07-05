@@ -1,0 +1,183 @@
+---
+title: 'Use external context in operational work'
+description: "Pull evidence from a connected tool into a Project or Collection through the Broker, without confusing it with Knowledge or with normal retrieve. Read-only today; the write path is described but gated."
+---
+
+Sometimes the evidence a piece of work needs lives in a tool Driftless does not own: a Notion page, a record in another system. The [Broker](/integrations/broker) is how a Project or Collection reaches that evidence through a governed, audited [Connection](/integrations/overview), reads it, and lands it in the right primitive, without ever treating it as Knowledge or as a normal context retrieve.
+
+This guide gives you an executable read-only path and a clearly-marked conceptual write path, because writes are not generally available today.
+
+<Warning>
+**The Broker is gated.** It is off by default in production (`DRIFTLESS_BROKER_ENABLED`), the external OAuth/MCP lane is a separate switch (`DRIFTLESS_BROKER_ROLLOUT`), and external callers additionally need a per-principal **grant**. The one production connector is **Notion**, **Beta and read-only**. **No write operation is invokable in production** (the operation-policy registry ships empty). And the **GitHub App is not a GitHub Broker Connection**: it observes pull requests and pushes for drift and the Auditor, and exposes no `invoke`.
+</Warning>
+
+## Outcome
+
+A specific external fact pulled into the object that needs it: a Notion page's content read live and written into a Record, a Card, or a Note, with its provenance preserved and its status as external evidence (not Knowledge) kept explicit.
+
+## When to use it
+
+- A Record or a Card has a concrete information gap, and the answer lives in a connected external tool.
+- You have already confirmed the fact is not in Driftless (no Topic, no existing Record, no connector document covers it).
+- You want the evidence in operational state, cited, not silently promoted into the team's Knowledge.
+
+## Availability and prerequisites
+
+| Item | State |
+| --- | --- |
+| Broker master switch (`DRIFTLESS_BROKER_ENABLED`) | Gated, off by default in production |
+| External lane (`DRIFTLESS_BROKER_ROLLOUT`) | Gated, off by default |
+| Notion reads (`records`, `page-content`, `index`, `import`) | Beta, read-only |
+| Broker writes (`invoke` a write op) in production | Not available |
+
+Setup (connect a provider) happens in the dashboard or CLI, never over MCP, and is a privileged human-led flow. An external OAuth/MCP caller also needs the rollout open and a matching grant; an internal caller (an owned API key or a dashboard session) skips the grant gate but still needs the rest.
+
+## Objects involved
+
+| Object | Role in this workflow |
+| --- | --- |
+| **Connection** | An authorized link to a provider; the Broker operates it. |
+| **Capability** | One thing a Connection can do; only a `ready` one is usable. |
+| **Operation** | A named read or write the Broker can `invoke` or `inspect`. |
+| **Connector document** | Page content materialized into a Driftless-owned object with a citation. |
+| **Record / Card / Note** | Where the external evidence lands. |
+
+## Before you begin
+
+Check whether the Broker surface is even reachable for you. An empty list is ambiguous: it can mean "not rolled out" or "no grant", not "nothing connected".
+
+```bash
+driftless broker connections
+```
+
+If this returns nothing, stop and resolve the gate (rollout or grant) before assuming the provider is disconnected. A healthy Connection shows status `synced`.
+
+## Context preflight
+
+External work still starts with the team's context. Read the work object's Knowledge before you reach outside for more:
+
+```bash
+driftless project card next <project-id>       # a Card carries its context bundle
+driftless collection context <collection-id>   # a Collection carries its criterion Knowledge
+```
+
+A Connection can also carry its own **criterion**: Knowledge topic slugs attached with `broker criterion <provider> --add <slug>`. The Broker never reads the topic's content; it points at the slug, and you read it with your context tools before a risky operation. Only after this context confirms a real, specific gap do you go external. Do not pull the whole provider; fetch the one fact the work needs.
+
+## Step-by-step workflow
+
+### Read-only path (executable)
+
+<Steps>
+<Step title="Confirm the capability is ready">
+A registered capability is not a usable one. Read the capability directory and use only a capability whose status is `ready`.
+
+```bash
+driftless broker capabilities notion
+```
+
+`gated` and `disabled` are the states most easily mistaken for available: the capability is real but the environment or your grants keep it closed.
+</Step>
+
+<Step title="Inspect the operation you intend to run">
+Read the full spec before you call anything: input schema, effect (`read` / `write`), risk, idempotency, and criterion.
+
+```bash
+driftless broker inspect notion notion-page-content
+```
+</Step>
+
+<Step title="Choose the right read">
+The reads differ in whether they hit the provider live and what, if anything, they create in Driftless. Pick deliberately:
+
+| Read | Hits provider live? | Creates in Driftless |
+| --- | --- | --- |
+| `records` | No, reads the mirror/cache | Nothing |
+| `page-content` | Yes | Nothing |
+| `index` | Yes | connector documents |
+| `import` | No, reads the mirror | Collection Records |
+| context `retrieve` | No, never queries a provider | Nothing |
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5
+driftless broker page <pageId>
+```
+
+`records` returns a synced model from the mirror; `page-content` reads one page live and bounded, with a citation. Normal context `retrieve` never queries a provider, so it is not how you reach fresh external data.
+</Step>
+
+<Step title="Land the evidence in the right primitive">
+Write what you found into operational state, not into Knowledge. A field on the Record, a note on the Card, or a standalone Note, cited to its source.
+
+```bash
+driftless collection record update <collection-id> <record-id> --fields '{"summary":"per Notion page <pageId>"}'
+```
+</Step>
+</Steps>
+
+### Conceptual write path (gated)
+
+A write would follow the same governed shape, and it is worth understanding even though it is not invokable in production today:
+
+```bash
+driftless broker invoke <provider> <write-op> --input @payload.json    # gated: not invokable in production
+```
+
+The full shape: **inspect** the operation, read its **criterion**, confirm the **grant** covers it, pass an **idempotency key** so a retry is a safe manual replay, `invoke` it (execution is **inline**, there is no approval queue), read the returned **correlation id** from the **audit** ledger, and remember writes **never auto-retry**. After it runs, **verify the result** against the provider. None of this is available in production while the operation-policy registry ships empty; treat the block above as illustrative, not a live call.
+
+## Expected states
+
+| Moment | What you should see |
+| --- | --- |
+| `broker connections` empty | Ambiguous: not rolled out, or no grant, not "nothing connected". |
+| A usable capability | Status `ready` in `broker capabilities`. |
+| `broker records` | Rows from the mirror, paginated by cursor. |
+| `broker page` | One page's bounded, citeable text, read live. |
+| An attempted write in production | Refused: no write operation is invokable. |
+
+## Knowledge write-back
+
+External evidence updates operational state; it does not become Knowledge on the way in:
+
+- **A current value** goes on the Record or the Card, cited to the source.
+- **A shared identity** discovered externally becomes or updates an Entity.
+- **An observation worth keeping** becomes a Note, not a Topic, unless a person later reviews it.
+- **Provenance** is preserved only as far as the surface supports it: a connector document carries a citation, provenance, and freshness and reads as `trust: "external"`; for a raw read, cite the page id or record id in the Note yourself.
+
+A provider snapshot is external evidence, never institutional truth. It stays operational state or a cited Note. Do not merge it into Knowledge because it came from a trusted-looking tool.
+
+## What not to do
+
+- **Do not confuse connected with usable.** A healthy OAuth Connection is the first rung; the capability must be `ready`, the rollout open, and a grant present.
+- **Do not treat external data as Knowledge.** Connector documents are opt-in in retrieve, carry `trust: "external"`, and are never Knowledge.
+- **Do not expect `retrieve` to fetch live external data.** It reads only Driftless-owned tables (Topics and connector documents), never a provider.
+- **Do not author or deploy an operation the Broker does not list.** Report the missing capability; never write a script to fill the gap.
+- **Do not assume the GitHub App can `invoke`.** It observes; a GitHub Broker Connection for writes is not shipped.
+
+## Troubleshooting
+
+- **`broker connections` is empty against a healthy connection.** The external lane is closed (`rollout: off`) or no grant matches your principal. Grants are owner/admin managed; an internal caller skips the grant gate.
+- **A capability shows `gated` or `disabled`.** It is registered but withheld by rollout, a missing grant, or a toggle. It is not usable until it reaches `ready`.
+- **A read returns empty rather than an error.** By design: when the lane is closed or no grant matches, reads return an empty result, so treat empty as "check the gates", not "no data".
+
+```bash
+driftless broker capabilities notion
+```
+
+## Limits and truth states
+
+| Capability | State |
+| --- | --- |
+| Notion reads (`records`, `page-content`, `index`, `import`, `retrieve` after index) | Beta, read-only |
+| Broker writes (`invoke` a write op) in production | Not available |
+| HubSpot connection and reads | Internal (gated) |
+| Google Drive, Google Docs | Stub (not available) |
+| GitHub App (PR and push observation) | Available (separate surface) |
+| GitHub Broker Connection (writes) | Not available |
+
+## Related reference
+
+- [Integrations and Connections](/integrations/overview) - setup, the connect-to-usable chain, and provider availability.
+- [Broker](/integrations/broker) - actions, gates, and read/write semantics.
+- [Notion connector](/integrations/notion) - the one production connector end to end.
+- [CLI: Integrations and Broker](/cli/integrations) - the command surface.
+- [Operate a Collection](/guides/operate-a-collection) - where imported records and cited evidence land.

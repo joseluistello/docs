@@ -1,0 +1,220 @@
+---
+title: 'Continuar un project entre agentes'
+description: "Lleva un objetivo hasta el final aunque cambie el modelo, la sesión o el agente. El Project es dueño del estado, el contexto y la definición de terminado, así cualquier agente retoma justo donde se detuvo el anterior."
+---
+
+Los modelos cambian, los chats terminan, las sesiones se reinician. El trabajo no debería empezar de cero cada vez. En Driftless un [Project](/es/concepts/projects) es dueño del goal, las cards, el contexto y la verificación, así un segundo agente (otro modelo, una sesión nueva o el cliente de un compañero) puede continuar desde la card exacta que dejó el primero, con el mismo contexto del equipo cargado.
+
+Esta guía recorre el loop de punta a punta en la CLI, y luego entrega el board a otro agente para demostrar la continuidad.
+
+## Resultado
+
+Un objetivo que sobrevive a un cambio de agente. Un agente crea un Project y trabaja parte del board; un agente distinto resuelve el mismo Project y lo termina, tirando del mismo contexto por card, sin que tú vuelvas a explicar nada.
+
+## Cuándo usarlo
+
+- Una tarea es demasiado grande para una sola sesión y esperas retomarla después.
+- Quieres mover un objetivo entre modelos o clientes (Claude, ChatGPT, un coding agent, un compañero) sin perder el estado.
+- Quieres trabajo que lleve su propio acceptance y validación, no una checklist pelada.
+
+Si el trabajo es una sola edición sin continuidad ni verificación, no necesitas un Project. Recurre a uno cuando el estado tenga que sobrevivir a la sesión.
+
+## Disponibilidad y prerrequisitos
+
+| Ítem | Estado |
+| --- | --- |
+| Projects y cards (CLI, API, dashboard) | Available |
+| Context bundle de la card en `next` | Available |
+| `require_card_validation` (bloquear `done` hasta validar) | Available, setting del workspace, apagado por defecto |
+| `playbook_slug` en el tool MCP `driftless_project` | Todavía no disponible (usa CLI o API; el bundle de `next` lleva un `playbook_hint`) |
+
+Necesitas la CLI instalada y con login ([setup de CLI](/es/cli/setup)). Por MCP u OAuth, escribir projects y cards requiere el scope `work:write`. Para asignar un owner necesitas un member id de `driftless member list`.
+
+## Objetos involucrados
+
+| Objeto | Rol en este workflow |
+| --- | --- |
+| **Project** | Lleva el goal y la definición de terminado; es dueño del estado entre agentes. |
+| **Card** | Una unidad de trabajo, con `acceptance`, `validate` y `depends_on`. |
+| **Context bundle** | El Knowledge que `next` entrega con cada card. |
+| **Nota** | Un aprendizaje capturado a mitad del loop, adjunto a la card. |
+| **Playbook** | Un Topic de Knowledge que el agente lee para aprender a ejecutar el project. |
+
+## Antes de empezar
+
+Confirma que estás en el workspace al que quieres escribir. El board es compartido, así que una card creada aquí es visible para cada member y para el próximo agente.
+
+```bash
+driftless workspace current      # confirma el workspace activo
+driftless member list            # member ids, para --owner
+```
+
+## Context preflight
+
+Un Project entrega contexto de dos formas, así un agente rara vez tiene que buscar:
+
+- **Por card, automáticamente.** `project card next` devuelve `{ card, context_bundle, project_done }`. El `context_bundle` une los context refs de la propia card con los del project, sin duplicados: la memoria registrada del equipo para el área que toca esa card. El agente trabaja desde ahí en vez de re-derivar lo que el equipo ya sabe.
+- **Por project, una vez.** Un `--playbook <slug>` apunta el project a un Topic de Knowledge que explica cómo ejecutarlo. Cuando está seteado, el bundle de `next` lleva un `playbook_hint`.
+
+Antes de crear cards, comprueba que el área de verdad tiene Topics para entregar. Si no los tiene, es una brecha por cerrar, no una razón para adivinar.
+
+```bash
+driftless context get --files "src/webhooks/**"   # qué Knowledge ya cubre esta área
+```
+
+Si no coincide nada, lee el código y deja una Nota primero (ver [Govern agent learning](/es/guides/govern-agent-learning)), así la primera card llega con contexto en vez de en blanco.
+
+## Workflow paso a paso
+
+<Steps>
+<Step title="Resuelve o crea el Project">
+Lista los projects activos para encontrar uno, o créalo con un goal y (opcionalmente) un playbook. El goal es la definición de terminado para todo el board.
+
+```bash
+driftless project list --status active
+driftless project add "Webhook hardening" \
+  --goal "Webhook handling is idempotent and order-safe" \
+  --playbook webhook-runbook
+```
+
+Deberías ver un project nuevo con un `<project-id>` y status `active`.
+</Step>
+
+<Step title="Crea cards con acceptance, validación y dependencias">
+Cada card lleva qué significa "done" (`acceptance`), un comando que debe salir con cero (`--validate`), un `--owner` opcional y `--dep` para el orden.
+
+```bash
+driftless project card add <project-id> \
+  --title "Idempotent webhook handler" \
+  --acceptance "Duplicate deliveries are a no-op" \
+  --validate "npm test -- webhooks" \
+  --owner <member-id>
+
+driftless project card add <project-id> \
+  --title "Ordering guard" \
+  --acceptance "Out-of-order deliveries are reconciled" \
+  --dep <card-id>
+```
+
+La segunda card nombra a la primera con `--dep`, así se queda fuera de `next` hasta que la primera esté `done`.
+</Step>
+
+<Step title="Tira la próxima card y su context bundle">
+Este es el tick del loop. Devuelve la próxima card accionable más el contexto para trabajarla, en una sola llamada.
+
+```bash
+driftless project card next <project-id>
+```
+
+Deberías recibir `{ card, context_bundle, project_done }`. Trabaja solo esa card; lee su bundle antes de tocar el código al que apunta.
+</Step>
+
+<Step title="Trabaja la card, luego valida">
+Haz el cambio que describe la card. Si la card tiene un comando `validate`, córrelo en tu propio entorno. El servidor **almacena** el comando; nunca lo corre por ti. Una salida distinta de cero es stop-and-fix: repara y vuelve a correr, no cierres la card.
+
+```bash
+npm test -- webhooks     # el agente corre validate en su propio entorno
+```
+
+Comprueba el resultado contra el `acceptance` de la card antes de seguir.
+</Step>
+
+<Step title="Captura el aprendizaje a mitad del loop como una Nota">
+Un gotcha que encuentras mientras trabajas la card no debería esperar al final. Adjúntalo a la card, donde viaja en el próximo bundle de `next` y se sintetiza en un Topic borrador cuando el project cierra.
+
+```bash
+driftless note add \
+  --content "Provider retries deliver out of order; dedup on delivery id" \
+  --project <project-id> --card <card-id>
+```
+</Step>
+
+<Step title="Cierra la card y pide la próxima">
+Mueve la card a `done` y pide la siguiente. Repite hasta que el board quede vacío.
+
+```bash
+driftless project card status <project-id> <card-id> done
+driftless project card next <project-id>
+```
+</Step>
+
+<Step title="Entrega a otro agente">
+Un modelo, sesión o cliente distinto continúa con el mismo comando. Nada se vuelve a explicar: el Project sigue siendo dueño del goal, las cards restantes y el contexto por card.
+
+```bash
+driftless project get <project-id>          # el goal y el índice de cards, como estado
+driftless project card next <project-id>    # retoma desde la próxima card accionable
+```
+</Step>
+</Steps>
+
+Cuando `next` devuelve `project_done: true`, cada card está `done` o retirada y el goal se cumplió. Marcar el project como `done` en el dashboard abre el **compact**, donde un owner o admin elige las notas adjuntas de qué cards se vuelven Topics borrador en el Inbox.
+
+<Note>
+Mismo loop por MCP: `driftless_project_card action:'next'` devuelve el bundle, y `action:'set'` cambia el status. La superficie REST lo refleja bajo `/workspaces/:slug/projects/:projectId/cards/next`; un `PATCH` de card acepta `validate_result` y `validate_passed` para registrar un resultado, y `add_context` para adjuntar un Topic a mitad del loop. Ver [API: Projects and Cards](/es/api/projects).
+</Note>
+
+## Estados esperados
+
+| Momento | Qué deberías ver |
+| --- | --- |
+| Tras `project add` | Un project con un `<project-id>`, status `active`. |
+| Tras `card add` | Una card en `todo`; una card dependiente que aún no aparece en `next`. |
+| Durante `next` | `{ card, context_bundle, project_done: false }`. |
+| Una card que no puede avanzar | Puesta en `blocked`, no en `done`. |
+| `validate` que falla | La card sigue abierta; stop-and-fix, luego vuelve a correr. |
+| Fin del board | `next` devuelve `project_done: true`. |
+
+## Knowledge write-back
+
+Empareja cada aprendizaje con la primitiva a la que pertenece:
+
+- **El trabajo que sigue** se queda como Card. Súmalo al board en vez de escribir prosa sobre él.
+- **Un aprendizaje descubierto mientras trabajas** es una Nota adjunta a la card (mostrado arriba). Viaja en el loop y se sintetiza al cierre.
+- **Un porqué durable** (una decisión, un invariante, un gotcha que un cambio de código futuro contradiría) es un Topic. Cuando el project cierra, el compact borronea uno desde las notas de la card; un owner o admin lo integra en Knowledge.
+
+```bash
+driftless note add --content "Idempotency key is required on every webhook handler" \
+  --project <project-id> --card <card-id>
+driftless context propose <slug>    # después: pon una Nota durable a revisión
+```
+
+No integres un aprendizaje del project en Knowledge por iniciativa propia. Proponlo; un owner o admin decide. Ver [Govern agent learning](/es/guides/govern-agent-learning).
+
+## Qué no hacer
+
+- **No afirmes que Driftless corre `validate`.** La verificación es reportar y exponer: el servidor almacena el comando y el resultado que reportas, y nunca lo ejecuta.
+- **No marques una card como `done` para pasar por encima de un fallo.** Una validación fallida es stop-and-fix. Si no puedes avanzar sin una decisión humana, ponla en `blocked`.
+- **No trabajes más que la card accionable.** El loop te entrega una unidad a la vez a propósito; el dep-gating ordena el resto.
+- **No conviertas cada paso en un Topic.** La mayor parte de lo que pasa en un board es estado, no Knowledge durable.
+
+## Troubleshooting
+
+- **`next` no devuelve nada accionable pero el project no está done.** Cada `todo` restante está gateado por una dependencia sin terminar, o hay cards `blocked`. Revisa `project cards <project-id>` y limpia el bloqueo.
+- **Una card está trabada en una decisión humana.** Déjala de lado sin fingir progreso:
+
+```bash
+driftless project card status <project-id> <card-id> blocked
+```
+
+- **Una transición a `done` se permitió sin una validación que pase.** Eso es el default (la card se expone como "needs verification"). Para exigir un pase, un owner o admin habilita `require_card_validation` en el workspace.
+- **El cliente MCP no tiene campo de playbook.** Esperado: `driftless_project` todavía no expone `playbook_slug`. Setéalo desde la CLI o la API; el bundle de `next` igual entrega el `playbook_hint`.
+
+## Límites y truth states
+
+| Capacidad | Estado |
+| --- | --- |
+| Projects, cards y el loop de `next` | Available |
+| Context bundle entregado por card | Available |
+| `require_card_validation` bloqueando un `done` | Available (apagado por defecto) |
+| Ejecución del `validate` en el servidor | Not available (solo reportar y exponer) |
+| `playbook_slug` en el tool MCP `driftless_project` | Not available (usa CLI o API) |
+| Trigger manual de agent-run por MCP o REST | Not available (retirado) |
+
+## Referencia relacionada
+
+- [Proyectos](/es/concepts/projects) - el concepto y el loop.
+- [CLI: Projects and Cards](/es/cli/projects) - cada comando de project y card.
+- [API: Projects and Cards](/es/api/projects) - la superficie REST.
+- [MCP & OAuth](/es/mcp/overview) - `driftless_project` y `driftless_project_card`.
+- [Govern agent learning](/es/guides/govern-agent-learning) - convertir las notas de una card en Knowledge.

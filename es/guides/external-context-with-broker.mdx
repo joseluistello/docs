@@ -1,0 +1,183 @@
+---
+title: 'Usar contexto externo en el trabajo operacional'
+description: "Tira evidencia de una herramienta conectada hacia un Project o Collection mediante el Broker, sin confundirla con Knowledge ni con el retrieve normal. Read-only hoy; el camino de escritura se describe pero está gated."
+---
+
+A veces la evidencia que necesita un trabajo vive en una herramienta que Driftless no posee: una página de Notion, un record en otro sistema. El [Broker](/es/integrations/broker) es cómo un Project o Collection alcanza esa evidencia mediante una [Connection](/es/integrations/overview) gobernada y auditada, la lee y la aterriza en la primitiva correcta, sin nunca tratarla como Knowledge ni como un retrieve normal de contexto.
+
+Esta guía te da un camino read-only ejecutable y un camino de escritura conceptual claramente marcado, porque las escrituras no están disponibles de forma general hoy.
+
+<Warning>
+**El Broker está gated.** Está apagado por defecto en producción (`DRIFTLESS_BROKER_ENABLED`), la lane externa OAuth/MCP es un interruptor aparte (`DRIFTLESS_BROKER_ROLLOUT`), y los callers externos además necesitan un **grant** por principal. El único conector de producción es **Notion**, **Beta y read-only**. **Ninguna operación de escritura es invocable en producción** (el registry de política de operaciones va vacío). Y el **GitHub App no es una GitHub Broker Connection**: observa pull requests y pushes para drift y el Auditor, y no expone `invoke`.
+</Warning>
+
+## Resultado
+
+Un hecho externo específico tirado hacia el objeto que lo necesita: el contenido de una página de Notion leído en vivo y escrito en un Record, una Card o una Nota, con su procedencia preservada y su estatus como evidencia externa (no Knowledge) mantenido explícito.
+
+## Cuándo usarlo
+
+- Un Record o una Card tiene una brecha de información concreta, y la respuesta vive en una herramienta externa conectada.
+- Ya confirmaste que el hecho no está en Driftless (ningún Topic, ningún Record existente, ningún connector document lo cubre).
+- Quieres la evidencia en estado operacional, citada, no promovida en silencio al Knowledge del equipo.
+
+## Disponibilidad y prerrequisitos
+
+| Ítem | Estado |
+| --- | --- |
+| Interruptor maestro del Broker (`DRIFTLESS_BROKER_ENABLED`) | Gated, apagado por defecto en producción |
+| Lane externa (`DRIFTLESS_BROKER_ROLLOUT`) | Gated, apagada por defecto |
+| Lecturas de Notion (`records`, `page-content`, `index`, `import`) | Beta, read-only |
+| Escrituras del Broker (`invoke` de una op de escritura) en producción | Not available |
+
+El setup (conectar un proveedor) ocurre en el dashboard o la CLI, nunca por MCP, y es un flujo privilegiado liderado por un humano. Un caller externo OAuth/MCP además necesita el rollout abierto y un grant que coincida; un caller interno (una API key propia o una sesión de dashboard) se salta el gate de grant pero igual necesita el resto.
+
+## Objetos involucrados
+
+| Objeto | Rol en este workflow |
+| --- | --- |
+| **Connection** | Un link autorizado a un proveedor; el Broker lo opera. |
+| **Capability** | Una cosa que una Connection puede hacer; solo una `ready` es utilizable. |
+| **Operation** | Una lectura o escritura con nombre que el Broker puede `invoke` o `inspect`. |
+| **Connector document** | Contenido de página materializado en un objeto propio de Driftless con una cita. |
+| **Record / Card / Nota** | Donde aterriza la evidencia externa. |
+
+## Antes de empezar
+
+Comprueba si la superficie del Broker es siquiera alcanzable para ti. Una lista vacía es ambigua: puede significar "sin rollout" o "sin grant", no "nada conectado".
+
+```bash
+driftless broker connections
+```
+
+Si esto no devuelve nada, detente y resuelve el gate (rollout o grant) antes de asumir que el proveedor está desconectado. Una Connection saludable muestra el status `synced`.
+
+## Context preflight
+
+El trabajo externo igual empieza con el contexto del equipo. Lee el Knowledge del objeto de trabajo antes de salir a buscar más:
+
+```bash
+driftless project card next <project-id>       # una Card lleva su context bundle
+driftless collection context <collection-id>   # una Collection lleva su criterion de Knowledge
+```
+
+Una Connection también puede llevar su propio **criterion**: slugs de topics de Knowledge adjuntos con `broker criterion <provider> --add <slug>`. El Broker nunca lee el contenido del topic; apunta al slug, y tú lo lees con tus tools de contexto antes de una operación riesgosa. Solo después de que este contexto confirme una brecha real y específica sales afuera. No tires el proveedor entero; trae el único hecho que el trabajo necesita.
+
+## Workflow paso a paso
+
+### Camino read-only (ejecutable)
+
+<Steps>
+<Step title="Confirma que la capability está ready">
+Una capability registrada no es una utilizable. Lee el capability directory y usa solo una capability cuyo status sea `ready`.
+
+```bash
+driftless broker capabilities notion
+```
+
+`gated` y `disabled` son los estados que más fácil se confunden con disponible: la capability es real pero el entorno o tus grants la mantienen cerrada.
+</Step>
+
+<Step title="Inspecciona la operación que piensas correr">
+Lee la spec completa antes de llamar nada: input schema, efecto (`read` / `write`), riesgo, idempotencia y criterion.
+
+```bash
+driftless broker inspect notion notion-page-content
+```
+</Step>
+
+<Step title="Elige la lectura correcta">
+Las lecturas difieren en si tocan al proveedor en vivo y en qué, si algo, crean en Driftless. Elige deliberadamente:
+
+| Lectura | ¿Toca al proveedor en vivo? | Crea en Driftless |
+| --- | --- | --- |
+| `records` | No, lee el mirror/cache | Nada |
+| `page-content` | Sí | Nada |
+| `index` | Sí | connector documents |
+| `import` | No, lee el mirror | Records de Collection |
+| `retrieve` de contexto | No, nunca consulta un proveedor | Nada |
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5
+driftless broker page <pageId>
+```
+
+`records` devuelve un modelo sincronizado desde el mirror; `page-content` lee una página en vivo y acotada, con una cita. El `retrieve` de contexto normal nunca consulta un proveedor, así que no es cómo alcanzas data externa fresca.
+</Step>
+
+<Step title="Aterriza la evidencia en la primitiva correcta">
+Escribe lo que encontraste en estado operacional, no en Knowledge. Un field del Record, una nota en la Card o una Nota independiente, citada a su fuente.
+
+```bash
+driftless collection record update <collection-id> <record-id> --fields '{"summary":"per Notion page <pageId>"}'
+```
+</Step>
+</Steps>
+
+### Camino de escritura conceptual (gated)
+
+Una escritura seguiría la misma forma gobernada, y vale entenderla aunque no sea invocable en producción hoy:
+
+```bash
+driftless broker invoke <provider> <write-op> --input @payload.json    # gated: no invocable en producción
+```
+
+La forma completa: **inspect** de la operación, lee su **criterion**, confirma que el **grant** la cubre, pasa una **idempotency key** para que un reintento sea un replay manual seguro, `invoke` (la ejecución es **inline**, no hay cola de aprobación), lee el **correlation id** devuelto desde el ledger de **auditoría**, y recuerda que las escrituras **nunca hacen auto-retry**. Después de correr, **verifica el resultado** contra el proveedor. Nada de esto está disponible en producción mientras el registry de política de operaciones va vacío; trata el bloque de arriba como ilustrativo, no como una llamada viva.
+
+## Estados esperados
+
+| Momento | Qué deberías ver |
+| --- | --- |
+| `broker connections` vacío | Ambiguo: sin rollout, o sin grant, no "nada conectado". |
+| Una capability utilizable | Status `ready` en `broker capabilities`. |
+| `broker records` | Filas desde el mirror, paginadas por cursor. |
+| `broker page` | El texto acotado y citable de una página, leído en vivo. |
+| Un intento de escritura en producción | Rechazado: ninguna operación de escritura es invocable. |
+
+## Knowledge write-back
+
+La evidencia externa actualiza el estado operacional; no se vuelve Knowledge al entrar:
+
+- **Un valor actual** va en el Record o la Card, citado a la fuente.
+- **Una identidad compartida** descubierta afuera se vuelve o actualiza una Entity.
+- **Una observación que vale conservar** se vuelve una Nota, no un Topic, salvo que una persona la revise después.
+- **La procedencia** se preserva solo hasta donde la superficie lo soporta: un connector document lleva una cita, procedencia y frescura y se lee como `trust: "external"`; para una lectura cruda, cita tú el page id o record id en la Nota.
+
+Un snapshot de proveedor es evidencia externa, nunca verdad institucional. Se queda como estado operacional o Nota citada. No lo integres en Knowledge porque vino de una herramienta que se ve confiable.
+
+## Qué no hacer
+
+- **No confundas conectado con utilizable.** Una Connection OAuth saludable es el primer peldaño; la capability debe estar `ready`, el rollout abierto y un grant presente.
+- **No trates la data externa como Knowledge.** Los connector documents son opt-in en el retrieve, llevan `trust: "external"` y nunca son Knowledge.
+- **No esperes que `retrieve` traiga data externa en vivo.** Lee solo tablas propias de Driftless (Topics y connector documents), nunca un proveedor.
+- **No escribas ni despliegues una operación que el Broker no lista.** Reporta la capability faltante; nunca escribas un script para llenar la brecha.
+- **No asumas que el GitHub App puede `invoke`.** Observa; una GitHub Broker Connection para escrituras no está shipped.
+
+## Troubleshooting
+
+- **`broker connections` está vacío contra una connection saludable.** La lane externa está cerrada (`rollout: off`) o ningún grant coincide con tu principal. Los grants los gestiona owner/admin; un caller interno se salta el gate de grant.
+- **Una capability muestra `gated` o `disabled`.** Está registrada pero retenida por rollout, un grant faltante o un toggle. No es utilizable hasta que llega a `ready`.
+- **Una lectura devuelve vacío en vez de un error.** Por diseño: cuando la lane está cerrada o ningún grant coincide, las lecturas devuelven un resultado vacío, así que trata el vacío como "revisa los gates", no "sin data".
+
+```bash
+driftless broker capabilities notion
+```
+
+## Límites y truth states
+
+| Capacidad | Estado |
+| --- | --- |
+| Lecturas de Notion (`records`, `page-content`, `index`, `import`, `retrieve` tras index) | Beta, read-only |
+| Escrituras del Broker (`invoke` de una op de escritura) en producción | Not available |
+| Connection y lecturas de HubSpot | Internal (gated) |
+| Google Drive, Google Docs | Stub (not available) |
+| GitHub App (observación de PR y push) | Available (superficie aparte) |
+| GitHub Broker Connection (escrituras) | Not available |
+
+## Referencia relacionada
+
+- [Integraciones y Connections](/es/integrations/overview) - setup, la cadena de conectado-a-utilizable y disponibilidad por proveedor.
+- [Broker](/es/integrations/broker) - acciones, gates y semántica de lectura/escritura.
+- [Conector de Notion](/es/integrations/notion) - el único conector de producción de punta a punta.
+- [CLI: Integraciones y Broker](/es/cli/integrations) - la superficie de comandos.
+- [Operar una Collection](/es/guides/operate-a-collection) - donde aterrizan los records importados y la evidencia citada.

@@ -1,0 +1,192 @@
+---
+title: 'Convertir el aprendizaje de un agente en Knowledge gobernado'
+description: "Enruta una observación de agente al lugar correcto: una Nota limpia, una Edición sugerida contra Knowledge existente o Knowledge revisado, con una persona decidiendo qué se compromete el equipo a tratar como verdad."
+---
+
+Un agente puede descubrir algo verdadero, y puede afirmar una interpretación equivocada con la misma convicción. Por eso escribir una afirmación y volverla el Knowledge del equipo son actos distintos. Esta guía toma una observación cruda y la enruta bien: una Nota se queda como pista, un cambio a Knowledge existente pasa por una Edición sugerida, y solo una persona integra algo en la fuente de verdad del equipo.
+
+Hay dos rutas, según si el aprendizaje es nuevo o contradice algo ya registrado. Ambas terminan con un humano decidiendo.
+
+## Resultado
+
+Un aprendizaje que aterriza donde pertenece y se confía al nivel correcto: una Nota limpia que el agente lee como pista, una Edición sugerida que un owner o admin puede integrar, o, tras revisión, Knowledge revisado, con autoría y procedencia intactas.
+
+## Cuándo usarlo
+
+- Un agente (o tú) aprendió algo durable y estás decidiendo qué hacer con ello.
+- Un Topic se ve desactualizado y quieres cambiarlo sin sobrescribirlo.
+- Estás tentado de "solo actualizar el wiki", que es justo cuando la gobernanza importa.
+
+## Disponibilidad y prerrequisitos
+
+| Ítem | Estado |
+| --- | --- |
+| Notas, `propose`, Ediciones sugeridas, Comments | Available |
+| Integrar en Knowledge (`approve`, `pr --merge`) | Available, solo con autoridad de owner/admin |
+| Un agente ejecutando la integración cuando se lo piden explícitamente | Available (sellado como `approved_via: agent`) |
+| Agentes de plataforma abriendo Ediciones sugeridas automáticamente | Not available (una versión futura) |
+
+Necesitas la CLI instalada y con login. Cualquiera puede escribir una Nota y abrir una Edición sugerida; integrar requiere el rol `admin` u `owner`. Un agente integra solo cuando un owner o admin se lo pide de forma explícita.
+
+## Objetos involucrados
+
+| Objeto | Rol en este workflow |
+| --- | --- |
+| **Nota** | Un borrador privado; el agente la lee como pista. |
+| **En revisión** | Una Nota propuesta al equipo; sigue siendo pista, ahora en la cola. |
+| **Knowledge** (`reviewed`) | La fuente de verdad del equipo, las notas integradas. |
+| **Edición sugerida** | Un parche de contenido que propone un cambio a Knowledge existente. |
+| **Comment** | Feedback a nivel de field en el gate de revisión; resuelve en una edición. |
+
+## Antes de empezar
+
+Tienes una observación en la mano. Primero hazte la pregunta del litmus: *¿un cambio de código futuro la contradiría de forma significativa?* Si sí, es durable y vale la pena capturarla. Si solo repite el código o es un valor transitorio, déjala ir.
+
+```bash
+driftless context search "refund window"    # ¿un Topic ya cubre esto?
+```
+
+## Context preflight
+
+Qué ruta tomas depende de lo que ya existe, así que lee primero:
+
+- **Ningún Topic lo cubre** y es durable: esta es la ruta de **nueva observación**. Captura una Nota limpia.
+- **Un Topic lo cubre** y se ve mal o en drift: esta es la ruta de **cambio a Knowledge existente**. Abre una Edición sugerida, no sobrescribas.
+
+Lee el trust y el drift del Topic candidato antes de decidir. `reviewed` es Knowledge (verdad); `draft` o `proposed` es una Nota (una pista). Un badge de drift significa que el código bajo él se movió y el porqué registrado quizá ya no se sostiene.
+
+```bash
+driftless context get billing-flow    # lee trust, drift y los fields que podrías cambiar
+```
+
+## Workflow paso a paso
+
+### Nueva observación
+
+<Steps>
+<Step title="Captúrala como una Nota (o un Topic completo)">
+Una Nota de una línea alcanza para una pista. Si es claramente durable, escríbela como un Topic anclado: un concepto, archivado en un área, anclado estrecho.
+
+```bash
+# Una pista rápida se queda como Nota privada
+driftless note add --content "RS256 lets services verify tokens without a shared secret"
+
+# O un Topic completo cuando es claramente durable: una idea, un área, un anchor estrecho
+driftless context add token-verification \
+  --title "Token verification" \
+  --content @note.md \
+  --area auth \
+  --pattern "src/auth/**" \
+  --rel depends_on:token-refresh
+```
+
+La Nota se queda como pista, privada y fuera de la búsqueda, hasta que decidas que vale los ojos del equipo.
+</Step>
+
+<Step title="Proponla a revisión, cuando se lo gane">
+Cuando la Nota es lo bastante durable para todo el equipo, ponla a revisión. Esto no la vuelve verdad; entra a la cola como pista a la espera de un humano.
+
+```bash
+driftless context propose token-verification    # Nota -> En revisión
+```
+
+Una persona revisa la evidencia, el alcance, la durabilidad y cualquier contradicción, y decide. La mayoría de las Notas se quedan como Notas, y eso es sano: una pista limpia es valiosa aunque nunca se integre.
+</Step>
+</Steps>
+
+### Cambio a Knowledge existente
+
+<Steps>
+<Step title="Revisa drift, evidencia y relaciones">
+Lee el Topic y el código que ancla antes de proponer nada. Confirma que el cambio es real, no una mala lectura.
+
+```bash
+driftless context get billing-flow
+driftless context get --files "src/billing/**"
+```
+</Step>
+
+<Step title="Abre una Edición sugerida, con un parche o una pregunta">
+No sobrescribas Knowledge. Abre una Edición sugerida que lleve un parche de contenido comprobable. Si tienes incertidumbre, deja un Comment en el field en vez de un parche, para que un humano resuelva la ambigüedad.
+
+```bash
+# Un parche comprobable: trigger + rationale en el summary, el cambio en el content
+driftless context pr billing-flow --open \
+  --summary "Refund window moved from 30 to 60 days; update the decision" \
+  --content @patch.md
+
+# O, ante incertidumbre, una pregunta puntual sin parche
+driftless context comment add billing-flow \
+  --body "This decision may contradict the new refund window; can someone confirm?" \
+  --field decisions
+```
+
+El agente no aprueba su propia interpretación. Un humano revisa la Edición sugerida y la integra, o resuelve el Comment.
+</Step>
+</Steps>
+
+<Note>
+Lo mismo por MCP: `driftless_context_propose`, `driftless_context_create_proposal` (la Edición sugerida) y `driftless_context_comment`. `driftless_context_approve` también existe, pero es solo con autoridad de owner/admin y el cliente lo ejecuta solo cuando la persona que autoriza se lo pide de forma explícita. Ver [Gobernanza](/es/concepts/governance).
+</Note>
+
+## Estados esperados
+
+| Momento | Qué deberías ver |
+| --- | --- |
+| Tras `note add` | Un borrador privado, visible solo para ti, fuera de la búsqueda. |
+| Tras `context propose` | La Nota queda En revisión, en la cola, sigue siendo pista. |
+| Tras que un owner o admin integra | `trust: reviewed`, con `approved_by` y `approved_via` seteados. |
+| Tras `context pr --open` | Una Edición sugerida a la espera de una integración de owner o admin. |
+| El agente corre `approve` sin autoridad | Rechazado: un token de member o sin rostro no puede integrar. |
+
+## Knowledge write-back
+
+El enrutamiento *es* el write-back aquí. Integrar es el único acto reservado a una persona:
+
+```bash
+driftless context approve token-verification    # solo owner/admin; ejecútalo solo cuando te lo piden
+```
+
+- **Una pista** se queda como Nota. Llega al agente ponderada como sugerencia, y eso alcanza para la mayoría de los aprendizajes.
+- **Un cambio a la verdad** pasa por una Edición sugerida, nunca por una sobrescritura directa. El parche está limitado por whitelist a los campos de contenido, así que nunca puede falsificar una aprobación.
+- **La verdad institucional** es lo que un owner o admin integra. No integres por iniciativa propia, aunque tengas la autoridad; propón, e integra solo cuando te lo piden.
+
+Conserva el *porqué*, no un changelog. Un Topic contiene la decisión, el invariante o el gotcha durable. Las fechas, "shipped" y las referencias a PRs viven en git, no en Knowledge.
+
+## Qué no hacer
+
+- **No dejes que un agente declare la verdad.** Generar una afirmación e integrarla son actos distintos; la integración es una decisión humana.
+- **No sobrescribas un Topic de Knowledge.** Abre una Edición sugerida para que el cambio se revise y se atribuya.
+- **No fuerces un Topic donde una pista alcanza.** Si un cambio de código futuro no lo contradiría, no es durable; deja una Nota o nada.
+- **No apiles dos conceptos en una nota.** Una idea por nota; archívala en un área; anclala estrecho. Un anchor suelto filtra la nota a trabajo del que no tiene nada que decir.
+- **No escribas un changelog en un field.** El porqué durable pertenece a Knowledge; el historial pertenece a git.
+
+## Troubleshooting
+
+- **`approve` fue rechazado.** Tu key carece de autoridad de owner/admin, o nadie te pidió integrar. Propón en su lugar y deja la integración a una persona.
+
+```bash
+driftless context list --suggested    # lo que aún no es Knowledge: notas y En revisión
+```
+
+- **Dos Notas cubren lo mismo.** Consolida en vez de apilar una tercera. Ver [Clean workspace context](/es/guides/clean-workspace-context).
+- **Una Edición sugerida es ambigua.** Agrega un Comment acotado a un field para que el revisor pueda fijar la objeción exacta antes de integrar.
+- **Un Topic en drift todavía se sostiene.** Re-confirmarlo (volver a ponerlo `reviewed`) es un acto de owner/admin; para cualquier otro, propón la confirmación como una Edición sugerida.
+
+## Límites y truth states
+
+| Capacidad | Estado |
+| --- | --- |
+| Notas, propose, Ediciones sugeridas, Comments | Available |
+| Integrar en Knowledge | Available, solo con autoridad de owner/admin |
+| Integración por agente cuando se lo piden explícitamente | Available (`approved_via: agent`) |
+| Integración automática o auto-aprobación | Not available (una persona siempre decide) |
+| Agentes de plataforma redactando Ediciones sugeridas | Not available (una versión futura) |
+
+## Referencia relacionada
+
+- [Gobernanza](/es/concepts/governance) - el ciclo de vida de Nota a Knowledge y los roles.
+- [Notas y Compartir](/es/concepts/notes-sharing) - capturar y compartir una Nota.
+- [Comentarios](/es/concepts/comments) - feedback a nivel de field en el gate de revisión.
+- [CLI: Context Commands](/es/cli/context) - propose, approve, pr y comment.
+- [Clean workspace context](/es/guides/clean-workspace-context) - auditar y consolidar el vault.

@@ -1,0 +1,200 @@
+---
+title: 'Operar una Collection con contexto gobernado'
+description: "Trabaja un Record operacional con los criterios del equipo cargados, no como una tabla aislada. Lee primero el criterion de la collection, evalúa el record contra él y cambia el estado solo cuando de verdad cambió."
+---
+
+Una [Collection](/es/concepts/collections) no es una hoja de cálculo. Es el sustrato operacional: una tabla configurada cuyos records leen el Knowledge del equipo antes de que alguien los trabaje. Esta guía trabaja un solo record de la forma correcta, leyendo primero el criterion de la collection, así la actualización refleja los criterios del equipo en vez de una conjetura recién hecha.
+
+El ejemplo es una collection pipeline donde cada record es una **cuenta**. Léelo como un lead, un cliente, un ítem de contenido o una señal de producto: la forma es la misma, solo cambia la configuración.
+
+## Resultado
+
+Un record avanzado con los criterios del equipo aplicados: el Knowledge de criterion leído primero, los fields confirmados actualizados, y el status cambiado solo porque el estado subyacente cambió, no porque el workflow llegó a un paso.
+
+## Cuándo usarlo
+
+- Estás trabajando un record en una collection pipeline, analysis o content y quieres aplicar los criterios registrados del equipo, no improvisar.
+- La misma identidad del mundo real aparece en más de una collection y quieres que se entienda como una sola Entity.
+- Quieres mantener el estado operacional donde pertenece mientras escalas cualquier seguimiento finito a Work.
+
+## Disponibilidad y prerrequisitos
+
+| Ítem | Estado |
+| --- | --- |
+| Collections, records, entities (CLI, MCP, REST) | Available |
+| `retrieve` (records más criterion en una llamada) | Available |
+| `collection context` (solo criterion) | Available |
+| `distill_policy` como campo de configuración | Available (declara intención; no es un runtime automático) |
+
+Necesitas la CLI instalada y con login. Por MCP u OAuth, escribir collections, records y entities requiere el scope `work:write`; las lecturas y `collection doctor` son de nivel member.
+
+## Objetos involucrados
+
+| Objeto | Rol en este workflow |
+| --- | --- |
+| **Collection** | La tabla configurada: `record_schema`, stages, `views`, criterion. |
+| **Record** | Una fila tipada; su `status` se valida contra los stages de la collection. |
+| **Entity** | Una identidad cross-collection a la que los records apuntan, deduplicada sobre `(kind, dedup_key)`. |
+| **Criterion** | Los Topics de Knowledge que el trabajo lee antes de actuar (`criterion_rel_slugs`). |
+| **Card** | Donde pertenece el seguimiento finito, una [primitiva separada](/es/concepts/projects). |
+
+## Antes de empezar
+
+Encuentra la collection que quieres trabajar y confirma el workspace.
+
+```bash
+driftless workspace current
+driftless collection list --status active
+```
+
+## Context preflight
+
+La costura que hace que una Collection sea más que una tabla es su **criterion**: los `criterion_rel_slugs` que resuelven a los Topics que el equipo quiere leídos antes de trabajar un record. Léelos antes de evaluar nada.
+
+Dos formas de tirarlo, según si además quieres los records:
+
+```bash
+driftless collection context <collection-id>                      # solo criterion
+driftless collection retrieve <collection-id> --status qualified --limit 25   # records más criterion
+```
+
+`retrieve` devuelve `{ records, nextCursor, criterion, criterion_missing }`. Si `criterion_missing` lista un slug que no resuelve, eso es una brecha: la collection apunta a Knowledge que todavía no existe. Ciérrala con una Nota o un Topic (ver [Govern agent learning](/es/guides/govern-agent-learning)) en vez de trabajar el record a ciegas. No tires el workspace entero; el criterion es el contexto acotado que esta collection pidió.
+
+## Workflow paso a paso
+
+<Steps>
+<Step title="Resuelve la Collection y lee su forma">
+Lee el archetype, el schema, los stages, las views y las relaciones de criterion antes de tocar un record. Los stages son los únicos status en los que un record puede estar.
+
+```bash
+driftless collection get <collection-id>
+```
+</Step>
+
+<Step title="Lee el criterion, luego tira los records relevantes">
+Carga primero el "cómo hacemos esto" del equipo, después los records a trabajar.
+
+```bash
+driftless collection retrieve <collection-id> --status qualified --limit 25
+```
+
+Lee `criterion` antes de leer los records. Es la diferencia entre trabajar con el criterio del equipo y trabajar desde cero.
+</Step>
+
+<Step title="Resuelve o crea la Entity">
+Si esta cuenta también aparece en otra collection, ata los records a una sola identidad. Una Entity hace upsert idempotente sobre `(kind, dedup_key)`, así re-agregar el mismo par la actualiza en vez de crear un duplicado.
+
+```bash
+driftless collection entity add --kind company --name "Globex" --dedup globex.com
+```
+
+Deberías recibir un `<entity-id>`. Una Entity no es una fila de una collection; es una identidad aparte a la que los records apuntan.
+</Step>
+
+<Step title="Resuelve el Record">
+Encuentra el record específico y lee sus fields y status actuales.
+
+```bash
+driftless collection records <collection-id> --status qualified
+driftless collection record get <collection-id> <record-id>
+```
+</Step>
+
+<Step title="Evalúa, luego actualiza los fields confirmados">
+Juzga el record contra el criterion y su estado actual, luego escribe solo los fields que puedes confirmar. Enlázalo a la entity ya que estás aquí.
+
+```bash
+driftless collection record update <collection-id> <record-id> \
+  --fields '{"owner":"me","next_step":"schedule review"}' \
+  --entity <entity-id>
+```
+</Step>
+
+<Step title="Avanza el status solo cuando el estado de verdad cambió">
+Un status es una afirmación sobre la realidad. Mueve el record a un stage nuevo solo porque la cosa subyacente cambió, nunca porque el workflow llegó a este paso.
+
+```bash
+driftless collection record update <collection-id> <record-id> --status engaged
+```
+
+El status se valida contra los stages propios de la collection; un valor fuera de ellos se rechaza.
+</Step>
+
+<Step title="Escala el seguimiento finito a una Card">
+Si el record necesita trabajo acotado (reconciliar un duplicado, correr un análisis, redactar una respuesta), eso pertenece a [Work](/es/concepts/projects), no al record. Referencia el record por id; no hay un link formal record-a-card que inventar.
+
+```bash
+driftless project card add <project-id> \
+  --title "Reconcile Globex duplicate records" \
+  --description "Record <record-id> in <collection-id> may duplicate an existing entity"
+```
+</Step>
+</Steps>
+
+<Note>
+Misma superficie por MCP: `driftless_collection action:'retrieve'`, `driftless_collection_record action:'update'` y `driftless_entity action:'upsert'`. Por REST es `GET /workspaces/:slug/collections/:id/retrieve` y las rutas de record y entity bajo la misma base. Ver [API: Collections, Records, and Entities](/es/api/collections).
+</Note>
+
+## Estados esperados
+
+| Momento | Qué deberías ver |
+| --- | --- |
+| Tras `collection get` | El archetype, el `record_schema`, los stages, las views y el criterion. |
+| Tras `retrieve` | `{ records, nextCursor, criterion, criterion_missing }`. |
+| Tras `entity add` | Un `<entity-id>`; re-agregar el mismo `(kind, dedup_key)` actualiza, no duplica. |
+| Tras un `update` de fields | El record lleva los nuevos fields y su `entity_id`. |
+| Un status fuera de los stages | Rechazado con `400 VALIDATION_FAILED`. |
+
+## Knowledge write-back
+
+La mayor parte de lo que tocas aquí es estado operacional, y debería quedarse así. Escala deliberadamente:
+
+- **Los valores propios del record** se quedan en el Record. Eso es estado operacional, no Knowledge.
+- **El seguimiento finito** se vuelve una Card. Es Work, no un porqué durable.
+- **Una observación reusable** (un patrón en cómo se comportan estos records, una regla que se repite) se vuelve una Nota. Captúrala, no la inlines en el record.
+- **Un porqué durable** que valga la pena que todo el equipo confíe (cómo debería trabajarse esta collection) puede volverse Knowledge, pero solo tras revisión humana.
+
+```bash
+driftless note add --content "Accounts stalled in qualified for 30+ days are usually mis-scored, not lost"
+driftless context propose <slug>    # después, si prueba ser durable y revisado
+```
+
+El resultado de un solo record no es Knowledge. El patrón recurrente detrás de muchos records podría serlo, una vez revisado.
+
+## Qué no hacer
+
+- **No inventes un status terminal.** Nunca setees `won`, `published`, `signed`, `completed`, `validated`, `deposited` ni `committed` salvo que eso de verdad haya ocurrido. Un status es una afirmación, y un agente que lo escribe está haciendo la afirmación.
+- **No trates una Collection como una tabla aislada.** Lee primero el criterion; ese es todo el sentido del sustrato.
+- **No confundas Entity y Record.** Un Record es una fila en una collection; una Entity es una identidad entre collections. Deduplica identidades en la Entity, no editando filas.
+- **No promuevas el resultado de un solo record a Knowledge.** Los resultados operacionales viven en el record; solo un patrón durable y revisado se vuelve un Topic.
+- **No inventes una relación record-a-card.** Referencia por id; no hay link tipado shipped entre ambos.
+
+## Troubleshooting
+
+- **Una escritura de field devuelve `400 VALIDATION_FAILED`.** El field no está en el `record_schema` de la collection, o su valor es del tipo equivocado. Lee el schema con `collection get` y ajusta las field keys y los tipos.
+- **Un cambio de status se rechaza.** El status no es uno de los stages declarados de la collection. Un record solo puede estar en un stage que su collection define.
+- **Apareció una entity duplicada.** Usaste un `dedup_key` distinto (o ninguno). El upsert es idempotente sobre `(kind, dedup_key)`; usa la clave estable de forma consistente.
+- **Algo se ve raro entre los records.** Audita la collection antes de confiar en ella:
+
+```bash
+driftless collection doctor    # records fuera de ciclo, violaciones de schema, en drift, entities huérfanas
+```
+
+## Límites y truth states
+
+| Capacidad | Estado |
+| --- | --- |
+| Collections, records, entities en las tres superficies | Available |
+| `retrieve` y `collection context` (la costura de criterion) | Available |
+| Dedup de Entity sobre `(kind, dedup_key)` | Available |
+| `distill_policy` como campo de configuración | Available (declara intención) |
+| Ejecución automática de `distill_policy` al cerrar un record | Not available (no es un runtime automático) |
+| Una relación tipada entre un Record y una Card o Project | Not available |
+
+## Referencia relacionada
+
+- [Colecciones](/es/concepts/collections) - archetypes, tipos de campo y la costura de criterion.
+- [CLI: Collections, Records, and Entities](/es/cli/collections) - cada comando y flag.
+- [API: Collections, Records, and Entities](/es/api/collections) - la superficie REST.
+- [Operar entre agentes](/es/guides/project-across-agents) - escalar el seguimiento de un record a Work.
+- [External context with Broker](/es/guides/external-context-with-broker) - importar records externos a una collection.

@@ -108,12 +108,34 @@
             ]
           },
           {
+            "group": "Guides",
+            "icon": "book-open",
+            "pages": [
+              "guides/overview",
+              "guides/project-across-agents",
+              "guides/operate-a-collection",
+              "guides/govern-agent-learning",
+              "guides/clean-workspace-context",
+              "guides/external-context-with-broker"
+            ]
+          },
+          {
             "group": "Agents & automation",
             "icon": "bot",
             "pages": [
               "concepts/pr-bot",
               "agents/agentic-layer",
               "concepts/automations"
+            ]
+          },
+          {
+            "group": "MCP reference",
+            "icon": "boxes",
+            "pages": [
+              "mcp/knowledge",
+              "mcp/work",
+              "mcp/integrations",
+              "mcp/collaboration"
             ]
           },
           {
@@ -202,12 +224,34 @@
             ]
           },
           {
+            "group": "Guías",
+            "icon": "book-open",
+            "pages": [
+              "es/guides/overview",
+              "es/guides/project-across-agents",
+              "es/guides/operate-a-collection",
+              "es/guides/govern-agent-learning",
+              "es/guides/clean-workspace-context",
+              "es/guides/external-context-with-broker"
+            ]
+          },
+          {
             "group": "Agentes y automatización",
             "icon": "bot",
             "pages": [
               "es/concepts/pr-bot",
               "es/agents/agentic-layer",
               "es/concepts/automations"
+            ]
+          },
+          {
+            "group": "Referencia MCP",
+            "icon": "boxes",
+            "pages": [
+              "es/mcp/knowledge",
+              "es/mcp/work",
+              "es/mcp/integrations",
+              "es/mcp/collaboration"
             ]
           },
           {

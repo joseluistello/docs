@@ -1,0 +1,78 @@
+---
+title: 'MCP: Projects y operaciones'
+description: 'Las superficies de Work y Operations por MCP: recorre un board de project con el loop de cards, y configura collections, avanza records y resuelve entities cross-collection.'
+---
+
+Estas son las tools para la mitad de Driftless que no es documentación: [Projects](/es/concepts/projects) (el loop de cards) y [Collections](/es/concepts/collections) (el sustrato operacional). Son tools basadas en `action`: pasa `action` para elegir la operación. Las escrituras requieren el scope `work:write`; una API key actúa con el rol del member que la creó.
+
+## Projects y cards
+
+`driftless_project_card action:'next'` es el tick del loop: devuelve la próxima card accionable más su context bundle en una sola llamada.
+
+| Tool | Actions | Params principales | Notas |
+| --- | --- | --- | --- |
+| `driftless_project` | `list`, `get`, `set` | `id` (omite para crear), `title`, `goal` | todavía no expone `playbook_slug` |
+| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `delete`, `next` | `project_id`, `card_id`, `status`, `owner` | `next` devuelve `{ card, context_bundle, project_done }` |
+
+Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`. Disponibilidad: Available. La verificación de cards es reportar y exponer: el servidor almacena el comando `validate` y el resultado que reportas, y nunca lo corre.
+
+```text
+driftless_project_card action:'next' project_id:'<project-id>'
+  → { card: { id, status }, context_bundle: [ ... ], project_done: false }
+```
+
+## Collections y records
+
+`driftless_collection action:'retrieve'` entrega las dos mitades de la costura a la vez: los records relevantes más el criterion de Knowledge para leer primero. Para solo el criterion, usa `action:'context'`.
+
+| Tool | Actions | Params principales | Notas |
+| --- | --- | --- | --- |
+| `driftless_collection` | `list`, `get`, `add`, `update`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `limit`, `cursor` | `retrieve` devuelve `{ records, nextCursor, criterion, criterion_missing }` |
+| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id` | el `status` se valida contra los stages de la collection |
+
+Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`. Disponibilidad: Available.
+
+```text
+driftless_collection action:'retrieve' id:'<collection-id>' status:'qualified' limit:25
+  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [] }
+```
+
+## Entities
+
+Una Entity es una identidad cross-collection a la que los records apuntan. Hace upsert idempotente sobre `(kind, dedup_key)`: escribir el mismo par dos veces la actualiza en vez de crear un duplicado.
+
+| Tool | Actions | Params principales | Notas |
+| --- | --- | --- | --- |
+| `driftless_entity` | `list`, `get`, `upsert` | `kind`, `name`, `dedup_key`, `attributes` | idempotente sobre `(kind, dedup_key)` |
+
+Permisos: `list` / `get` son de nivel member; `upsert` requiere `work:write`. Disponibilidad: Available.
+
+```text
+driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
+```
+
+## Permisos
+
+| Scope | Cubre |
+| --- | --- |
+| `work:write` | Crear y actualizar projects, cards, collections, records y entities |
+| member (lectura) | `list` / `get` / `next` / `context` / `retrieve` / `doctor` |
+
+No hay un scope separado por superficie; `work:write` cubre todo el plano de work y operations.
+
+## Disponibilidad
+
+| Capacidad | Estado |
+| --- | --- |
+| Projects, cards y el loop de `next` | Available |
+| Collections, records y la costura de criterion | Available |
+| Dedup de Entity sobre `(kind, dedup_key)` | Available |
+| `playbook_slug` en `driftless_project` | Not available (setéalo desde la CLI o API) |
+| Ejecución del `validate` de una card en el servidor | Not available (solo reportar y exponer) |
+
+## Relacionado
+
+- [Proyectos](/es/concepts/projects), [Colecciones](/es/concepts/collections) - los conceptos.
+- [Continue a project across agents](/es/guides/project-across-agents), [Operate a Collection](/es/guides/operate-a-collection) - los workflows.
+- [CLI: Projects](/es/cli/projects), [CLI: Collections](/es/cli/collections) - la superficie de terminal.
+- [MCP & OAuth](/es/mcp/overview) - setup, auth y scopes.

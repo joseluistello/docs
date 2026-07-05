@@ -1,0 +1,78 @@
+---
+title: 'MCP: Projects and operations'
+description: 'The Work and Operations surfaces over MCP: walk a project board with the card loop, and configure collections, advance records, and resolve cross-collection entities.'
+---
+
+These are the tools for the half of Driftless that is not documentation: [Projects](/concepts/projects) (the card loop) and [Collections](/concepts/collections) (the operational substrate). They are action-based tools: pass `action` to pick the operation. Writes need the `work:write` scope; an API key acts with the role of the member who created it.
+
+## Projects and cards
+
+`driftless_project_card action:'next'` is the loop tick: it returns the next actionable card plus its context bundle in one call.
+
+| Tool | Actions | Main params | Notes |
+| --- | --- | --- | --- |
+| `driftless_project` | `list`, `get`, `set` | `id` (omit to create), `title`, `goal` | does not expose `playbook_slug` yet |
+| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `delete`, `next` | `project_id`, `card_id`, `status`, `owner` | `next` returns `{ card, context_bundle, project_done }` |
+
+Permissions: reads are member-level; writes need `work:write`. Availability: Available. Card verification is report-and-surface: the server stores the `validate` command and the result you report, and never runs it.
+
+```text
+driftless_project_card action:'next' project_id:'<project-id>'
+  → { card: { id, status }, context_bundle: [ ... ], project_done: false }
+```
+
+## Collections and records
+
+`driftless_collection action:'retrieve'` delivers both halves of the seam at once: the relevant records plus the criterion Knowledge to read first. For criterion only, use `action:'context'`.
+
+| Tool | Actions | Main params | Notes |
+| --- | --- | --- | --- |
+| `driftless_collection` | `list`, `get`, `add`, `update`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `limit`, `cursor` | `retrieve` returns `{ records, nextCursor, criterion, criterion_missing }` |
+| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id` | `status` is validated against the collection's stages |
+
+Permissions: reads are member-level; writes need `work:write`. Availability: Available.
+
+```text
+driftless_collection action:'retrieve' id:'<collection-id>' status:'qualified' limit:25
+  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [] }
+```
+
+## Entities
+
+An Entity is a cross-collection identity that records point at. It upserts idempotently on `(kind, dedup_key)`: writing the same pair twice updates it instead of creating a duplicate.
+
+| Tool | Actions | Main params | Notes |
+| --- | --- | --- | --- |
+| `driftless_entity` | `list`, `get`, `upsert` | `kind`, `name`, `dedup_key`, `attributes` | idempotent on `(kind, dedup_key)` |
+
+Permissions: `list` / `get` are member-level; `upsert` needs `work:write`. Availability: Available.
+
+```text
+driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
+```
+
+## Permissions
+
+| Scope | Covers |
+| --- | --- |
+| `work:write` | Create and update projects, cards, collections, records, and entities |
+| member (read) | `list` / `get` / `next` / `context` / `retrieve` / `doctor` |
+
+There is no separate scope per surface; `work:write` covers the whole work and operations plane.
+
+## Availability
+
+| Capability | State |
+| --- | --- |
+| Projects, cards, and the `next` loop | Available |
+| Collections, records, and the criterion seam | Available |
+| Entity dedup on `(kind, dedup_key)` | Available |
+| `playbook_slug` on `driftless_project` | Not available (set it from the CLI or API) |
+| Server-side execution of a card's `validate` | Not available (report-and-surface only) |
+
+## Related
+
+- [Projects](/concepts/projects), [Collections](/concepts/collections) - the concepts.
+- [Continue a project across agents](/guides/project-across-agents), [Operate a Collection](/guides/operate-a-collection) - the workflows.
+- [CLI: Projects](/cli/projects), [CLI: Collections](/cli/collections) - the terminal surface.
+- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

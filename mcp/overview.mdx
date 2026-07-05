@@ -20,42 +20,16 @@ them. Bodies come back **brief** by default (the durable *why*, not the full
 need, or pass `view: "full"`. See [Payload views](#payload-views-keep-reads-fast)
 below.
 
-## Available tools
+## Tool families
 
-| Tool | Description |
-|------|-------------|
-| `driftless_context_retrieve` | **Start here when you have a task but no slug.** Ranked, drifted-first, bounded context for a `task` and/or `files`. Composes search + match-files + list. Bodies are `brief` by default; pass `view: "full"` or `driftless_context_get` one topic. Returns `{ shown, has_more, next_action, results[] }` with `match_type` / `why_matched` / `confidence` per hit |
-| `driftless_context_search` | Full-text search across topics, relevance-ranked. Returns the top **5** by default (raise `limit`, max 20) with `has_more` when more match: read the top few, then `driftless_context_get` the one you want rather than pulling the whole set. Returns lightweight summaries; archived topics are never returned. Accepts `tags` to scope to a category (e.g. `["billing"]`) and `stale` to filter by freshness (`true` = only drifted, `false` = only fresh) |
-| `driftless_context_list` | List topics, relevance-ranked (drifted-first, then most-recent). Returns the top 40 by default with `has_more` when more exist; narrow with `status`/`stale`/`tags`, or raise `limit`. Archived topics are hidden unless you pass `status: archived`. Returns lightweight summaries; fetch a topic's full body with `driftless_context_get` |
-| `driftless_context_get` | Retrieve a single topic by slug: the **full** body by default (you named the one you want); pass `view: "brief"` for a cheap second look |
-| `driftless_context_get_for_files` | Match topics to a list of file paths, drifted ones first, bounded to the top 10 (raise `limit`, max 25). Bodies are **brief** by default (~76% lighter); pass `view: "full"` for full bodies |
-| `driftless_tags` | The tag registry: one tool, `action`: `list` (per-tag counts, paginated), `create` (pre-register with optional description, idempotent), `delete` (detach from every topic; curation, needs `work:write`) |
-| `driftless_areas` | The area registry (domains topics are filed under): one tool, `action`: `list`, `create`, `update` (rename/describe), `delete` (un-files its topics; curation, needs `work:write`) |
-| `driftless_context_create` | Create a new topic (accepts `title` and `rels`; defaults to Up for review) |
-| `driftless_note_add` | Capture a private note (stays a draft; never submitted for review). Pass `project_id` to attach it to a project, or `project_id` + `card_id` to attach it to a card mid-loop |
-| `driftless_context_share` | Share a topic: publish a public web page (`to_web`) and/or share privately `with_members` |
-| `driftless_project` | Projects: one tool, `action`: `list`, `get`, `set` (create when no `id`, update when given) |
-| `driftless_project_card` | Project cards (units of work): one tool, `action`: `list`, `get`, `add`, `set` (status/owner), `move`, `delete`, and `next` (the loop tick, returns the next actionable card + its context bundle). Needs `work:write` |
-| `driftless_collection` | Collections: one tool, `action`: `list`, `get`, `add`, `update`, `doctor`, `context` (resolve the criterion Knowledge to read before working a record), and **`retrieve`** (relevant records **plus** that criterion in one call). The operational substrate (CRM/tracker/content) |
-| `driftless_collection_record` | Records (typed rows in a collection): one tool, `action`: `list`, `get`, `add`, `update`. A record's `status` is validated against its Collection's stages |
-| `driftless_entity` | Entities (cross-collection identity & dedup): one tool, `action`: `list`, `get`, `upsert` (idempotent on `(kind, dedup_key)`) |
-| `driftless_broker` | **Operate** an already-connected provider (flag-gated; see [Broker](/integrations/broker)): one tool, `action`: `connections`, `operations`, `capabilities`, `inspect`, `invoke`, `models`, `records`, `page-content`, `index-preview`, `index`, `events`, `attach-criterion`, `detach-criterion`. Credentials resolve server-side and every call is audited. Being listed is not being usable: an external caller is still gated by rollout and grants. The broker never **connects/disconnects** a provider (that's integration setup) and never authors scripts |
-| `driftless_context_comment` | Comments: one tool, `action`: `add`, `list`, `resolve`. Points AT a topic / record / card; carries no governance, resolves into an edit |
-| `driftless_context_update` | Update an existing topic (append-safe; accepts `rels`) |
-| `driftless_context_delete` | Delete a topic (destructive) |
-| `driftless_context_merge` | Fold a duplicate topic into its survivor (mechanical; archives the source; prose never merged) |
-| `driftless_context_propose` | Put a Note up for review (draft → proposed) |
-| `driftless_context_approve` | Merge a Note into Knowledge (proposed → reviewed). **Owner/admin authority only**; the client runs it only when an owner/admin explicitly asks |
-| `driftless_context_create_proposal` | Open a Suggested edit to an existing topic |
-| `driftless_context_proposals` | List Notes up for review (the review queue) |
-| `driftless_context_relations` | A topic's typed relations, incoming and outgoing |
-| `driftless_context_graph` | The local relation graph around a topic (configurable depth) |
-| `driftless_context_doctor` | Audit the context layer (stale / zombie / orphaned / drafts) |
-| `driftless_context_coverage` | Coverage map: which source areas have NO topic (the gap-finder) |
-| `driftless_context_events` | Recent context activity for a topic |
-| `driftless_agent_stats` | Proposal outcome stats: how many agent proposals (the Auditor's Suggested edits) merged vs were rejected, i.e. the approval rate |
-| `driftless_members` | List the workspace's members (member id, role, email): the valid `owner_clerk_id` values for assigning cards/records |
-| `driftless_workspaces` | List the workspaces your credential can target |
+The MCP surface is documented by family in the **MCP reference**. Use this page for setup and auth; open a family page for tool names, actions, parameters, permissions, and examples.
+
+| Family | What it covers | Reference |
+| --- | --- | --- |
+| Knowledge and governance | Retrieve, read, write, graph, health, tags, areas, and the Note to Knowledge lifecycle | [MCP: Knowledge and governance](/mcp/knowledge) |
+| Projects and operations | The project card loop, collections, records, and entities | [MCP: Projects and operations](/mcp/work) |
+| Integrations and Broker | Operating a connected provider (gated) | [MCP: Integrations and Broker](/mcp/integrations) |
+| Workspace and collaboration | Comments, members, workspaces, and proposal stats | [MCP: Workspace and collaboration](/mcp/collaboration) |
 
 The surface covers **context** (topics, governance, the graph), the **work surface** (projects, cards, tags, areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
 
