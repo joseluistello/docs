@@ -24,7 +24,7 @@ driftless branches rm staging
 
 Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Drift is reserved for branches where changes signal durable context shifts.
 
-## Second drift source — local git (no GitHub App)
+## Second drift source: local git (no GitHub App)
 
 Drift normally comes from push webhooks, so a team without the GitHub App installed gets no signal. To close that gap, the CLI can report drift from your **local** checkout:
 
@@ -33,11 +33,11 @@ driftless context get --diff          # show topics matching local changes (disp
 driftless context get --diff --mark   # …and flag those topics drifted on Cloud
 ```
 
-`--mark` is **opt-in and explicit** — plain `--diff` only displays, so work-in-progress never flips team state unless you ask. It is idempotent (already-drifted topics are left alone).
+`--mark` is **opt-in and explicit**. Plain `--diff` only displays, so work-in-progress never flips team state unless you ask. It's idempotent (already-drifted topics are left alone).
 
 ## A nudge, not an alarm
 
-Drift is framed as a **nudge** — "the code under this topic moved, worth a look" — not an error. It tolerates false positives by design: trust the code, and only update the topic if the change actually altered how the area works. A deleted anchor file produces a distinct nudge: *"anchored file deleted — re-anchor or archive this topic."*
+Drift is a **nudge**, not an error: "the code under this topic moved, worth a look." It tolerates false positives by design: trust the code, and only update the topic if the change actually altered how the area works. A deleted anchor file produces a distinct nudge: *"anchored file deleted: re-anchor or archive this topic."*
 
 ## Lifecycle
 
@@ -66,12 +66,12 @@ driftless context get --diff            # drift for current local (uncommitted) 
 
 <AccordionGroup>
   <Accordion title="What triggers drift?">
-    Only pushes to tracked branches. PRs do **not** trigger drift; they trigger PR observation instead (the match is recorded, and the Auditor — if configured — reviews and comments only when it has a finding). This distinction keeps drift meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
+    Only pushes to tracked branches. PRs do **not** trigger drift; they trigger PR observation instead (the match is recorded, and the Auditor, if configured, reviews and comments only when it has a finding). This distinction keeps drift meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
   </Accordion>
   <Accordion title="Can I manually mark a topic as drifted?">
     Yes. Run `driftless context update <slug> --status draft` to mark it for review, or update the content and set `--status reviewed` to clear drift. You can also let the next push naturally trigger a drift check.
   </Accordion>
   <Accordion title="What happens if a topic's anchored files are deleted?">
-    The topic becomes drifted on the next push. If the glob patterns no longer match any file in the repo, `context doctor` flags it as a **zombie** — an anchor pointing at nothing. Fix the patterns or archive the topic.
+    The topic becomes drifted on the next push. If the glob patterns no longer match any file in the repo, `context doctor` flags it as a **zombie**, an anchor pointing at nothing. Fix the patterns or archive the topic.
   </Accordion>
 </AccordionGroup>

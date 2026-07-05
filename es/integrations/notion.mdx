@@ -1,0 +1,189 @@
+---
+title: 'Conector de Notion (beta)'
+description: "Conecta Notion como fuente de solo lectura: la metadata y el contenido de tus páginas se sincronizan hacia Driftless, gobernados y acotados. Sin escrituras, sin configuración manual de Nango."
+---
+
+El conector de Notion trae tus páginas de Notion a tu workspace como una **fuente de solo lectura**. Conectas una vez, compartes las páginas que quieras, y Driftless mantiene su metadata sincronizada y lee el contenido de una página cuando se lo pides. Todo se mantiene acotado, auditado y gobernado.
+
+<Note>
+Esto es una **beta de solo lectura**. Driftless nunca escribe en Notion (no crea, no edita, ni borra páginas). Los datos de Notion conectados son **datos de fuente externa**, no Knowledge. El retrieve de contexto por defecto se queda solo en Topics; Notion aparece en retrieve únicamente después de un paso explícito de import/index y de una petición explícita de retrieve sobre la fuente del conector.
+</Note>
+
+## Conectar Notion
+
+<Steps>
+  <Step title="Abre Connections">
+    Ve a **Settings → Connections** en el dashboard.
+  </Step>
+  <Step title="Autoriza Notion">
+    Elige **Notion** y autoriza en el pop-up. Driftless ata la conexión únicamente a tu workspace.
+  </Step>
+  <Step title="La sincronización empieza sola">
+    Al confirmar, Driftless configura la sincronización de solo lectura por ti. **Nunca tocas una plantilla de Notion ni ninguna configuración de Nango.** La conexión muestra **“Notion sync is starting”** mientras corre la primera sincronización.
+  </Step>
+</Steps>
+
+## Comparte las páginas que quieres sincronizar
+
+Notion solo expone las páginas que compartes explícitamente con la integración. En Notion, abre una página o base de datos, elige **Connections → Driftless**, y confirma. Todo lo que no compartas se queda privado y nunca llega a Driftless.
+
+Si el estado dice **“Notion is connected, but no pages were found to sync,”** comparte al menos una página o base de datos y se sincronizará automáticamente.
+
+## Revisar el estado de la sincronización
+
+Settings → Connections muestra un estado en lenguaje claro y un siguiente paso. El CLI muestra lo mismo:
+
+```bash
+driftless broker connections
+```
+
+| Estado | Significado |
+| --- | --- |
+| Notion sync is starting | La primera sincronización está corriendo; vuelve a revisar en un rato. |
+| Notion is synced: N items available | Tus páginas compartidas están rastreadas. |
+| No pages were found to sync | Comparte una página o base de datos de Notion con la integración. |
+| The last Notion sync failed | Se muestra el error; reconecta para reintentar. |
+| Connection expired | Reconecta Notion para retomar. |
+
+## Leer lo que se sincronizó
+
+**Models** lista lo que puedes leer:
+
+```bash
+driftless broker models notion          # muestra ContentMetadata
+```
+
+**Records** son la metadata sincronizada de tus páginas (títulos, parents, timestamps), acotada y consciente de deltas:
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5
+```
+
+**Page content** es el texto acotado y citable de una página (solo lectura):
+
+```bash
+driftless broker page <pageId>
+```
+
+Las mismas acciones están disponibles para los agentes a través de la MCP tool `driftless_broker` (`action: 'models' | 'records' | 'page-content'`).
+
+## Indexar Notion para retrieve respaldado por el conector
+
+Leer una página no es lo mismo que indexarla. Si quieres que el retrieve de Driftless busque en el contenido de Notion, primero materializa las páginas de Notion seleccionadas en connector documents que son propiedad de Driftless.
+
+Previsualiza antes de escribir:
+
+```bash
+driftless broker index notion --dry-run --model ContentMetadata --limit 10 --sample-limit 3
+```
+
+Si la previsualización es correcta, ejecuta el import/index:
+
+```bash
+driftless broker index notion --model ContentMetadata --limit 10 --import-run-id notion-beta-1
+```
+
+Esto escribe únicamente en los `connector_documents` de Driftless. **No** escribe en Notion, no crea Topics, no crea Knowledge, ni crea records de Collection.
+
+Después de indexar, el retrieve respaldado por el conector es explícito:
+
+```json
+{
+  "query": "refund escalation",
+  "sources": ["connectors"],
+  "providers": ["notion"],
+  "connector_models": ["ContentMetadata"],
+  "limit": 5
+}
+```
+
+Los resultados llevan `trust: "external"`, citas y frescura. Trátalos como material de fuente citado, no como memoria del equipo revisada.
+
+## Límites de privacidad y seguridad
+
+- **Solo lectura.** Sin escrituras a Notion de ningún tipo. Las operaciones de escritura no están expuestas y no se pueden invocar.
+- **Con scope de workspace.** Una conexión solo es visible para el workspace que la creó; sin acceso cross-tenant.
+- **Las credenciales nunca salen del vault.** Los tokens de Notion viven en el vault cifrado de Nango y se inyectan server-side. Nunca aparecen en el CLI, en MCP, en el dashboard, en los logs, ni en los traces.
+- **Lecturas acotadas.** Los records y el contenido de página están paginados y con tope de tamaño; las páginas grandes devuelven un prefijo acotado y claramente marcado.
+- **Auditado.** La conexión, las corridas de sincronización, las lecturas de records y las lecturas de páginas quedan registradas, sin loguear jamás el texto de la página.
+- **No es Knowledge.** El contenido de Notion es dato de fuente externa. Nunca se fusiona en Knowledge automáticamente; el retrieve respaldado por el conector lo devuelve solo como `trust: "external"` con citas y frescura.
+
+---
+
+## Runbook del operador
+
+Configuración interna y operación de la beta del conector de Notion.
+
+### Entorno
+
+El broker está detrás de un feature-flag y falla rápido al arrancar si se habilita sin sus credenciales:
+
+| Variable | Propósito |
+| --- | --- |
+| `DRIFTLESS_BROKER_ENABLED` | `true` prende el broker (por defecto off; `staging` viene on por defecto). |
+| `DRIFTLESS_BROKER_ROLLOUT` | `off` (por defecto) cierra el carril externo de OAuth/MCP; `internal` / `ga` lo abren (los grants igual aplican). |
+| `DRIFTLESS_BROKER_POLICY` | `enforce` (por defecto en prod) esconde cualquier operación no permitida explícitamente; `open` (staging) las muestra todas, marcadas. |
+| `NANGO_SECRET_KEY` | La API key de backend de Nango (solo server-side). |
+| `NANGO_WEBHOOK_SIGNING_KEY` | Verifica los webhooks reenviados por Nango (requerido cuando el broker está prendido). |
+
+### Webhook
+
+Nango reenvía los eventos de sync/auth al ingress **root** (no bajo `/api/v1`):
+
+```
+POST https://<api-host>/broker/nango/webhook
+```
+
+Cada evento se verifica por HMAC contra `NANGO_WEBHOOK_SIGNING_KEY` antes de tocar la base de datos; un evento sin firma o falsificado se rechaza (401). Los webhooks son **solo señales**: actualizan la salud/conteos de sync y nunca disparan una llamada al proveedor.
+
+### Bootstrap automático (syncs + la acción de lectura de page-content)
+
+Al confirmar/reconectar la conexión, Driftless provisiona la capacidad de solo lectura del conector vía la Nango API, de forma idempotente (una plantilla ya desplegada se trata como éxito), para que los operadores nunca toquen una plantilla de Nango a mano:
+
+- **Sync de solo lectura** (`function_type: sync`): las plantillas de sync del registry (Notion → `content-metadata`) se despliegan **y se arrancan** para la conexión, así refleja los records de `ContentMetadata`.
+- **Acción de lectura revisada** (`function_type: action`): las acciones de lectura declaradas en el registry y visibles según el rollout (Notion → `notion-page-content`) se despliegan, así la lectura de page-content sí se puede invocar. Esta acción es una **Nango Function personalizada**, versionada en el repo (`apps/api/src/integrations/nango/notion/actions/notion-page-content.ts`, revisada vía PR) y desplegada tal cual como `type:'function'` (NO una plantilla prearmada del catálogo; mandarla como plantilla fue el bug `404` de la v1). Es **una acción de lectura específica, declarada en el registry**, **no** el catálogo amplio de acciones de Nango (que nunca se auto-habilita) y **nunca** una escritura. El backend despliega el source versionado que lee del disco; nunca genera código, y los agentes nunca lo escriben en runtime.
+
+Ambos son best-effort y quedan registrados como estado de bootstrap en la conexión; una falla se muestra como estado y nunca rompe la conexión.
+
+### Notas de operador sobre import/index
+
+El camino de import/index está separado del bootstrap de la conexión:
+
+- `index/preview` lee records sincronizados acotados y contenido de página acotado, y después reporta conteos de candidatos, muestras, estimaciones de tamaño, y razones de lo que se saltó.
+- `index` repite la lectura acotada y escribe filas idempotentes en `connector_documents`.
+- Los connector documents se llavean por workspace, proveedor, conexión, y external id.
+- Reindexar actualiza los connector documents existentes cuando el contenido cambia.
+- El retrieve normal nunca llama a Notion ni a Nango en vivo; solo lee connector documents materializados.
+- Los connector documents stale se etiquetan; las filas deleted/error se excluyen del retrieve normal.
+
+Corre los gates de retrieve del conector solo después de indexar:
+
+```bash
+EVAL_API_URL=https://<api-host>/api/v1 EVAL_API_KEY=<read-key> EVAL_WS=<slug> \
+  EVAL_BROKER_EXPECTED=on EVAL_CONNECTOR_RETRIEVE=on \
+  EVAL_CONNECTOR_PROVIDER=notion EVAL_CONNECTOR_MODEL=ContentMetadata \
+  pnpm evals:retrieval-scale
+```
+
+### Rollback
+
+El conector tiene kill switches independientes, y ninguno es destructivo:
+
+- Cierra el carril externo: pon `DRIFTLESS_BROKER_ROLLOUT=off` (el acceso interno por API-key/dashboard sigue funcionando; el OAuth/MCP externo se rechaza).
+- Deshabilita el broker por completo: pon `DRIFTLESS_BROKER_ENABLED=false`. La superficie REST/MCP del broker desaparece (503/404) y la API arranca limpia sin env de Nango.
+- Por workspace: desconecta Notion en Settings → Connections (esto también revoca la credencial en Nango).
+
+### Rotación de keys
+
+Rota `NANGO_SECRET_KEY` / `NANGO_WEBHOOK_SIGNING_KEY` en Nango, después actualiza el env de la API y vuelve a desplegar. Como las credenciales se resuelven server-side en cada request, no hay copia guardada que migrar. Después de rotar la signing key, confirma que un webhook real todavía verifica (una sonda sin firma tiene que seguir devolviendo 401).
+
+### Gate de la beta
+
+El gate de la beta de solo lectura prueba el camino de punta a punta sin escribir: conexión → estado → modelo `ContentMetadata` → records acotados → contenido de página opcional → rechazo de webhook sin firma → ninguna escritura oculta por policy expuesta:
+
+```bash
+EVAL_API_URL=https://<api-host>/api/v1 EVAL_API_KEY=<read-key> EVAL_WS=<slug> \
+  EVAL_BROKER_EXPECTED=on pnpm evals:retrieval-scale
+```
+
+Es de solo lectura y seguro correrlo contra la beta de prod. Sin conexión de Notion → se salta; conectado pero falta el modelo de sync → falla de forma clara.

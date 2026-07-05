@@ -1,0 +1,105 @@
+---
+title: 'Comandos de contexto'
+description: "Crea, lee, actualiza y elimina topics de contexto desde la CLI."
+---
+
+## Listar y buscar
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | Lista topics con filtros. Por defecto muestra los **40 más relevantes** (los drifteados primero); imprime `Showing N of M`. Usa `--all` / `--limit N` para ver más (`--json` no tiene tope). `--suggested` = lo que todavía no es Knowledge (Notas + En revisión: `draft` + `proposed`). `--tag` se puede repetir (semántica OR), así puedes listar una categoría entera. | `driftless context list --tag billing` |
+| `context get <topic>` | `--json` | Detalle completo del topic | `driftless context get b2b-guard` |
+| `context get --files` | `--files "a,b"`, `--json` | Empareja topics con archivos | `driftless context get --files "src/auth/guard.ts"` |
+| `context get --diff` | `--json`, `--mark` | Topics para los cambios actuales | `driftless context get --diff` |
+| `context get --diff --mark` | `--mark` | …y marca como **drifted** los topics que coinciden (fuente de drift por git local, sin necesidad de la GitHub App) | `driftless context get --diff --mark` |
+| `context search` | consulta, `--tag <name>`, `--json`, `--include-notes` | Búsqueda de texto completo **ordenada por relevancia** (top 50; las coincidencias de nombre/título quedan más arriba). Admite `"frases entre comillas"`, `OR`, `-negación`. Acota con más términos en vez de paginar. `--tag` (repetible, OR) limita la búsqueda a una categoría. Knowledge + topics en revisión; las Notas quedan fuera salvo que uses `--include-notes`. | `driftless context search "refunds" --tag billing` |
+
+## Tags: el registro de categorías
+
+Los tags son categorías a nivel de workspace a las que se anclan los topics. Los nombres se normalizan en todas partes (minúsculas, los espacios pasan a guiones), así que `Billing` y `billing ` son el mismo tag. Adjuntar un tag que nunca se creó de antemano lo **registra automáticamente**. El registro es curaduría, nunca una barrera.
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `tags` | `--limit <n>`, `--offset <n>`, `--json` | Lista el registro con la cantidad de topics por tag (paginado, los más usados primero) | `driftless tags` |
+| `tags add <name>` | `--description "..."` | Crea un tag de antemano (idempotente: volver a agregarlo fusiona la descripción) | `driftless tags add billing --description "Reglas de facturación"` |
+| `tags rename <old> <new>` | ninguna | Renombra en todas partes, reescribiendo cada topic que lleve el tag (owner/admin) | `driftless tags rename billing facturacion` |
+| `tags rm <name>` | ninguna | Elimina del registro **y** desvincula de cada topic (owner/admin) | `driftless tags rm legacy` |
+
+## Crear y actualizar
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Crea un topic | `driftless context add "payment-flow" --content "# Flujo de pago\n\n## Qué\nCheckout de Stripe" --pattern "src/billing/**"` |
+| `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modifica un topic | `driftless context update payment-flow --gotcha "Se requieren idempotency keys" --add-pattern "src/webhooks/stripe/**"` |
+| `context delete` | `--dry-run`, `--json` | Elimina un topic | `driftless context delete payment-flow --dry-run` |
+| `context merge` | `--into`, `--dry-run`, `--json` | Funde un duplicado en el que sobrevive (archiva el origen; la prosa nunca se fusiona) | `driftless context merge payment-flow-2 --into payment-flow --dry-run` |
+| `context move` | `--to <workspace>`, `--dry-run`, `--json` | Reubica un topic en otro workspace al que perteneces | `driftless context move payment-flow --to acme-platform` |
+
+## Validación de patterns
+
+Cada `--pattern` y `--add-pattern` se valida contra tu checkout local antes de la llamada a la API:
+
+| Resultado | Significado |
+|---|---|
+| `✓ pattern "src/auth/**" matches 12 files` | Anclaje sano |
+| `⚠ over-broad anchor` | Coincide con más de 100 archivos; considera dividir el topic |
+| `✗ pattern matches 0 files` | Bloqueado; corrige el glob o usa `--where` para una ruta explícita |
+
+## Enlaces y salud
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `context link` | `--dry-run`, `--json` | Vinculación entre repos | `driftless context link payment-flow` |
+| `context doctor` | `--json` | Audita la salud del contexto | `driftless context doctor` |
+| `context relations` | `--json` | Lista las relaciones tipadas | `driftless context relations payment-flow` |
+| `context graph` | `--depth N`, `--json` | Grafo de relaciones entre topics | `driftless context graph payment-flow --depth 2` |
+
+`context doctor` audita la capa de topics buscando zombis (patterns que coinciden con cero archivos), huérfanos (repo eliminado), stale y borradores.
+
+## Gobernanza
+
+Un topic se vuelve Knowledge solo una vez que se fusiona. Ciclo de vida: `draft → proposed → reviewed → archived`. Los agentes proponen; fusionar es un acto de owner/admin. Un agente lo ejecuta solo cuando un owner/admin lo pide explícitamente. Mira [Gobernanza](/es/concepts/governance).
+
+| Comando | Descripción | Ejemplo |
+|---|---|---|
+| `context propose <topic>` | Pone una Nota en revisión | `driftless context propose payment-flow` |
+| `context approve <topic>` | Súmala a Knowledge (owner/admin; solo cuando te lo piden) | `driftless context approve payment-flow` |
+| `context reject <topic>` | Devuélvela a Nota | `driftless context reject payment-flow` |
+| `context archive <topic>` | Retira un topic | `driftless context archive payment-flow` |
+| `context pr <topic>` | Lista las ediciones sugeridas | `driftless context pr payment-flow` |
+| `context pr <topic> --open` | Abre una edición sugerida (`--summary` + flags de contenido) | `driftless context pr payment-flow --open --summary "..." --content @new.md` |
+| `context pr <topic> --merge <id>` | Fusiona una edición sugerida (owner/admin) | `driftless context pr payment-flow --merge <id>` |
+| `context pr <topic> --reject <id>` | Cierra una edición sugerida sin fusionarla (owner/admin) | `driftless context pr payment-flow --reject <id>` |
+
+## Compartir
+
+| Comando | Descripción | Ejemplo |
+|---|---|---|
+| `context share <topic>` | Enlace público de solo lectura (`--revoke` para desactivarlo) | `driftless context share payment-flow` |
+
+## Workspaces
+
+Un workspace es el contenedor de más alto nivel para el contexto; puedes pertenecer a varios y cambiar entre ellos sin volver a autenticarte. Un solo `driftless login` registra cada workspace al que perteneces bajo una única [key con alcance](/es/concepts/workspaces#credenciales-acotadas).
+
+| Comando | Descripción | Ejemplo |
+|---|---|---|
+| `workspace list` | Los workspaces a los que perteneces (● = activo) | `driftless workspace list` |
+| `workspace current` | El workspace activo | `driftless workspace current` |
+| `workspace switch <slug>` | Opera sobre otro (sin volver a iniciar sesión) | `driftless workspace switch acme-platform` |
+| `workspace add --key <drift_…>` | Registra un workspace con su API key | `driftless workspace add --key drift_…` |
+| `context move <topic> --to <slug>` | Reubica un topic en otro workspace | `driftless context move payment-flow --to acme-platform` |
+
+`context move` reinicia el topic a Nota en su nuevo workspace (el estado Knowledge no se traslada entre workspaces) y requiere owner/admin en el origen más membresía en el destino. Mira [Workspaces](/es/concepts/workspaces).
+
+## Más allá del contexto: el resto del workspace
+
+Todo el workspace es headless, no solo los topics. La misma CLI maneja las superficies de trabajo, y un agente corre los comandos que correría una persona:
+
+| Familia | Comandos | Docs |
+|---|---|---|
+| **Proyectos y cards** | `project add\|list\|get\|update`, `project card add\|status\|move\|rm` | [Proyectos](/es/concepts/projects) |
+| **Áreas** | `area list\|add\|rename\|rm`, más `context add/update --area` | [Áreas](/es/concepts/areas) |
+| **Notas y compartir** | `note add`, comparte por la API o la bandeja del dashboard | [Notas y compartir](/es/concepts/notes-sharing) |
+| **Miembros** | `member list\|invite\|role\|rm\|invites` | [Workspaces](/es/concepts/workspaces#invitaciones) |
+
+Corre `driftless <family> --help` para ver el conjunto completo de flags.

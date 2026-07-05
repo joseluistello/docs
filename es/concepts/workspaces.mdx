@@ -1,0 +1,61 @@
+---
+title: 'Workspaces'
+description: "El contenedor de más alto nivel para el contexto: perteneces a varios, cambias libremente, mueves topics entre ellos."
+---
+
+## ¿Qué es un workspace?
+
+Un workspace es donde un equipo pequeño y sus agentes hacen el trabajo. Es el contenedor de más alto nivel para todo lo que hay en Driftless:
+
+- **[Proyectos](/es/concepts/projects)** y sus cards: el trabajo en curso.
+- **[Áreas](/es/concepts/areas)**: los dominios de navegación en los que está mapeado el sistema.
+- **[Topics](/es/concepts/topics)** y **[notas](/es/concepts/notes-sharing)**: lo que el equipo sabe, con el ciclo de vida Nota → Knowledge.
+- **Miembros**, repos e integraciones.
+
+Todo pertenece a **exactamente un** workspace, y el acceso siempre está acotado a él. Una persona puede pertenecer a **varios** workspaces y cambiar entre ellos, en el dashboard, la CLI o un cliente MCP, sin volver a iniciar sesión.
+
+## Identidad vs. membresía
+
+Clerk autentica a la **persona** (la sesión verificada). Pertenecer a un workspace es un hecho aparte, guardado en Driftless como una fila `workspace_members` con un rol. Este desacople es deliberado: el workspace es la unidad central del producto, así que no queda atado a un recurso externo facturable y con tope.
+
+La autorización es una verificación directa de membresía: *¿este usuario verificado tiene una fila de membresía para el workspace de la URL?* Un no miembro recibe un 404 (el workspace se lee como si no existiera), nunca los datos de otro tenant.
+
+| Role | Puede |
+|---|---|
+| **owner** | Todo, incluido otorgar el rol de owner y administrar miembros |
+| **admin** | Fusionar contexto en Knowledge, invitar miembros, administrar roles (no owner) |
+| **member** | Escribir notas y proponer (fusionar en Knowledge necesita owner/admin) |
+
+## Cómo cada superficie elige el workspace activo
+
+| Superficie | Autentica con | El workspace activo viene de |
+|---|---|---|
+| **Dashboard** | Sesión de Clerk (el humano) | La URL: `app.driftless.icu/w/:slug`. El switcher del sidebar solo cambia el slug. |
+| **CLI** | API key | El registro local; `driftless workspace switch` lo cambia. |
+| **MCP** | Token OAuth | El workspace primario del token, o un argumento opcional `workspace` en una llamada a una tool. |
+
+## Credenciales acotadas
+
+Una sola credencial puede estar autorizada para **varios** workspaces, así que te autenticas una vez y llegas a todos, sin una "super key" que abra todo.
+
+- **API keys**: cuando creas una key en el dashboard (Settings → API keys), elige sus **Authorized workspaces**. `driftless login` entonces registra todos los workspaces que la key alcanza, y `workspace switch` cambia entre ellos localmente.
+- **Tokens OAuth (MCP)**: la pantalla de consentimiento te deja otorgar workspaces adicionales; cada llamada a una tool puede apuntar a cualquiera de ellos.
+
+Dos reglas mantienen esto seguro:
+
+1. **La membresía es la verdad.** Una credencial acotada solo puede alcanzar un workspace mientras su humano sea *actualmente* miembro. Saca a alguien de un workspace y sus credenciales ahí quedan revocadas de inmediato, sin necesidad de reemitir nada.
+2. **Sin escalamiento.** Dentro de cada workspace, una credencial actúa con el rol vigente de ese humano ahí, nunca uno más alto.
+
+## Invitaciones
+
+Owners y admins invitan a compañeros por email (Settings → Members, o la API). Driftless crea una invitación de un solo uso, válida 7 días, y envía un enlace por correo. El invitado inicia sesión y se une como member, sin necesidad de una organización externa.
+
+## Mover un topic entre workspaces
+
+Un topic vive en un workspace, pero puedes reubicarlo:
+
+```bash
+driftless context move <topic> --to <workspace-slug>
+```
+
+Mover **resetea el topic a Nota** en su nuevo workspace, porque el estado de Knowledge es específico del workspace y no se traslada, y suelta los anchors locales del workspace (links de repo, relaciones). Requiere owner/admin en el workspace de origen y membresía en el de destino.

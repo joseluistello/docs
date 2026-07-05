@@ -1,0 +1,56 @@
+---
+title: 'Auto-pull (experimental)'
+description: "Un hook determinista de Claude Code que inyecta contexto reviewed antes de cada edición: la compuerta rindiendo frutos."
+---
+
+La skill le *pide* al agente que traiga contexto antes de editar (UC1). **Auto-pull** lo vuelve determinista: un **hook PreToolUse** de Claude Code inyecta el **System context reviewed** del equipo para un archivo *antes de cada edición*, para que nadie tenga que acordarse.
+
+<Note>
+Experimental, y **solo Claude Code** (los hooks son una función de Claude Code). Apagado por defecto.
+</Note>
+
+## Cómo funciona
+
+```text
+1. Vas a editar src/billing/refund.ts
+2. Claude Code dispara el hook PreToolUse → driftless hook pre-edit   (siempre, determinista)
+3. El pegamento revisa el toggle del workspace. Off → no-op, sale.
+4. On → matchea los topics del archivo e inyecta SOLO el System context
+   reviewed (gotchas / invariants / decisions) como additionalContext
+5. El agente edita ya sabiendo las reglas del equipo, no a ciegas
+```
+
+El agente nunca *eligió* traer nada. Lo hizo el editor. Esa es la diferencia entre una skill (el agente *debería*) y un hook (simplemente *pasa*).
+
+## Dos interruptores, por diseño
+
+El hook está **instalado localmente** pero **controlado de forma remota**:
+
+- **Instalado** por `driftless install-skill` en el `.claude/settings.json` del repo. Se queda ahí, inerte.
+- **Activado** por un admin del workspace en **Settings → Automations**, un solo toggle (`settings.auto_pull_context`). El pegamento lo lee en cada corrida (cacheado ~60s), así que apagarlo vuelve al hook un no-op para **todo el workspace**, sin que nadie toque un archivo local.
+
+Para quitar el hook por completo de una máquina, corre ahí `driftless hooks disable`.
+
+## Por qué es la recompensa de la gobernanza
+
+Solo los topics que son Knowledge (`reviewed`) se auto-inyectan. Una Nota es una pista, no la verdad del equipo, así que nunca llega al agente de forma automática. Por eso **agregar una nota a Knowledge es, literalmente, lo que hace que tus agentes empiecen a programar con ella.** La decisión del owner/admin y el hook son el mismo loop: revisar → fusionar (por un owner/admin, o un agente al que le piden) → el hook lo entrega → el agente lo hace bien.
+
+## Costo y seguridad
+
+Hecho para que no se te vaya en tokens ni te bloquee el editor:
+
+- **Solo Reviewed + System.** Los drafts y las notas en etapa temprana nunca se inyectan.
+- **Deduplicado por sesión.** Edita la misma área cinco veces → su contexto se inyecta una vez, no cinco.
+- **Con tope de tamaño.** Un resumen que prioriza la señal bajo un presupuesto fijo de ~2k tokens: los invariantes y los gotchas de cada topic matcheado van antes que las decisiones de cualquiera, tomados en round-robin para que un topic muy verboso no ahogue al resto. Nunca el topic entero.
+- **No-op si no hay match o hay lentitud.** Ningún topic reviewed que matchee, o una API lenta → no se inyecta nada.
+- **Nunca bloquea.** El hook siempre sale limpio; una falla no puede detener tu edición.
+
+Combinado con el prompt caching (el prefijo inyectado es barato de reenviar), un resumen deduplicado cuesta centavos a lo largo de una sesión, no dólares.
+
+## Enciéndelo
+
+```bash
+driftless install-skill         # instala el hook (inerte)
+# luego: dashboard → Settings → Automations → toggle ON
+driftless hooks disable         # quita el hook por completo de esta máquina
+```

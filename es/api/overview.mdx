@@ -1,0 +1,57 @@
+---
+title: 'Resumen de la API'
+description: 'URL base, autenticación y endpoints públicos.'
+---
+
+URL base:
+
+```text
+https://api.driftless.icu/api/v1
+```
+
+## Autenticación
+
+La mayoría de los endpoints requieren una sesión de Clerk desde el dashboard o una API key desde la CLI.
+
+```bash
+curl https://api.driftless.icu/api/v1/workspaces/acme/repos \
+  -H "x-api-key: drift_your_api_key_here"
+```
+
+<Warning>
+  Trata las API keys como secretos. Driftless guarda las keys cifradas y solo muestra el valor en crudo una vez, al momento de crearlas.
+</Warning>
+
+## Endpoints públicos
+
+Estos endpoints no requieren autenticación:
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/health` | Chequeo de salud en tiempo de ejecución |
+| `GET` | `/version` | Versión de la API y metadatos del despliegue |
+| `POST` | `/workspaces` | Arranque de workspace |
+| `GET` | `/blog/posts` | Índice público del blog |
+| `GET` | `/blog/posts/:slug` | Entrada pública del blog |
+| `POST` | `/webhooks/github` | Receptor de webhooks de la GitHub App |
+| `POST` | `/webhooks/clerk` | Receptor de webhooks de Clerk |
+
+## Autenticación y API keys
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/me` | Identidad actual y contexto del workspace |
+| `POST` | `/workspaces/:slug/api-keys` | Crea una API key para ese workspace |
+| `GET` | `/workspaces/:slug/api-keys` | Lista las API keys de un workspace |
+| `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoca una API key |
+
+## OAuth
+
+Endpoints OAuth 2.0 para aplicaciones cliente de MCP:
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/oauth/authorize` | Pantalla de consentimiento de autorización |
+| `POST` | `/oauth/token` | Intercambia el código de autorización por un token de acceso |
+| `POST` | `/oauth/register` | Registra un cliente OAuth |
+| `POST` | `/oauth/revoke` | Revoca un token de acceso |

@@ -1,9 +1,9 @@
 ---
 title: 'Errors'
-description: 'The error envelope is part of the agent contract — branch on `code`, never on the message.'
+description: "The error envelope is part of the agent contract: branch on `code`, never on the message."
 ---
 
-Every error from the Driftless API — whether you reach it through the CLI, the MCP server, or directly — comes back as the **same JSON envelope**. An agent should branch on the machine-readable `code`, not parse the human `message`.
+Every error from the Driftless API (whether you reach it through the CLI, the MCP server, or directly) comes back as the **same JSON envelope**. An agent should branch on the machine-readable `code`, not parse the human `message`.
 
 ## The envelope
 
@@ -11,7 +11,7 @@ Every error from the Driftless API — whether you reach it through the CLI, the
 {
   "statusCode": 403,
   "code": "MISSING_HUMAN_IDENTITY",
-  "message": "Merging into Knowledge requires owner/admin authority — your own session or an owned owner/admin key (an agent acting on your explicit request). A faceless agent (ownerless key / OAuth) cannot merge.",
+  "message": "Merging into Knowledge requires owner/admin authority: your own session or an owned owner/admin key (an agent acting on your explicit request). A faceless agent (ownerless key / OAuth) cannot merge.",
   "request_id": "a1b2c3d4",
   "retryable": false,
   "endpoint": "POST /api/v1/workspaces/acme/topics/auth-flow/approve"
@@ -22,9 +22,9 @@ Every error from the Driftless API — whether you reach it through the CLI, the
 |---|---|
 | `statusCode` | HTTP status. |
 | `code` | **Stable, machine-readable** error code (this list is additive-only). |
-| `message` | Human-readable, actionable — tells you how to fix it. May change; don't match on it. |
-| `request_id` | Correlation id — quote it when reporting an issue. |
-| `retryable` | `true` only for genuine transient failures (5xx). A `4xx` is a definitive answer — retrying won't help. |
+| `message` | Human-readable, actionable. Tells you how to fix it. May change; don't match on it. |
+| `request_id` | Correlation id. Quote it when reporting an issue. |
+| `retryable` | `true` only for genuine transient failures (5xx). A `4xx` is a definitive answer, so retrying won't help. |
 | `endpoint` | The method + path that produced the error. |
 
 <Note>
@@ -36,7 +36,7 @@ Every error from the Driftless API — whether you reach it through the CLI, the
 Input that's wrong shouldn't reach the agent as an opaque `500`. Two layers guarantee that:
 
 1. **Validation** rejects a bad enum (`status`, `visibility`) with a field-level `400` *before* it touches the database.
-2. **A Postgres-error translator** catches any constraint violation that slips through and turns it into a coded `4xx` — never a generic `500`.
+2. **A Postgres-error translator** catches any constraint violation that slips through and turns it into a coded `4xx`, never a generic `500`.
 
 After those two, a `500` means what it should: a real bug or an outage. That's also the only time `retryable` is `true`.
 
@@ -51,7 +51,7 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `INVALID_ID` | 400 | A path/body identifier is not a valid UUID. |
 | `REQUIRED_FIELD` | 400 | A required field was missing. |
 | `FK_VIOLATION` | 400 | References a record that does not exist. |
-| `SECRET_DETECTED` | 400 | A topic field looked like a credential (API key, token, private key) and the write was blocked. Remove it, or set `allow_secrets: true` (CLI `--allow-secrets`) to override. The error masks the match — it never echoes the secret. |
+| `SECRET_DETECTED` | 400 | A topic field looked like a credential (API key, token, private key) and the write was blocked. Remove it, or set `allow_secrets: true` (CLI `--allow-secrets`) to override. The error masks the match; it never echoes the secret. |
 
 ### Access & identity
 | `code` | Status | When |
@@ -59,18 +59,18 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `UNAUTHORIZED` | 401 | Missing or invalid API key / token. → `driftless login --key <key>`. |
 | `FORBIDDEN` | 403 | Authenticated, but not allowed. |
 | `MISSING_HUMAN_IDENTITY` | 403 | A faceless principal (an ownerless key, or an OAuth token with no owner/admin behind it) tried to merge into Knowledge. Re-issue the key from the dashboard so it carries your identity, or run the merge under an owner/admin. |
-| `INSUFFICIENT_ROLE` | 403 | You lack the workspace role for this action — only an owner/admin can approve. Ask one to promote you in Settings → Members. |
-| `NOT_FOUND` | 404 | The resource doesn't exist (or another member's private draft you can't see — we return 404, never 403). |
+| `INSUFFICIENT_ROLE` | 403 | You lack the workspace role for this action: only an owner/admin can approve. Ask one to promote you in Settings → Members. |
+| `NOT_FOUND` | 404 | The resource doesn't exist (or another member's private draft you can't see, so we return 404, never 403). |
 
 ### Governance & conflicts
 | `code` | Status | When |
 |---|---|---|
 | `DUPLICATE` | 409 | A record with these values already exists. |
 | `DUPLICATE_TOPIC` | 409 | A topic with that slug already exists in the workspace. |
-| `VERSION_CONFLICT` | 409 | `expected_version` didn't match — someone wrote since you read. Re-read and retry. |
+| `VERSION_CONFLICT` | 409 | `expected_version` didn't match: someone wrote since you read. Re-read and retry. |
 | `CONFLICT` | 409 | A generic state conflict. |
 | `PROTECTED_RESOURCE` | 403 | A protected/default resource can't be modified or deleted. |
-| `RATE_LIMITED` | 429 | Too many requests — back off. |
+| `RATE_LIMITED` | 429 | Too many requests. Back off. |
 
 ### Server
 | `code` | Status | When |
@@ -79,4 +79,4 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 
 ## Observability
 
-Every captured error is also emitted to PostHog (`api_error` server-side, `cli_command_error` from the CLI) with `code`, `status_code`, and `endpoint` as properties — so the error surface is one queryable map, sliceable by type and endpoint rather than free-text.
+Every captured error is also emitted to PostHog (`api_error` server-side, `cli_command_error` from the CLI) with `code`, `status_code`, and `endpoint` as properties, so the error surface is one queryable map, sliceable by type and endpoint rather than free-text.

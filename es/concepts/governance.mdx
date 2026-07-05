@@ -1,0 +1,81 @@
+---
+title: 'Gobernanza'
+description: "Un Topic se vuelve Knowledge solo cuando un owner o admin lo integra. Los agentes proponen; la integración es un acto de owner o admin, que un agente ejecuta solo cuando se lo piden de forma explícita."
+---
+
+Driftless gobierna el **entendimiento** igual que GitHub gobierna el código. Un Topic no es "la verdad" en el momento en que alguien lo escribe. Se vuelve Knowledge solo cuando un owner o admin lo integra. Esa sola distinción es lo que permite que un agente confíe en el contexto que recibe, en lugar de leer de un wiki que se pudre en silencio.
+
+## Todo es un Topic que evoluciona
+
+Hay un solo primitivo, el **Topic**, y madura a lo largo de un único eje de confianza: **Nota → Knowledge**. Una **Nota** es un borrador (privado por defecto; compártela con el workspace y queda **En revisión**). **Knowledge** es la fuente de verdad del equipo: *una nota se vuelve knowledge cuando se integra*. Integrar es un acto de **owner/admin**. Un owner o admin puede integrarla por su cuenta, o pedirle de forma explícita a un agente que ejecute la integración en su nombre: misma autoridad en ambos casos. Para cambiar Knowledge existente abres una **Edición sugerida**, que un owner o admin integra.
+
+```text
+Nota  →  En revisión  →  Knowledge     (+ Archived)
+(draft)  (proposed)      (reviewed)
+```
+
+- **Nota**: un borrador u observación privada. Solo tú la ves; queda fuera de la búsqueda; las notas sin tocar se auto-archivan tras ~14 días (recuperable). Piensa aquí. Compártela con el workspace y queda **En revisión**.
+- **En revisión**: una Nota puesta a revisión humana. Espera una integración, vive en la cola de revisión y puede devolverse con un motivo.
+- **Knowledge**: la fuente de verdad del equipo, las notas ya integradas. La autoridad de un owner o admin la sumó al knowledge, así que entra al **grafo de conocimiento vivo y anclado al código** del equipo, el mapa multi-contexto de toda la base de código. Esta es la verdad durable que consume un agente.
+
+Los topics `reviewed` llevan `governance.authoritative: true` + `approved_by`/`approved_at` + `approved_via` (`human` si lo integró una persona, `agent` si un agente ejecutó la integración a pedido de un owner/admin). Internamente el enum de estado sigue siendo `draft`/`proposed`/`reviewed`/`archived`; los nombres de arriba son el lenguaje del producto.
+
+El modelo es simple: **los agentes proponen; integrar en Knowledge es un acto de owner/admin**. `approve`, `reject` y `merge` requieren autoridad de owner/admin. Una key de agente sin owner, o alguien que no es owner, puede escribir notas pero se le niega la integración. Un agente *puede* ejecutar la integración, pero solo cuando un owner o admin se lo pide de forma explícita, nunca por iniciativa propia.
+
+```bash
+driftless context propose <slug>     # Nota → En revisión
+driftless context approve <slug>     # súmala al knowledge (intégrala)
+driftless context reject <slug> --reason "..."   # → de vuelta a una Nota (con feedback)
+driftless context archive <slug>     # retírala
+```
+
+## Tres superficies
+
+El dashboard refleja las tres etapas: **Knowledge** (el grafo de Knowledge, solo notas integradas), **Cola de revisión** (la cola de integrar/rechazar más la re-revisión del contexto en drift) y **Notas** (tu espacio privado, con controles para compartir y "por vencer").
+
+## Quién puede integrar: roles del workspace
+
+La autoridad para integrar es un **rol del workspace**. Cada miembro lleva uno:
+
+| Rol | Puede |
+|---|---|
+| `member` | Leer + **poner notes a revisión** |
+| `admin` / `owner` | …+ **integrar**: sumar al knowledge, rechazar, archivar y limpiar drift |
+
+Integrar una nota en Knowledge (y re-confirmar un topic en drift) requiere el rol `admin` u `owner`. Un member pone notas a revisión pero no las integra. El rol es la autoridad; un agente que actúa a pedido explícito de un owner o admin ejecuta la integración bajo esa autoridad (y queda sellado como `approved_via: agent`). Solo un `owner` puede otorgar o revocar el rol `owner`, y al último owner no se le puede bajar de rango ni quitar. Quien crea el workspace es el primer owner; administra los roles en **Settings → Members**.
+
+Los permisos controlan **solo la integración y la visibilidad, nunca el código**. Driftless informa; nunca le impide a un dev escribir código.
+
+## La señal de confianza
+
+Todo el sentido de la aprobación es que el agente pueda distinguir **la verdad de una pista**. Cada `context get` la lleva en la respuesta canónica:
+
+```json
+{
+  "classification": { "status": "reviewed" },
+  "governance": { "reviewed": true, "approved_by": "u_cto", "approved_at": "..." }
+}
+```
+
+Un agente debería consumir los topics `reviewed` (Knowledge) como verdad y los `draft`/`proposed` (Notas) como sugerencias. La gobernanza sin que el agente consuma esta señal sería apenas un wiki.
+
+## Edición sugerida: cambiar la fuente de verdad del equipo
+
+No sobrescribas un topic de Knowledge. Para cambiar la fuente de verdad del equipo, abre una **Edición sugerida**: un cambio de contenido propuesto que un humano revisa e integra.
+
+```bash
+driftless context pr <slug>                                     # lista las Ediciones sugeridas abiertas
+driftless context pr <slug> --open --summary "motivo" --content @new.md
+driftless context pr <slug> --merge <id>                        # intégralo (owner/admin)
+driftless context pr <slug> --reject <id>                       # ciérralo sin integrar
+```
+
+Una Edición sugerida lleva un **parche de contenido** (limitado por whitelist a los campos de contenido, así que nunca puede falsificar una aprobación). Integrarlo aplica el parche y vuelve el topic a Knowledge, atribuido a quien lo integró.
+
+## Por qué determinista
+
+Integrar es un acto de owner/admin, y todo a su alrededor es determinista y auditable: quién integró qué, cuándo, bajo la autoridad de quién (`approved_by`), por qué mano (`approved_via`: una persona o un agente al que se lo pidieron) y qué cambió (versión + historial). Un CTO que gobierna el contexto siempre puede responder *"¿por qué el agente confió en esto?"* con un registro preciso, no con la conjetura de un modelo.
+
+<Note>
+En una versión futura, los agentes de plataforma (drift, frescura) abrirán **Ediciones sugeridas** automáticamente. Se conectan a la misma cola de revisión, y un owner/admin sigue decidiendo qué se integra. La redacción de Ediciones sugeridas inteligentes es la única pieza que falta.
+</Note>

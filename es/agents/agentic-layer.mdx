@@ -1,0 +1,42 @@
+---
+title: 'Agentes Audit y Architect'
+description: "Agentes del lado del servidor que mantienen honesto el contexto de tu equipo y lo hacen crecer. Ellos proponen; un owner/admin agrega el resultado a la knowledge."
+---
+
+Driftless puede correr dos agentes especializados sobre tu codebase. No reemplazan a un revisor. Revisan y hacen crecer el **contexto registrado** de tu equipo: los `gotchas`, `decisions` e `invariants` que tu equipo escribió. Ambos **proponen**; un owner/admin **agrega el resultado a la knowledge**.
+
+- **El Auditor** mantiene honesto el contexto existente cuando el código cambia.
+- **El Architect** hace crecer el contexto donde falta.
+
+## El Auditor
+
+Cuando un pull request (o el drift) toca archivos que ancla un topic **reviewed**, el Auditor lee el cambio y el código actual, y lo compara afirmación por afirmación contra lo que el equipo registró.
+
+- **Contradice una afirmación** → abre una Edición sugerida, citando el archivo/línea y el *porqué* de que la afirmación ahora esté mal (por ejemplo *"este diff elimina el chequeo de idempotencia que exige el invariant de `billing-flow`"*).
+- **No está seguro** → marca una pregunta (sin patch) para que un humano la mire. Nunca fabrica una edición con falsa seguridad.
+- **Sin impacto** → no hace nada. El silencio es el resultado común y correcto.
+
+Solo audita contra **Knowledge** (`reviewed`). Una Nota es una idea sin mergear, nunca algo que se deba hacer cumplir.
+
+## El Architect
+
+En las áreas nuevas de un PR y en un barrido nocturno, el Architect busca **áreas de código que ningún topic cubre** y sugiere topics nuevos: agrupados por concepto, con un anchor angosto (5-40 archivos), sostenidos en el código que leyó, y enlazados a decisiones existentes donde tenga sentido. Se inclina a sugerir de menos: un hueco que se escapa sale barato, un topic spam erosiona la confianza.
+
+## Cómo corren: BYOM
+
+Los agentes corren **del lado del servidor en Driftless** usando **tu API key de OpenCode** (bring-your-own-model). OpenCode cobra la inferencia; Driftless nunca sirve tu key de vuelta hacia afuera. Se queda solo del lado del servidor.
+
+- **Solo lectura.** Los agentes leen y razonan; nunca ejecutan, editan ni escriben código.
+- **Solo proponen.** Todo lo que producen estos agentes autónomos aterriza como una **Nota** o una **Edición sugerida** en tu cola de revisión. Nunca mergean. Mergear a Knowledge es un acto de owner/admin, y estos agentes autónomos nunca mergean su propio trabajo (la separación de poderes se mantiene). Eso es distinto de *tu propio* agente (CLI/MCP, actuando bajo tu identidad), al que sí le puedes pedir de forma explícita que corra un merge en tu nombre.
+
+## Configúralos
+
+En el dashboard: **Settings → Agents**.
+
+1. Pega tu **API key de OpenCode**.
+2. Elige un **modelo**, o una lista de prioridad separada por comas (por ejemplo `opencode/claude-sonnet-4-6, opencode/big-pickle`); el runner rota al siguiente ante un error de rate-limit o de crédito.
+3. Activa el **Auditor** y el **Architect**.
+
+## Mira lo que hicieron
+
+La pantalla **Agent Activity** es el registro de transparencia: cada corrida, el trigger (PR / nocturno), el modelo, los tokens usados, las propuestas creadas, y un resumen sin código de lo que el agente concluyó, incluyendo las corridas `no-op` (una señal sana: el agente miró y no encontró nada que cambiar).

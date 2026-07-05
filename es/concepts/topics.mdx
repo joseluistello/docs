@@ -1,0 +1,156 @@
+---
+title: 'Topics y relaciones'
+description: 'Cómo los topics conectan el código con el conocimiento del equipo.'
+---
+
+## ¿Qué es un topic?
+
+Un topic es la unidad atómica de contexto en Driftless. Conecta una porción de tu sistema con el conocimiento compartido del equipo sobre ella. La porción puede ser TypeScript, Python, Rust, Go, docs, config, infraestructura, o un flujo de trabajo que abarca varios repos.
+
+Un topic tiene:
+
+| Field | Description |
+|-------|-------------|
+| **slug** | **id** único en kebab-case dentro del workspace (ej.: `auth-flow`, `billing-webhook`) |
+| **title** | Nombre corto para mostrar a humanos: un sustantivo como el nodo de un diagrama (`Auth`, `Billing`). Manténlo en una o dos palabras; la explicación va en `what`/`content`, nunca en el title |
+| **what** | Resumen corto de lo que hace este código |
+| **how** | Nota corta (1-3 oraciones) sobre el mecanismo o el enfoque. La explicación extensa va en `content`, no aquí |
+| **decisions** | Por qué se tomaron las decisiones (decisiones de arquitectura) |
+| **gotchas** | Trampas, casos límite, cosas que se van a romper |
+| **invariants** | Reglas que siempre deben cumplirse |
+| **required_checks** | Checks a correr antes de cambiar este código |
+| **ownership** | Equipo o individuo responsable |
+| **content** | Cuerpo libre completo (Markdown). Puede incluir diagramas, snippets de código, referencias |
+| **anchors** | Patrones, archivos y repos que ligan este topic al código |
+| **tags** | Categorías del workspace para descubrimiento y filtrado (ej.: `auth`, `billing`): filtra con `context list/search --tag <name>`, el parámetro `tags` de MCP, o los chips del dashboard. Precréalas y cúralas en el registro (`driftless tags`) |
+| **relations** | Links tipados a otros topics |
+| **classification** | Estado (`reviewed`, `draft`) |
+
+Los topics son **content-first**: el cuerpo markdown `content` ES el topic. Los campos estructurados (`gotcha` / `decision` / `invariant` / `check`) son highlights opcionales que se ponen encima. Agrega uno solo cuando quieras que esa cosa específica se le muestre a la máquina (el bot de PR, el brief de un futuro agente). Usa `tags` para etiquetar y agrupar topics.
+
+## Crea tu primer topic
+
+Empieza con el topic útil más pequeño: una nota durable que explique un área lo suficientemente bien para que un humano o agente futuro pueda trabajar ahí.
+
+```bash
+# The first topic should be something REAL: the gotcha that bit you, the
+# invariant nothing may break, anchored to the module it governs:
+driftless context add billing-webhooks --title "Webhooks" \
+  --what "Stripe webhook ingestion and its idempotency rules." \
+  --gotcha "Stripe delivers at-least-once: handlers must short-circuit on a seen event.id" \
+  --pattern "src/billing/webhooks/**"
+```
+
+Luego enriquécelo a medida que la realidad se aclara:
+
+```bash
+driftless context update billing-webhooks \
+  --gotcha "..." \
+  --decision "..." \
+  --check "..."
+```
+
+## Anclar topics al código
+
+Los topics se conectan al código mediante patrones glob y rutas de archivo. Esto es agnóstico del lenguaje: Driftless matchea rutas, no ASTs. Cuando el código anclado cambia, el topic entra en drift.
+
+```bash
+# Anchor by glob pattern
+driftless context add api-guards --pattern "src/auth/**"
+
+# Multiple patterns for cross-cutting topics
+driftless context update api-guards --add-pattern "src/common/guards/**"
+
+# Anchor by exact file path
+driftless context add auth-flow --where src/auth/guard.ts
+
+# Anchor a document
+driftless context add architecture-decisions --file docs/decisions/auth.md
+```
+
+La CLI valida cada patrón contra tu checkout local al momento de escribir:
+
+- `✓ pattern "src/auth/**" matches 12 files`: anchor sano
+- `⚠ over-broad anchor`: el patrón matchea más de 100 archivos; considera dividirlo
+- `✗ pattern "src/nonexistent/**" matches 0 files`: bloqueado; arregla el glob
+
+**Disciplina:** 5-40 archivos matcheados por topic es sano. Menos de 5 significa que estás fragmentando. Más de 100 es una trampa cajón de sastre que nadie va a mantener. Si un topic cubre demasiado, divídelo; si cubre muy poco, fusiónalo.
+
+Quita anchors cuando ya no tengan sentido:
+
+```bash
+driftless context update auth-flow --remove-pattern "src/old-auth/**"
+```
+
+## Clasificación de topics
+
+Un topic es content-first: el cuerpo markdown `content` ES el topic. Usa `tags` para etiquetar y agrupar topics. El único eje de confianza es `status`.
+
+### Status: ciclo de vida de gobernanza
+
+Una nota se vuelve Knowledge una vez que se fusiona: `draft → proposed → reviewed → archived`. `reviewed` es Knowledge; la respuesta de lectura lleva `governance.authoritative`. Los agentes proponen; fusionar es un acto de owner/admin (un agente lo corre solo cuando se le pide explícitamente). Ver [Gobernanza](/es/concepts/governance).
+
+| Status | Meaning |
+|--------|---------|
+| `draft` | Capturado, todavía sin fusionar: una pista (una Nota), no verdad |
+| `proposed` | En revisión |
+| `reviewed` | **Knowledge**: un owner/admin lo fusionó (o un agente lo hizo a pedido suyo); el agente lo trata como verdad |
+| `archived` | Retirado |
+| `orphaned` | Impulsado por código (repo borrado), ortogonal a la gobernanza |
+
+### Visibilidad
+
+Un topic vive en el **workspace** y es visible para todos sus miembros. La excepción es una **Nota privada** (un draft con `is_private` puesto), visible solo para su creador hasta que se ponga en revisión o se le quite la marca. ¿Necesitas aislamiento entre grupos? Usa un workspace aparte.
+
+## Relaciones tipadas
+
+Los topics se conectan entre sí mediante relaciones tipadas, construyendo un grafo semántico:
+
+| Relation | Meaning |
+|----------|---------|
+| `depends_on` | El topic A depende de B |
+| `relates_to` | Asociación general |
+| `supersedes` | El topic B reemplaza a A |
+| `blocks` | A no puede avanzar hasta que B esté hecho |
+| `implements` | A es la implementación del patrón descrito en B |
+| `documents` | A documenta o explica B |
+| `risk_for` | A introduce un riesgo para B |
+
+```bash
+driftless context update auth-guard \
+  --rel depends_on:jwt-service \
+  --rel relates_to:role-decorator
+```
+
+## Wiki-links
+
+Usa la sintaxis `[[slug]]` dentro de cualquier campo de texto libre (what, how, decisions, gotchas, invariants, content). La API las parsea automáticamente en referencias hacia adelante y hacia atrás.
+
+```bash
+driftless context update billing-webhook \
+  --gotcha "Same idempotency race as [[stripe-webhook-ingest]]; deduplicate by event ID"
+```
+
+Tanto `billing-webhook` como `stripe-webhook-ingest` se mostrarán mutuamente en sus referencias cuando se consulten.
+
+## Contexto entre repos
+
+Un topic puede abarcar varios repositorios. Cuando corres `driftless context update <slug>` desde cualquier repo, ese repo se agrega a la lista `where_repos` del topic. Los topics acumulan repos de forma orgánica sin cableado manual.
+
+Usa un solo topic entre repos cuando el mismo concepto realmente abarca varios repos, por ejemplo `billing-contracts` a través de un repo de API, un repo de worker y un repo de frontend. Usa topics separados más relaciones cuando cada repo tiene sus propios detalles de implementación, por ejemplo `billing-api` `depends_on:billing-worker`.
+
+Para ligar explícitamente el repo actual a un topic:
+
+```bash
+driftless context link auth-flow
+```
+
+## El grafo de topics
+
+El grafo de topics se puede explorar desde la CLI y el dashboard:
+
+```bash
+driftless context graph auth-flow    # BFS graph from a topic, terminal output
+```
+
+El dashboard renderiza el grafo interactivo completo. Los nodos son topics, las aristas son relaciones tipadas. Haz clic en cualquier nodo para ver su contexto completo y sus anchors.

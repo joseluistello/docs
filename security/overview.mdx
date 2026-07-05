@@ -58,7 +58,7 @@ Driftless supports OAuth 2.0 authorization for MCP (Model Context Protocol) clie
 
 ### Token security
 
-- Authorization codes, access tokens, and refresh tokens are stored as hashes only — never plaintext
+- Authorization codes, access tokens, and refresh tokens are stored as hashes only, never plaintext
 - Tokens are never logged or returned after initial issuance
 - The MCP server (`apps/mcp`) is a protocol adapter that calls the existing Driftless REST API. It never accesses Postgres or internal libraries directly.
 

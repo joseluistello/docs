@@ -1,0 +1,70 @@
+---
+title: 'Te damos la bienvenida a Driftless'
+description: "El espacio de trabajo donde tu equipo y sus agentes de código comparten un mismo contexto vivo, anclado al código, para que cualquiera vea lo que importa antes de tocar el código."
+---
+
+Tu agente puede escribir el código. Lo que no puede es saber por qué tu equipo descartó justo ese enfoque hace seis meses. Ese tipo de contexto es real, pero vive disperso entre chats, pull requests y la cabeza de cada persona, y queda stale en el momento en que el código se mueve por debajo.
+
+Driftless es donde eso deja de pasar. Tú y tu equipo trabajan junto a sus agentes en un solo lugar, y escribes una nota cada vez que aprendes algo que vale la pena conservar. Las notas que perduran se vuelven Knowledge: ancladas al código, lo bastante honestas para avisar cuando driftea, y leídas por cada agente antes de que toque un archivo. Mantener a todos sincronizados pasa a ser algo que ocurre mientras trabajas, no un segundo trabajo que mantienes aparte.
+
+## Conéctate en un minuto, más o menos
+
+El mismo espacio de trabajo, ya sea que llegue una persona o un agente. Instala la CLI, apunta tu agente hacia ella y ya estás dentro.
+
+<Steps>
+  <Step title="Instala la CLI e inicia sesión">
+    ```bash
+    npm install -g @driftless-sh/cli
+    driftless login
+    ```
+
+    <Tip>
+      ¿Lo corres en CI? Pasa una key directamente: `driftless login --key drift_your_api_key_here`. Puedes crear una en [driftless.icu](https://driftless.icu), en Settings y luego API Keys.
+    </Tip>
+  </Step>
+
+  <Step title="Enseña a tu agente de código">
+    ```bash
+    driftless install-skill
+    ```
+
+    Esto deja `AGENTS.md` y `CLAUDE.md` en tu repo. Desde ese momento, cualquier agente de código que abra el repo ya conoce el ritmo: leer lo que el equipo sabe antes de editar, y escribir de vuelta lo que aprendió después.
+  </Step>
+
+  <Step title="Conecta un cliente de IA por MCP">
+    Apunta ChatGPT, Claude o Cursor al endpoint MCP de Driftless:
+
+    ```
+    https://api.driftless.icu/mcp
+    ```
+
+    Claude y ChatGPT manejan el handshake de OAuth por su cuenta, así que solo pegas la URL. Para la CLI, los agentes y CI, envía tu key en el header `X-API-Key`. La configuración completa está en [MCP & OAuth](/es/mcp/overview).
+  </Step>
+</Steps>
+
+<Note>
+  ¿Conectas un agente a mano? En el fondo se reduce a dos movimientos: leer antes de editar, escribir de vuelta después de aprender. Pega [todo el loop en un solo prompt](/es/quickstart#el-loop-completo-en-un-solo-prompt) en cualquier agente, o sigue [Configuración de agentes](/es/agents/setup) para tu cliente en particular.
+</Note>
+
+## Explora la documentación
+
+<CardGroup cols={2}>
+  <Card title="Conecta" icon="plug" href="/es/cli/setup">
+    Todas las formas en que una persona o un agente se enchufa: la CLI, los skills de agente, MCP, la GitHub App, Notion y agentes self-hosted.
+  </Card>
+  <Card title="Conceptos" icon="brain" href="/es/concepts/workspaces">
+    El modelo mental. Workspaces, áreas, topics, gobernanza, y cómo el drift mantiene el contexto honesto.
+  </Card>
+  <Card title="Trabaja y colabora" icon="layers" href="/es/concepts/projects">
+    Proyectos, colecciones, notas y comentarios. El lado operativo, donde de verdad ocurre el trabajo.
+  </Card>
+  <Card title="Agentes y automatización" icon="bot" href="/es/concepts/pr-bot">
+    Los comentarios de PR del Auditor, los agentes Audit y Architect del lado del servidor, y el hook de auto-pull.
+  </Card>
+  <Card title="Referencia de la CLI" icon="terminal" href="/es/cli/context">
+    Crea, lee, actualiza y ancla topics de contexto desde la línea de comandos.
+  </Card>
+  <Card title="Referencia de la API" icon="code" href="/es/api/overview">
+    La superficie REST. URL base, auth, el error envelope, workspaces, repos, topics e integraciones.
+  </Card>
+</CardGroup>

@@ -1,68 +1,70 @@
 ---
-title: 'Driftless'
-description: 'The workspace where teams work with their coding agents — governed, code-anchored context that knows when it drifted.'
-mode: 'custom'
+title: 'Welcome to Driftless'
+description: 'The workspace where your team and its coding agents share one living, code-anchored context, so anyone can see what matters before they touch the code.'
 ---
 
-<div style={{ maxWidth: '60rem', margin: '0 auto', padding: '5rem 1.5rem 4rem' }}>
+Your agent can write the code. What it can't do is know why your team ruled out that exact approach six months ago. That kind of context is real, but it lives scattered across chats, pull requests, and people's heads, and it goes stale the moment the code moves underneath it.
 
-  <div style={{ maxWidth: '44rem' }}>
-    <p style={{ fontSize: '0.75rem', color: '#38632c', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: '1rem' }}>
-      Documentation
-    </p>
+Driftless is where that stops happening. You and your team work alongside your agents in one place, and you write a note whenever you learn something worth keeping. The durable notes become Knowledge: anchored to the code, honest enough to flag itself when it drifts, and read by every agent before it touches a file. Keeping everyone in sync turns into something that happens while you work, not a second job you maintain on the side.
 
-    <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 700, marginBottom: '1.25rem', color: '#1b1a16', lineHeight: 1.08, letterSpacing: '-0.02em' }}>
-      The <span style={{ color: '#38632c' }}>agent-native</span> workspace for builders.
-    </h1>
+## Connect in about a minute
 
-    <p style={{ fontSize: '1.05rem', color: '#54524a', lineHeight: 1.65, margin: '0 0 2rem', maxWidth: '40rem' }}>
-      Driftless is the workspace where small teams and their coding agents work together: run projects, build pipelines like a CRM or a bug tracker, and capture what you learn as notes. The durable notes merge into Knowledge — code-anchored, drift-aware truth your agents pull before they touch a file. Giving every agent the right context is the byproduct of working here, not a separate tool to maintain.
-    </p>
+Same workspace whether a human or an agent reaches it. Install the CLI, point your agent at it, and you're in.
 
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '4rem' }}>
-      <a href="/quickstart" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#ffffff', background: '#38632c', textDecoration: 'none', fontWeight: 600, padding: '0.7rem 1.1rem', borderRadius: '0.5rem' }}>
-        Start with Driftless
-        <span>→</span>
-      </a>
-      <a href="/concepts/topics" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem', color: '#38632c', textDecoration: 'none', fontWeight: 600, padding: '0.7rem 0.9rem' }}>
-        Understand topics
-        <span>→</span>
-      </a>
-    </div>
-  </div>
+<Steps>
+  <Step title="Install the CLI and log in">
+    ```bash
+    npm install -g @driftless-sh/cli
+    driftless login
+    ```
 
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(248px, 1fr))', gap: '0.85rem', width: '100%' }}>
+    <Tip>
+      Running this in CI? Pass a key directly instead: `driftless login --key drift_your_api_key_here`. You can create one at [driftless.icu](https://driftless.icu) under Settings, then API Keys.
+    </Tip>
+  </Step>
 
-    <a href="/concepts/projects" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>Projects</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>A shared execution environment for humans and agents. Cards are the unit of work — created and moved from the CLI, the API, or the board.</p>
-    </a>
+  <Step title="Teach your coding agent">
+    ```bash
+    driftless install-skill
+    ```
 
-    <a href="/concepts/areas" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>Areas</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>The navigation domains topics file under — Billing, Auth, Infra. The map a new teammate or agent reads first.</p>
-    </a>
+    This drops `AGENTS.md` and `CLAUDE.md` into your repo. From then on, any coding agent that opens the repo already knows the rhythm: read what the team knows before editing, write back what it learned after.
+  </Step>
 
-    <a href="/concepts/topics" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>Topics &amp; Knowledge</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>Repo knowledge anchored to code and linked with typed relations. A note becomes Knowledge once an owner/admin merges it in.</p>
-    </a>
+  <Step title="Connect an AI client over MCP">
+    Point ChatGPT, Claude, or Cursor at the Driftless MCP endpoint:
 
-    <a href="/concepts/notes-sharing" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>Notes &amp; Sharing</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>Jot a private note, share it with a teammate's inbox, or merge it into Knowledge for the whole team.</p>
-    </a>
+    ```
+    https://api.driftless.icu/mcp
+    ```
 
-    <a href="/cli/setup" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>CLI &amp; agents</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>The whole workspace is headless: topics flow through the CLI and MCP; projects, areas, and members through the CLI and REST API.</p>
-    </a>
+    Claude and ChatGPT handle the OAuth handshake themselves, so you just paste the URL. For the CLI, agents, and CI, send your key in the `X-API-Key` header instead. The full setup lives in [MCP & OAuth](/mcp/overview).
+  </Step>
+</Steps>
 
-    <a href="/concepts/pr-bot" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #e6e2d7', borderRadius: '0.75rem', padding: '1.35rem', textDecoration: 'none', color: 'inherit', background: '#ffffff' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', color: '#1b1a16' }}>PR Bot</h3>
-      <p style={{ fontSize: '0.875rem', color: '#54524a', lineHeight: 1.55, margin: 0 }}>On a PR that touches a documented area, the bot delivers the team's recorded gotchas, decisions and invariants to the reviewer.</p>
-    </a>
+<Note>
+  Wiring an agent by hand? It really comes down to two moves: read before you edit, write back after you learn. Drop [the whole loop in one prompt](/quickstart#the-whole-loop-in-one-prompt) into any agent, or follow [Agent setup](/agents/setup) for your specific client.
+</Note>
 
-  </div>
+## Explore the docs
 
-</div>
+<CardGroup cols={2}>
+  <Card title="Connect" icon="plug" href="/cli/setup">
+    Every way a human or an agent plugs in: the CLI, agent skills, MCP, the GitHub App, Notion, and self-hosted agents.
+  </Card>
+  <Card title="Concepts" icon="brain" href="/concepts/workspaces">
+    The mental model. Workspaces, areas, topics, governance, and how drift keeps context honest.
+  </Card>
+  <Card title="Work & collaborate" icon="layers" href="/concepts/projects">
+    Projects, collections, notes, and comments. The operational side, where the work actually happens.
+  </Card>
+  <Card title="Agents & automation" icon="bot" href="/concepts/pr-bot">
+    The Auditor's PR comments, the server-side Audit and Architect agents, and the auto-pull hook.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/cli/context">
+    Create, read, update, and anchor context topics from the command line.
+  </Card>
+  <Card title="API reference" icon="code" href="/api/overview">
+    The REST surface. Base URL, auth, the error envelope, workspaces, repos, topics, and integrations.
+  </Card>
+</CardGroup>

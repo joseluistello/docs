@@ -1,11 +1,11 @@
 ---
 title: 'Areas'
-description: 'The navigation domains topics file under — Billing, Auth, Infra. The map a new teammate or agent reads first.'
+description: "The navigation domains topics file under: Billing, Auth, Infra. The map a new teammate or agent reads first."
 ---
 
-An **area** is a navigation domain inside a workspace — `Billing`, `Auth`, `Infra`, `Payments`. Topics file under an area, so the workspace reads like a map of the system instead of a flat list of slugs. It's the first thing a new teammate or agent scans to orient.
+An **area** is a navigation domain inside a workspace: `Billing`, `Auth`, `Infra`, `Payments`. Topics file under an area, so the workspace reads like a map of the system instead of a flat list of slugs. It's the first thing a new teammate or agent scans to get oriented.
 
-Areas are a **curation surface**, not a permission boundary: filing a topic into an area changes where it shows up, never who can see it. Because renaming or deleting an area re-homes other people's topics, those operations are gated to **owner/admin** — creating one and filing into it is open to any member.
+Areas are a **curation surface**, not a permission boundary: filing a topic into an area changes where it shows up, never who can see it. Because renaming or deleting an area re-homes other people's topics, those operations are gated to **owner/admin**. Creating one and filing into it is open to any member.
 
 ## Filing topics into an area
 
@@ -20,7 +20,7 @@ driftless context add billing-webhooks \
 driftless context update refund-flow --area Billing
 ```
 
-`--area` accepts an area **name or id** — an unknown name is created on the spot, so filing is never blocked by a missing area.
+`--area` accepts an area **name or id**, and an unknown name is created on the spot, so filing is never blocked by a missing area.
 
 ## Managing areas
 

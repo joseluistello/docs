@@ -44,13 +44,13 @@ driftless context add api-auth --title "Auth" \
   --pattern "src/auth/**"
 ```
 
-Nothing concrete to record yet? Skip it — work first and persist what you learn. A generic placeholder topic documents nothing and rots on day one.
+Nothing concrete to record yet? Skip it. Work first and persist what you learn. A generic placeholder topic documents nothing and rots on day one.
 
 Enrich with structured context:
 
 ```bash
 driftless context update api-auth \
-  --gotcha "WorkspaceGuard is global — use @Public() only for explicit public routes" \
+  --gotcha "WorkspaceGuard is global, use @Public() only for explicit public routes" \
   --decision "RS256 keys so services verify without shared secret" \
   --invariant "All routes require auth unless explicitly marked @Public()" \
   --check "Verify role decorator matches the guard's expected metadata"

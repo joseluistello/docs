@@ -1,0 +1,69 @@
+---
+title: 'El loop de Driftless'
+description: "Persistir, entregar, gobernar, drift: el loop de todos los días."
+---
+
+Driftless es un **vault**: lo lees antes de tocar un área, y escribes una nota limpia dentro después de aprender algo. Ese es todo el loop, dos movimientos. **Trae lo que el equipo ya sabe antes de trabajar, persiste lo que aprendiste después.** La mayoría de lo que escribes se queda como Nota, y eso es sano y esperado; solo unas pocas notas llegan a ser Knowledge. No hay una compuerta de aprobación que tengas que pasar, así que **la calidad se exige al momento de escribir**, con las seis reglas de *Persistir* más abajo. La gobernanza y el drift envuelven a los dos movimientos.
+
+## 1. Persistir
+
+Después de una sesión, anota lo que fue durable: un gotcha, una decisión, un invariante. Aterriza como una **Nota**, todavía no como Knowledge. Una Nota es de primera clase, así que escríbela limpia la primera vez, porque no hay compuerta que la arregle por ti más tarde.
+
+**Las seis reglas que sigue toda escritura:**
+
+1. **Un concepto por nota.** ¿Tentado de cubrir dos? Escribe dos.
+2. **Siempre archívala en un área** (`--area`). Nunca la dejes en Unassigned; ahí es donde se pudren los vaults.
+3. **Ancla angosto** (`--pattern`, ~5-40 archivos, nunca `src/**`). Para lo que no es código, ancla el doc o el sistema del que trata.
+4. **La confianza es una señal, no una compuerta.** Knowledge es verdad, una Nota es una pista, y ambas son reales. Escribe una buena nota; no persigas la aprobación.
+5. **Reescribe para consolidar; agrega para sumar.** Nunca apiles un muro.
+6. **El contenido es el _porqué_ durable, no un changelog.** Sin fechas, sin "shipped", sin referencias a PR; eso vive en git.
+
+La prueba de fuego para saber si algo merece una nota siquiera: *¿un cambio futuro de código lo contradeciría de forma significativa?*
+
+```bash
+driftless context add "auth-flow" \
+  --content "## What\nJWT validation + RBAC\n\n## How\nRS256 keys; guard decodes; role decorator checks" \
+  --area auth \
+  --pattern "src/auth/**" \
+  --tags security
+
+driftless context update auth-flow \
+  --decision "Chose RS256 over HS256 so services verify without a shared secret" \
+  --gotcha "Token refresh is NOT handled by this guard; see [[token-refresh]]" \
+  --rel depends_on:token-refresh
+```
+
+## 2. Entregar
+
+Antes de editar un área, trae lo que el equipo ya sabe. Los topics con drift llevan un badge de frescura en línea, así que no hay un paso aparte que correr.
+
+```bash
+driftless context get --files "src/auth/guard.ts"   # match topics to files you're about to touch
+driftless context get auth-flow                      # full context for one topic
+driftless context get --diff                         # context for your local uncommitted changes
+```
+
+Lee el `what / how / gotchas / decisions / invariants`, y el flag `governance.authoritative`, antes de escribir cualquier cosa.
+
+## 3. Gobernar
+
+Una nota se vuelve Knowledge una vez que se fusiona. Los agentes proponen; fusionar es un acto de owner/admin, y un agente lo corre solo cuando se le pide explícitamente. El agente trata `reviewed` como verdad y `draft`/`proposed` como una pista. **La mayoría de las notas se quedan como notas, y eso es lo esperado.** La promoción a Knowledge es para las pocas verdades transversales de las que depende todo el equipo, no un paso que tengas que completar en cada nota.
+
+```bash
+driftless context propose auth-flow     # draft → proposed
+driftless context approve auth-flow     # add to knowledge
+driftless context pr auth-flow --open --summary "..." --content @new.md   # change an approved topic
+```
+
+Ver [Gobernanza](/es/concepts/governance).
+
+## 4. Drift
+
+Cuando el código cambia en una rama rastreada, los topics cuyos anchors se solapan con los archivos cambiados quedan marcados como **stale**, con una razón legible para humanos. El drift te llega como un badge cuando haces `context get` del área; no tienes que ir a buscarlo. En un PR que toca un área documentada, el bot entrega al reviewer el contexto que el equipo dejó registrado.
+
+```bash
+driftless context doctor          # health audit: stale, zombie, orphaned, draft
+driftless sync                    # optional team-wide digest of what drifted
+```
+
+`driftless sync` es un digest **opcional**. Casi nunca lo necesitas, porque el drift ya te llega en línea. `context doctor` audita la capa de topics en sí: `stale`, `orphaned` (repo borrado), `zombie` (los anchors no matchean ningún archivo), `draft`.

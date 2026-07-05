@@ -1,0 +1,12 @@
+---
+title: 'Workspaces'
+description: 'Gestiona los detalles, miembros e integraciones del workspace.'
+---
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug` | Obtiene los detalles del workspace |
+| `PATCH` | `/workspaces/:slug` | Actualiza la configuración del workspace |
+| `GET` | `/workspaces/:slug/members` | Lista los miembros |
+| `POST` | `/workspaces/:slug/members` | Invita a un miembro |
+| `DELETE` | `/workspaces/:slug/members/:memberId` | Elimina a un miembro |

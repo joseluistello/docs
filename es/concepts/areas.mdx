@@ -1,0 +1,43 @@
+---
+title: 'Áreas'
+description: "Los dominios de navegación bajo los que se archivan los topics: Billing, Auth, Infra. El mapa que un nuevo compañero o agente lee primero."
+---
+
+Un **área** es un dominio de navegación dentro de un workspace: `Billing`, `Auth`, `Infra`, `Payments`. Los topics se archivan bajo un área, así que el workspace se lee como un mapa del sistema en vez de una lista plana de slugs. Es lo primero que escanea un nuevo compañero o agente para ubicarse.
+
+Las áreas son una **superficie de curación**, no una frontera de permisos: archivar un topic en un área cambia dónde aparece, nunca quién lo puede ver. Como renombrar o borrar un área reubica los topics de otras personas, esas operaciones están limitadas a **owner/admin**. Crear una y archivar en ella está abierto a cualquier member.
+
+## Archivar topics en un área
+
+Un topic lleva un área opcional. Configúrala al crear o actualizar el topic:
+
+```bash
+driftless context add billing-webhooks \
+  --area Billing \
+  --what "Stripe webhook ingestion and idempotency." \
+  --pattern "src/billing/webhooks/**"
+
+driftless context update refund-flow --area Billing
+```
+
+`--area` acepta un **nombre o id** de área, y un nombre desconocido se crea al vuelo, así que archivar nunca queda bloqueado por un área faltante.
+
+## Administrar áreas
+
+| Command | Description |
+|---|---|
+| `area list` | Lista áreas con conteos de topics |
+| `area add <name> [--description "…"]` | Crea un área |
+| `area rename <id> <new-name>` | Renombra un área (owner/admin) |
+| `area rm <id>` | Borra un área (owner/admin) |
+
+```bash
+driftless area add Billing --description "Charges, refunds, reconciliation"
+driftless area list
+```
+
+Agrega `--json` para salida legible por máquina. Las mismas áreas están disponibles por REST en `/workspaces/:slug/areas` (`GET` / `POST`, más `PATCH` / `DELETE` por id para owner/admin) y se renderizan en el rail izquierdo del dashboard.
+
+<Note>
+Un área agrupa topics para navegación; los [anchors de un topic](/es/concepts/topics) (`--pattern`) son los que lo atan a archivos específicos y disparan el drift. Los dos son ejes independientes: un área dice *dónde vive en el mapa*, un anchor dice *qué código gobierna*.
+</Note>

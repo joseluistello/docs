@@ -1,0 +1,82 @@
+---
+title: 'Errores'
+description: "El sobre de error es parte del contrato del agente: ramifica según `code`, nunca según el mensaje."
+---
+
+Todo error de la API de Driftless (ya sea que lo alcances por la CLI, el servidor MCP o directamente) vuelve como el **mismo sobre JSON**. Un agente debería ramificar según el `code` legible por máquina, no parsear el `message` humano.
+
+## El sobre
+
+```json
+{
+  "statusCode": 403,
+  "code": "MISSING_HUMAN_IDENTITY",
+  "message": "Merging into Knowledge requires owner/admin authority: your own session or an owned owner/admin key (an agent acting on your explicit request). A faceless agent (ownerless key / OAuth) cannot merge.",
+  "request_id": "a1b2c3d4",
+  "retryable": false,
+  "endpoint": "POST /api/v1/workspaces/acme/topics/auth-flow/approve"
+}
+```
+
+| Campo | Significado |
+|---|---|
+| `statusCode` | Estado HTTP. |
+| `code` | Código de error **estable y legible por máquina** (esta lista es solo aditiva). |
+| `message` | Legible por humanos, accionable. Te dice cómo arreglarlo. Puede cambiar; no hagas match sobre él. |
+| `request_id` | Id de correlación. Cítalo al reportar un problema. |
+| `retryable` | `true` solo para fallos transitorios genuinos (5xx). Un `4xx` es una respuesta definitiva, así que reintentar no ayuda. |
+| `endpoint` | El método + la ruta que produjo el error. |
+
+<Note>
+`retryable` es honesto: la CLI reintenta un GET una vez ante un fallo transitorio, pero nunca reenvía una escritura, y nunca reintenta un 4xx. Si construyes tu propio cliente, haz lo mismo.
+</Note>
+
+## Por qué un `code` siquiera
+
+Una entrada incorrecta no debería llegar al agente como un `500` opaco. Dos capas lo garantizan:
+
+1. La **validación** rechaza un enum inválido (`status`, `visibility`) con un `400` a nivel de campo *antes* de que toque la base de datos.
+2. Un **traductor de errores de Postgres** captura cualquier violación de restricción que se escape y la convierte en un `4xx` codificado, nunca en un `500` genérico.
+
+Después de esas dos, un `500` significa lo que debe: un bug real o una caída. Ese es también el único momento en que `retryable` es `true`.
+
+## Catálogo de códigos
+
+### Validación y entrada
+| `code` | Estado | Cuándo |
+|---|---|---|
+| `VALIDATION_FAILED` | 422 / 400 | Un campo del cuerpo de la petición falló la validación (p. ej. `status must be one of: draft, proposed, reviewed, …`). |
+| `BAD_REQUEST` | 400 | Una petición inválida genérica sin un código más específico. |
+| `INVALID_VALUE` | 400 | Un valor viola una restricción CHECK de la base de datos. |
+| `INVALID_ID` | 400 | Un identificador de ruta/cuerpo no es un UUID válido. |
+| `REQUIRED_FIELD` | 400 | Faltaba un campo requerido. |
+| `FK_VIOLATION` | 400 | Referencia un registro que no existe. |
+| `SECRET_DETECTED` | 400 | Un campo de topic parecía una credencial (API key, token, clave privada) y la escritura se bloqueó. Quítala, o define `allow_secrets: true` (CLI `--allow-secrets`) para forzarla. El error enmascara la coincidencia; nunca repite el secreto. |
+
+### Acceso e identidad
+| `code` | Estado | Cuándo |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | API key / token faltante o inválido. → `driftless login --key <key>`. |
+| `FORBIDDEN` | 403 | Autenticado, pero sin permiso. |
+| `MISSING_HUMAN_IDENTITY` | 403 | Un principal sin rostro (una key sin dueño, o un token OAuth sin un owner/admin detrás) intentó fusionar en Knowledge. Vuelve a emitir la key desde el dashboard para que lleve tu identidad, o ejecuta la fusión bajo un owner/admin. |
+| `INSUFFICIENT_ROLE` | 403 | No tienes el rol de workspace para esta acción: solo un owner/admin puede aprobar. Pídele a uno que te promueva en Settings → Members. |
+| `NOT_FOUND` | 404 | El recurso no existe (o es el borrador privado de otro miembro que no puedes ver, así que devolvemos 404, nunca 403). |
+
+### Gobernanza y conflictos
+| `code` | Estado | Cuándo |
+|---|---|---|
+| `DUPLICATE` | 409 | Ya existe un registro con estos valores. |
+| `DUPLICATE_TOPIC` | 409 | Ya existe un topic con ese slug en el workspace. |
+| `VERSION_CONFLICT` | 409 | `expected_version` no coincidió: alguien escribió desde que leíste. Vuelve a leer y reintenta. |
+| `CONFLICT` | 409 | Un conflicto de estado genérico. |
+| `PROTECTED_RESOURCE` | 403 | Un recurso protegido/por defecto no puede modificarse ni eliminarse. |
+| `RATE_LIMITED` | 429 | Demasiadas peticiones. Reduce el ritmo. |
+
+### Servidor
+| `code` | Estado | Cuándo |
+|---|---|---|
+| `INTERNAL` | 500 | Un fallo inesperado. `retryable: true`. Cita `request_id` si persiste. |
+
+## Observabilidad
+
+Cada error capturado también se emite a PostHog (`api_error` del lado del servidor, `cli_command_error` desde la CLI) con `code`, `status_code` y `endpoint` como propiedades, de modo que la superficie de errores es un único mapa consultable, segmentable por tipo y endpoint en vez de texto libre.

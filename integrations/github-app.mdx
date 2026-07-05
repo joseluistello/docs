@@ -1,9 +1,9 @@
 ---
 title: 'GitHub App integration'
-description: 'How the Driftless GitHub App observes PRs and pushes to keep context fresh.'
+description: "What the Driftless GitHub App watches on your PRs and pushes, and how it keeps context from going stale."
 ---
 
-The Driftless GitHub App connects your repositories to your workspace. Once installed, it observes pull requests and pushes, surfaces context on PRs, and tracks drift when files change.
+The GitHub App is what lets Driftless watch the work as it happens. Once it is installed on your repositories, it reads the pull requests and pushes going by, surfaces what the team already recorded about the files you touched, and marks a topic as drifted the moment its files change.
 
 ## Installation
 
@@ -34,9 +34,9 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 2. Matches each file against all workspace topic patterns using glob intersection
 3. **Records** every PR↔topic match (powers the dashboard's PR activity) and **queues the Auditor**
 
-The only comment Driftless posts is the **Auditor's**, and only when it has a finding — the affected topics' recorded context (gotchas, decisions, invariants, stale flags) rides along with it. A clean PR, or a workspace without the Auditor configured (no model key), gets no comment. See [PR Comments](/concepts/pr-bot).
+The only comment Driftless posts is the **Auditor's**, and only when it has a finding. When it does, the affected topics' recorded context (gotchas, decisions, invariants, stale flags) rides along with it. A clean PR, or a workspace without the Auditor configured (no model key), gets no comment. See [PR Comments](/concepts/pr-bot).
 
-The comment **informs; it never blocks** — findings land as proposals a human approves. It is updated in place on new commits, never re-posted.
+The comment **informs; it never blocks**. Findings land as proposals a human approves. It is updated in place on new commits, never re-posted.
 
 ### Push staleness
 
@@ -57,14 +57,14 @@ driftless branches add staging
 <!-- driftless-auditor -->
 ## 🔎 Driftless Auditor
 
-This change may affect 1 thing the team recorded. Queued for review —
-these are proposals; a human approves.
+This change may affect 1 thing the team recorded. Queued for review.
+These are proposals; a human approves.
 
-- `auth-boundaries` (needs a human) — new route bypasses the workspace guard
+- `auth-boundaries` (needs a human): new route bypasses the workspace guard
 
 ### What the team already knows
 
-#### `auth-boundaries` — workspace-scoped auth
+#### `auth-boundaries`: workspace-scoped auth
 **Gotchas**
 - All endpoints require auth; do not add @Public() without review
 ```

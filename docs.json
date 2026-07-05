@@ -27,7 +27,7 @@
   },
   "fonts": {
     "heading": {
-      "family": "Hanken Grotesk",
+      "family": "Newsreader",
       "weight": 600
     },
     "body": {
@@ -58,63 +58,172 @@
     }
   },
   "navigation": {
-    "groups": [
+    "languages": [
       {
-        "group": "Getting started",
-        "icon": "rocket",
-        "pages": [
-          "index",
-          "quickstart"
+        "language": "en",
+        "default": true,
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "rocket",
+            "pages": [
+              "index",
+              "quickstart",
+              "concepts/core-loop"
+            ]
+          },
+          {
+            "group": "Connect",
+            "icon": "plug",
+            "pages": [
+              "cli/setup",
+              "agents/setup",
+              "mcp/overview",
+              "integrations/github-app",
+              "integrations/notion",
+              "integrations/self-hosted-agents"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "icon": "brain",
+            "pages": [
+              "concepts/workspaces",
+              "concepts/areas",
+              "concepts/topics",
+              "concepts/governance",
+              "concepts/drift"
+            ]
+          },
+          {
+            "group": "Work & collaborate",
+            "icon": "layers",
+            "pages": [
+              "concepts/projects",
+              "concepts/collections",
+              "concepts/notes-sharing",
+              "concepts/comments"
+            ]
+          },
+          {
+            "group": "Agents & automation",
+            "icon": "bot",
+            "pages": [
+              "concepts/pr-bot",
+              "agents/agentic-layer",
+              "concepts/automations"
+            ]
+          },
+          {
+            "group": "CLI reference",
+            "icon": "terminal",
+            "pages": [
+              "cli/context",
+              "cli/sync"
+            ]
+          },
+          {
+            "group": "API reference",
+            "icon": "code",
+            "pages": [
+              "api/overview",
+              "api/errors",
+              "api/workspaces",
+              "api/repos",
+              "api/topics",
+              "api/integrations"
+            ]
+          },
+          {
+            "group": "Platform",
+            "icon": "shield-check",
+            "pages": [
+              "security/overview"
+            ]
+          }
         ]
       },
       {
-        "group": "Concepts",
-        "icon": "brain",
-        "pages": [
-          "concepts/workspaces",
-          "concepts/projects",
-          "concepts/collections",
-          "concepts/areas",
-          "concepts/topics",
-          "concepts/comments",
-          "concepts/notes-sharing",
-          "concepts/governance",
-          "concepts/core-loop",
-          "concepts/drift",
-          "concepts/pr-bot",
-          "concepts/automations"
-        ]
-      },
-      {
-        "group": "CLI & agents",
-        "icon": "terminal",
-        "pages": [
-          "cli/setup",
-          "cli/context",
-          "cli/sync",
-          "agents/setup",
-          "agents/agentic-layer",
-          "integrations/self-hosted-agents"
-        ]
-      },
-      {
-        "group": "API",
-        "icon": "code",
-        "pages": [
-          "api/overview",
-          "api/errors",
-          "api/workspaces",
-          "api/repos",
-          "api/topics",          "api/integrations",
-          "integrations/github-app"
-        ]
-      },
-      {
-        "group": "Platform",
-        "icon": "shield-check",
-        "pages": [
-          "mcp/overview",
-          "security/overview"
+        "language": "es",
+        "groups": [
+          {
+            "group": "Primeros pasos",
+            "icon": "rocket",
+            "pages": [
+              "es/index",
+              "es/quickstart",
+              "es/concepts/core-loop"
+            ]
+          },
+          {
+            "group": "Conectar",
+            "icon": "plug",
+            "pages": [
+              "es/cli/setup",
+              "es/agents/setup",
+              "es/mcp/overview",
+              "es/integrations/github-app",
+              "es/integrations/notion",
+              "es/integrations/self-hosted-agents"
+            ]
+          },
+          {
+            "group": "Conceptos",
+            "icon": "brain",
+            "pages": [
+              "es/concepts/workspaces",
+              "es/concepts/areas",
+              "es/concepts/topics",
+              "es/concepts/governance",
+              "es/concepts/drift"
+            ]
+          },
+          {
+            "group": "Trabajar y colaborar",
+            "icon": "layers",
+            "pages": [
+              "es/concepts/projects",
+              "es/concepts/collections",
+              "es/concepts/notes-sharing",
+              "es/concepts/comments"
+            ]
+          },
+          {
+            "group": "Agentes y automatización",
+            "icon": "bot",
+            "pages": [
+              "es/concepts/pr-bot",
+              "es/agents/agentic-layer",
+              "es/concepts/automations"
+            ]
+          },
+          {
+            "group": "Referencia CLI",
+            "icon": "terminal",
+            "pages": [
+              "es/cli/context",
+              "es/cli/sync"
+            ]
+          },
+          {
+            "group": "Referencia API",
+            "icon": "code",
+            "pages": [
+              "es/api/overview",
+              "es/api/errors",
+              "es/api/workspaces",
+              "es/api/repos",
+              "es/api/topics",
+              "es/api/integrations"
+            ]
+          },
+          {
+            "group": "Plataforma",
+            "icon": "shield-check",
+            "pages": [
+              "es/security/overview"
+            ]
+          }
         ]
       }
     ]

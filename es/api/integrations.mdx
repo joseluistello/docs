@@ -1,0 +1,20 @@
+---
+title: 'Integraciones y actividad de PRs'
+description: 'Gestiona la integración con la GitHub App y la actividad de pull requests observada.'
+---
+
+## Integraciones
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/integrations` | Lista las integraciones |
+| `POST` | `/workspaces/:slug/integrations` | Crea o conecta una integración |
+| `DELETE` | `/workspaces/:slug/integrations/:id` | Elimina una integración |
+
+## Actividad de PRs
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/pr-activity` | Actividad de pull requests observada |
+
+Las observaciones de PR se emparejan por la intersección del patrón del topic con las listas de archivos del PR. Cada observación de PR registra qué topics coincidieron y qué archivos se tocaron: el contexto registrado que se entrega al revisor.

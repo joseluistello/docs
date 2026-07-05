@@ -1,9 +1,9 @@
 ---
 title: 'Quickstart'
-description: "Add Driftless to your coding agent and watch your first piece of team context appear — in about a minute."
+description: "Add Driftless to your coding agent and watch your first piece of team context show up in about a minute."
 ---
 
-Driftless is the workspace where you and your team work *with* your agents — and the work itself becomes the team's living, governed context that doesn't go stale. Your agent reads the relevant context before it works and writes back what it learns; you don't learn a system — your agent does. Here's the whole setup.
+Driftless is the workspace where you and your team work *with* your agents, and the work itself becomes the team's living, governed context that doesn't go stale. Your agent reads the relevant context before it touches an area and writes back what it learns. You don't learn a system. Your agent does. Here's the whole setup.
 
 <Steps>
   <Step title="Install and log in">
@@ -30,7 +30,7 @@ Driftless is the workspace where you and your team work *with* your agents — a
   </Step>
 </Steps>
 
-That's it. Pull before, persist after — that's Driftless.
+That's it. Pull before, persist after. That's Driftless.
 
 ## The whole loop, in one prompt
 
@@ -44,8 +44,8 @@ you're touching:
     driftless context get --files "<files you're about to change>"
 Read the gotchas, decisions and invariants before writing anything.
 
-AFTER you learn something durable — a gotcha that cost you time, a decision
-you made, a constraint that must hold — write it back:
+AFTER you learn something durable, a gotcha that cost you time, a decision
+you made, a constraint that must hold, write it back:
     driftless context update <topic> --gotcha "..." --decision "..."
     # or, if no topic fits the area yet:
     driftless context add <name> --pattern "<glob>" --what "..." --how "..."
@@ -57,8 +57,8 @@ That's the whole loop: pull before, persist after. Do it as part of your work.
 
 You don't need any of this to start. Reach for it once you have a few topics and want more out of them:
 
-- [The Driftless loop](/concepts/core-loop) — how memory compounds across a team.
-- [Topics](/concepts/topics) — the content, anchors, and fields each one carries.
-- [Drift & freshness](/concepts/drift) — how a topic flags itself when its code moves underneath it.
-- [The CLI](/cli/context) — anchoring topics to files, file-matched retrieval, relations.
-- [Agent setup in depth](/agents/setup) — wiring Driftless into specific coding agents.
+- [The Driftless loop](/concepts/core-loop): how memory compounds across a team.
+- [Topics](/concepts/topics): the content, anchors, and fields each one carries.
+- [Drift & freshness](/concepts/drift): how a topic flags itself when its code moves underneath it.
+- [The CLI](/cli/context): anchoring topics to files, file-matched retrieval, relations.
+- [Agent setup in depth](/agents/setup): wiring Driftless into specific coding agents.

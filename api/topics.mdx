@@ -17,7 +17,7 @@ The canonical path is `/topics`. `/watchers` still works as a deprecated alias f
 | `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
 | `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
 
-The read response is the canonical context. It includes a flat `trust` verdict (`reviewed` | `proposed` | `draft`) plus `classification.status` and a `governance` block — the trust signal an agent consumes. Key on `trust` directly:
+The read response is the canonical context. It includes a flat `trust` verdict (`reviewed` | `proposed` | `draft`) plus `classification.status` and a `governance` block: the trust signal an agent consumes. Key on `trust` directly:
 
 ```json
 {
@@ -38,13 +38,13 @@ The read response is the canonical context. It includes a flat `trust` verdict (
 
 ## Tags
 
-The workspace tag registry — tags as first-class objects so they can be pre-created with a description before any topic uses them. Attaching an unregistered tag via a topic write auto-registers it.
+The workspace tag registry: tags as first-class objects so they can be pre-created with a description before any topic uses them. Attaching an unregistered tag via a topic write auto-registers it.
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/tags` | List with per-tag topic counts — paginated (`?limit=&offset=`, default 50, most-used first), returns `{ tags, total, has_more }` |
-| `POST` | `/workspaces/:slug/tags` | Create `{ name, description? }` — idempotent (existing tag merges the description) |
-| `PATCH` | `/workspaces/:slug/tags/:name` | Rename (`{ name }` — rewrites every topic carrying the tag; owner/admin) and/or describe (`{ description }`) |
+| `GET` | `/workspaces/:slug/tags` | List with per-tag topic counts, paginated (`?limit=&offset=`, default 50, most-used first), returns `{ tags, total, has_more }` |
+| `POST` | `/workspaces/:slug/tags` | Create `{ name, description? }`, idempotent (existing tag merges the description) |
+| `PATCH` | `/workspaces/:slug/tags/:name` | Rename (`{ name }`, rewrites every topic carrying the tag; owner/admin) and/or describe (`{ description }`) |
 | `DELETE` | `/workspaces/:slug/tags/:name` | Delete + detach from every topic (owner/admin) |
 
 ## Health & Graph
@@ -57,7 +57,7 @@ The workspace tag registry — tags as first-class objects so they can be pre-cr
 
 ## Governance
 
-A topic becomes Knowledge only once an owner/admin merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require owner/admin authority — they succeed for an owner/admin principal on any surface (dashboard, owned CLI key, or an OAuth/MCP token the owner/admin authorized), and the merge is stamped `approved_via` (`human` or `agent`). A faceless or non-owner principal is rejected.
+A topic becomes Knowledge only once an owner/admin merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require owner/admin authority. They succeed for an owner/admin principal on any surface (dashboard, owned CLI key, or an OAuth/MCP token the owner/admin authorized), and the merge is stamped `approved_via` (`human` or `agent`). A faceless or non-owner principal is rejected.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -79,7 +79,7 @@ A topic becomes Knowledge only once an owner/admin merges it in. See [Governance
 | `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Delete a relation |
 
 <Note>
-`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation` — per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write, and it's omitted when no repo is linked. `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
+`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation`: per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write, and it's omitted when no repo is linked. `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
 </Note>
 
 ## Share

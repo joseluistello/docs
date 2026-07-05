@@ -1,9 +1,9 @@
 ---
 title: 'Audit & Architect agents'
-description: 'Server-side agents that keep your team context honest and grow it — they propose; an owner/admin adds the result to knowledge.'
+description: "Server-side agents that keep your team context honest and grow it. They propose; an owner/admin adds the result to knowledge."
 ---
 
-Driftless can run two specialized agents on your codebase. They don't replace a reviewer — they review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; an owner/admin **adds the result to knowledge**.
+Driftless can run two specialized agents on your codebase. They don't replace a reviewer. They review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; an owner/admin **adds the result to knowledge**.
 
 - **The Auditor** keeps existing context honest when code changes.
 - **The Architect** grows context where it's missing.
@@ -13,30 +13,30 @@ Driftless can run two specialized agents on your codebase. They don't replace a 
 When a pull request (or drift) touches files that a **reviewed** topic anchors, the Auditor reads the change and the current code, and compares it claim-by-claim against what the team recorded.
 
 - **Contradicts a claim** → it opens a Suggested edit, citing the file/line and *why* the claim is now wrong (e.g. *"this diff removes the idempotency check the `billing-flow` invariant requires"*).
-- **Unsure** → it flags a question (no patch) for a human to look at — it never fabricates a confident edit.
+- **Unsure** → it flags a question (no patch) for a human to look at. It never fabricates a confident edit.
 - **No impact** → it does nothing. Silence is the common, correct outcome.
 
 It only ever audits against **Knowledge** (`reviewed`). A Note is an unmerged idea, never something to enforce.
 
 ## The Architect
 
-On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and suggests new topics — clustered by concept, with a narrow anchor (5–40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-suggest: a missed gap is cheap, a spam topic erodes trust.
+On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and suggests new topics: clustered by concept, with a narrow anchor (5-40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-suggest: a missed gap is cheap, a spam topic erodes trust.
 
-## How they run — BYOM
+## How they run: BYOM
 
-The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out — it's used server-side only.
+The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out. It stays server-side only.
 
 - **Read-only.** The agents read and reason; they never execute, edit, or write code.
-- **Propose-only.** Everything these autonomous agents produce lands as a **Note** or **Suggested edit** in your Review Queue — they never merge. Merging into Knowledge is an owner/admin act, and these autonomous agents never merge their own work in (separation of powers stays). That's distinct from *your own* agent (CLI/MCP, acting under your identity), which you can explicitly ask to run a merge on your behalf.
+- **Propose-only.** Everything these autonomous agents produce lands as a **Note** or **Suggested edit** in your Review Queue. They never merge. Merging into Knowledge is an owner/admin act, and these autonomous agents never merge their own work in (separation of powers stays). That's distinct from *your own* agent (CLI/MCP, acting under your identity), which you can explicitly ask to run a merge on your behalf.
 
 ## Configure them
 
 In the dashboard: **Settings → Agents**.
 
 1. Paste your **OpenCode API key**.
-2. Pick a **model** — or a comma-separated priority list (e.g. `opencode/claude-sonnet-4-6, opencode/big-pickle`); the runner rotates to the next on a rate-limit or credit error.
+2. Pick a **model**, or a comma-separated priority list (e.g. `opencode/claude-sonnet-4-6, opencode/big-pickle`); the runner rotates to the next on a rate-limit or credit error.
 3. Toggle the **Auditor** and **Architect** on.
 
 ## See what they did
 
-The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), the model, tokens used, proposals created, and a code-free summary of what the agent concluded — including `no-op` runs (a healthy signal: the agent looked and found nothing to change).
+The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), the model, tokens used, proposals created, and a code-free summary of what the agent concluded, including `no-op` runs (a healthy signal: the agent looked and found nothing to change).

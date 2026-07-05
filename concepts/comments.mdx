@@ -1,22 +1,22 @@
 ---
 title: 'Comments'
-description: 'Thin, anchored annotations that humans and agents leave on a topic, a record, or a card — feedback that resolves into an edit, without touching the content itself.'
+description: "Thin, anchored annotations that humans and agents leave on a topic, a record, or a card. Feedback that resolves into an edit, without touching the content itself."
 ---
 
-A **comment** is a thin annotation that points AT something — a topic, a record, or a project card — and optionally at one of its fields. It is the lightweight way for humans and agents to coordinate over content **without editing it**.
+A **comment** is a thin annotation that points AT something (a topic, a record, or a project card) and optionally at one of its fields. It is the lightweight way for humans and agents to coordinate over content **without editing it**.
 
 A comment is deliberately *not* a topic. It has no version, no drift, and no governance of its own; its text never enters the topic body. Topics are the durable *why*; comments are transient coordination that **resolves into an edit**.
 
 ## What a comment is
 
 - **Points at a spine object or a card.** `target_kind` is one of `topic`, `record`, or `card`; `target_id` (or, for a topic, its slug) says which one. An optional `field_key` scopes the comment to a single field (e.g. `decisions`).
-- **Authored by a human or an agent.** Agent-authored comments are the differentiator: an agent can flag a contradiction on a field and a human sees it on the next refresh — or vice versa. This is what makes the workspace genuinely collaborative *between* humans and agents.
-- **Has a small state machine.** `open → resolved → wont_fix`. When an edit addresses a comment, its author (human or agent) marks it resolved. There is no auto-regenerate — comments resolve, they don't rewrite the document.
+- **Authored by a human or an agent.** Agent-authored comments are what set this apart: an agent can flag a contradiction on a field and a human sees it on the next refresh, or the other way around. That is what makes the workspace genuinely collaborative *between* humans and agents.
+- **Has a small state machine.** `open → resolved → wont_fix`. When an edit addresses a comment, its author (human or agent) marks it resolved. There is no auto-regenerate. Comments resolve, they don't rewrite the document.
 - **Async, not realtime.** Comments appear on pull/refresh. No live cursors.
 
 ## The killer placement: the Note → Knowledge gate
 
-Promoting a Note into Knowledge is normally a coarse, binary act — approve or reject. Comments turn that gate into **fine-grained, field-level feedback at review time**: a reviewer (or an agent) can pin a precise objection to the `decisions` field of a note, the author addresses exactly that, and the merge happens faster and better. Listing a topic's open comments by slug is the reviewer's view of the gate.
+Promoting a Note into Knowledge is normally a coarse, binary act: approve or reject. Comments turn that gate into **fine-grained, field-level feedback at review time**. A reviewer (or an agent) can pin a precise objection to the `decisions` field of a note, the author addresses exactly that, and the merge happens faster and comes out better. Listing a topic's open comments by slug is the reviewer's view of the gate.
 
 ## Using comments
 

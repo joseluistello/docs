@@ -3,29 +3,29 @@ title: 'Notes & Sharing'
 description: 'Jot a private note, share it with a teammate inbox, or merge it into Knowledge for the whole team.'
 ---
 
-A **note** is the entry point to everything in Driftless: a private draft only you see. From there it can travel two ways — *up* the trust axis to become team Knowledge, or *sideways* to a specific teammate's inbox. They're independent, and neither blocks anyone from coding.
+A **note** is where everything in Driftless starts: a private draft only you can see. From there it can go two ways. It can travel *up* the trust axis to become team Knowledge, or *sideways* to a specific teammate's inbox. The two are independent, and neither one stops anyone from coding.
 
 ## Jotting a note
 
-The fastest capture is a one-liner from the CLI — no anchors, no ceremony:
+The fastest way to capture something is a one-liner from the CLI. No anchors, no ceremony:
 
 ```bash
-driftless note add --content "OAuth tokens expire every 2h in IHCE — refresh before sending"
+driftless note add --content "OAuth tokens expire every 2h in IHCE, refresh before sending"
 driftless note add --content @notes/today.md --json
 ```
 
 A note is a topic in its **draft** state: private to you, excluded from search, and auto-archived after ~14 days if untouched (recoverable). Think here, then decide where it goes.
 
-Attach a note to work as you capture it: `--project <id>` files it on a [project](/concepts/projects), and `--project <id> --card <id>` attaches it to a specific card mid-loop — where it rides the card's `next` context bundle and is synthesized into a draft topic when the project closes.
+Attach a note to work as you capture it. `--project <id>` files it on a [project](/concepts/projects), and `--project <id> --card <id>` attaches it to a specific card mid-loop, where it rides the card's `next` context bundle and gets synthesized into a draft topic when the project closes.
 
 ```bash
-driftless note add --content "Webhook deliveries arrive out of order — idempotency key required" \
+driftless note add --content "Webhook deliveries arrive out of order, idempotency key required" \
   --project prj_abc --card card_xyz
 ```
 
-## Sideways — sharing with a teammate
+## Sideways: sharing with a teammate
 
-Share a note directly with one or more workspace members. It lands in their **inbox** ("shared with me") without becoming team-wide Knowledge — the right move for "you specifically should see this."
+Share a note directly with one or more workspace members. It lands in their **inbox** ("shared with me") without becoming team-wide Knowledge. This is the right move for "you specifically should see this."
 
 | Action | Surface |
 |---|---|
@@ -33,11 +33,11 @@ Share a note directly with one or more workspace members. It lands in their **in
 | Your inbox (shared with me) | `GET /workspaces/:slug/shared` (`?unread=true` for the unattended feed) |
 | Mark one read / all read | `POST /workspaces/:slug/shared/:id/read` · `POST /workspaces/:slug/shared/read-all` |
 
-Recipients must be **members of the workspace** — sharing with a non-member is rejected. The dashboard's **Inbox** renders this feed; sharing and reading are also operable over REST for agents.
+Recipients must be **members of the workspace**. Share with a non-member and it's rejected. The dashboard's **Inbox** renders this feed, and sharing and reading are both operable over REST for agents.
 
-## Up — merging into Knowledge
+## Up: merging into Knowledge
 
-When a note is durable enough for the whole team, it climbs the trust axis: **Note → Up for review → Knowledge**. Merging is an owner/admin act — an owner/admin merges it, or explicitly asks an agent to run the merge on their behalf. This is the team's source of truth that agents pull before they edit. See [Governance](/concepts/governance) for the full lifecycle and the merge commands.
+When a note is durable enough for the whole team, it climbs the trust axis: **Note → Up for review → Knowledge**. Merging is an owner/admin act. An owner or admin merges it, or explicitly asks an agent to run the merge on their behalf. What comes out is the team's source of truth, the thing agents pull before they edit. See [Governance](/concepts/governance) for the full lifecycle and the merge commands.
 
 ## A public read-only link (different thing)
 

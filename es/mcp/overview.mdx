@@ -1,0 +1,198 @@
+---
+title: 'MCP y OAuth'
+description: "Conecta ChatGPT, Claude y otros clientes de IA a tu workspace de Driftless a través del Model Context Protocol."
+---
+
+Driftless incluye un servidor MCP (Model Context Protocol) que expone el contexto de tu workspace a clientes de IA. ChatGPT, Claude, Copilot y cualquier cliente compatible con MCP pueden leer y escribir topics a través de él.
+
+## Cómo funciona
+
+El adaptador de MCP corre en `apps/mcp` y traduce las llamadas a herramientas de MCP hacia la REST API existente de Driftless. Es **solo un adaptador de protocolo**: nunca accede a Postgres, a librerías internas ni a operaciones de admin del workspace de forma directa.
+
+## Empieza por acá: retrieve
+
+Cuando tienes una **tarea** pero todavía no un slug de topic, la primera llamada es
+`driftless_context_retrieve`: devuelve el contexto registrado más relevante del equipo
+para una descripción de tarea, un conjunto de archivos, o ambos, ordenado con lo
+drifteado primero y acotado. Compone search + match-files + list filters para que no
+los encadenes a mano. Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no
+el `content` completo); llama a `driftless_context_get` para el único topic cuyo cuerpo
+completo necesites, o pasa `view: "full"`. Ver [Payload views](#payload-views-keep-reads-fast)
+más abajo.
+
+## Herramientas disponibles
+
+| Herramienta | Descripción |
+|------|-------------|
+| `driftless_context_retrieve` | **Empieza por acá cuando tienes una tarea pero no un slug.** Contexto ordenado, con lo drifteado primero y acotado para un `task` y/o `files`. Compone search + match-files + list. Los cuerpos son `brief` por defecto; pasa `view: "full"` o usa `driftless_context_get` para un topic. Devuelve `{ shown, has_more, next_action, results[] }` con `match_type` / `why_matched` / `confidence` por cada hit |
+| `driftless_context_search` | Búsqueda de texto completo sobre los topics, ordenada por relevancia. Devuelve los **5** primeros por defecto (sube `limit`, máx 20) con `has_more` cuando coinciden más: lee los primeros, después usa `driftless_context_get` sobre el que quieras en vez de traer todo el conjunto. Devuelve summaries livianos; los topics archivados nunca se devuelven. Acepta `tags` para acotar a una categoría (por ejemplo `["billing"]`) y `stale` para filtrar por frescura (`true` = solo drifteados, `false` = solo frescos) |
+| `driftless_context_list` | Lista los topics, ordenados por relevancia (drifteados primero, después los más recientes). Devuelve los 40 primeros por defecto con `has_more` cuando existen más; acota con `status`/`stale`/`tags`, o sube `limit`. Los topics archivados quedan ocultos salvo que pases `status: archived`. Devuelve summaries livianos; trae el cuerpo completo de un topic con `driftless_context_get` |
+| `driftless_context_get` | Recupera un solo topic por slug: el cuerpo **full** por defecto (nombraste el que querías); pasa `view: "brief"` para una segunda mirada barata |
+| `driftless_context_get_for_files` | Empareja topics con una lista de rutas de archivo, los drifteados primero, acotado a los 10 primeros (sube `limit`, máx 25). Los cuerpos son **brief** por defecto (~76% más livianos); pasa `view: "full"` para cuerpos completos |
+| `driftless_tags` | El registro de tags: una herramienta, `action`: `list` (conteos por tag, paginado), `create` (pre-registra con descripción opcional, idempotente), `delete` (desvincula de cada topic; curación, requiere `work:write`) |
+| `driftless_areas` | El registro de areas (los dominios bajo los que se archivan los topics): una herramienta, `action`: `list`, `create`, `update` (renombra/describe), `delete` (deja sus topics sin área; curación, requiere `work:write`) |
+| `driftless_context_create` | Crea un topic nuevo (acepta `title` y `rels`; por defecto queda En revisión) |
+| `driftless_note_add` | Captura una nota privada (se queda en draft; nunca se envía a revisión). Pasa `project_id` para adjuntarlo a un proyecto, o `project_id` + `card_id` para adjuntarlo a una card en medio del loop |
+| `driftless_context_share` | Comparte un topic: publica una página web pública (`to_web`) y/o compártelo en privado `with_members` |
+| `driftless_project` | Proyectos: una herramienta, `action`: `list`, `get`, `set` (crea cuando no hay `id`, actualiza cuando se da) |
+| `driftless_project_card` | Cards de proyecto (unidades de trabajo): una herramienta, `action`: `list`, `get`, `add`, `set` (status/owner), `move`, `delete`, y `next` (el tick del loop, devuelve la próxima card accionable + su context bundle). Requiere `work:write` |
+| `driftless_collection` | Collections: una herramienta, `action`: `list`, `get`, `add`, `update`, `doctor`, `context` (resuelve el criterion Knowledge que hay que leer antes de trabajar un record), y **`retrieve`** (los records relevantes **más** ese criterion en una sola llamada). El sustrato operacional (CRM/tracker/contenido) |
+| `driftless_collection_record` | Records (filas tipadas en una collection): una herramienta, `action`: `list`, `get`, `add`, `update`. El `status` de un record se valida contra las etapas de su Collection |
+| `driftless_entity` | Entities (identidad y dedup entre collections): una herramienta, `action`: `list`, `get`, `upsert` (idempotente sobre `(kind, dedup_key)`) |
+| `driftless_broker` | **Opera** un provider ya conectado: una herramienta, `action`: `connections`, `operations`, `invoke`, `records`, `events`, `criterion`. Las credenciales se resuelven del lado del servidor y cada llamada queda auditada. El broker nunca **conecta/desconecta** un provider (eso es setup de integración, se hace en el dashboard o vía el flujo connect del CLI) y nunca escribe scripts |
+| `driftless_context_comment` | Comentarios: una herramienta, `action`: `add`, `list`, `resolve`. Apunta A un topic / record / card; no lleva governance, se resuelve en una edición |
+| `driftless_context_update` | Actualiza un topic existente (seguro para append; acepta `rels`) |
+| `driftless_context_delete` | Elimina un topic (destructivo) |
+| `driftless_context_merge` | Funde un topic duplicado dentro de su superviviente (mecánico; archiva el origen; la prosa nunca se mergea) |
+| `driftless_context_propose` | Pone una Nota en revisión (draft → proposed) |
+| `driftless_context_create_proposal` | Abre una Edición sugerida sobre un topic existente |
+| `driftless_context_proposals` | Lista las Notas en revisión (la cola de revisión) |
+| `driftless_context_relations` | Las relaciones tipadas de un topic, entrantes y salientes |
+| `driftless_context_graph` | El grafo local de relaciones alrededor de un topic (profundidad configurable) |
+| `driftless_context_doctor` | Audita la capa de contexto (stale / zombie / huérfanos / drafts) |
+| `driftless_context_coverage` | Mapa de cobertura: qué áreas de código NO tienen topic (el buscador de huecos) |
+| `driftless_context_events` | Actividad de contexto reciente de un topic |
+| `driftless_agent_stats` | Estadísticas de notas de agentes |
+| `driftless_members` | Lista los miembros del workspace (member id, rol, email): los valores válidos de `owner_clerk_id` para asignar cards/records |
+| `driftless_workspaces` | Lista los workspaces a los que puede apuntar tu credencial |
+
+La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (proyectos, cards, tags, areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
+
+Cada resultado (search, list, get) lleva un campo plano **`trust`** (`reviewed` | `proposed` | `draft`), para que un agente pueda basarse en `trust === "reviewed"` directamente en vez de inferirlo desde `classification.status` + `governance.authoritative`. `reviewed` es Knowledge, la fuente de verdad del equipo; `proposed`/`draft` son Notas (pistas).
+
+### Las vistas de payload mantienen las lecturas rápidas
+
+Las lecturas devuelven por defecto un **payload liviano** para que un resultado nunca
+inunde tu contexto. El vocabulario es el mismo en todos lados (`summary` / `brief` / `full`):
+
+- **`summary`**: una fila índice (id/slug, título, trust, badges, anchors). Las listas y
+  la búsqueda devuelven esto, acotado (5 primeros en search, 40 primeros en list).
+- **`brief`** (el default para `driftless_context_retrieve` y
+  `driftless_context_get_for_files`) es el **porqué** durable: what / decisions /
+  gotchas / invariants, **sin** el `content` completo. Aproximadamente 76% más liviano
+  que un cuerpo completo.
+- **`full`**: todo, incluyendo el pesado cuerpo `content`. **Nunca es default en otro
+  lado**; entras a él con `view: "full"`. `driftless_context_get` es la excepción: usa
+  `full` por defecto porque nombraste el único topic que querías.
+
+El patrón: `retrieve` / `get_for_files` en `brief` para ver *cuál* topic gobierna el
+trabajo, y después `driftless_context_get` (full) para el único cuerpo que de verdad
+necesitas, en vez de traer todos los cuerpos completos de entrada.
+
+### Broker (ejecución) vs setup de integración
+
+`driftless_broker` solo **opera** una conexión que ya existe
+(`operations` / `invoke` / `records` / `events` / `criterion`). **Conectar** un
+provider es *setup* de integración: un flujo privilegiado y liderado por humanos que se
+hace en el dashboard (Settings → Connections) o vía los comandos `integration
+connect/confirm` del CLI; no está en la superficie de MCP. Escribir o desplegar una
+acción de Nango es un tercer carril, solo para humanos. Si un agente necesita una
+operación del broker que `operations` **no** lista, tiene que **reportar la capacidad
+que falta**. Nunca escribas ni despliegues un script para tapar el hueco.
+
+### Relaciones tipadas desde el MCP
+
+`create` y `update` aceptan `rels`, aristas tipadas del grafo, los mismos siete tipos que el `--rel` del CLI:
+
+```json
+{ "topic": "refund-flow", "rels": [
+  { "to": "billing-flow", "type": "depends_on" },
+  { "to": "stripe-webhook-ingest", "type": "relates_to" }
+] }
+```
+
+Tipos: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`. Cada arista se crea con tolerancia por relación: una arista mala reporta `{ok: false, error}` en el resultado de la herramienta sin perder el topic ni las aristas restantes. Ambos extremos deben existir y ser visibles para ti.
+
+### Validación de anchors del lado del servidor
+
+Los agentes remotos no tienen un checkout local, así que las respuestas de escritura llevan `anchor_validation`, conteos de coincidencias por patrón contra la **rama default** del repo: `ok`, `overbroad` (>100 archivos), o `zero`. Las advertencias nunca bloquean la escritura (un glob que ancla código de una rama sin mergear muestra 0 de forma legítima); léelas en el resultado de la herramienta y aprieta los globs marcados.
+
+<Note>
+Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Después de que Driftless publica un cambio de schema, reconecta el conector (o arranca una sesión nueva) para tomarlo. Si no, los parámetros o herramientas nuevos no van a estar disponibles. Las herramientas de la superficie de trabajo (`tags`, `areas`, `project`, `project_card`) son **basadas en `action`**: pasa `action` para elegir la operación; si tu cliente todavía muestra los nombres viejos de herramienta por operación (por ejemplo `driftless_tags_create`), reconecta para refrescar.
+</Note>
+
+### Governance desde el MCP
+
+Un topic se vuelve Knowledge solo cuando un owner/admin lo mergea. Un cliente MCP siempre **pone una Nota en revisión** (`driftless_context_propose`); también puede **mergear** (`driftless_context_approve`), pero solo con autoridad de owner/admin. El token de MCP actúa como el humano que lo autorizó, así que `approve` tiene éxito solo cuando ese humano es owner/admin, y el cliente debería correrlo **solo cuando lo piden de forma explícita** (el token de un miembro o uno sin identidad se rechaza). El merge queda estampado con `approved_via: agent`. Ver [Governance](/es/concepts/governance).
+
+## Autenticación
+
+Todas las solicitudes MCP requieren autenticación. Las solicitudes sin autenticar reciben un HTTP 401 con un header `WWW-Authenticate` que apunta a los endpoints de discovery de OAuth.
+
+Hay dos formas de autenticarse:
+
+- **API key**: pasa tu API key de Driftless en el header `X-API-Key`. Ideal para el CLI, agentes y CI.
+- **OAuth 2.0**: para clientes de IA publicados (ChatGPT, Claude) que necesitan consentimiento por usuario. El servidor soporta registro dinámico de clientes y PKCE.
+
+### Conectando con una API key
+
+Agrega esto a tu `claude_desktop_config.json` o equivalente:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "https://api.driftless.icu/mcp",
+      "headers": {
+        "X-API-Key": "drift_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Para desarrollo local, usa `http://localhost:3020/mcp` y tu API key local.
+
+### Conectando con OAuth (Claude.ai, ChatGPT)
+
+Los clientes publicados usan OAuth 2.0 con PKCE. El flujo es totalmente automático para Claude.ai:
+
+1. Ingresa `https://api.driftless.icu/mcp` como el endpoint MCP en Claude.ai
+2. Claude.ai descubre los endpoints de OAuth automáticamente vía `/.well-known/oauth-protected-resource` y `/.well-known/oauth-authorization-server`
+3. Autorizas en la pantalla de consentimiento de Driftless
+4. Claude.ai recibe un bearer token y lo usa para todas las llamadas a herramientas de MCP
+
+No hace falta configuración manual. Claude.ai maneja el registro, PKCE y el refresh de tokens.
+
+## Referencia de OAuth 2.0
+
+### Registro dinámico de clientes
+
+Cualquier cliente puede registrarse sin autenticación:
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/oauth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "Mi Cliente de IA",
+    "redirect_uris": ["https://myapp.com/oauth/callback"]
+  }'
+```
+
+### Scopes de OAuth
+
+| Scope | Descripción |
+|-------|-------------|
+| `context:read` | Lee topics y contexto |
+| `topics:create` | Crea topics nuevos |
+| `topics:write` | Actualiza topics existentes |
+| `context:diff` | Lee el diff de topics para cambios locales |
+| `offline_access` | Refresca el acceso sin reconectar |
+
+### Endpoints
+
+| Método | Path | Propósito |
+|--------|------|---------|
+| `GET` | `/.well-known/oauth-protected-resource` | Metadata del recurso MCP (RFC 9728) |
+| `GET` | `/.well-known/oauth-authorization-server` | Metadata del authorization server (RFC 8414) |
+| `GET` | `/.well-known/openid-configuration` | Alias de discovery compatible con OIDC |
+| `GET` | `/api/v1/oauth/authorize` | Pantalla de consentimiento de autorización (redirige al dashboard) |
+| `POST` | `/api/v1/oauth/token` | Intercambia el code por un access token |
+| `POST` | `/api/v1/oauth/register` | Registra un cliente OAuth (RFC 7591) |
+| `POST` | `/api/v1/oauth/revoke` | Revoca un access token |
+
+## Seguridad de tokens
+
+- Los authorization codes, access tokens y refresh tokens se guardan **solo como hashes**, nunca en texto plano
+- Los tokens nunca se loguean ni se devuelven después de la emisión inicial
+- El servidor MCP no importa `@driftless/db`, `typeorm` ni ninguna librería interna; llama exclusivamente a la REST API

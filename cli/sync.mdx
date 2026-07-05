@@ -3,7 +3,7 @@ title: 'Sync & Branches'
 description: 'An optional team-wide digest of what drifted around your topics.'
 ---
 
-`driftless sync` is an **optional** team-wide digest. You almost never need it, and never to start — drift already reaches you as a freshness badge when you `driftless context get` the area you're working on. Reach for `sync` only when you want to scan everything that moved at once.
+`driftless sync` is an **optional** team-wide digest. You almost never need it, and never to start. Drift already reaches you as a freshness badge when you `driftless context get` the area you're working on. Reach for `sync` only when you want to scan everything that moved at once.
 
 It does not inspect your local diff and it does not retrieve file-specific context. It pulls the repo memory state from Driftless Cloud and answers one question:
 
@@ -26,7 +26,7 @@ Typical output:
   workspace: acme  (resolved via config)
   tracking:  main, staging
 
-⚠  2 topics drifted — the team changed code these topics cover, context may be behind:
+⚠  2 topics drifted, the team changed code these topics cover, context may be behind:
    auth-boundaries
      src/auth/session.ts changed
      → review the change; if it changed how this works: driftless context update auth-boundaries --what "..." --how "..."
@@ -42,7 +42,7 @@ Typical output:
 
 ## When to use sync
 
-The everyday loop doesn't need `sync` — go straight to retrieval, which carries the freshness badge inline:
+The everyday loop doesn't need `sync`. Go straight to retrieval, which carries the freshness badge inline:
 
 ```bash
 driftless context get --files "src/auth/session.ts,src/auth/token.ts"

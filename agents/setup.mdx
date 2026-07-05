@@ -3,19 +3,81 @@ title: 'Agent setup'
 description: 'Teach coding agents to sync, retrieve, and persist Driftless context.'
 ---
 
-Driftless installs repo-local instructions for coding agents. The instructions teach agents to pull team context before editing and persist durable discoveries.
+Driftless installs repo-local instructions for your coding agents. They teach an agent to pull the team's context before it touches an area, and to write back what it learned so the next session doesn't start from zero.
 
 ## Agent workflow
 
-The default agent workflow is topic-first:
+The default agent workflow is **retrieve-first**: pull the team's context for the
+task before you touch the area, then persist what you learned.
 
-1. **Pull context before editing** — `driftless context get --files "src/auth/**"` (drift shows as a freshness badge inline; no `sync` needed). Read the `what / how / gotchas / decisions / invariants` and the `governance.authoritative` flag.
-2. **If no topic exists, create one** — `driftless context add "my-area" --content "..."` (it lands as a Note).
-3. **Persist what you learned** — `driftless context update <slug> --gotcha "..." --decision "..."`; for a topic that's already Knowledge, open a Suggested edit instead: `driftless context pr <slug> --open --summary "..." --content @file`.
-4. **Add relations if useful** — `driftless context update <slug> --rel depends_on:other-topic`.
-5. **Use JSON output when acting as an agent** — `driftless context get <slug> --json`.
+1. **Retrieve context before editing.** Pick the first move by what you know:
+   - **You know the files** → `driftless context get --files "src/auth/guard.ts,src/auth/service.ts"` (drift shows as a freshness badge inline; no `sync` needed).
+   - **You know the topic** → `driftless context get <slug>`.
+   - **You have a task but no slug** → reach for the unified **retrieve** primitive: `driftless_context_retrieve` (MCP) or `POST /topics/retrieve` (API). It ranks search + match-files + list filters drifted-first and returns `brief` bodies (the durable *why*); call `driftless context get <slug>` for the one full body you need.
 
-A note becomes Knowledge only once an owner/admin merges it in (`reviewed`) — treat `reviewed` as truth, `draft`/`proposed` as a hint. (An agent can run that merge, but only when an owner/admin explicitly asks.) See [Governance](/concepts/governance).
+   Read the `what / how / gotchas / decisions / invariants` and the `governance.authoritative` flag.
+2. **If no topic exists, create one**: `driftless context add "my-area" --area <domain> --pattern "src/<module>/**" --content "..."` (it lands as a Note).
+3. **Persist what you learned**: `driftless context update <slug> --gotcha "..." --decision "..."`; for a topic that's already Knowledge, open a Suggested edit instead: `driftless context pr <slug> --open --summary "..." --content @file`.
+4. **Add relations if useful**: `driftless context update <slug> --rel depends_on:other-topic`.
+5. **Use JSON output when acting as an agent**: `driftless context get <slug> --json`.
+
+A note becomes Knowledge only once an owner/admin merges it in (`reviewed`). Treat `reviewed` as truth, `draft`/`proposed` as a hint. (An agent can run that merge, but only when an owner/admin explicitly asks.) See [Governance](/concepts/governance).
+
+### Summary / brief / full: keep reads fast
+
+Reads default to a **light payload** so a result never floods the agent's context.
+`retrieve` and `context get --files` return **`brief`** bodies (what / decisions /
+gotchas / invariants, no full `content`); a single `context get <slug>` returns the
+**`full`** body because you named it; lists and search return a **`summary`** index
+row, bounded. Ask for `full` (e.g. `--full` / `view: "full"`) only when you need
+the whole body, and pair it with a small limit. The pattern is *brief to find the
+right topic, full for the one body you actually need.*
+
+### Working a project board: the agent loop
+
+When the work is a Driftless project (a board of cards), walk it in a loop instead
+of guessing the next task:
+
+```bash
+driftless project card next <project-id>   # next ready card + its context_bundle (one call)
+# load the context_bundle FIRST (the team's memory for the card's area), do the work,
+# run the card's `validate` (non-zero = stop-and-fix), then:
+driftless context update <slug> --gotcha "..."              # write back what you learned
+driftless project card status <project-id> <card-id> done   # then ask for the next card
+```
+
+Repeat until `project_done`. A `todo` card with unmet deps never appears in `next`.
+
+### Acting on operational records (Collections)
+
+A Collection (CRM, tracker, content calendar) holds typed **records**. Before
+acting on a record, read the collection's **criterion** Knowledge, the team's
+"how we do this." The `retrieve` action gets relevant records **plus** that
+criterion in one call:
+
+```bash
+# MCP: driftless_collection action:'retrieve' id:'<collection-id>'
+#   → { records, nextCursor, criterion, criterion_missing }
+# Read the criterion, then act:
+# driftless_collection_record action:'update' collection_id:'<id>' record_id:'<id>' fields:{...}
+```
+
+### Operating an integration (Broker)
+
+If the work needs an external provider that's already connected, **operate** it
+through the broker, not by writing a script:
+
+```bash
+driftless broker operations <provider>            # what this connection can do (named operations)
+driftless broker invoke <provider> <operation> --input '{...}'   # run one (inline + audited)
+driftless broker records <provider> --model <m>   # read a synced model's records
+```
+
+**Connecting** a provider is integration *setup* (`driftless integration
+connect/confirm`, or the dashboard), a separate, human-led concern. If the
+operation you need is **not** in `broker operations <provider>`, **stop and report
+the missing capability**. Do not author or deploy an integration script to fill
+the gap.
 
 ## Install the agent skill
 
@@ -37,7 +99,7 @@ driftless install-skill
 |---|---|
 | `AGENTS.md` | Agent instructions for Codex, Cursor, and other agentic tools |
 | `CLAUDE.md` | Agent instructions for Claude Code |
-| `.driftless/skill.md` | Full Driftless skill — the canonical reference for agents |
+| `.driftless/skill.md` | Full Driftless skill, the canonical reference for agents |
 
 The managed block inside `AGENTS.md` and `CLAUDE.md` is wrapped in comments:
 
@@ -73,17 +135,17 @@ The Driftless block teaches agents this workflow:
 
 ## Self-healing
 
-Running `driftless install-skill` again replaces the managed block contents without touching anything outside it. This means you can update the skill instructions without manual editing — re-run the command and the block refreshes to the latest version.
+Running `driftless install-skill` again replaces the managed block contents without touching anything outside it. This means you can update the skill instructions without manual editing: re-run the command and the block refreshes to the latest version.
 
 ## What to write back
 
 Use Driftless for durable architecture knowledge:
 
-- **Decisions** — why the code works this way
-- **Gotchas** — traps that would cause a future agent to make a bad edit
-- **Invariants** — rules that must stay true across refactors
-- **Anchors** — new or corrected file patterns after code moves
-- **Relations** — cross-repo dependencies discovered while working
+- **Decisions**: why the code works this way
+- **Gotchas**: traps that would cause a future agent to make a bad edit
+- **Invariants**: rules that must stay true across refactors
+- **Anchors**: new or corrected file patterns after code moves
+- **Relations**: cross-repo dependencies discovered while working
 
 ## What NOT to store
 

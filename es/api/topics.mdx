@@ -1,0 +1,92 @@
+---
+title: 'Topics'
+description: 'CRUD, gobernanza, relaciones y el grafo de topics.'
+---
+
+<Note>
+La ruta canónica es `/topics`. `/watchers` sigue funcionando como alias obsoleto para CLIs antiguas y se elimina en una versión posterior.
+</Note>
+
+## CRUD principal
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/topics` | Lista los topics (visibles para quien llama), ordenados por relevancia (los drifted primero). `?limit=&offset=` acota la página; los topics archivados quedan ocultos salvo `?status=archived` |
+| `POST` | `/workspaces/:slug/topics` | Crea un topic (una Nota, o `status: proposed` para ponerlo en revisión) |
+| `GET` | `/workspaces/:slug/topics/:topic` | Obtiene el detalle del topic |
+| `PATCH` | `/workspaces/:slug/topics/:topic` | Actualiza un topic |
+| `DELETE` | `/workspaces/:slug/topics/:topic` | Elimina un topic |
+
+La respuesta de lectura es el contexto canónico. Incluye un veredicto plano `trust` (`reviewed` | `proposed` | `draft`) más `classification.status` y un bloque `governance`: la señal de confianza que consume un agente. Usa `trust` directamente como clave:
+
+```json
+{
+  "trust": "reviewed",
+  "classification": { "status": "reviewed" },
+  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
+}
+```
+
+## Búsqueda y emparejamiento
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/topics/search` | Búsqueda de texto completo, ordenada por relevancia. `?tags=a,b` limita a los topics que llevan CUALQUIERA de esos tags; `?limit=` limita el conjunto de resultados (por defecto 50); `?stale=true\|false` filtra por frescura; los topics archivados nunca se devuelven |
+| `POST` | `/workspaces/:slug/topics/match-files` | Empareja archivos con topics |
+
+`GET /workspaces/:slug/topics` también acepta `?tags=a,b` (separados por comas, semántica OR). Los nombres de tags se normalizan del lado del servidor (minúsculas, espacios→guiones).
+
+## Tags
+
+El registro de tags del workspace: los tags como objetos de primera clase para poder crearlos por adelantado con una descripción antes de que algún topic los use. Adjuntar un tag no registrado mediante una escritura de topic lo registra automáticamente.
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/tags` | Lista con conteos de topics por tag, paginado (`?limit=&offset=`, por defecto 50, los más usados primero), devuelve `{ tags, total, has_more }` |
+| `POST` | `/workspaces/:slug/tags` | Crea `{ name, description? }`, idempotente (un tag existente fusiona la descripción) |
+| `PATCH` | `/workspaces/:slug/tags/:name` | Renombra (`{ name }`, reescribe cada topic que lleva el tag; owner/admin) y/o describe (`{ description }`) |
+| `DELETE` | `/workspaces/:slug/tags/:name` | Elimina + desasocia de cada topic (owner/admin) |
+
+## Salud y grafo
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/topics/audit` | Auditoría de salud del contexto |
+| `GET` | `/workspaces/:slug/topics/events` | Línea de tiempo de eventos del topic |
+| `GET` | `/workspaces/:slug/topics/graph` | Grafo de topics |
+
+## Gobernanza
+
+Un topic se convierte en Knowledge solo cuando un owner/admin lo fusiona. Consulta [Gobernanza](/es/concepts/governance). `approve` / `reject` y el `merge` / `reject` de Edición sugerida requieren autoridad de owner/admin. Tienen éxito para un principal owner/admin en cualquier superficie (dashboard, key de CLI con dueño, o un token OAuth/MCP que el owner/admin autorizó), y la fusión se sella con `approved_via` (`human` o `agent`). Un principal sin rostro o que no es owner es rechazado.
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `POST` | `/workspaces/:slug/topics/:topic/propose` | `draft → proposed` |
+| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (reviewed) |
+| `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
+| `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
+| `GET` | `/workspaces/:slug/topics/:topic/proposals` | Lista las Ediciones sugeridas |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Abre una Edición sugerida (`{ summary, patch }`) |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Fusiona una Edición sugerida |
+| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Cierra una Edición sugerida |
+
+## Relaciones
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `POST` | `/workspaces/:slug/topics/:topic/relations` | Añade una relación tipada |
+| `GET` | `/workspaces/:slug/topics/:topic/relations` | Lista las relaciones |
+| `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Elimina una relación |
+
+<Note>
+Las respuestas de `POST /topics` y `PATCH /topics/:topic` pueden incluir `anchor_validation`: conteos de coincidencias por patrón contra la rama por defecto del repo (`ok` / `overbroad` / `zero`, con muestras y advertencias). Solo informativo: nunca bloquea la escritura, y se omite cuando no hay un repo vinculado. `POST …/relations` es accesible para principales OAuth (MCP) con `topics:write`; eliminar relaciones sigue siendo solo para humanos.
+</Note>
+
+## Compartir
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `POST` | `/workspaces/:slug/topics/:topic/share` | Crea un enlace público de solo lectura |
+| `DELETE` | `/workspaces/:slug/topics/:topic/share` | Revoca el enlace |
+| `GET` | `/s/:token` | Página pública (sin autenticación) |
+| `GET` | `/s/:token/raw` | Markdown público (sin autenticación) |

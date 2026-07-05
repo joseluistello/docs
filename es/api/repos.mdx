@@ -1,0 +1,16 @@
+---
+title: 'Repositorios'
+description: 'Registra repositorios y gestiona la integración con la GitHub App.'
+---
+
+## Repositorios
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/repos` | Lista los repositorios |
+| `POST` | `/workspaces/:slug/repos` | Registra un repositorio |
+| `GET` | `/workspaces/:slug/repos/:id` | Obtiene los detalles del repositorio |
+| `PATCH` | `/workspaces/:slug/repos/:id` | Actualiza los metadatos del repositorio |
+| `DELETE` | `/workspaces/:slug/repos/:id` | Elimina un repositorio |
+
+Los repositorios se registran mediante la CLI (`driftless login`) o el flujo de instalación de la GitHub App. Una vez registrados, la GitHub App observa eventos de push y de PR para el seguimiento de obsolescencia y los comentarios en PRs.

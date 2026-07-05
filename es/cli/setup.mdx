@@ -1,0 +1,115 @@
+---
+title: 'Configuración de la CLI'
+description: "Instala, autentícate y empieza a crear topics de contexto."
+---
+
+## Instalación
+
+```bash
+npm install -g @driftless-sh/cli
+```
+
+## Autenticación
+
+Corre `driftless login` para abrir el navegador en el dashboard de Driftless, donde puedes copiar tu API key:
+
+```bash
+driftless login
+```
+
+Para entornos no interactivos (por ejemplo, CI), pasa la key directamente:
+
+```bash
+driftless login --key drift_xxxxxxxxxxxxxxxxx
+```
+
+## Instala el skill del agente
+
+Instala las instrucciones de contexto de Driftless para que los agentes de código recuperen los topics automáticamente antes de editar:
+
+```bash
+driftless install-skill
+```
+
+Esto escribe `AGENTS.md` y `CLAUDE.md` en tu repo. Los agentes verán las instrucciones de recuperación de topics en cada sesión.
+
+## Crea tu primer topic
+
+Driftless empieza con topics: memoria de ingeniería que perdura, anclada a los archivos y flujos de trabajo donde importa.
+
+```bash
+# Primer topic = algo REAL que ya sabes, anclado al módulo que gobierna:
+driftless context add api-auth --title "Auth" \
+  --what "Cada request de la API está acotado al workspace por un guard global." \
+  --pattern "src/auth/**"
+```
+
+¿Todavía no tienes nada concreto que registrar? Sáltalo. Primero trabaja y persiste lo que aprendes. Un topic genérico de relleno no documenta nada y se pudre el primer día.
+
+Enriquece con contexto estructurado:
+
+```bash
+driftless context update api-auth \
+  --gotcha "WorkspaceGuard es global; usa @Public() solo para rutas públicas explícitas" \
+  --decision "Llaves RS256 para que los servicios verifiquen sin un secreto compartido" \
+  --invariant "Todas las rutas requieren auth salvo que estén marcadas explícitamente con @Public()" \
+  --check "Verifica que el decorador de rol coincida con la metadata que espera el guard"
+```
+
+Conecta topics con relaciones tipadas:
+
+```bash
+driftless context update api-auth --rel relates_to:api-architecture
+driftless context get api-auth --json
+```
+
+Ancla a rutas de archivos para el seguimiento de drift:
+
+```bash
+driftless context update api-auth \
+  --add-pattern "src/auth/guards/**"
+```
+
+La CLI valida cada pattern contra tu checkout local en el momento de escribir. Un pattern que coincide con cero archivos se bloquea; uno que coincide con más de 100 archivos recibe una advertencia de anclaje demasiado amplio.
+
+<Note>
+  Define `DRIFTLESS_API_KEY` para entornos no interactivos. Define `DRIFTLESS_API_URL` solo cuando apuntes a staging o a una API local.
+</Note>
+
+## Archivo de configuración
+
+La CLI guarda su estado en `~/.driftless/config.json`:
+
+```json
+{
+  "api_key": "drift_xxxxxxxxxxxxxxxxx",
+  "api_url": "https://api.driftless.icu/api/v1",
+  "workspace_slug": "acme-corp",
+  "workspace_id": "ws_abc123"
+}
+```
+
+## Referencia de comandos
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `login` | `--key <key>` | Autentícate con la API key | `driftless login --key drift_xxx` |
+| `doctor` | `--json` | 8 chequeos de salud | `driftless doctor` |
+| `install-skill` | ninguna | Instala AGENTS.md + CLAUDE.md | `driftless install-skill` |
+
+## Flags globales
+
+| Flag | Descripción |
+|---|---|
+| `--version` / `-v` | Imprime la versión |
+| `--help` / `-h` | Ayuda completa |
+| `<cmd> --help` | Ayuda específica del comando |
+
+<AccordionGroup>
+  <Accordion title="Variables de entorno">
+    | Variable | Descripción |
+    |---|---|
+    | `DRIFTLESS_API_KEY` | API key (gana sobre el archivo de configuración) |
+    | `DRIFTLESS_API_URL` | URL del servidor de la API (por defecto: `https://api.driftless.icu/api/v1`) |
+  </Accordion>
+</AccordionGroup>

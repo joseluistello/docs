@@ -3,35 +3,35 @@ title: 'PR Comments (the Auditor)'
 description: 'One signal-anchored comment: the Auditor’s finding plus the team’s recorded context.'
 ---
 
-The only PR comment Driftless posts is the **Auditor's** — and it posts only when it has a finding. When a pull request touches documented areas, the Auditor reviews the change against the team's recorded context; if the change may contradict something the team wrote down, it posts **one comment**: the finding, with the affected topics' gotchas, decisions, and invariants riding along. The reviewer sees the signal *and* the memory behind it, together.
+Driftless posts exactly one kind of PR comment, the **Auditor's**, and it only posts when it has a finding. When a pull request touches documented areas, the Auditor reviews the change against the team's recorded context. If the change may contradict something the team wrote down, it posts **one comment**: the finding, with the affected topics' gotchas, decisions, and invariants riding along. The reviewer sees the signal *and* the memory behind it, together.
 
-A clean PR gets **no comment at all**. There is no "here's everything we know" comment on every PR that touches an anchored file — that fired on mere file-match, read as spam, and trained reviewers to ignore the bot.
+A clean PR gets **no comment at all**. There is no "here's everything we know" comment on every PR that touches an anchored file. That kind fired on a mere file-match, read as spam, and trained reviewers to ignore the bot.
 
 ## How it works
 
 When a PR is opened or updated:
 
 1. Driftless fetches the changed files and matches them against every topic's anchors (globs).
-2. Every PR↔topic match is **recorded** (it powers the dashboard's PR activity) — comment or not.
+2. Every PR↔topic match is **recorded** (it powers the dashboard's PR activity), comment or not.
 3. If the workspace has the Auditor configured (a model key in **Settings → Agents**), the Auditor is queued: it reads the real diff against the matched topics' recorded claims.
-4. **Only if it finds something** does it post a single sticky comment — updated in place on later commits, never re-posted.
+4. **Only if it finds something** does it post a single sticky comment, updated in place on later commits, never re-posted.
 
 ## What the comment delivers
 
 ```text
 ## 🔎 Driftless Auditor
 
-This change may affect 2 things the team recorded. Queued for review —
+This change may affect 2 things the team recorded. Queued for review,
 these are Suggested edits; an owner/admin merges them.
 
-- `billing-flow` (Suggested edit) — refund window changed 7d→30d
-- `auth-boundaries` (needs a human) — new route bypasses the workspace guard
+- `billing-flow` (Suggested edit): refund window changed 7d→30d
+- `auth-boundaries` (needs a human): new route bypasses the workspace guard
 
 ### What the team already knows
 
-#### `billing-flow` — Stripe billing and refund handling
+#### `billing-flow`: Stripe billing and refund handling
 **Gotchas**
-- Stripe delivers webhooks at-least-once — consumers must be idempotent
+- Stripe delivers webhooks at-least-once, so consumers must be idempotent
 **Invariants**
 - Webhook handlers must read event.id and short-circuit on duplicate
 ```
@@ -42,7 +42,7 @@ Stale topics are flagged inside the comment ("trust the code over the note, then
 
 - **No finding → no comment.** Silence is the default, and it's information too.
 - **No model key → no comment.** The Auditor is BYOM; without a key the PR is still observed and recorded, just not commented.
-- **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue — an owner/admin merges them. No coverage score, no homework.
+- **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue, and an owner/admin merges them. No coverage score, no homework.
 - **Gap-finding lives in the coverage map**, not in PR comments: `driftless_context_coverage` over the MCP, or the dashboard.
 
 If your change altered how an area works, update the topic so the note stays true:

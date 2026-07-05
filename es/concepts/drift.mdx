@@ -1,0 +1,77 @@
+---
+title: 'Detección de drift'
+description: 'Cómo Driftless detecta cuándo el código cambió respecto al contexto del equipo.'
+---
+
+## Cómo funciona el drift
+
+Cuando llega un push a una rama rastreada, la API cruza los archivos modificados contra todos los topics del workspace mediante intersección de patrones glob. Todo topic cuyos patrones anclados se solapan con los archivos modificados queda marcado como **drifted** con un motivo legible.
+
+Por ejemplo, si un push a `main` cambia `src/auth/guard.ts` y `src/auth/service.ts`, el topic `auth-flow` anclado a `src/auth/**` pasa a:
+
+> Drifted: 3 archivos cambiados en el commit `abc1234`: `src/auth/guard.ts`, `src/auth/service.ts`, `src/auth/dto/login.dto.ts`
+
+## Ramas rastreadas
+
+La **rama por defecto** siempre está rastreada. Se pueden agregar ramas adicionales:
+
+```bash
+driftless branches add staging
+driftless branches add release/*
+driftless branches
+driftless branches rm staging
+```
+
+Las ramas de feature **no se rastrean por defecto**. Esto evita ruido porque casi todo el trabajo de feature está en progreso y no representa arquitectura asentada. El drift se reserva para ramas donde los cambios señalan cambios durables de contexto.
+
+## Segunda fuente de drift: git local (sin GitHub App)
+
+El drift normalmente viene de los webhooks de push, así que un equipo sin la GitHub App instalada no recibe señal. Para cerrar esa brecha, la CLI puede reportar drift desde tu checkout **local**:
+
+```bash
+driftless context get --diff          # muestra los topics que coinciden con cambios locales (solo despliegue)
+driftless context get --diff --mark   # …y marca esos topics como drifted en Cloud
+```
+
+`--mark` es **opt-in y explícito**. El `--diff` a secas solo despliega, así que el trabajo en progreso nunca cambia el estado del equipo salvo que lo pidas. Es idempotente (los topics ya en drift se dejan tal cual).
+
+## Un empujón, no una alarma
+
+El drift es un **empujón**, no un error: "el código bajo este topic se movió, vale la pena mirarlo". Tolera falsos positivos por diseño: confía en el código y actualiza el topic solo si el cambio realmente alteró cómo funciona el área. Un archivo ancla borrado produce un empujón distinto: *"archivo anclado borrado: re-ancla o archiva este topic"*.
+
+## Ciclo de vida
+
+```
+drifted → el agente revisa → driftless context update topic --status reviewed → fresco otra vez
+drifted → ningún repo lo reclama → orphaned
+```
+
+Cuando un topic entra en drift:
+1. `driftless sync` lo expone a cada miembro del equipo
+2. Un agente o humano revisa el cambio
+3. Si el contexto sigue en pie, súmalo al knowledge (`--status reviewed`) para volverlo fresco otra vez
+4. Si ningún repo reclama ya el topic, pasa a orphaned
+
+```bash
+driftless context update auth-flow --status reviewed
+```
+
+## Cómo revisar el drift
+
+```bash
+driftless sync                         # muestra los topics en drift y qué cambió
+driftless context doctor               # auditoría completa de salud sobre todos los topics
+driftless context get --diff            # drift de los cambios locales actuales (sin commit)
+```
+
+<AccordionGroup>
+  <Accordion title="¿Qué dispara el drift?">
+    Solo los push a ramas rastreadas. Los PR **no** disparan drift; disparan observación de PR (se registra la coincidencia, y el Auditor, si está configurado, revisa y comenta solo cuando tiene un hallazgo). Esta distinción mantiene el drift con sentido: un push a `main` o `staging` significa que el código de verdad cambió, mientras que un PR sigue en revisión y puede no integrarse.
+  </Accordion>
+  <Accordion title="¿Puedo marcar un topic como drifted a mano?">
+    Sí. Corre `driftless context update <slug> --status draft` para marcarlo para revisión, o actualiza el contenido y pon `--status reviewed` para limpiar el drift. También puedes dejar que el próximo push dispare de forma natural una revisión de drift.
+  </Accordion>
+  <Accordion title="¿Qué pasa si se borran los archivos anclados de un topic?">
+    El topic entra en drift en el próximo push. Si los patrones glob ya no coinciden con ningún archivo del repo, `context doctor` lo marca como **zombie**, un ancla que apunta a nada. Arregla los patrones o archiva el topic.
+  </Accordion>
+</AccordionGroup>

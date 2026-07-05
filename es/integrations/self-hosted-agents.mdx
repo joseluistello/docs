@@ -1,0 +1,150 @@
+---
+title: 'Agentes self-hosted (OpenClaw y Hermes)'
+description: "Conecta Driftless a agentes self-hosted como OpenClaw y Hermes Agent, a través del skill del CLI o del endpoint MCP remoto."
+---
+
+[OpenClaw](https://openclaw.ai/) y [Hermes Agent](https://hermes-agent.nousresearch.com/) son agentes de IA self-hosted y always-on. Los dos corren en tu propia máquina o en un servidor, tienen **acceso al shell**, leen un archivo de instrucciones **`AGENTS.md`**, soportan un sistema de **skills**, y hablan **MCP**. Eso te da dos formas de conectarlos a Driftless. Elige una, o usa las dos.
+
+## ¿Qué camino?
+
+<CardGroup cols={2}>
+  <Card title="CLI + skill" icon="terminal">
+    El agente corre el CLI `driftless` desde su shell y sigue el skill instalado: el loop completo de contexto (traer antes de editar, persistir lo que aprende). Mejor cuando el agente ya trabaja en un repo.
+  </Card>
+  <Card title="MCP remoto" icon="plug">
+    El agente llama a las tools de Driftless (`driftless_context_*`, `project`, `tags`, …) sobre el endpoint MCP hosteado, sin necesidad de shell ni de un checkout del repo. Mejor para agentes de superficie de chat.
+  </Card>
+</CardGroup>
+
+Se componen: el skill del CLI maneja el loop de leer-antes / escribir-después en un repo, mientras que MCP expone los mismos topics y la misma superficie de trabajo como tool calls. Los dos autentican como **tú** (tu API key) y respetan la misma gobernanza: los agentes proponen, y fusionar en Knowledge es un acto de owner/admin que el agente corre solo cuando se lo pides explícitamente.
+
+### Datos de conexión compartidos
+
+| | Valor |
+|---|---|
+| MCP endpoint | `https://api.driftless.icu/mcp` (Streamable HTTP) |
+| MCP auth (agentes) | header `X-API-Key: drift_…` |
+| Paquete del CLI | `@driftless-sh/cli` |
+| API key | Dashboard → **Settings → API Keys** en [app.driftless.icu](https://app.driftless.icu) |
+
+<Note>
+Una API key autoriza al agente para un workspace y carga tu identidad. Las escrituras a la superficie de trabajo (projects, cards, tags, áreas) necesitan que el dueño de la key tenga `work:write`; **fusionar en Knowledge necesita autoridad de owner/admin**. Si el dueño de la key es owner/admin, el agente puede correr la fusión con tu pedido explícito (marcada con `approved_via: agent`); una key sin dueño o de un no-owner puede proponer pero se le rechaza la fusión.
+</Note>
+
+---
+
+## OpenClaw
+
+OpenClaw corre como un **gateway** self-hosted (`~/.openclaw/`) con un workspace en `~/.openclaw/workspace`, un sandbox de `bash`/`process`, archivos de prompt inyectados (`AGENTS.md`, `SOUL.md`, `TOOLS.md`), y skills en `~/.openclaw/workspace/skills/<skill>/SKILL.md`.
+
+### Opción A: CLI + skill
+
+Corre esto en el entorno del gateway (el host que ejecuta el shell de OpenClaw):
+
+<Steps>
+  <Step title="Instala el CLI">
+    ```bash
+    npm install -g @driftless-sh/cli
+    ```
+  </Step>
+  <Step title="Autentica">
+    ```bash
+    driftless login --key drift_your_api_key_here
+    ```
+  </Step>
+  <Step title="Instala el skill en el workspace">
+    Desde el repo (o la raíz del workspace) en el que opera el agente:
+    ```bash
+    cd ~/.openclaw/workspace        # o el directorio de tu proyecto
+    driftless install-skill
+    ```
+    Esto escribe `AGENTS.md`, `CLAUDE.md`, y `.driftless/`. OpenClaw toma `AGENTS.md` como un prompt inyectado, así que el agente ahora sigue el loop de Driftless.
+  </Step>
+</Steps>
+
+### Opción B: MCP remoto
+
+Usa el comando `mcp add` (escribe la entrada correcta en `~/.openclaw/openclaw.json` y evita los tropiezos de editar a mano):
+
+```bash
+openclaw mcp add driftless \
+  --url https://api.driftless.icu/mcp \
+  --transport streamable-http \
+  --header X-API-Key:drift_your_api_key_here
+```
+
+Después recarga y confirma que aparecen las tools `driftless_*`. La entrada de config equivalente se ve así:
+
+```json
+{
+  "mcpServers": {
+    "driftless": {
+      "url": "https://api.driftless.icu/mcp",
+      "transport": "streamable-http",
+      "headers": { "X-API-Key": "drift_your_api_key_here" }
+    }
+  }
+}
+```
+
+<Warning>
+OpenClaw tiene problemas conocidos al reenviar headers personalizados en el transporte streamable-http ([#65590](https://github.com/openclaw/openclaw/issues/65590)) y no expande `${ENV_VAR}` dentro de `headers` ([#70901](https://github.com/openclaw/openclaw/issues/70901)). Pon la key **inline** y verifica que una llamada a `driftless_context_search` de verdad autentica (un 401 significa que el header no nos está llegando). Prefiere el comando `mcp add` en vez de editar el JSON a mano, y mantén la key fuera de cualquier config commiteada.
+</Warning>
+
+---
+
+## Hermes Agent
+
+Hermes corre en tu infraestructura (desde un VPS de `$5` hasta serverless), con acceso a `execute_code`/terminal, soporte de `AGENTS.md`, y un sistema de skills compatible con [agentskills.io](https://agentskills.io). La config vive en `~/.hermes/config.yaml`.
+
+### Opción A: CLI + skill
+
+Los mismos tres pasos, corridos donde Hermes ejecuta su shell:
+
+```bash
+npm install -g @driftless-sh/cli
+driftless login --key drift_your_api_key_here
+cd /path/to/your/project && driftless install-skill   # escribe AGENTS.md + .driftless/
+```
+
+Hermes lee `AGENTS.md` y puede correr `driftless` desde sus tools de terminal, así que el loop de leer-antes / escribir-después funciona sin más cableado.
+
+### Opción B: MCP remoto
+
+Agrega Driftless bajo `mcp_servers` en `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  driftless:
+    url: "https://api.driftless.icu/mcp"
+    headers:
+      X-API-Key: "drift_your_api_key_here"
+    tools:
+      resources: false
+      prompts: false
+```
+
+Recarga MCP desde una sesión de Hermes:
+
+```
+/reload-mcp
+```
+
+<Tip>
+Para acotar bien al agente, mete a la whitelist las tools con `tools.include: [driftless_context_search, driftless_context_get, driftless_context_create]` y agrega más a medida que le tomas confianza. Empieza en chico.
+</Tip>
+
+---
+
+## Verifica la conexión
+
+Pídele al agente que haga una de estas y confirma que devuelve los topics de tu workspace:
+
+- **Camino CLI:** “Corre `driftless context search <una keyword de tu repo>`.”
+- **Camino MCP:** “Llama a `driftless_context_search` con `<keyword>`.”
+
+Un `401` en el camino MCP significa que el header `X-API-Key` no está llegando a Driftless (revisa de nuevo el valor inline y, para OpenClaw, la advertencia sobre el reenvío de headers de más arriba).
+
+<Note>
+Los clientes MCP cachean la lista de tools por sesión. Después de que Driftless publica tools nuevas o renombradas, **reconecta / recarga** el servidor MCP (OpenClaw: vuelve a correr `mcp add` o reinicia el gateway; Hermes: `/reload-mcp`) para que el agente las vea. Las tools de superficie de trabajo (`driftless_tags`, `driftless_areas`, `driftless_project`, `driftless_project_card`) son basadas en action; pasa `action` para elegir la operación. Ver [MCP overview](/es/mcp/overview) para la lista completa de tools.
+</Note>

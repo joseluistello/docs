@@ -1,41 +1,41 @@
 ---
 title: 'Collections'
-description: 'The object-native operational substrate. A Collection is a configured table; a Record is one typed row. A CRM, a bug tracker, support tickets, a content calendar — each is a configured Collection, not new code.'
+description: "The object-native operational substrate. A Collection is a configured table; a Record is one typed row. A CRM, a bug tracker, support tickets, a content calendar: each is a configured Collection, not new code."
 ---
 
-A **Collection** is a configured table on the workspace spine; a **Record** is one typed row in it. This is the operational half of the workspace — where the work *lives* (leads, bugs, tickets, posts) — as opposed to Topics, which capture what the team *knows*.
+A **Collection** is a configured table on the workspace spine; a **Record** is one typed row in it. This is the operational half of the workspace, where the work *lives* (leads, bugs, tickets, posts), as opposed to Topics, which capture what the team *knows*.
 
-The point of the substrate is that you don't build apps. A CRM, a bug tracker, a support desk, a content calendar are all the **same primitive** — a typed Record flowing through a configured Collection. A new use case is a configuration, not new code.
+The point of the substrate is that you don't build apps. A CRM, a bug tracker, a support desk, and a content calendar are all the **same primitive**: a typed Record flowing through a configured Collection. A new use case is a configuration, not new code.
 
 <Note>
-Collections are a **separate primitive from [Projects](/concepts/projects)**. A Project is an execution loop where an agent walks a board; a Collection is operational data a human runs, augmented by AI. They coexist — neither is built on the other.
+Collections are a **separate primitive from [Projects](/concepts/projects)**. A Project is an execution loop where an agent walks a board; a Collection is operational data a human runs, augmented by AI. They coexist, and neither is built on the other.
 </Note>
 
 ## The three archetypes
 
 Every use case collapses into one of three shapes:
 
-- **Pipeline** — records flow through a `status` lifecycle on a board: leads, bugs, support tickets, ad campaigns.
-- **Analysis** — a record is an artifact anchored to a source that can **drift** (the source changed) versus **decay** (no activity): call analysis, competitor tracking, SEO audits.
-- **Content** — a record with a publication lifecycle (draft → published): blog posts, product copy. The published artifact lives in your site/CMS; the collection tracks the work.
+- **Pipeline**: records flow through a `status` lifecycle on a board: leads, bugs, support tickets, ad campaigns.
+- **Analysis**: a record is an artifact anchored to a source that can **drift** (the source changed) versus **decay** (no activity): call analysis, competitor tracking, SEO audits.
+- **Content**: a record with a publication lifecycle (draft → published): blog posts, product copy. The published artifact lives in your site/CMS; the collection tracks the work.
 
 ## What a Collection holds
 
-- **`record_schema`** — the typed field definitions (the columns). Field types: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. A `status` field carries `stages[]` — the lifecycle a record flows through.
-- **`views`** — saved views over the records: `board`, `table`, `list`, `calendar`, `gallery`, each with `group_by`, `filter`, `sort`, and `visible_fields`.
-- **`criterion_rel_slugs`** — the Knowledge **Topics the work reads before acting**. This is the seam coming down: a lead pipeline reads `how-we-sell` and `icp`, so the work happens with the team's criteria.
-- **`distill_policy`** — how a terminal record distills back into a Note (the seam going up): closing a bug or winning a deal can leave a durable learning in the vault.
+- **`record_schema`**: the typed field definitions (the columns). Field types: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. A `status` field carries `stages[]`, the lifecycle a record flows through.
+- **`views`**: saved views over the records: `board`, `table`, `list`, `calendar`, `gallery`, each with `group_by`, `filter`, `sort`, and `visible_fields`.
+- **`criterion_rel_slugs`**: the Knowledge **Topics the work reads before acting**. This is the seam coming down: a lead pipeline reads `how-we-sell` and `icp`, so the work happens with the team's criteria.
+- **`distill_policy`**: how a terminal record distills back into a Note (the seam going up): closing a bug or winning a deal can leave a durable learning in the vault.
 
 ## A Record
 
-A Record is one row: its `fields` are the typed values (keyed by the Collection's field keys), and its `status` is **validated against the Collection's own stages** — each Collection defines its own lifecycle, so a record can only sit in a stage its Collection declares.
+A Record is one row: its `fields` are the typed values (keyed by the Collection's field keys), and its `status` is **validated against the Collection's own stages**. Each Collection defines its own lifecycle, so a record can only sit in a stage its Collection declares.
 
 ## Using collections
 
 From the CLI (the surface also exists in MCP as `driftless_collection` and `driftless_collection_record`):
 
 ```bash
-# Configure a Sales Pipeline — schema/views accept inline JSON or @file
+# Configure a Sales Pipeline: schema/views accept inline JSON or @file
 driftless collection add "Sales Pipeline" --archetype pipeline \
   --schema '[{"key":"company","type":"text"},{"key":"mrr","type":"currency"},{"key":"stage","type":"status","stages":["new","qualified","won","lost"]}]' \
   --views  '[{"type":"board","group_by":"stage"}]' \
@@ -46,3 +46,28 @@ driftless collection record add <collection-id> --fields '{"company":"Acme","mrr
 driftless collection records   <collection-id> --status won
 driftless collection record update <collection-id> <record-id> --status won
 ```
+
+## Retrieve before you act: the seam in one call
+
+Before working a record, an agent reads the collection's **criterion** Knowledge:
+the `criterion_rel_slugs` resolved into the actual topics (`how-we-sell`, `icp`),
+so the work happens with the team's criteria, not from scratch.
+
+The `retrieve` action delivers both halves of the seam at once: the relevant
+records **and** the criterion to read first:
+
+```text
+MCP: driftless_collection action:'retrieve' id:'<collection-id>'
+     [query / status / entity_id / drifted / updated_after / fields / view / limit / cursor]
+  → { records, nextCursor, criterion, criterion_missing }
+API: GET /workspaces/:slug/collections/:id/retrieve?status=won&limit=25
+```
+
+`criterion` is the team's Knowledge to apply; `criterion_missing` flags any
+criterion slug that doesn't resolve (a gap to close). Records paginate by keyset
+(`nextCursor`). Read the criterion, then act on a record with
+`driftless_collection_record action:'update'`. For just the criterion (no records),
+use `driftless_collection action:'context'`.
+
+This mirrors topic [retrieve](/mcp/overview): one call returns *what to read* and
+*what to work on*, instead of hand-chaining a list and a separate criterion lookup.

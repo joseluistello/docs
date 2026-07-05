@@ -1,0 +1,155 @@
+---
+title: 'Configuración de agentes'
+description: "Enseña a tus agentes de código a sincronizar, recuperar y persistir el contexto de Driftless."
+---
+
+Driftless instala instrucciones locales al repo para tus agentes de código. Le enseñan al agente a traer el contexto del equipo antes de tocar un área, y a escribir de vuelta lo que aprendió para que la próxima sesión no arranque desde cero.
+
+## Flujo de trabajo del agente
+
+El flujo de trabajo por defecto del agente es **retrieve-first**: trae el contexto
+del equipo para la tarea antes de tocar el área, y después persiste lo que aprendiste.
+
+1. **Recupera el contexto antes de editar.** Elige el primer movimiento según lo que sepas:
+   - **Conoces los archivos** → `driftless context get --files "src/auth/guard.ts,src/auth/service.ts"` (el drift aparece como un badge de frescura en línea; no hace falta `sync`).
+   - **Conoces el topic** → `driftless context get <slug>`.
+   - **Tienes una tarea pero no un slug** → usa el primitivo unificado **retrieve**: `driftless_context_retrieve` (MCP) o `POST /topics/retrieve` (API). Ordena search + match-files + list filters con lo drifteado primero y devuelve cuerpos `brief` (el *porqué* durable); llama a `driftless context get <slug>` para el único cuerpo completo que necesites.
+
+   Lee el `what / how / gotchas / decisions / invariants` y el flag `governance.authoritative`.
+2. **Si no existe ningún topic, crea uno**: `driftless context add "my-area" --area <domain> --pattern "src/<module>/**" --content "..."` (nace como Nota).
+3. **Persiste lo que aprendiste**: `driftless context update <slug> --gotcha "..." --decision "..."`; para un topic que ya es Knowledge, abre en su lugar una Edición sugerida: `driftless context pr <slug> --open --summary "..." --content @file`.
+4. **Agrega relaciones si sirve**: `driftless context update <slug> --rel depends_on:other-topic`.
+5. **Usa salida JSON cuando actúes como agente**: `driftless context get <slug> --json`.
+
+Una nota se vuelve Knowledge solo cuando un owner/admin lo mergea (`reviewed`). Trata `reviewed` como verdad, `draft`/`proposed` como una pista. (Un agente puede correr ese merge, pero solo cuando un owner/admin lo pide de forma explícita.) Ver [Governance](/es/concepts/governance).
+
+### Summary / brief / full: mantén las lecturas rápidas
+
+Las lecturas devuelven por defecto un **payload liviano** para que un resultado nunca
+inunde el contexto del agente. `retrieve` y `context get --files` devuelven cuerpos
+**`brief`** (what / decisions / gotchas / invariants, sin el `content` completo); un
+solo `context get <slug>` devuelve el cuerpo **`full`** porque lo nombraste; las listas
+y la búsqueda devuelven una fila índice **`summary`**, acotada. Pide `full` (por ejemplo
+`--full` / `view: "full"`) solo cuando necesites el cuerpo entero, y acompáñalo de un
+límite chico. El patrón es *brief para encontrar el topic correcto, full para el único
+cuerpo que de verdad necesitas.*
+
+### Trabajando un tablero de proyecto: el loop del agente
+
+Cuando el trabajo es un proyecto de Driftless (un tablero de cards), recórrelo en un loop
+en vez de adivinar la próxima tarea:
+
+```bash
+driftless project card next <project-id>   # próxima card lista + su context_bundle (una llamada)
+# carga el context_bundle PRIMERO (la memoria del equipo para el área de la card), haz el trabajo,
+# corre el `validate` de la card (distinto de cero = para y arregla), y después:
+driftless context update <slug> --gotcha "..."              # escribe de vuelta lo que aprendiste
+driftless project card status <project-id> <card-id> done   # y después pide la próxima card
+```
+
+Repite hasta `project_done`. Una card en `todo` con deps sin cumplir nunca aparece en `next`.
+
+### Actuando sobre records operacionales (Collections)
+
+Una Collection (CRM, tracker, calendario de contenido) contiene **records** tipados. Antes
+de actuar sobre un record, lee el **criterion** Knowledge de la collection, el
+"cómo hacemos esto" del equipo. La acción `retrieve` trae los records relevantes **más**
+ese criterion en una sola llamada:
+
+```bash
+# MCP: driftless_collection action:'retrieve' id:'<collection-id>'
+#   → { records, nextCursor, criterion, criterion_missing }
+# Lee el criterion, después actúa:
+# driftless_collection_record action:'update' collection_id:'<id>' record_id:'<id>' fields:{...}
+```
+
+### Operando una integración (Broker)
+
+Si el trabajo necesita un provider externo que ya está conectado, **opéralo** a través del
+broker, no escribiendo un script:
+
+```bash
+driftless broker operations <provider>            # qué puede hacer esta conexión (operaciones con nombre)
+driftless broker invoke <provider> <operation> --input '{...}'   # corre una (inline + auditada)
+driftless broker records <provider> --model <m>   # lee los records de un modelo sincronizado
+```
+
+**Conectar** un provider es *setup* de integración (`driftless integration
+connect/confirm`, o el dashboard), un asunto aparte, liderado por humanos. Si la
+operación que necesitas **no** está en `broker operations <provider>`, **para y reporta
+la capacidad que falta**. No escribas ni despliegues un script de integración para tapar
+el hueco.
+
+## Instala la skill del agente
+
+```bash
+driftless install-skill
+```
+
+Esto instala AGENTS.md y CLAUDE.md en el repo actual. Úsalo cuando quieras que los agentes recuperen topics de Driftless desde su flujo de trabajo normal.
+
+Si necesitas volver a correrlo después (por ejemplo, para actualizar las instrucciones de la skill tras una actualización del CLI):
+
+```bash
+driftless install-skill
+```
+
+## Qué se instala
+
+| Archivo | Propósito |
+|---|---|
+| `AGENTS.md` | Instrucciones de agente para Codex, Cursor y otras herramientas agénticas |
+| `CLAUDE.md` | Instrucciones de agente para Claude Code |
+| `.driftless/skill.md` | La skill completa de Driftless, la referencia canónica para agentes |
+
+El bloque gestionado dentro de `AGENTS.md` y `CLAUDE.md` está envuelto en comentarios:
+
+```text
+<!-- driftless:start -->
+... instrucciones de contexto de driftless ...
+<!-- driftless:end -->
+```
+
+El bloque de Driftless le enseña a los agentes este flujo de trabajo:
+
+<Steps>
+  <Step title="Detecta la situación">
+    El agente corre `driftless doctor` para revisar la API key, el workspace, el remote de Git y la instalación de la skill.
+  </Step>
+
+  <Step title="Recupera el contexto antes de editar">
+    ```bash
+    driftless context get --files "src/auth/guard.ts,src/users/service.ts"
+    ```
+    El agente obtiene los topics que coinciden con los archivos que está por modificar. Usa `--json` para salida estructurada.
+  </Step>
+
+  <Step title="Persiste los descubrimientos">
+    ```bash
+    driftless context update auth-flow \
+      --decision "WorkspaceGuard es global; usa @Public() solo para rutas públicas explícitas" \
+      --gotcha "No asumas que las rutas son públicas cuando los guards están compuestos"
+    ```
+    El contexto durable vuelve a la Cloud para que la próxima sesión no arranque desde cero.
+  </Step>
+</Steps>
+
+## Auto-reparación
+
+Correr `driftless install-skill` de nuevo reemplaza el contenido del bloque gestionado sin tocar nada fuera de él. Esto significa que puedes actualizar las instrucciones de la skill sin editar a mano: vuelve a correr el comando y el bloque se refresca a la última versión.
+
+## Qué escribir de vuelta
+
+Usa Driftless para conocimiento de arquitectura durable:
+
+- **Decisiones**: por qué el código funciona así
+- **Gotchas**: trampas que harían que un agente futuro haga una mala edición
+- **Invariantes**: reglas que deben seguir siendo ciertas a través de los refactors
+- **Anchors**: patrones de archivo nuevos o corregidos después de que el código se mueve
+- **Relaciones**: dependencias entre repos descubiertas mientras trabajabas
+
+## Qué NO guardar
+
+<Warning>
+  Nunca pongas secrets, credenciales, datos crudos de clientes, API keys ni notas temporales de borrador en los topics de contexto.
+</Warning>

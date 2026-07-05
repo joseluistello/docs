@@ -7,23 +7,23 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | List topics with filters. Defaults to the **40 most relevant** (drifted first); prints `Showing N of M` — use `--all` / `--limit N` for more (`--json` is uncapped). `--suggested` = not-yet-Knowledge (Notes + Up for review: `draft` + `proposed`). `--tag` is repeatable (OR semantics) — list a whole category. | `driftless context list --tag billing` |
+| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | List topics with filters. Defaults to the **40 most relevant** (drifted first); prints `Showing N of M`. Use `--all` / `--limit N` for more (`--json` is uncapped). `--suggested` = not-yet-Knowledge (Notes + Up for review: `draft` + `proposed`). `--tag` is repeatable (OR semantics), so you can list a whole category. | `driftless context list --tag billing` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics for current changes | `driftless context get --diff` |
-| `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** (local-git drift source — no GitHub App needed) | `driftless context get --diff --mark` |
-| `context search` | query, `--tag <name>`, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation` — narrow with more terms rather than paging. `--tag` (repeatable, OR) scopes the search to a category. Knowledge + topics up for review; Notes excluded unless `--include-notes`. | `driftless context search "refunds" --tag billing` |
+| `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** (local-git drift source, no GitHub App needed) | `driftless context get --diff --mark` |
+| `context search` | query, `--tag <name>`, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation`. Narrow with more terms rather than paging. `--tag` (repeatable, OR) scopes the search to a category. Knowledge + topics up for review; Notes excluded unless `--include-notes`. | `driftless context search "refunds" --tag billing` |
 
-## Tags — the category registry
+## Tags: the category registry
 
-Tags are workspace-level categories topics anchor to. Names normalize on every surface (lowercase, whitespace→dashes), so `Billing` and `billing ` are the same tag. Attaching a tag that was never pre-created **auto-registers** it — the registry is curation, never a gate.
+Tags are workspace-level categories topics anchor to. Names normalize on every surface (lowercase, whitespace→dashes), so `Billing` and `billing ` are the same tag. Attaching a tag that was never pre-created **auto-registers** it. The registry is curation, never a gate.
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
 | `tags` | `--limit <n>`, `--offset <n>`, `--json` | List the registry with per-tag topic counts (paginated, most-used first) | `driftless tags` |
-| `tags add <name>` | `--description "..."` | Pre-create a tag (idempotent — re-adding merges the description) | `driftless tags add billing --description "Billing rules"` |
-| `tags rename <old> <new>` | — | Rename everywhere — rewrites every topic carrying the tag (owner/admin) | `driftless tags rename billing facturacion` |
-| `tags rm <name>` | — | Delete from the registry **and** detach from every topic (owner/admin) | `driftless tags rm legacy` |
+| `tags add <name>` | `--description "..."` | Pre-create a tag (idempotent: re-adding merges the description) | `driftless tags add billing --description "Billing rules"` |
+| `tags rename <old> <new>` | none | Rename everywhere, rewriting every topic carrying the tag (owner/admin) | `driftless tags rename billing facturacion` |
+| `tags rm <name>` | none | Delete from the registry **and** detach from every topic (owner/admin) | `driftless tags rm legacy` |
 
 ## Create & Update
 
@@ -32,6 +32,7 @@ Tags are workspace-level categories topics anchor to. Names normalize on every s
 | `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**"` |
 | `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
+| `context merge` | `--into`, `--dry-run`, `--json` | Fold a duplicate into its survivor (archives source; prose never merged) | `driftless context merge payment-flow-2 --into payment-flow --dry-run` |
 | `context move` | `--to <workspace>`, `--dry-run`, `--json` | Re-home a topic to another workspace you belong to | `driftless context move payment-flow --to acme-platform` |
 
 ## Pattern validation
@@ -57,7 +58,7 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 
 ## Governance
 
-A topic becomes Knowledge only once it's merged in. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; merging is an owner/admin act — an agent runs it only when an owner/admin explicitly asks. See [Governance](/concepts/governance).
+A topic becomes Knowledge only once it's merged in. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; merging is an owner/admin act. An agent runs it only when an owner/admin explicitly asks. See [Governance](/concepts/governance).
 
 | Command | Description | Example |
 |---|---|---|
@@ -90,9 +91,9 @@ A workspace is the top-level container for context; you can belong to several an
 
 `context move` resets the topic to a Note in its new workspace (Knowledge status doesn't carry across workspaces) and requires owner/admin in the source plus membership in the target. See [Workspaces](/concepts/workspaces).
 
-## Beyond context — the rest of the workspace
+## Beyond context: the rest of the workspace
 
-The whole workspace is headless, not just topics. The same CLI drives the work surfaces — an agent runs the commands a human would:
+The whole workspace is headless, not just topics. The same CLI drives the work surfaces, and an agent runs the commands a human would:
 
 | Family | Commands | Docs |
 |---|---|---|

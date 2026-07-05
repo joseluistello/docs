@@ -1,0 +1,189 @@
+---
+title: 'Notion connector (beta)'
+description: 'Connect Notion as a read-only source: your page metadata and content sync into Driftless, governed and bounded. No writes, no manual Nango setup.'
+---
+
+The Notion connector brings your Notion pages into your workspace as a **read-only source**. You connect once, share the pages you want, and Driftless keeps their metadata in sync and reads a page's content on demand. All of it stays bounded, audited, and governed.
+
+<Note>
+This is a **read-only beta**. Driftless never writes to Notion (no creating, editing, or deleting pages). Connected Notion data is **external source data**, not Knowledge. Default context retrieve stays Topics-only; Notion appears in retrieve only after an explicit import/index step and an explicit connector-source retrieve request.
+</Note>
+
+## Connect Notion
+
+<Steps>
+  <Step title="Open Connections">
+    Go to **Settings → Connections** in the dashboard.
+  </Step>
+  <Step title="Authorize Notion">
+    Pick **Notion** and authorize in the pop-up. Driftless binds the connection to your workspace only.
+  </Step>
+  <Step title="Sync starts automatically">
+    On confirm, Driftless sets up the read-only sync for you. **You never touch a Notion template or any Nango setup.** The connection shows **“Notion sync is starting”** while the first sync runs.
+  </Step>
+</Steps>
+
+## Share the pages you want synced
+
+Notion only exposes pages you explicitly share with the integration. In Notion, open a page or database, choose **Connections → Driftless**, and confirm. Anything you don't share stays private and never reaches Driftless.
+
+If the status reads **“Notion is connected, but no pages were found to sync,”** share at least one page or database and it will sync automatically.
+
+## Check sync status
+
+Settings → Connections shows a plain-language status and a next step. The CLI shows the same:
+
+```bash
+driftless broker connections
+```
+
+| Status | Meaning |
+| --- | --- |
+| Notion sync is starting | The first sync is running; check back shortly. |
+| Notion is synced: N items available | Your shared pages are tracked. |
+| No pages were found to sync | Share a Notion page or database with the integration. |
+| The last Notion sync failed | The error is shown; reconnect to retry. |
+| Connection expired | Reconnect Notion to resume. |
+
+## Read what synced
+
+**Models** lists what you can read:
+
+```bash
+driftless broker models notion          # shows ContentMetadata
+```
+
+**Records** are your synced page metadata (titles, parents, timestamps), bounded and delta-aware:
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5
+```
+
+**Page content** is one page's bounded, citeable text (read-only):
+
+```bash
+driftless broker page <pageId>
+```
+
+The same actions are available to agents through the `driftless_broker` MCP tool (`action: 'models' | 'records' | 'page-content'`).
+
+## Index Notion for connector-backed retrieve
+
+Reading a page is not the same as indexing it. If you want Driftless retrieve to search Notion content, first materialize selected Notion pages into Driftless-owned connector documents.
+
+Preview before writing:
+
+```bash
+driftless broker index notion --dry-run --model ContentMetadata --limit 10 --sample-limit 3
+```
+
+If the preview is correct, execute the import/index:
+
+```bash
+driftless broker index notion --model ContentMetadata --limit 10 --import-run-id notion-beta-1
+```
+
+This writes only to Driftless `connector_documents`. It does **not** write to Notion, create Topics, create Knowledge, or create Collection records.
+
+After indexing, connector-backed retrieve is explicit:
+
+```json
+{
+  "query": "refund escalation",
+  "sources": ["connectors"],
+  "providers": ["notion"],
+  "connector_models": ["ContentMetadata"],
+  "limit": 5
+}
+```
+
+Results carry `trust: "external"`, citations, and freshness. Treat them as cited source material, not reviewed team memory.
+
+## Privacy & security limits
+
+- **Read-only.** No writes to Notion of any kind. Write operations are not exposed and cannot be invoked.
+- **Workspace-scoped.** A connection is only ever visible to the workspace that created it; no cross-tenant access.
+- **Credentials never leave the vault.** Notion tokens live in Nango's encrypted vault and are injected server-side. They never appear in CLI, MCP, dashboard, logs, or traces.
+- **Bounded reads.** Records and page content are paginated and size-capped; large pages return a bounded, clearly-marked prefix.
+- **Audited.** Connecting, sync runs, record reads, and page reads are recorded, without ever logging page text.
+- **Not Knowledge.** Notion content is external source data. It is never merged into Knowledge automatically; connector-backed retrieve returns it only as `trust: "external"` with citations and freshness.
+
+---
+
+## Operator runbook
+
+Internal setup and operations for the Notion connector beta.
+
+### Environment
+
+The broker is feature-flagged and fails fast at boot if enabled without its credentials:
+
+| Variable | Purpose |
+| --- | --- |
+| `DRIFTLESS_BROKER_ENABLED` | `true` turns the broker on (default off; `staging` defaults on). |
+| `DRIFTLESS_BROKER_ROLLOUT` | `off` (default) closes the external OAuth/MCP lane; `internal` / `ga` open it (grants still apply). |
+| `DRIFTLESS_BROKER_POLICY` | `enforce` (prod default) hides any operation not explicitly allowed; `open` (staging) shows all, flagged. |
+| `NANGO_SECRET_KEY` | Nango backend API key (server-side only). |
+| `NANGO_WEBHOOK_SIGNING_KEY` | Verifies Nango-forwarded webhooks (required when the broker is on). |
+
+### Webhook
+
+Nango forwards sync/auth events to the **root** ingress (not under `/api/v1`):
+
+```
+POST https://<api-host>/broker/nango/webhook
+```
+
+Every event is HMAC-verified against `NANGO_WEBHOOK_SIGNING_KEY` before it touches the database; an unsigned or forged event is rejected (401). Webhooks are **signals only**: they update sync health/counts and never trigger a provider call.
+
+### Automatic bootstrap (syncs + the page-content read action)
+
+On connection confirm/reconnect, Driftless provisions the connector's read-only capability via the Nango API, idempotently (an already-deployed template is treated as success), so operators never touch a Nango template by hand:
+
+- **Read-only sync** (`function_type: sync`): the registry's sync templates (Notion → `content-metadata`) are deployed **and started** for the connection, so it mirrors `ContentMetadata` records.
+- **Reviewed read action** (`function_type: action`): the registry's declared, rollout-visible read actions (Notion → `notion-page-content`) are deployed, so the page-content read is actually invokable. This action is a **custom Nango Function**, source-controlled in the repo (`apps/api/src/integrations/nango/notion/actions/notion-page-content.ts`, reviewed via PR) and deployed verbatim as `type:'function'` (NOT a prebuilt catalog template; sending it as a template was the v1 `404` bug). It is **one specific, registry-declared read action**, **not** the broad Nango action catalog (never auto-enabled) and **never** a write. The backend deploys the versioned source it reads from disk; it never generates code, and agents never author it at runtime.
+
+Both are best-effort and recorded as bootstrap status on the connection; a failure surfaces as status and never breaks the connection.
+
+### Import/index operator notes
+
+The import/index path is separate from connection bootstrap:
+
+- `index/preview` reads bounded synced records and bounded page content, then reports candidate counts, samples, size estimates, and skipped reasons.
+- `index` repeats the bounded read and writes idempotent rows into `connector_documents`.
+- Connector documents are keyed by workspace, provider, connection, and external id.
+- Re-indexing updates existing connector documents when content changes.
+- Normal retrieve never calls Notion or Nango live; it reads only materialized connector documents.
+- Stale connector documents are labeled; deleted/error rows are excluded from normal retrieve.
+
+Run connector retrieve gates only after indexing:
+
+```bash
+EVAL_API_URL=https://<api-host>/api/v1 EVAL_API_KEY=<read-key> EVAL_WS=<slug> \
+  EVAL_BROKER_EXPECTED=on EVAL_CONNECTOR_RETRIEVE=on \
+  EVAL_CONNECTOR_PROVIDER=notion EVAL_CONNECTOR_MODEL=ContentMetadata \
+  pnpm evals:retrieval-scale
+```
+
+### Rollback
+
+The connector has independent kill switches, and none are destructive:
+
+- Close the external lane: set `DRIFTLESS_BROKER_ROLLOUT=off` (internal API-key/dashboard access still works; external OAuth/MCP is refused).
+- Disable the broker entirely: set `DRIFTLESS_BROKER_ENABLED=false`. The REST/MCP broker surface disappears (503/404) and the API boots clean with no Nango env.
+- Per-workspace: disconnect Notion in Settings → Connections (this also revokes the credential at Nango).
+
+### Key rotation
+
+Rotate `NANGO_SECRET_KEY` / `NANGO_WEBHOOK_SIGNING_KEY` in Nango, then update the API env and redeploy. Because credentials resolve server-side per request, no stored copy needs migrating. After rotating the signing key, confirm a real webhook still verifies (an unsigned probe must still return 401).
+
+### Beta gate
+
+The read-only beta gate proves the path end-to-end without writing: connection → status → `ContentMetadata` model → bounded records → optional page content → unsigned-webhook rejection → no policy-hidden writes exposed:
+
+```bash
+EVAL_API_URL=https://<api-host>/api/v1 EVAL_API_KEY=<read-key> EVAL_WS=<slug> \
+  EVAL_BROKER_EXPECTED=on pnpm evals:retrieval-scale
+```
+
+It is read-only and safe to run against prod beta. No Notion connection → it skips; connected but the sync model missing → it fails clearly.

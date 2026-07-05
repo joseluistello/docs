@@ -1,0 +1,55 @@
+---
+title: 'Notas y compartir'
+description: "Anota una nota privada, compártela con la bandeja de un compañero, o fusiónala en Knowledge para todo el equipo."
+---
+
+Una **nota** es donde arranca todo en Driftless: un borrador privado que solo tú ves. De ahí puede salir en dos direcciones. Puede subir por el eje de confianza hasta volverse Knowledge del equipo, o irse de lado hasta la bandeja de un compañero en particular. Las dos son independientes, y ninguna frena a nadie que esté programando.
+
+## Anotar una nota
+
+La forma más rápida de capturar algo es una línea desde el CLI. Sin anchors, sin ceremonia:
+
+```bash
+driftless note add --content "Los tokens de OAuth expiran cada 2h en IHCE, refréscalos antes de enviar"
+driftless note add --content @notes/today.md --json
+```
+
+Una nota es un topic en su estado **draft**: privada para ti, fuera de la búsqueda, y auto-archivada después de ~14 días si nadie la toca (recuperable). Piensa aquí, y después decide a dónde va.
+
+Adjunta una nota al trabajo mientras la capturas. `--project <id>` la archiva en un [proyecto](/es/concepts/projects), y `--project <id> --card <id>` la adjunta a una card específica en pleno loop, donde viaja en el context bundle del `next` de esa card y se sintetiza en un topic draft cuando el proyecto cierra.
+
+```bash
+driftless note add --content "Las entregas de webhooks llegan en desorden, se requiere idempotency key" \
+  --project prj_abc --card card_xyz
+```
+
+## De lado: compartir con un compañero
+
+Comparte una nota directo con uno o más miembros del workspace. Aterriza en su **bandeja de entrada** ("compartido conmigo") sin volverse Knowledge de todo el equipo. Es el movimiento correcto para el "esto lo tienes que ver tú en particular".
+
+| Acción | Superficie |
+|---|---|
+| Compartir una nota con miembros | `POST /workspaces/:slug/topics/:topicSlug/share-with` con `{ "recipients": ["user_…"] }` |
+| Tu bandeja de entrada (compartido conmigo) | `GET /workspaces/:slug/shared` (`?unread=true` para el feed sin atender) |
+| Marcar una como leída / todas leídas | `POST /workspaces/:slug/shared/:id/read` · `POST /workspaces/:slug/shared/read-all` |
+
+Los destinatarios tienen que ser **miembros del workspace**. Si compartes con alguien que no es miembro, se rechaza. El **Inbox** del dashboard renderiza este feed, y tanto compartir como leer se pueden operar por REST para los agentes.
+
+## Hacia arriba: fusionar en Knowledge
+
+Cuando una nota es lo bastante durable para todo el equipo, sube por el eje de confianza: **Nota → En revisión → Knowledge**. Fusionar es un acto de owner/admin. Un owner o admin la fusiona, o le pide explícitamente a un agente que corra la fusión en su nombre. Lo que sale es la fuente de verdad del equipo, eso que los agentes traen antes de editar. Mira [Gobernanza](/es/concepts/governance) para el ciclo de vida completo y los comandos de fusión.
+
+## Un link público de solo lectura (otra cosa)
+
+Compartir *con un compañero* (arriba) es interno y restringido a miembros. Para pasarle un topic a alguien **fuera** del workspace, mejor genera un link público de solo lectura:
+
+```bash
+driftless context share <topic>           # crea un link público
+driftless context share <topic> --revoke  # lo apaga
+```
+
+| | Compartir con un compañero | Link público (`context share`) |
+|---|---|---|
+| Audiencia | la bandeja de un miembro del workspace | cualquiera con la URL |
+| Auth | restringido a miembros | sin autenticar, solo lectura |
+| Cuándo usarlo | "deberías ver esta nota" | "muéstrale esto a alguien fuera del equipo" |

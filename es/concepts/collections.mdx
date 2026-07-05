@@ -1,0 +1,73 @@
+---
+title: 'Colecciones'
+description: "El sustrato operacional nativo de objetos. Una Collection es una tabla configurada; un Record es una fila tipada. Un CRM, un bug tracker, tickets de soporte, un calendario de contenido: cada uno es una Collection configurada, no código nuevo."
+---
+
+Una **Collection** es una tabla configurada sobre la spine del workspace; un **Record** es una fila tipada en ella. Esta es la mitad operacional del workspace, donde el trabajo *vive* (leads, bugs, tickets, posts), a diferencia de los Topics, que capturan lo que el equipo *sabe*.
+
+La gracia del sustrato es que no construyes apps. Un CRM, un bug tracker, una mesa de soporte y un calendario de contenido son todos el **mismo primitivo**: un Record tipado que fluye por una Collection configurada. Un caso de uso nuevo es una configuración, no código nuevo.
+
+<Note>
+Las Collections son un **primitivo separado de los [Proyectos](/es/concepts/projects)**. Un Project es un loop de ejecución donde un agente recorre un board; una Collection es data operacional que un humano opera, aumentada por IA. Coexisten, y ninguno se construye sobre el otro.
+</Note>
+
+## Los tres arquetipos
+
+Todo caso de uso colapsa en una de tres formas:
+
+- **Pipeline**: los records fluyen por un ciclo de vida de `status` en un board: leads, bugs, tickets de soporte, campañas de ads.
+- **Analysis**: un record es un artefacto anclado a una fuente que puede **entrar en drift** (la fuente cambió) frente a **decaer** (sin actividad): análisis de llamadas, seguimiento de competidores, auditorías SEO.
+- **Content**: un record con un ciclo de vida de publicación (draft → published): posts de blog, copy de producto. El artefacto publicado vive en tu sitio/CMS; la collection rastrea el trabajo.
+
+## Qué contiene una Collection
+
+- **`record_schema`**: las definiciones de campos tipados (las columnas). Tipos de campo: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. Un campo `status` lleva `stages[]`, el ciclo de vida por el que fluye un record.
+- **`views`**: vistas guardadas sobre los records: `board`, `table`, `list`, `calendar`, `gallery`, cada una con `group_by`, `filter`, `sort` y `visible_fields`.
+- **`criterion_rel_slugs`**: los **Topics de Knowledge que el trabajo lee antes de actuar**. Esta es la costura que baja: un pipeline de leads lee `how-we-sell` e `icp`, así el trabajo ocurre con los criterios del equipo.
+- **`distill_policy`**: cómo un record terminal se destila de vuelta en una Nota (la costura que sube): cerrar un bug o ganar un deal puede dejar un aprendizaje durable en el vault.
+
+## Un Record
+
+Un Record es una fila: sus `fields` son los valores tipados (indexados por las field keys de la Collection), y su `status` se **valida contra los stages propios de la Collection**. Cada Collection define su propio ciclo de vida, así que un record solo puede estar en un stage que su Collection declara.
+
+## Usar collections
+
+Desde la CLI (la superficie también existe en MCP como `driftless_collection` y `driftless_collection_record`):
+
+```bash
+# Configura un Sales Pipeline: schema/views aceptan JSON inline o @file
+driftless collection add "Sales Pipeline" --archetype pipeline \
+  --schema '[{"key":"company","type":"text"},{"key":"mrr","type":"currency"},{"key":"stage","type":"status","stages":["new","qualified","won","lost"]}]' \
+  --views  '[{"type":"board","group_by":"stage"}]' \
+  --criterion "how-we-sell,icp"
+
+# Agrega y avanza records
+driftless collection record add <collection-id> --fields '{"company":"Acme","mrr":500}' --status new
+driftless collection records   <collection-id> --status won
+driftless collection record update <collection-id> <record-id> --status won
+```
+
+## Recuperar antes de actuar: la costura en una sola llamada
+
+Antes de trabajar un record, un agente lee el Knowledge de **criterion** de la collection:
+los `criterion_rel_slugs` resueltos en los topics reales (`how-we-sell`, `icp`),
+así el trabajo ocurre con los criterios del equipo, no desde cero.
+
+La acción `retrieve` entrega las dos mitades de la costura de una vez: los records
+relevantes **y** el criterion para leer primero:
+
+```text
+MCP: driftless_collection action:'retrieve' id:'<collection-id>'
+     [query / status / entity_id / drifted / updated_after / fields / view / limit / cursor]
+  → { records, nextCursor, criterion, criterion_missing }
+API: GET /workspaces/:slug/collections/:id/retrieve?status=won&limit=25
+```
+
+`criterion` es el Knowledge del equipo a aplicar; `criterion_missing` marca cualquier
+slug de criterion que no resuelve (una brecha por cerrar). Los records paginan por keyset
+(`nextCursor`). Lee el criterion, luego actúa sobre un record con
+`driftless_collection_record action:'update'`. Para solo el criterion (sin records),
+usa `driftless_collection action:'context'`.
+
+Esto refleja el [retrieve](/es/mcp/overview) de topics: una sola llamada devuelve *qué leer* y
+*en qué trabajar*, en lugar de encadenar a mano una lista y una búsqueda de criterion aparte.

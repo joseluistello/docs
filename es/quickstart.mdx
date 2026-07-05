@@ -1,0 +1,64 @@
+---
+title: 'Inicio rápido'
+description: "Suma Driftless a tu agente de código y mira aparecer tu primer contexto de equipo en un minuto, más o menos."
+---
+
+Driftless es el espacio de trabajo donde tú y tu equipo trabajan *con* sus agentes, y el trabajo mismo se convierte en el contexto vivo y gobernado del equipo, ese que no queda stale. Tu agente lee el contexto relevante antes de tocar un área y escribe de vuelta lo que aprende. Tú no aprendes un sistema. Lo aprende tu agente. Aquí está toda la configuración.
+
+<Steps>
+  <Step title="Instala e inicia sesión">
+    ```bash
+    npm install -g @driftless-sh/cli
+    driftless login
+    ```
+
+    <Tip>
+      Para CI o una configuración no interactiva, pasa una key: `driftless login --key drift_your_api_key_here` (crea una en [driftless.icu](https://driftless.icu) → Settings → API Keys).
+    </Tip>
+  </Step>
+
+  <Step title="Enseña a tu agente">
+    ```bash
+    driftless install-skill
+    ```
+
+    Esto escribe `AGENTS.md` y `CLAUDE.md` en tu repo. De ahora en adelante, cualquier agente de código que abra el repo conoce el loop: traer el contexto del equipo antes de editar, y persistir lo que aprende después.
+  </Step>
+
+  <Step title="A programar">
+    Trabaja como lo haces siempre. Tu agente trae el contexto antes de tocar un área, y guarda nuevos gotchas y decisiones a medida que los aprende. Vuelve a [tu dashboard](https://driftless.icu) y mira aparecer tu primera memoria.
+  </Step>
+</Steps>
+
+Eso es todo. Traer antes, persistir después. Eso es Driftless.
+
+## El loop completo, en un solo prompt
+
+¿Prefieres no instalar el skill, o quieres meter el comportamiento directo en cualquier agente? Con esto basta:
+
+```text
+Este repositorio usa Driftless como memoria compartida del equipo.
+
+ANTES de editar código, trae lo que el equipo ya sabe sobre los archivos
+que vas a tocar:
+    driftless context get --files "<archivos que vas a cambiar>"
+Lee los gotchas, las decisiones y los invariantes antes de escribir nada.
+
+DESPUÉS de aprender algo durable, un gotcha que te costó tiempo, una decisión
+que tomaste, una restricción que debe cumplirse, escríbelo de vuelta:
+    driftless context update <topic> --gotcha "..." --decision "..."
+    # o, si todavía no hay un topic que calce con el área:
+    driftless context add <name> --pattern "<glob>" --what "..." --how "..."
+
+Ese es todo el loop: traer antes, persistir después. Hazlo como parte de tu trabajo.
+```
+
+## Para ir más a fondo
+
+No necesitas nada de esto para empezar. Búscalo cuando ya tengas algunos topics y quieras sacarles más provecho:
+
+- [El loop de Driftless](/es/concepts/core-loop): cómo la memoria se acumula a lo largo de un equipo.
+- [Topics](/es/concepts/topics): el contenido, los anclajes y los campos que lleva cada uno.
+- [Drift y frescura](/es/concepts/drift): cómo un topic se marca solo cuando su código se mueve por debajo.
+- [La CLI](/es/cli/context): anclar topics a archivos, recuperación por coincidencia de archivos, relaciones.
+- [Configuración de agentes a fondo](/es/agents/setup): conectar Driftless con agentes de código específicos.
