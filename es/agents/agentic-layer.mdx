@@ -1,12 +1,13 @@
 ---
-title: 'Agentes Audit y Architect'
-description: "Agentes del lado del servidor que mantienen honesto el contexto de tu equipo y lo hacen crecer. Ellos proponen; un owner/admin agrega el resultado a la knowledge."
+title: 'Agentes Audit, Architect y Librarian'
+description: "Agentes del lado del servidor que mantienen honesto el contexto de tu equipo, lo hacen crecer y cuidan el grafo. Ellos proponen; un owner/admin agrega el resultado a la knowledge."
 ---
 
-Driftless puede correr dos agentes especializados sobre tu codebase. No reemplazan a un revisor. Revisan y hacen crecer el **contexto registrado** de tu equipo: los `gotchas`, `decisions` e `invariants` que tu equipo escribió. Ambos **proponen**; un owner/admin **agrega el resultado a la knowledge**.
+Driftless puede correr tres agentes especializados sobre tu codebase y tu grafo de knowledge. No reemplazan a un revisor. Revisan y hacen crecer el **contexto registrado** de tu equipo: los `gotchas`, `decisions` e `invariants` que tu equipo escribió. Cada uno **propone**; un owner/admin **agrega el resultado a la knowledge**.
 
 - **El Auditor** mantiene honesto el contexto existente cuando el código cambia.
 - **El Architect** hace crecer el contexto donde falta.
+- **El Librarian** cuida el propio grafo de knowledge, como asesor.
 
 ## El Auditor
 
@@ -22,6 +23,12 @@ Solo audita contra **Knowledge** (`reviewed`). Una Nota es una idea sin mergear,
 
 En las áreas nuevas de un PR y en un barrido nocturno, el Architect busca **áreas de código que ningún topic cubre** y sugiere topics nuevos: agrupados por concepto, con un anchor angosto (5-40 archivos), sostenidos en el código que leyó, y enlazados a decisiones existentes donde tenga sentido. Se inclina a sugerir de menos: un hueco que se escapa sale barato, un topic spam erosiona la confianza.
 
+## El Librarian
+
+El Librarian cuida el propio grafo de knowledge. En un barrido semanal recorre el vault y produce un **reporte** de sugerencias: topics para promover, duplicados para fusionar, huecos que vale la pena llenar. En v1 es un **asesor**: nunca ejecuta un promote o un archive por su cuenta. Un humano actúa sobre el reporte.
+
+La única excepción es opt-in. Con `librarian_autovouch` activado (experimental, apagado por defecto), un promote de alta confianza de un draft **escrito por un humano** puede auto-aplicarse. Todo lo demás queda como sugerencia.
+
 ## Cómo corren: BYOM
 
 Los agentes corren **del lado del servidor en Driftless** usando **tu API key de OpenCode** (bring-your-own-model). OpenCode cobra la inferencia; Driftless nunca sirve tu key de vuelta hacia afuera. Se queda solo del lado del servidor.
@@ -35,7 +42,9 @@ En el dashboard: **Settings → Agents**.
 
 1. Pega tu **API key de OpenCode**.
 2. Elige un **modelo**, o una lista de prioridad separada por comas (por ejemplo `opencode/claude-sonnet-4-6, opencode/big-pickle`); el runner rota al siguiente ante un error de rate-limit o de crédito.
-3. Activa el **Auditor** y el **Architect**.
+3. Activa el **Auditor**, el **Architect** y el **Librarian**. `librarian_autovouch` es un interruptor aparte, experimental y apagado por defecto.
+
+Cada agente está apagado hasta que lo habilitas: una corrida ocurre solo cuando el workspace tiene una key de modelo configurada y el toggle de ese agente está encendido. Si no, la corrida registra un `no_op` y no hace nada.
 
 ## Mira lo que hicieron
 

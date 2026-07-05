@@ -1,0 +1,102 @@
+---
+title: 'Broker'
+description: 'Operate an already-connected provider: run named operations, read its synced data, and materialize external content. Gated, governed, and audited.'
+---
+
+The **Broker** is the execution plane over a Connection that already exists. It runs a provider's named operations, reads its synced data, and materializes external content into Driftless-owned objects. It never connects or disconnects a provider (that is [integration setup](/integrations/overview#connect-a-provider)) and never authors or deploys scripts: if an agent needs an operation the Broker does not list, the correct move is to report the missing capability, not to write one.
+
+The same surface is reachable three ways: the CLI (`driftless broker ...`), the MCP tool (`driftless_broker`, `action: ...`), and REST under `/api/v1/workspaces/:slug/broker`.
+
+## Availability
+
+**Gated.** The Broker is off by default in production and is governed by three independent, fail-closed gates (see [Gates](#gates)). Two consequences to state plainly:
+
+- A registered Broker tool or action is not the same as a usable one. A faceless OAuth/MCP caller with no grant gets an empty result even against a healthy connection.
+- In production enforce mode the operation-policy registry ships empty, so **no write operation is invokable**. The shipped, live capabilities today are reads against Notion.
+
+## Actions
+
+Thirteen actions. The MCP `action` value is authoritative; the CLI subcommand and REST route are listed alongside. All are workspace-scoped and audited.
+
+| Action (MCP) | CLI | Purpose |
+| --- | --- | --- |
+| `connections` | `broker connections` | List the workspace's Connections with health, status, and criterion. |
+| `operations` | `broker operations [provider]` | List a provider's operations, or search across providers by intent. |
+| `capabilities` | `broker capabilities <provider>` | The capability directory for a provider (kinds, effects, states, gates). |
+| `inspect` | `broker inspect <provider> <op>` | Full spec of one operation: input schema, effect, risk, idempotency, criterion. |
+| `invoke` | `broker invoke <provider> <op>` | Execute one named operation inline (read or write). |
+| `models` | `broker models <provider>` | Importable record models (enabled syncs). |
+| `records` | `broker records <provider> --model <m>` | Read a synced model's records from the mirror. |
+| `page-content` | `broker page <pageId>` | Read one page's bounded, citeable text, live. |
+| `index-preview` | `broker index <provider> --dry-run` | Dry-run index: candidate counts and samples, no writes. |
+| `index` | `broker index <provider>` | Materialize connector documents (Driftless-owned). |
+| `events` | `broker events [provider]` | The inbound provider event feed (a drift signal). |
+| `attach-criterion` | `broker criterion <provider> --add <slug>` | Attach a Knowledge topic slug to a Connection. |
+| `detach-criterion` | `broker criterion <provider> --rm <slug>` | Remove a criterion slug. |
+
+```bash
+driftless broker operations notion              # what this connection can do
+driftless broker inspect notion notion-page-content   # one operation's full spec
+driftless broker invoke notion <operation> --input '{...}'   # run one, inline + audited
+```
+
+Grants management (`GET/POST/DELETE /broker/grants`) and the non-executing write `preview` exist on REST but are not MCP actions; grants are owner/admin only.
+
+## Gates
+
+Three independent gates, each fail-closed, evaluated in this order for an external caller:
+
+1. **`DRIFTLESS_BROKER_ENABLED`** - the master switch. Off in production by default (on in staging). When off, the whole surface returns 503 and the `driftless_broker` MCP tool is not even listed.
+2. **`DRIFTLESS_BROKER_ROLLOUT`** - the external lane, one of `off` (default), `internal`, or `ga`. When `off`, the external OAuth/MCP lane is closed: external reads return an empty list and invokes are refused, even for a granted principal. The internal lane (a human dashboard session, or an owned API key carrying a human identity) is not affected by this gate.
+3. **Grants** - a per-principal authorization row `{ principal, provider, effect }`. Fail-closed: an empty grant set never matches. Grants gate the external lane only; internal callers are governed by identity and scopes instead. Managing grants is owner/admin only.
+
+An operation must additionally be policy-allowed. In production (`enforce` mode) only explicitly allowed operations are visible or invokable, and the policy registry ships empty, so writes are uniformly blocked. Staging (`open` mode) shows unknown operations flagged, but explicit blocks stay off in both modes.
+
+## Governed writes
+
+"Governed" here means specific, checkable controls, not a queue:
+
+- **Inline, no approval queue.** `invoke` executes the call and audits it. The human-in-the-loop lives in the calling agent's own harness, not in a Driftless approval queue. Reads and writes both run inline; `effect` (`read` / `write`) is kept to label the audit and pick retry behavior.
+- **Idempotency is manual replay, not auto-retry.** For a write, pass an `idempotency_key`. Re-submitting the same key replays the first result if it succeeded, or returns 409 if the first is still pending. Driftless never invents idempotency a provider cannot support.
+- **Retry policy differs by effect.** A read auto-retries once after a short backoff on a retryable failure. A write **never** auto-retries (it could double-execute); to retry a write safely, resend with the same `idempotency_key`.
+- **Every execution is traceable.** Each call gets a correlation id (returned and audited), is recorded in an execution ledger (status, actor, risk, idempotency key, bounded result summary, error code), and is written to the audit log on success, failure, and denial.
+- **Criterion is a reference, not a parse.** A criterion is a Knowledge topic slug attached to a Connection. The Broker never reads the topic's content; it only points at the slug. The agent is expected to read that criterion (with its own context tools) before a risky write. `invoke` does not hard-require criterion; the non-executing `preview` does.
+- **Rate limited.** The broker controller is throttled per principal; `invoke`, `preview`, and `page-content` are throttled tighter, and `index` / `import` tighter still.
+
+## Reads and materialization
+
+Nine concepts are easy to blur and must not be. They differ in whether they hit the provider live and what, if anything, they create in Driftless:
+
+| Concept | Hits provider live? | Creates in Driftless |
+| --- | --- | --- |
+| Live external read (`invoke` a read op) | Yes | Nothing |
+| Provider records (`records`) | No, reads the mirror/cache | Nothing |
+| Sync | Runs in Nango, not Driftless | Nothing (lives in the mirror) |
+| `import` | No (reads the mirror) | **Collection Records** |
+| `index` | Yes (reads page content) | **connector documents** |
+| Context retrieve | **No, never queries a provider** | Nothing |
+| External action (`invoke` a write op) | Yes | Nothing |
+
+The distinctions that matter most:
+
+- **`records` reads a cache, `page-content` reads live.** `records` returns a synced model from Nango's mirror (delta-aware, paginated). `page-content` reads one page's bounded text live and does not touch retrieve.
+- **`index` and `import` are different primitives.** `index` materializes page content into Driftless-owned **connector documents** (byte-capped, digested, with a citation id, provenance, and freshness). `import` maps mirrored records into **Collection Records**. Neither writes to the provider.
+- **Normal context retrieve never queries a provider.** It reads only Driftless-owned tables (Topics and connector documents). Connector documents are opt-in in retrieve (you ask for the connector source explicitly); when included they carry `trust: "external"`, a citation, and freshness, and are never treated as Knowledge.
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5   # from the mirror
+driftless broker page <pageId>                                      # live, bounded, citeable
+driftless broker index notion --dry-run --model ContentMetadata     # preview the materialization
+```
+
+## Errors
+
+Broker errors map to stable, typed codes so an agent can branch on `code`, not on prose. Rate-limit failures return `RATE_LIMITED`; other client-side failures return `INVALID_VALUE` (fix the request, not retryable); upstream 5xx and network failures return an `INTERNAL` transient. When the Broker is disabled the surface returns 503; when the external lane is closed or no grant matches, reads return an empty result rather than an error, so an empty connections list can mean "not rolled out" or "no grant", not "nothing connected".
+
+## Related
+
+- [Integrations and Connections](/integrations/overview) - setup, the connect-to-usable chain, and provider availability.
+- [Notion connector](/integrations/notion) - the one production connector, with the read/index flow end to end.
+- [Collections](/concepts/collections) - where `import` lands records.
+- [CLI: Integrations and Broker](/cli/integrations) - the command-line surface.
+- [API: Broker and Connections](/api/broker) - the REST surface.

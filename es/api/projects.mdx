@@ -1,0 +1,48 @@
+---
+title: 'Projects y Cards'
+description: 'Endpoints REST para los boards de projects y el loop de cards.'
+---
+
+Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación (una API key o una sesión del dashboard). Las lecturas son de miembro del workspace; las escrituras requieren el scope `work:write` por OAuth. Ver [Projects](/es/concepts/projects) para el modelo.
+
+## Projects
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/projects` | member (`work:write`) | Crea un project |
+| `GET` | `/workspaces/:slug/projects` | member | Lista projects (`?status`) |
+| `GET` | `/workspaces/:slug/projects/:id` | member | Detalle del project (`?view`, `card_limit`, `card_offset`, `card_status`) |
+| `PATCH` | `/workspaces/:slug/projects/:id` | member (`work:write`) | Actualiza un project |
+
+Cuerpo de creación (`CreateProjectDto`): `title` (obligatorio), `goal`, `playbook_slug`, `owner_clerk_id`, `context[]`. El update acepta `title`, `status`, `goal`, `playbook_slug`, `owner_clerk_id`, `add_context`.
+
+## Cards
+
+Ruta base `/workspaces/:slug/projects/:projectId/cards`.
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `POST` | `.../cards` | member (`work:write`) | Crea una card |
+| `GET` | `.../cards` | member | Lista cards (`?status`, `limit`, `offset`, `owner`) |
+| `GET` | `.../cards/next` | member | El tick del loop (`?context=refs\|summaries\|full`) |
+| `GET` | `.../cards/:cardId` | member | Detalle de la card |
+| `PATCH` | `.../cards/:cardId` | member (`work:write`) | Actualiza una card |
+| `DELETE` | `.../cards/:cardId` | member (`work:write`) | Elimina una card |
+
+Cuerpo de creación (`CreateCardDto`): `title` (obligatorio), `description`, `status`, `owner_clerk_id`, `acceptance`, `validate`, `depends_on` (array de uuid), `context`, `allow_secrets`. El update también acepta `to_project_id`, `validate_result`, `validate_passed` y `add_context`.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/projects \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Renovación de refunds","goal":"El path de refund es idempotente","playbook_slug":"refund-flow"}'
+```
+
+## Cuerpos, paginación y errores
+
+Las cards paginan con `limit` (1 a 100) y `offset`; `next` devuelve una card más su context bundle, o una señal terminal cuando no hay nada accionable. Los valores de status se validan contra el enum de card (`todo`, `in_progress`, `blocked`, `review`, `done`) y el enum de project (`active`, `done`, `archived`); un valor inválido devuelve `400 VALIDATION_FAILED`. Los campos de cuerpo desconocidos se rechazan. Ver [errores](/es/api/errors) para el sobre.
+
+## Relacionado
+
+- [Projects](/es/concepts/projects) - el concepto y el loop.
+- [CLI: Projects y Cards](/es/cli/projects) - la superficie de línea de comandos.

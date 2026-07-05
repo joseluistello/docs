@@ -1,0 +1,102 @@
+---
+title: 'Broker'
+description: 'Opera un proveedor ya conectado: corre operaciones con nombre, lee sus datos sincronizados y materializa contenido externo. Gated, gobernado y auditado.'
+---
+
+El **Broker** es el plano de ejecución sobre una Connection que ya existe. Corre las operaciones con nombre de un proveedor, lee sus datos sincronizados y materializa contenido externo en objetos propios de Driftless. Nunca conecta ni desconecta un proveedor (eso es [setup de integración](/es/integrations/overview#conectar-un-proveedor)) y nunca escribe ni despliega scripts: si un agente necesita una operación que el Broker no lista, lo correcto es reportar la capability faltante, no escribir una.
+
+La misma superficie es alcanzable de tres formas: el CLI (`driftless broker ...`), el tool MCP (`driftless_broker`, `action: ...`) y REST bajo `/api/v1/workspaces/:slug/broker`.
+
+## Disponibilidad
+
+**Gated.** El Broker está apagado por defecto en producción y se gobierna por tres gates independientes y fail-closed (ver [Gates](#gates)). Dos consecuencias para decir con claridad:
+
+- Un tool o acción del Broker registrado no equivale a uno utilizable. Un caller OAuth/MCP sin rostro y sin grant obtiene un resultado vacío incluso contra una connection saludable.
+- En modo enforce de producción el registry de política de operaciones va vacío, así que **ninguna operación de escritura es invocable**. Las capabilities vivas y shipped hoy son lecturas contra Notion.
+
+## Acciones
+
+Trece acciones. El valor `action` de MCP es la autoridad; el subcomando de CLI y la ruta REST se listan al lado. Todas están acotadas al workspace y auditadas.
+
+| Acción (MCP) | CLI | Propósito |
+| --- | --- | --- |
+| `connections` | `broker connections` | Lista las Connections del workspace con salud, estado y criterion. |
+| `operations` | `broker operations [provider]` | Lista las operaciones de un proveedor, o busca entre proveedores por intención. |
+| `capabilities` | `broker capabilities <provider>` | El capability directory de un proveedor (kinds, efectos, estados, gates). |
+| `inspect` | `broker inspect <provider> <op>` | Spec completa de una operación: input schema, efecto, riesgo, idempotencia, criterion. |
+| `invoke` | `broker invoke <provider> <op>` | Ejecuta una operación con nombre inline (lectura o escritura). |
+| `models` | `broker models <provider>` | Record models importables (syncs habilitados). |
+| `records` | `broker records <provider> --model <m>` | Lee los records de un modelo sincronizado desde el mirror. |
+| `page-content` | `broker page <pageId>` | Lee el texto acotado y citable de una página, en vivo. |
+| `index-preview` | `broker index <provider> --dry-run` | Index en seco: conteos y muestras candidatas, sin escrituras. |
+| `index` | `broker index <provider>` | Materializa connector documents (propios de Driftless). |
+| `events` | `broker events [provider]` | El feed de eventos entrantes del proveedor (una señal de drift). |
+| `attach-criterion` | `broker criterion <provider> --add <slug>` | Adjunta un slug de topic de Knowledge a una Connection. |
+| `detach-criterion` | `broker criterion <provider> --rm <slug>` | Quita un slug de criterion. |
+
+```bash
+driftless broker operations notion              # qué puede hacer esta connection
+driftless broker inspect notion notion-page-content   # spec completa de una operación
+driftless broker invoke notion <operation> --input '{...}'   # corre una, inline + auditada
+```
+
+La gestión de grants (`GET/POST/DELETE /broker/grants`) y el `preview` de escritura no ejecutante existen en REST pero no son acciones de MCP; los grants son solo owner/admin.
+
+## Gates
+
+Tres gates independientes, cada uno fail-closed, evaluados en este orden para un caller externo:
+
+1. **`DRIFTLESS_BROKER_ENABLED`** - el interruptor maestro. Apagado en producción por defecto (encendido en staging). Cuando está apagado, toda la superficie responde 503 y el tool MCP `driftless_broker` ni siquiera se lista.
+2. **`DRIFTLESS_BROKER_ROLLOUT`** - la lane externa, uno de `off` (default), `internal` o `ga`. Cuando es `off`, la lane externa OAuth/MCP está cerrada: las lecturas externas devuelven una lista vacía y los invokes se rechazan, incluso para un principal con grant. La lane interna (una sesión humana del dashboard, o una API key propia que porta una identidad humana) no se ve afectada por este gate.
+3. **Grants** - una fila de autorización por principal `{ principal, proveedor, efecto }`. Fail-closed: un conjunto de grants vacío nunca coincide. Los grants gobiernan solo la lane externa; los callers internos se gobiernan por identidad y scopes. Gestionar grants es solo owner/admin.
+
+Una operación además debe estar permitida por la política. En producción (modo `enforce`) solo las operaciones explícitamente permitidas son visibles o invocables, y el registry de política va vacío, así que las escrituras están uniformemente bloqueadas. Staging (modo `open`) muestra las operaciones desconocidas marcadas, pero los bloqueos explícitos siguen apagados en ambos modos.
+
+## Escrituras gobernadas
+
+"Gobernada" aquí significa controles concretos y comprobables, no una cola:
+
+- **Inline, sin cola de aprobación.** `invoke` ejecuta la llamada y la audita. El humano-en-el-loop vive en el harness del propio agente que llama, no en una cola de aprobación de Driftless. Lecturas y escrituras corren inline; `effect` (`read` / `write`) se conserva para etiquetar la auditoría y elegir el comportamiento de retry.
+- **La idempotencia es replay manual, no auto-retry.** Para una escritura, pasa un `idempotency_key`. Reenviar la misma clave repite el primer resultado si tuvo éxito, o devuelve 409 si el primero sigue pendiente. Driftless nunca inventa idempotencia que un proveedor no soporta.
+- **La política de retry difiere por efecto.** Una lectura reintenta una vez tras un backoff corto ante un fallo reintentable. Una escritura **nunca** reintenta sola (podría ejecutar dos veces); para reintentar una escritura con seguridad, reenvíala con el mismo `idempotency_key`.
+- **Cada ejecución es trazable.** Cada llamada recibe un correlation id (devuelto y auditado), se registra en un ledger de ejecución (estado, actor, riesgo, idempotency key, resumen acotado del resultado, código de error), y se escribe en el audit log ante éxito, fallo y denegación.
+- **El criterion es una referencia, no un parse.** Un criterion es un slug de topic de Knowledge adjunto a una Connection. El Broker nunca lee el contenido del topic; solo apunta al slug. Se espera que el agente lea ese criterion (con sus propias tools de contexto) antes de una escritura riesgosa. `invoke` no exige criterion; el `preview` no ejecutante sí.
+- **Con rate limit.** El controller del broker tiene throttle por principal; `invoke`, `preview` y `page-content` tienen throttle más estricto, e `index` / `import` aún más estricto.
+
+## Lecturas y materialización
+
+Nueve conceptos que se confunden fácil y no deben. Difieren en si tocan al proveedor en vivo y en qué, si algo, crean en Driftless:
+
+| Concepto | Toca al proveedor en vivo? | Crea en Driftless |
+| --- | --- | --- |
+| Lectura externa en vivo (`invoke` de una op de lectura) | Sí | Nada |
+| Records del proveedor (`records`) | No, lee el mirror/cache | Nada |
+| Sync | Corre en Nango, no en Driftless | Nada (vive en el mirror) |
+| `import` | No (lee el mirror) | **Records de Collection** |
+| `index` | Sí (lee page content) | **connector documents** |
+| Retrieve de contexto | **No, nunca consulta un proveedor** | Nada |
+| Acción externa (`invoke` de una op de escritura) | Sí | Nada |
+
+Las distinciones que más importan:
+
+- **`records` lee un cache, `page-content` lee en vivo.** `records` devuelve un modelo sincronizado desde el mirror de Nango (delta-aware, paginado). `page-content` lee el texto acotado de una página en vivo y no toca el retrieve.
+- **`index` e `import` son primitivas distintas.** `index` materializa page content en **connector documents** propios de Driftless (con byte-cap, digest, un citation id, procedencia y frescura). `import` mapea records espejados a **Records de Collection**. Ninguno escribe al proveedor.
+- **El retrieve de contexto normal nunca consulta un proveedor.** Lee solo tablas propias de Driftless (Topics y connector documents). Los connector documents son opt-in en el retrieve (pides la fuente de conector explícitamente); cuando se incluyen llevan `trust: "external"`, una cita y frescura, y nunca se tratan como Knowledge.
+
+```bash
+driftless broker records notion --model ContentMetadata --limit 5   # desde el mirror
+driftless broker page <pageId>                                      # en vivo, acotado, citable
+driftless broker index notion --dry-run --model ContentMetadata     # previsualiza la materialización
+```
+
+## Errores
+
+Los errores del broker mapean a códigos estables y tipados para que un agente ramifique sobre `code`, no sobre prosa. Los fallos por rate limit devuelven `RATE_LIMITED`; otros fallos del lado del cliente devuelven `INVALID_VALUE` (corrige la petición, no reintentable); los 5xx del proveedor y los fallos de red devuelven un `INTERNAL` transitorio. Cuando el Broker está deshabilitado la superficie responde 503; cuando la lane externa está cerrada o ningún grant coincide, las lecturas devuelven un resultado vacío en vez de un error, así que una lista de connections vacía puede significar "sin rollout" o "sin grant", no "nada conectado".
+
+## Relacionado
+
+- [Integraciones y Connections](/es/integrations/overview) - setup, la cadena de conectado-a-utilizable y disponibilidad por proveedor.
+- [Conector de Notion](/es/integrations/notion) - el único conector de producción, con el flujo de lectura/index de punta a punta.
+- [Collections](/es/concepts/collections) - donde `import` aterriza records.
+- [CLI: Integraciones y Broker](/es/cli/integrations) - la superficie de línea de comandos.
+- [API: Broker y Connections](/es/api/broker) - la superficie REST.

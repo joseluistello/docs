@@ -1,0 +1,63 @@
+---
+title: 'Broker y Connections'
+description: 'Endpoints REST para operar providers conectados. Gated, gobernado y auditado.'
+---
+
+Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación. El broker está **gated**: apagado por defecto en producción, con un rollout de lane externa aparte y grants por principal (ver [Broker](/es/integrations/broker)). Las lecturas necesitan `broker:read`; invoke necesita `broker:invoke` o `work:write`; grants y criterion necesitan `broker:admin`. El setup (connect/disconnect) no está aquí; vive bajo [integraciones](/es/api/integrations).
+
+## Disponibilidad
+
+Cuando el broker está deshabilitado, toda la superficie devuelve `503`. Cuando la lane externa está cerrada o ningún grant coincide, las lecturas de un caller externo devuelven un resultado vacío en vez de un error. Los callers internos (una API key propia o una sesión del dashboard) se gobiernan por identidad y scopes; un caller OAuth sin rostro además necesita el rollout encendido y un grant que coincida.
+
+## Descubrir y leer
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/broker/connections` | member (`broker:read`) | Lista connections |
+| `GET` | `/workspaces/:slug/broker/operations` | member (`broker:read`) | Busca operaciones entre providers (cursor) |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/operations` | member (`broker:read`) | Operaciones de un provider |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/capabilities` | member (`broker:read`) | El capability directory |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/operations/:operation` | member (`broker:read`) | Inspecciona una operación |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/models` | member (`broker:read`) | Record models importables |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/records` | member (`broker:read`) | Records desde el mirror (cursor) |
+| `GET` | `/workspaces/:slug/broker/connections/notion/pages/:pageId/content` | member (`broker:read`) | Contenido de página en vivo, acotado |
+| `GET` | `/workspaces/:slug/broker/events` | member (`broker:read`) | Eventos entrantes del provider |
+
+## Invocar y materializar
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/broker/connections/:provider/invoke` | member (`broker:invoke` / `work:write`) | Ejecuta una operación inline |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/criterion` | member (`broker:admin` / `work:write`) | Adjunta un slug de criterion |
+| `DELETE` | `/workspaces/:slug/broker/connections/:provider/criterion/:topic` | member (`broker:admin` / `work:write`) | Quita un slug de criterion |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index/preview` | member (API key / sesión) | Index en seco |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index` | member (API key / sesión) | Materializa connector documents |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/import` | member (`broker:invoke` / `work:write`) | Importa records del mirror a Records de Collection |
+
+`invoke` ejecuta inline (no hay cola de aprobación). Para un efecto de escritura, pasa `idempotency_key` para un replay seguro; las escrituras nunca se reintentan solas. `index` e `index/preview` no están mapeados para OAuth, así que un bearer OAuth sin rostro no puede llamarlos; una API key propia o una sesión sí.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/broker/connections/notion/invoke \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"notion-page-content","input":{"page_id":"..."}}'
+```
+
+## Grants
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/broker/grants` | member (`broker:read`) | Lista grants |
+| `POST` | `/workspaces/:slug/broker/grants` | owner/admin (`broker:admin` / `work:write`) | Concede `{ principal, provider, effect }` |
+| `DELETE` | `/workspaces/:slug/broker/grants/:id` | owner/admin | Revoca un grant |
+
+Los grants gobiernan solo la lane externa; gestionarlos es owner/admin.
+
+## Errores
+
+El controller tiene rate limit por principal; `invoke`, `preview` y `page-content` tienen throttle más estricto, e `index` / `import` aún más. Los errores mapean a códigos estables: `RATE_LIMITED`, `INVALID_VALUE` (corrige la petición) y un `INTERNAL` transitorio para 5xx del proveedor. Ver [errores](/es/api/errors) para el sobre.
+
+## Relacionado
+
+- [Broker](/es/integrations/broker) - acciones, gates y semántica de lectura/escritura.
+- [Integraciones y Connections](/es/integrations/overview) - setup y disponibilidad por provider.

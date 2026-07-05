@@ -1,12 +1,13 @@
 ---
-title: 'Audit & Architect agents'
-description: "Server-side agents that keep your team context honest and grow it. They propose; an owner/admin adds the result to knowledge."
+title: 'Audit, Architect, and Librarian agents'
+description: "Server-side agents that keep your team context honest, grow it, and tend the graph. They propose; an owner/admin adds the result to knowledge."
 ---
 
-Driftless can run two specialized agents on your codebase. They don't replace a reviewer. They review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Both **propose**; an owner/admin **adds the result to knowledge**.
+Driftless can run three specialized agents on your codebase and knowledge graph. They don't replace a reviewer. They review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Each **proposes**; an owner/admin **adds the result to knowledge**.
 
 - **The Auditor** keeps existing context honest when code changes.
 - **The Architect** grows context where it's missing.
+- **The Librarian** tends the knowledge graph itself, as an advisor.
 
 ## The Auditor
 
@@ -22,6 +23,12 @@ It only ever audits against **Knowledge** (`reviewed`). A Note is an unmerged id
 
 On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and suggests new topics: clustered by concept, with a narrow anchor (5-40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-suggest: a missed gap is cheap, a spam topic erodes trust.
 
+## The Librarian
+
+The Librarian tends the knowledge graph itself. On a weekly sweep it surveys the vault and produces a suggestion **report**: topics to promote, duplicates to merge, gaps worth filling. In v1 it is an **advisor**: it never executes a promote or archive on its own. A human acts on the report.
+
+The one exception is opt-in. With `librarian_autovouch` on (experimental, off by default), a high-confidence promotion of a **human-authored** draft can auto-apply. Everything else stays a suggestion.
+
 ## How they run: BYOM
 
 The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out. It stays server-side only.
@@ -35,7 +42,9 @@ In the dashboard: **Settings → Agents**.
 
 1. Paste your **OpenCode API key**.
 2. Pick a **model**, or a comma-separated priority list (e.g. `opencode/claude-sonnet-4-6, opencode/big-pickle`); the runner rotates to the next on a rate-limit or credit error.
-3. Toggle the **Auditor** and **Architect** on.
+3. Toggle the **Auditor**, **Architect**, and **Librarian** on. `librarian_autovouch` is a separate, experimental, off-by-default switch.
+
+Each agent is off until you enable it: a run happens only when the workspace has a model key configured and that agent's toggle is on. Otherwise the run records a `no_op` and does nothing.
 
 ## See what they did
 

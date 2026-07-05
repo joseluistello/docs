@@ -5,6 +5,10 @@ description: "What the Driftless GitHub App watches on your PRs and pushes, and 
 
 The GitHub App is what lets Driftless watch the work as it happens. Once it is installed on your repositories, it reads the pull requests and pushes going by, surfaces what the team already recorded about the files you touched, and marks a topic as drifted the moment its files change.
 
+<Note>
+The GitHub App is a **different surface** from a GitHub Broker Connection. This App (`type: github`) is an observation surface: it watches PRs and pushes to drive drift and feed the Auditor, and it exposes no `invoke`. A GitHub Broker Connection (`type: nango:github`) for write operations like creating an issue is **not shipped**. See [Integrations and Connections](/integrations/overview#provider-availability).
+</Note>
+
 ## Installation
 
 Install from the dashboard:

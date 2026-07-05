@@ -1,0 +1,69 @@
+---
+title: 'CLI: Integrations and Broker'
+description: 'Connect providers and operate them from the CLI: the setup verbs (integration) and the execution verbs (broker).'
+---
+
+Two families cover external systems: `integration` is **setup** (connect, confirm, disconnect), and `broker` is **execution** (operate an already-connected provider). They are deliberately separate. See [Integrations and Connections](/integrations/overview) for the model and [Broker](/integrations/broker) for the semantics. Add `--json` to any command for machine output.
+
+## Integrations (setup)
+
+| Command | Description |
+|---|---|
+| `integration catalog` | Providers you can connect. |
+| `integration connect <provider>` | Start the authorize flow. |
+| `integration confirm <provider>` | Persist the connection after authorizing. |
+| `integration list` | Your connected integrations. |
+| `integration rm <id>` | Disconnect (aliases: `delete`, `disconnect`); revokes the credential. |
+
+```bash
+driftless integration catalog
+driftless integration connect notion
+driftless integration confirm notion
+driftless integration list
+```
+
+## Broker (operate)
+
+The broker is gated (off by default in production) and fail-closed. `driftless broker setup` prints guidance only.
+
+| Command | Description |
+|---|---|
+| `broker connections` | Your connections with health, status, and criterion. |
+| `broker operations [provider]` | List operations, or search with `--query`, `--provider`, `--effect read\|write`, `--risk low\|medium\|high`, `--limit`, `--cursor`, `--refresh`. |
+| `broker capabilities <provider>` | The capability directory. |
+| `broker inspect <provider> <op>` | One operation's full spec. |
+| `broker invoke <provider> <op> [--input <json>\|@file]` | Execute one operation inline. |
+| `broker criterion <provider> [--add <slug>\|--rm <slug>]` | Attach or detach a criterion topic slug. |
+
+```bash
+driftless broker connections
+driftless broker operations notion
+driftless broker invoke notion <operation> --input @payload.json
+```
+
+## Reading and materializing
+
+| Command | Description |
+|---|---|
+| `broker models <provider>` | Importable record models (enabled syncs). |
+| `broker records <provider> --model <m>` | Read a model's records from the mirror (`--modified-after`, `--cursor`, `--limit`). |
+| `broker page <pageId>` | Read one page's bounded, live, citeable content (`--max-bytes`). |
+| `broker index <provider>` | Materialize connector documents. `--dry-run` previews; also `--model`, `--limit`, `--sample-limit`, `--max-bytes`, `--import-run-id`. |
+| `broker events [provider]` | The inbound provider event feed (`--limit`). |
+
+`records` reads a cache; `page` reads live; `index` writes Driftless-owned connector documents (never the provider). Normal context retrieve never queries a provider.
+
+## Gates and grants
+
+A broker call can be refused by any of three gates: the master flag, the external-lane rollout, and per-principal grants. For a CLI call authenticated with your own key you are an internal caller (governed by identity and scopes, not grants); a faceless OAuth/MCP caller additionally needs rollout on and a matching grant. Managing grants is owner/admin only, via the API or dashboard.
+
+## Flags, files, and JSON
+
+- **`@file`** is accepted by `broker invoke --input`.
+- **`--json`** works on every command.
+- `broker invoke` on a write effect requires an `idempotency_key` to be safely replayable; writes are never auto-retried.
+
+## Related
+
+- [Integrations and Connections](/integrations/overview) - the setup-to-usable chain and provider availability.
+- [Broker](/integrations/broker) - actions, gates, and read/write semantics.

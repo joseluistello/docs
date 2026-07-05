@@ -1,0 +1,75 @@
+---
+title: 'CLI: Collections, Records y Entities'
+description: 'Configura collections, agrega y avanza records, y gestiona entities cross-collection desde la CLI.'
+---
+
+La familia de comandos `collection` opera el [sustrato operacional](/es/concepts/collections): una collection es una tabla configurada, un record es una fila tipada, y una entity es una identidad cross-collection. Agrega `--json` a cualquier comando para salida de máquina.
+
+## Collections
+
+| Comando | Descripción |
+|---|---|
+| `collection add <name> --archetype <a>` | Crea una collection. `--archetype` es obligatorio, uno de `pipeline`, `analysis`, `content`. |
+| `collection list [--status <s>]` | Lista collections. `--status` es `active` o `archived`. |
+| `collection get <id>` | Detalle de la collection. |
+| `collection update <id> [flags]` | Actualiza `--name`, `--status`, `--schema`, `--views`, `--distill`, `--criterion`. |
+| `collection context <id>` | Resuelve el criterion Knowledge de la collection (qué leer primero). |
+| `collection doctor` | Audita records fuera de ciclo, violaciones de schema, records drifteados, entities huérfanas. |
+| `collection retrieve <id> [flags]` | Records relevantes más su criterion en una sola llamada. |
+
+Flags de configuración en `add` y `update`: `--schema` (el `record_schema`), `--views`, `--distill` (la config `distill_policy`) y `--criterion a,b` (los `criterion_rel_slugs`). Cada uno de `--schema`, `--views`, `--distill` acepta JSON inline o `@file`.
+
+```bash
+driftless collection add "Sales Pipeline" --archetype pipeline \
+  --schema @schema.json \
+  --views '[{"type":"board","group_by":"stage"}]' \
+  --criterion "how-we-sell,icp"
+```
+
+## Records
+
+| Comando | Descripción |
+|---|---|
+| `collection records <cid> [flags]` | Lista records. Filtros: `--status`, `--limit`, `--cursor`. |
+| `collection record add <cid> [flags]` | Agrega un record. `--fields` (JSON o `@file`), `--status`, `--entity <id>`. |
+| `collection record get <cid> <rid>` | Detalle del record. |
+| `collection record update <cid> <rid> [flags]` | Actualiza `--fields`, `--status`, `--entity`, `--drift`/`--no-drift`. |
+
+El `--status` de un record se valida contra los stages propios de la collection: un record solo puede estar en un stage que su collection declara. `--entity <id>` enlaza el record a una [entity](#entities).
+
+## Entities
+
+Las entities se gestionan bajo `collection entity`. No hay un comando `entity` de nivel superior en la CLI; el tool MCP `driftless_entity` y las rutas REST `/entities` cubren el mismo objeto.
+
+| Comando | Descripción |
+|---|---|
+| `collection entity add --kind <k> --name <n> [flags]` | Hace upsert de una entity. `--dedup <key>`, `--attrs` (JSON o `@file`). |
+| `collection entity list [--kind <k>]` | Lista entities, opcionalmente filtradas por kind. |
+| `collection entities` | Alias de `entity list`. |
+
+`--kind` y `--name` son obligatorios en `add`. Las entities hacen upsert idempotente sobre `(kind, dedup_key)`, así que re-agregar el mismo par actualiza en vez de duplicar.
+
+```bash
+driftless collection entity add --kind company --name "Acme" --dedup acme.com
+driftless collection record add col_abc --fields '{"company":"Acme","mrr":500}' --status new --entity ent_123
+```
+
+## Retrieve y criterion
+
+`collection retrieve <id>` devuelve records relevantes y el criterion Knowledge de la collection juntos, así un agente lee el "cómo lo hacemos" del equipo antes de actuar. Filtros: `--query`, `--status`, `--view`, `--entity`, `--updated-after`, `--drift`/`--no-drift`, `--fields`, `--limit`, `--cursor`. Para solo el criterion (sin records), usa `collection context <id>`.
+
+## Flags, archivos y JSON
+
+- **`@file`** lo aceptan `--schema`, `--views`, `--distill`, `--fields` y `--attrs`.
+- **`--json`** funciona en cada comando.
+- El `distill_policy` seteado con `--distill` es un campo de configuración; declara cómo un record terminal debería destilarse de vuelta en una Nota.
+
+## Permisos
+
+Las escrituras de collection, record y entity son acciones de miembro del workspace; por MCP requieren el scope `work:write`. `collection doctor` y las lecturas son de nivel miembro.
+
+## Relacionado
+
+- [Collections](/es/concepts/collections) - el concepto, los arquetipos y los tipos de campo.
+- [Integraciones y Connections](/es/integrations/overview) - de dónde vienen los records importados.
+- [API: Collections, Records y Entities](/es/api/collections) - la superficie REST.

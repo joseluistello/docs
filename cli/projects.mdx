@@ -1,0 +1,78 @@
+---
+title: 'CLI: Projects and Cards'
+description: 'Drive project boards and the card loop from the CLI: create projects and cards, walk the loop, set dependencies, and validate.'
+---
+
+The `project` command family drives the [projects](/concepts/projects) surface: a project holds cards, and an agent walks the board with `project card next`. Every command an agent runs here, a human can run too. Add `--json` to any command for machine output.
+
+## Projects
+
+| Command | Description |
+|---|---|
+| `project add <title>` | Create a project. Optional `--goal "..."`, `--playbook <slug>`. |
+| `project list [--status <s>]` | List projects. `--status` is one of `active`, `done`, `archived`. |
+| `project get <id>` | Project detail plus its card index. |
+| `project update <id> [flags]` | Update `--status`, `--title`, `--goal`, or `--playbook`. |
+| `project cards <id> [flags]` | List a project's cards in board order. Filters: `--status`, `--owner`, `--limit`, `--cursor`. |
+| `project apply <id> --file @plan.json` | Apply a declarative plan of cards (with `--dry-run`). |
+
+- **`--goal`** sets the project's definition of done; **`--playbook <slug>`** points at a Knowledge topic the agent reads to learn how to run the project (stored as `playbook_slug`).
+- Project status is one of `active`, `done`, `archived`.
+
+## Cards
+
+Cards are managed under `project card`. Card status is one of `todo`, `in_progress`, `blocked`, `review`, `done`.
+
+| Command | Description |
+|---|---|
+| `project card next <project-id>` | The loop tick: the next actionable card plus its context bundle. |
+| `project card add <pid> --title "..." [flags]` | Create a card. See flags below. |
+| `project card get <pid> <cid>` | Card detail. |
+| `project card update <pid> <cid> [flags]` | Update title, description, acceptance, validate, deps, status, or owner. |
+| `project card status <pid> <cid> <status>` | Move a card to a status. |
+| `project card move <pid> <cid> <to-project-id>` | Move a card to another project. |
+| `project card rm <pid> <cid>` | Delete a card. |
+
+Card `add` and `update` accept: `--description "..."` (or `@file`), `--acceptance "..."`, `--validate "cmd"`, `--dep <card-id>` (repeatable, sets `depends_on`), and `--owner <member-id>` (stored as `owner_clerk_id`).
+
+```bash
+driftless project add "Refunds revamp" --goal "Refund path is idempotent" --playbook refund-flow
+driftless project card add prj_abc \
+  --title "Idempotent webhook handler" \
+  --acceptance "Duplicate webhook deliveries are a no-op" \
+  --validate "npm test -- webhooks" \
+  --dep card_setup --owner mem_123
+driftless project card next prj_abc                 # card + context bundle
+driftless project card status prj_abc card_xyz done
+```
+
+`next` picks in priority order (`in_progress`, then `review`, then `blocked`, then a ready `todo`); a `todo` is ready only when its `depends_on` are all `done`. Verification is report-and-surface: the CLI stores the result of `validate`, it never runs the command for you.
+
+## Batch create and apply
+
+`project card add --file @cards.json` creates many cards at once; `depends_on` may reference an earlier card by title or by id. `project apply --file @plan.json` applies a declarative project plan (the plan may include `playbook`).
+
+```bash
+driftless project card add prj_abc --file @cards.json
+driftless project apply prj_abc --file @plan.json --dry-run
+```
+
+## Flags, files, and JSON
+
+- **`@file`** is accepted by `--description`, `--file` (card batch), and `apply --file`.
+- **`--json`** works on every command for machine output.
+- Cards are scanned for secrets on write, like topics; pass `--allow-secrets` only when you intend to store one.
+
+## Permissions
+
+Project and card writes are workspace-member actions. Over MCP the same operations require the `work:write` scope; an API key acts with the role of the member who created it. Assigning an owner uses a member id from `driftless member list`.
+
+## Errors
+
+An invalid `--status` (outside the card or project enum) is rejected before the call. A `--dep` or batch `depends_on` that names an unknown card fails the create. A zero-exit `validate` is a convention the agent runs, not a server check.
+
+## Related
+
+- [Projects](/concepts/projects) - the concept and the loop.
+- [Context commands](/cli/context) - topics, notes, and governance from the CLI.
+- [API: Projects and Cards](/api/projects) - the REST surface.

@@ -1,0 +1,75 @@
+---
+title: 'CLI: Collections, Records, and Entities'
+description: 'Configure collections, add and advance records, and manage cross-collection entities from the CLI.'
+---
+
+The `collection` command family drives the [operational substrate](/concepts/collections): a collection is a configured table, a record is a typed row, and an entity is a cross-collection identity. Add `--json` to any command for machine output.
+
+## Collections
+
+| Command | Description |
+|---|---|
+| `collection add <name> --archetype <a>` | Create a collection. `--archetype` is required, one of `pipeline`, `analysis`, `content`. |
+| `collection list [--status <s>]` | List collections. `--status` is `active` or `archived`. |
+| `collection get <id>` | Collection detail. |
+| `collection update <id> [flags]` | Update `--name`, `--status`, `--schema`, `--views`, `--distill`, `--criterion`. |
+| `collection context <id>` | Resolve the collection's criterion Knowledge (what to read first). |
+| `collection doctor` | Audit records off-lifecycle, schema violations, drifted records, orphaned entities. |
+| `collection retrieve <id> [flags]` | Relevant records plus their criterion in one call. |
+
+Configuration flags on `add` and `update`: `--schema` (the `record_schema`), `--views`, `--distill` (the `distill_policy` config), and `--criterion a,b` (the `criterion_rel_slugs`). Each of `--schema`, `--views`, `--distill` accepts inline JSON or `@file`.
+
+```bash
+driftless collection add "Sales Pipeline" --archetype pipeline \
+  --schema @schema.json \
+  --views '[{"type":"board","group_by":"stage"}]' \
+  --criterion "how-we-sell,icp"
+```
+
+## Records
+
+| Command | Description |
+|---|---|
+| `collection records <cid> [flags]` | List records. Filters: `--status`, `--limit`, `--cursor`. |
+| `collection record add <cid> [flags]` | Add a record. `--fields` (JSON or `@file`), `--status`, `--entity <id>`. |
+| `collection record get <cid> <rid>` | Record detail. |
+| `collection record update <cid> <rid> [flags]` | Update `--fields`, `--status`, `--entity`, `--drift`/`--no-drift`. |
+
+A record's `--status` is validated against the collection's own stages: a record can only sit in a stage its collection declares. `--entity <id>` links the record to an [entity](#entities).
+
+## Entities
+
+Entities are managed under `collection entity`. There is no top-level `entity` command in the CLI; the MCP tool `driftless_entity` and the REST `/entities` routes cover the same object.
+
+| Command | Description |
+|---|---|
+| `collection entity add --kind <k> --name <n> [flags]` | Upsert an entity. `--dedup <key>`, `--attrs` (JSON or `@file`). |
+| `collection entity list [--kind <k>]` | List entities, optionally filtered by kind. |
+| `collection entities` | Alias for `entity list`. |
+
+`--kind` and `--name` are required on `add`. Entities upsert idempotently on `(kind, dedup_key)`, so re-adding the same pair updates rather than duplicates.
+
+```bash
+driftless collection entity add --kind company --name "Acme" --dedup acme.com
+driftless collection record add col_abc --fields '{"company":"Acme","mrr":500}' --status new --entity ent_123
+```
+
+## Retrieve and criterion
+
+`collection retrieve <id>` returns relevant records and the collection's criterion Knowledge together, so an agent reads the team's "how we do this" before acting. Filters: `--query`, `--status`, `--view`, `--entity`, `--updated-after`, `--drift`/`--no-drift`, `--fields`, `--limit`, `--cursor`. For just the criterion (no records), use `collection context <id>`.
+
+## Flags, files, and JSON
+
+- **`@file`** is accepted by `--schema`, `--views`, `--distill`, `--fields`, and `--attrs`.
+- **`--json`** works on every command.
+- `distill_policy` set with `--distill` is a configuration field; it declares how a terminal record should distill back into a Note.
+
+## Permissions
+
+Collection, record, and entity writes are workspace-member actions; over MCP they require the `work:write` scope. `collection doctor` and reads are member-level.
+
+## Related
+
+- [Collections](/concepts/collections) - the concept, archetypes, and field types.
+- [Integrations and Connections](/integrations/overview) - where imported records come from.
+- [API: Collections, Records, and Entities](/api/collections) - the REST surface.

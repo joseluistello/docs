@@ -1,0 +1,55 @@
+---
+title: 'Comments, Areas & Tags'
+description: 'REST endpoints for annotations and the topic-organizing registries.'
+---
+
+All paths are under the base URL (`/api/v1`) and require authentication. Reads are workspace-member; writes require the `work:write` scope over OAuth. Renaming and deleting an area or tag are owner/admin curation acts.
+
+## Comments
+
+A comment points at a topic, record, card, or page and resolves into an edit. See [Comments](/concepts/comments).
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/comments` | member (`work:write`) | Add a comment |
+| `GET` | `/workspaces/:slug/comments` | member | List comments (`?target_kind`, `target_id`, `target_ref`, `status`) |
+| `GET` | `/workspaces/:slug/comments/:id` | member | Comment detail |
+| `PATCH` | `/workspaces/:slug/comments/:id` | member (`work:write`) | Update body or status |
+
+Create body (`CreateCommentDto`): `target_kind` (required, one of `topic`, `page`, `record`, `card`), `target_id` (uuid) or `target_ref` (topic slug), `field_key`, `body` (required, up to 10000 chars), `author_id`. Status is `open`, `resolved`, or `wont_fix`.
+
+## Areas
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/areas` | member | List areas |
+| `POST` | `/workspaces/:slug/areas` | member (`work:write`) | Create an area |
+| `PATCH` | `/workspaces/:slug/areas/:id` | owner/admin | Rename or describe |
+| `DELETE` | `/workspaces/:slug/areas/:id` | owner/admin | Delete (unfiles its topics) |
+
+Body (`CreateAreaDto` / `UpdateAreaDto`): `name` (required, up to 64 chars), `description` (up to 500 chars).
+
+## Tags
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/tags` | member | List the registry (`?limit`, `offset`) |
+| `POST` | `/workspaces/:slug/tags` | member (`work:write`) | Pre-create a tag |
+| `PATCH` | `/workspaces/:slug/tags/:name` | rename owner/admin | Rename or describe |
+| `DELETE` | `/workspaces/:slug/tags/:name` | owner/admin | Delete and detach everywhere |
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/comments \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"target_kind":"topic","target_ref":"billing-flow","body":"This decision is stale."}'
+```
+
+## Errors
+
+An unknown `target_kind` or `status`, or an over-length `body`, returns `400 VALIDATION_FAILED`. A member attempting an owner/admin curation act (area/tag rename or delete) receives `403 INSUFFICIENT_ROLE`. See [errors](/api/errors) for the envelope.
+
+## Related
+
+- [Comments](/concepts/comments) - the annotation model.
+- [Areas](/concepts/areas) - how topics are filed.

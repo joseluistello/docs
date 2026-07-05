@@ -1,0 +1,63 @@
+---
+title: 'Broker & Connections'
+description: 'REST endpoints for operating connected providers. Gated, governed, and audited.'
+---
+
+All paths are under the base URL (`/api/v1`) and require authentication. The broker is **gated**: off by default in production, with a separate external-lane rollout and per-principal grants (see [Broker](/integrations/broker)). Reads need `broker:read`; invoke needs `broker:invoke` or `work:write`; grants and criterion need `broker:admin`. Setup (connect/disconnect) is not here; it lives under [integrations](/api/integrations).
+
+## Availability
+
+When the broker is disabled the whole surface returns `503`. When the external lane is closed or no grant matches, an external caller's reads return an empty result rather than an error. Internal callers (an owned API key or dashboard session) are governed by identity and scopes; a faceless OAuth caller additionally needs rollout on and a matching grant.
+
+## Discover and read
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/broker/connections` | member (`broker:read`) | List connections |
+| `GET` | `/workspaces/:slug/broker/operations` | member (`broker:read`) | Search operations across providers (cursor) |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/operations` | member (`broker:read`) | A provider's operations |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/capabilities` | member (`broker:read`) | The capability directory |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/operations/:operation` | member (`broker:read`) | Inspect one operation |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/models` | member (`broker:read`) | Importable record models |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/records` | member (`broker:read`) | Records from the mirror (cursor) |
+| `GET` | `/workspaces/:slug/broker/connections/notion/pages/:pageId/content` | member (`broker:read`) | Live bounded page content |
+| `GET` | `/workspaces/:slug/broker/events` | member (`broker:read`) | Inbound provider events |
+
+## Invoke and materialize
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/broker/connections/:provider/invoke` | member (`broker:invoke` / `work:write`) | Execute one operation inline |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/criterion` | member (`broker:admin` / `work:write`) | Attach a criterion slug |
+| `DELETE` | `/workspaces/:slug/broker/connections/:provider/criterion/:topic` | member (`broker:admin` / `work:write`) | Detach a criterion slug |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index/preview` | member (API key / session) | Dry-run index |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index` | member (API key / session) | Materialize connector documents |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/import` | member (`broker:invoke` / `work:write`) | Import mirror records into Collection Records |
+
+`invoke` executes inline (there is no approval queue). For a write effect, pass `idempotency_key` for safe replay; writes are never auto-retried. `index` and `index/preview` are not mapped for OAuth, so a faceless OAuth bearer cannot call them; an owned API key or session can.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/broker/connections/notion/invoke \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"notion-page-content","input":{"page_id":"..."}}'
+```
+
+## Grants
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/broker/grants` | member (`broker:read`) | List grants |
+| `POST` | `/workspaces/:slug/broker/grants` | owner/admin (`broker:admin` / `work:write`) | Grant `{ principal, provider, effect }` |
+| `DELETE` | `/workspaces/:slug/broker/grants/:id` | owner/admin | Revoke a grant |
+
+Grants gate the external lane only; managing them is owner/admin.
+
+## Errors
+
+The controller is rate limited per principal; `invoke`, `preview`, and `page-content` are throttled tighter, and `index` / `import` tighter still. Errors map to stable codes: `RATE_LIMITED`, `INVALID_VALUE` (fix the request), and a transient `INTERNAL` for upstream 5xx. See [errors](/api/errors) for the envelope.
+
+## Related
+
+- [Broker](/integrations/broker) - actions, gates, and read/write semantics.
+- [Integrations and Connections](/integrations/overview) - setup and provider availability.

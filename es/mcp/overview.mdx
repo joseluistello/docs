@@ -39,12 +39,13 @@ más abajo.
 | `driftless_collection` | Collections: una herramienta, `action`: `list`, `get`, `add`, `update`, `doctor`, `context` (resuelve el criterion Knowledge que hay que leer antes de trabajar un record), y **`retrieve`** (los records relevantes **más** ese criterion en una sola llamada). El sustrato operacional (CRM/tracker/contenido) |
 | `driftless_collection_record` | Records (filas tipadas en una collection): una herramienta, `action`: `list`, `get`, `add`, `update`. El `status` de un record se valida contra las etapas de su Collection |
 | `driftless_entity` | Entities (identidad y dedup entre collections): una herramienta, `action`: `list`, `get`, `upsert` (idempotente sobre `(kind, dedup_key)`) |
-| `driftless_broker` | **Opera** un provider ya conectado: una herramienta, `action`: `connections`, `operations`, `invoke`, `records`, `events`, `criterion`. Las credenciales se resuelven del lado del servidor y cada llamada queda auditada. El broker nunca **conecta/desconecta** un provider (eso es setup de integración, se hace en el dashboard o vía el flujo connect del CLI) y nunca escribe scripts |
+| `driftless_broker` | **Opera** un provider ya conectado (flag-gated; ver [Broker](/es/integrations/broker)): una herramienta, `action`: `connections`, `operations`, `capabilities`, `inspect`, `invoke`, `models`, `records`, `page-content`, `index-preview`, `index`, `events`, `attach-criterion`, `detach-criterion`. Las credenciales se resuelven del lado del servidor y cada llamada queda auditada. Estar listado no es ser utilizable: un caller externo sigue gated por rollout y grants. El broker nunca **conecta/desconecta** un provider (eso es setup de integración) y nunca escribe scripts |
 | `driftless_context_comment` | Comentarios: una herramienta, `action`: `add`, `list`, `resolve`. Apunta A un topic / record / card; no lleva governance, se resuelve en una edición |
 | `driftless_context_update` | Actualiza un topic existente (seguro para append; acepta `rels`) |
 | `driftless_context_delete` | Elimina un topic (destructivo) |
 | `driftless_context_merge` | Funde un topic duplicado dentro de su superviviente (mecánico; archiva el origen; la prosa nunca se mergea) |
 | `driftless_context_propose` | Pone una Nota en revisión (draft → proposed) |
+| `driftless_context_approve` | Mergea una Nota a Knowledge (proposed → reviewed). **Solo autoridad owner/admin**; el cliente lo corre solo cuando un owner/admin lo pide explícitamente |
 | `driftless_context_create_proposal` | Abre una Edición sugerida sobre un topic existente |
 | `driftless_context_proposals` | Lista las Notas en revisión (la cola de revisión) |
 | `driftless_context_relations` | Las relaciones tipadas de un topic, entrantes y salientes |
@@ -52,7 +53,7 @@ más abajo.
 | `driftless_context_doctor` | Audita la capa de contexto (stale / zombie / huérfanos / drafts) |
 | `driftless_context_coverage` | Mapa de cobertura: qué áreas de código NO tienen topic (el buscador de huecos) |
 | `driftless_context_events` | Actividad de contexto reciente de un topic |
-| `driftless_agent_stats` | Estadísticas de notas de agentes |
+| `driftless_agent_stats` | Estadísticas de resultado de propuestas: cuántas propuestas de agentes (las Ediciones sugeridas del Auditor) se mergearon vs se rechazaron, es decir la tasa de aprobación |
 | `driftless_members` | Lista los miembros del workspace (member id, rol, email): los valores válidos de `owner_clerk_id` para asignar cards/records |
 | `driftless_workspaces` | Lista los workspaces a los que puede apuntar tu credencial |
 
@@ -89,6 +90,18 @@ connect/confirm` del CLI; no está en la superficie de MCP. Escribir o desplegar
 acción de Nango es un tercer carril, solo para humanos. Si un agente necesita una
 operación del broker que `operations` **no** lista, tiene que **reportar la capacidad
 que falta**. Nunca escribas ni despliegues un script para tapar el hueco.
+
+### Las connector tools se sintetizan por workspace
+
+Más allá de las tools estáticas de arriba, el servidor MCP puede **sintetizar** tools de solo
+lectura por workspace a partir de las capabilities ready de un provider:
+`driftless_<provider>_records` y `driftless_<provider>_page_content` (por ejemplo,
+`driftless_notion_page_content`). Aparecen solo cuando la síntesis de tools del broker está
+habilitada y el provider expone una capability `ready`, de efecto lectura y de un kind
+sintetizable, con un tope por workspace. De ahí dos reglas: **una tool listada no es una tool
+utilizable** (una tool sintetizada o la estática del broker igual se resuelve por la API del
+broker, donde un caller externo está gated por rollout y grants), y las **capabilities de
+escritura nunca se sintetizan**. Ver [Broker](/es/integrations/broker).
 
 ### Relaciones tipadas desde el MCP
 
@@ -176,8 +189,14 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `context:read` | Lee topics y contexto |
 | `topics:create` | Crea topics nuevos |
 | `topics:write` | Actualiza topics existentes |
+| `work:write` | Escribe la superficie de trabajo: proyectos, cards, collections, records, entities, comentarios, tags, areas, más las acciones de merge y share |
 | `context:diff` | Lee el diff de topics para cambios locales |
+| `broker:read` | Lee connections, capabilities y records del broker |
+| `broker:invoke` | Invoca una operación del broker |
+| `broker:admin` | Gestiona grants y criterion del broker |
 | `offline_access` | Refresca el acceso sin reconectar |
+
+Los scopes `broker:*` se aplican solo cuando el Broker está habilitado, y gobiernan su lane encima del rollout y los grants. La metadata de discovery anuncia un subconjunto de scopes; el conjunto aplicado es la autoridad.
 
 ### Endpoints
 

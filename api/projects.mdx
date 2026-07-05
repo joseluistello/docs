@@ -1,0 +1,48 @@
+---
+title: 'Projects & Cards'
+description: 'REST endpoints for project boards and the card loop.'
+---
+
+All paths are under the base URL (`/api/v1`) and require authentication (an API key or a dashboard session). Reads are workspace-member; writes require the `work:write` scope over OAuth. See [Projects](/concepts/projects) for the model.
+
+## Projects
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/projects` | member (`work:write`) | Create a project |
+| `GET` | `/workspaces/:slug/projects` | member | List projects (`?status`) |
+| `GET` | `/workspaces/:slug/projects/:id` | member | Project detail (`?view`, `card_limit`, `card_offset`, `card_status`) |
+| `PATCH` | `/workspaces/:slug/projects/:id` | member (`work:write`) | Update a project |
+
+Create body (`CreateProjectDto`): `title` (required), `goal`, `playbook_slug`, `owner_clerk_id`, `context[]`. Update accepts `title`, `status`, `goal`, `playbook_slug`, `owner_clerk_id`, `add_context`.
+
+## Cards
+
+Base path `/workspaces/:slug/projects/:projectId/cards`.
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `.../cards` | member (`work:write`) | Create a card |
+| `GET` | `.../cards` | member | List cards (`?status`, `limit`, `offset`, `owner`) |
+| `GET` | `.../cards/next` | member | The loop tick (`?context=refs\|summaries\|full`) |
+| `GET` | `.../cards/:cardId` | member | Card detail |
+| `PATCH` | `.../cards/:cardId` | member (`work:write`) | Update a card |
+| `DELETE` | `.../cards/:cardId` | member (`work:write`) | Delete a card |
+
+Create body (`CreateCardDto`): `title` (required), `description`, `status`, `owner_clerk_id`, `acceptance`, `validate`, `depends_on` (uuid array), `context`, `allow_secrets`. Update also accepts `to_project_id`, `validate_result`, `validate_passed`, and `add_context`.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/projects \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Refunds revamp","goal":"Refund path is idempotent","playbook_slug":"refund-flow"}'
+```
+
+## Bodies, pagination, and errors
+
+Cards paginate with `limit` (1 to 100) and `offset`; `next` returns a card plus its context bundle, or a terminal signal when nothing is actionable. Status values are validated against the card enum (`todo`, `in_progress`, `blocked`, `review`, `done`) and the project enum (`active`, `done`, `archived`); an invalid value returns `400 VALIDATION_FAILED`. Unknown body fields are rejected. See [errors](/api/errors) for the envelope.
+
+## Related
+
+- [Projects](/concepts/projects) - the concept and loop.
+- [CLI: Projects and Cards](/cli/projects) - the command-line surface.

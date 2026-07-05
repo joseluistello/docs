@@ -9,7 +9,7 @@ This is the half of Driftless that isn't documentation. Topics capture what the 
 
 ## Projects and cards
 
-- A **project** belongs to one workspace and has a status: `active`, `done`, or `archived`. It can carry a **goal** (the definition of done for the whole project) and a **playbook** (a topic the agent reads to learn how to run it).
+- A **project** belongs to one workspace and has a status: `active`, `done`, or `archived`. It can carry a **goal** (the definition of done for the whole project) and a **`playbook_slug`** (a Knowledge topic the agent reads to learn how to run it), set with `--playbook` on the CLI or `playbook_slug` on the REST API. The MCP `driftless_project` tool does not expose `playbook_slug` yet; when a project has one, the card `next` bundle carries a `playbook_hint`.
 - A **card** belongs to one project and moves through a status lane: `todo` · `in_progress` · `blocked` · `review` · `done`. A card can carry:
   - an **owner** (a workspace member),
   - an **`acceptance`** criterion: what "done" means, checked before the card is closed,
@@ -35,12 +35,12 @@ Persist anything durable learned, mark the card `done`, and ask for the next car
 </Step>
 </Steps>
 
-**Dep-gating** orders the loop without micro-management: a `todo` card with unmet dependencies never appears in `next`. It becomes "ready" only once every card in its `depends_on` list is `done`. When no cards are ready and none are in flight, `project_done` is `true`.
+**Dep-gating** orders the loop without micro-management: a `todo` card with unmet dependencies never appears in `next`. It becomes "ready" only once every card in its `depends_on` list is `done`. Among actionable cards, `next` picks in priority order: `in_progress` first, then `review`, then `blocked`, then a ready `todo`. Listing cards with `project cards` uses a different, board-oriented order (`blocked`, `review`, `in_progress`, `todo`, `done`). When no cards are ready and none are in flight, `project_done` is `true`.
 
 **Blocked, not guessed:** if the agent cannot proceed without a human decision, it sets the card to `blocked` rather than marking it done.
 
 <Note>
-Verification is **report-and-surface**, not enforcement. The agent reports the result of running `validate`; Driftless stores and surfaces it, but never runs the command itself. A `done` transition without a passing result is allowed by default (the card is surfaced as "needs verification"), unless the workspace opts in to blocking via `require_card_validation`.
+Verification is **report-and-surface**, not enforcement. The agent reports the result of running `validate`; Driftless stores and surfaces it, but never runs the command itself. A `done` transition without a passing result is allowed by default (the card is surfaced as "needs verification"), unless the workspace opts in to blocking via `require_card_validation`, a workspace-level setting (default off) an owner or admin sets with `PATCH /workspaces/:slug` and `{ settings: { require_card_validation: true } }`. It is not a per-card or per-project flag.
 </Note>
 
 ## Write-back mid-loop

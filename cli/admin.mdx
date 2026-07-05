@@ -1,0 +1,73 @@
+---
+title: 'CLI: Workspace administration'
+description: 'Manage members, areas, repositories, tracked branches, notes, and the audit log from the CLI.'
+---
+
+These families administer the workspace itself. Several are owner/admin only, enforced server-side. Add `--json` to any command for machine output. For login, `doctor`, `install-skill`, and `sync`, see [CLI Setup](/cli/setup); for workspace switching, see [Context commands](/cli/context#workspaces).
+
+## Members
+
+| Command | Description |
+|---|---|
+| `member list` | List members (id, role, email). |
+| `member invite <email> [--role admin\|member]` | Invite a member. `owner` cannot be invited. |
+| `member role <memberId> <role>` | Set a member's role: `owner`, `admin`, or `member`. |
+| `member rm <memberId>` | Remove a member. |
+| `member invites` | Pending invites. |
+
+Member writes are owner/admin actions. Roles are `owner`, `admin`, `member`; invites may only grant `admin` or `member`.
+
+```bash
+driftless member invite dev@acme.com --role member
+driftless member role mem_123 admin
+```
+
+## Areas and tags
+
+| Command | Description |
+|---|---|
+| `area list` | List areas (the domains topics file under). |
+| `area add <name> [--description "..."]` | Create an area. |
+| `area rename <id> <new-name>` | Rename an area (owner/admin). |
+| `area rm <id>` | Delete an area; its topics become unfiled (owner/admin). |
+
+Tags are covered under [Context commands](/cli/context#tags-the-category-registry): `tags`, `tags add`, `tags rename`, `tags rm`. Renaming and deleting an area or tag are owner/admin curation acts.
+
+## Repositories and branches
+
+| Command | Description |
+|---|---|
+| `repo list` | Linked repositories. |
+| `repo link <org/repo>` | Link a GitHub repository (must be in `org/repo` form). |
+| `repo unlink <id>` | Unlink a repository. |
+| `branches` | List tracked branches. |
+| `branches add <branch>` | Track a branch (requires a git repo and a linked repo). |
+| `branches rm <branch>` | Untrack a branch. |
+
+The default branch is always tracked; `branches add`/`rm` change the extra tracked branches used for push-driven drift.
+
+```bash
+driftless repo link acme/api
+driftless branches add staging
+```
+
+## Notes
+
+| Command | Description |
+|---|---|
+| `note add --content "..."` | Capture a private note. `--content` accepts `@file`. |
+
+`--project <id>` attaches the note to a project; `--card <id>` (which requires `--project`) attaches it to a card mid-loop. `--allow-secrets` and `--json` are available. A note is always private to you.
+
+## Audit and export
+
+| Command | Description |
+|---|---|
+| `audit log [--limit <n>]` | The workspace audit trail (owner/admin). |
+
+Workspace export is an owner/admin capability, but the export endpoint requires a human dashboard session, so run it from the dashboard rather than an API-key CLI call.
+
+## Related
+
+- [Workspaces](/concepts/workspaces) - roles, membership, and scoped keys.
+- [Areas](/concepts/areas) - how topics are filed.

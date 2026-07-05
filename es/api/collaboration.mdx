@@ -1,0 +1,55 @@
+---
+title: 'Comments, Areas y Tags'
+description: 'Endpoints REST para anotaciones y los registros que organizan topics.'
+---
+
+Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación. Las lecturas son de miembro del workspace; las escrituras requieren el scope `work:write` por OAuth. Renombrar y borrar un area o un tag son actos de curación owner/admin.
+
+## Comments
+
+Un comentario apunta a un topic, record, card o página y se resuelve en una edición. Ver [Comments](/es/concepts/comments).
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/comments` | member (`work:write`) | Agrega un comentario |
+| `GET` | `/workspaces/:slug/comments` | member | Lista comentarios (`?target_kind`, `target_id`, `target_ref`, `status`) |
+| `GET` | `/workspaces/:slug/comments/:id` | member | Detalle del comentario |
+| `PATCH` | `/workspaces/:slug/comments/:id` | member (`work:write`) | Actualiza body o status |
+
+Cuerpo de creación (`CreateCommentDto`): `target_kind` (obligatorio, uno de `topic`, `page`, `record`, `card`), `target_id` (uuid) o `target_ref` (slug de topic), `field_key`, `body` (obligatorio, hasta 10000 caracteres), `author_id`. El status es `open`, `resolved` o `wont_fix`.
+
+## Areas
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/areas` | member | Lista areas |
+| `POST` | `/workspaces/:slug/areas` | member (`work:write`) | Crea un area |
+| `PATCH` | `/workspaces/:slug/areas/:id` | owner/admin | Renombra o describe |
+| `DELETE` | `/workspaces/:slug/areas/:id` | owner/admin | Elimina (deja sus topics sin archivar) |
+
+Cuerpo (`CreateAreaDto` / `UpdateAreaDto`): `name` (obligatorio, hasta 64 caracteres), `description` (hasta 500 caracteres).
+
+## Tags
+
+| Método | Ruta | Perm | Propósito |
+|---|---|---|---|
+| `GET` | `/workspaces/:slug/tags` | member | Lista el registro (`?limit`, `offset`) |
+| `POST` | `/workspaces/:slug/tags` | member (`work:write`) | Pre-crea un tag |
+| `PATCH` | `/workspaces/:slug/tags/:name` | rename owner/admin | Renombra o describe |
+| `DELETE` | `/workspaces/:slug/tags/:name` | owner/admin | Borra y desvincula en todos lados |
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/comments \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"target_kind":"topic","target_ref":"billing-flow","body":"Esta decisión quedó stale."}'
+```
+
+## Errores
+
+Un `target_kind` o `status` desconocido, o un `body` demasiado largo, devuelve `400 VALIDATION_FAILED`. Un miembro que intenta un acto de curación owner/admin (renombrar o borrar area/tag) recibe `403 INSUFFICIENT_ROLE`. Ver [errores](/es/api/errors) para el sobre.
+
+## Relacionado
+
+- [Comments](/es/concepts/comments) - el modelo de anotación.
+- [Areas](/es/concepts/areas) - cómo se archivan los topics.

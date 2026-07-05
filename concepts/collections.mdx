@@ -24,11 +24,30 @@ Every use case collapses into one of three shapes:
 - **`record_schema`**: the typed field definitions (the columns). Field types: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. A `status` field carries `stages[]`, the lifecycle a record flows through.
 - **`views`**: saved views over the records: `board`, `table`, `list`, `calendar`, `gallery`, each with `group_by`, `filter`, `sort`, and `visible_fields`.
 - **`criterion_rel_slugs`**: the Knowledge **Topics the work reads before acting**. This is the seam coming down: a lead pipeline reads `how-we-sell` and `icp`, so the work happens with the team's criteria.
-- **`distill_policy`**: how a terminal record distills back into a Note (the seam going up): closing a bug or winning a deal can leave a durable learning in the vault.
+- **`distill_policy`**: a configuration field for how a terminal record should distill back into a Note (the seam going up): closing a bug or winning a deal can leave a durable learning in the vault.
 
 ## A Record
 
 A Record is one row: its `fields` are the typed values (keyed by the Collection's field keys), and its `status` is **validated against the Collection's own stages**. Each Collection defines its own lifecycle, so a record can only sit in a stage its Collection declares.
+
+## Entities
+
+A Record is a row inside one Collection. An **Entity** is an identity that can span Collections: the same customer who appears as a lead in the sales pipeline and a ticket in support. An entity is not a row in a Collection; it is a separate object that Records point at.
+
+An entity carries:
+
+- **`kind`**: the identity type (for example `company`, `person`).
+- **`name`**: its display name.
+- **`dedup_key`**: the stable key that makes it unique within its `kind`.
+- **`attributes`**: free-form typed values.
+
+Entities **upsert** idempotently on `(kind, dedup_key)`: writing the same pair twice updates the entity instead of creating a duplicate. A Record links to an entity by setting its `entity_id`, so several Records across different Collections can resolve to one identity.
+
+Entities are available on three surfaces: the CLI (`driftless collection entity add|list`), MCP (`driftless_entity`, `action: list | get | upsert`), and REST (`/workspaces/:slug/entities`).
+
+<Note>
+Connector `import` (via the [Broker](/integrations/broker)) maps a provider's mirrored records into Collection Records. That is different from Broker `index`, which materializes connector documents for retrieve, not Collection Records. See [Broker: reads and materialization](/integrations/broker#reads-and-materialization).
+</Note>
 
 ## Using collections
 

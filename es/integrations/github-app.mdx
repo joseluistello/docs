@@ -5,6 +5,10 @@ description: "Qué observa la GitHub App de Driftless en tus PRs y pushes, y có
 
 La GitHub App es lo que le permite a Driftless mirar el trabajo mientras pasa. Una vez instalada en tus repositorios, lee los pull requests y pushes que van pasando, muestra lo que el equipo ya registró sobre los archivos que tocaste, y marca un topic como drifted en el momento en que sus archivos cambian.
 
+<Note>
+La GitHub App es una **superficie distinta** de una Connection GitHub del Broker. Esta App (`type: github`) es una superficie de observación: mira PRs y pushes para impulsar el drift y alimentar al Auditor, y no expone `invoke`. Una Connection GitHub del Broker (`type: nango:github`) para escrituras como crear un issue **no está shipped**. Ver [Integraciones y Connections](/es/integrations/overview#disponibilidad-por-proveedor).
+</Note>
+
 ## Instalación
 
 Instálala desde el dashboard:

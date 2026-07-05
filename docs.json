@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Driftless",
-  "description": "The workspace where humans and AI agents work from the same living context — code, decisions, and operations in one shared system.",
+  "description": "One workspace where a team and its agents share what they know, what they operate, and the work in flight, in one governed system.",
   "theme": "linden",
   "favicon": "/favicon.png",
   "logo": {
@@ -79,8 +79,10 @@
               "cli/setup",
               "agents/setup",
               "mcp/overview",
+              "integrations/overview",
               "integrations/github-app",
               "integrations/notion",
+              "integrations/broker",
               "integrations/self-hosted-agents"
             ]
           },
@@ -119,6 +121,11 @@
             "icon": "terminal",
             "pages": [
               "cli/context",
+              "cli/projects",
+              "cli/collections",
+              "cli/integrations",
+              "cli/agents",
+              "cli/admin",
               "cli/sync"
             ]
           },
@@ -129,9 +136,13 @@
               "api/overview",
               "api/errors",
               "api/workspaces",
-              "api/repos",
               "api/topics",
-              "api/integrations"
+              "api/projects",
+              "api/collections",
+              "api/collaboration",
+              "api/integrations",
+              "api/broker",
+              "api/repos"
             ]
           },
           {
@@ -162,8 +173,10 @@
               "es/cli/setup",
               "es/agents/setup",
               "es/mcp/overview",
+              "es/integrations/overview",
               "es/integrations/github-app",
               "es/integrations/notion",
+              "es/integrations/broker",
               "es/integrations/self-hosted-agents"
             ]
           },
@@ -202,6 +215,11 @@
             "icon": "terminal",
             "pages": [
               "es/cli/context",
+              "es/cli/projects",
+              "es/cli/collections",
+              "es/cli/integrations",
+              "es/cli/agents",
+              "es/cli/admin",
               "es/cli/sync"
             ]
           },
@@ -212,9 +230,13 @@
               "es/api/overview",
               "es/api/errors",
               "es/api/workspaces",
-              "es/api/repos",
               "es/api/topics",
-              "es/api/integrations"
+              "es/api/projects",
+              "es/api/collections",
+              "es/api/collaboration",
+              "es/api/integrations",
+              "es/api/broker",
+              "es/api/repos"
             ]
           },
           {

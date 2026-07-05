@@ -1,0 +1,60 @@
+---
+title: 'Collections, Records & Entities'
+description: 'REST endpoints for the operational substrate: configured collections, typed records, and cross-collection entities.'
+---
+
+All paths are under the base URL (`/api/v1`) and require authentication. Reads are workspace-member; writes require the `work:write` scope over OAuth. See [Collections](/concepts/collections) for the model.
+
+## Collections
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/collections` | member (`work:write`) | Create a collection |
+| `GET` | `/workspaces/:slug/collections` | member | List collections (`?status`) |
+| `GET` | `/workspaces/:slug/collections/doctor` | member | Audit collections (`?full`) |
+| `GET` | `/workspaces/:slug/collections/:id` | member | Collection detail |
+| `GET` | `/workspaces/:slug/collections/:id/context` | member | Resolve the criterion Knowledge |
+| `PATCH` | `/workspaces/:slug/collections/:id` | member (`work:write`) | Update a collection |
+
+Create body (`CreateCollectionDto`): `name` (required), `archetype` (required, one of `pipeline`, `analysis`, `content`), `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy`, `owner_clerk_id`. Update accepts `name`, `status` (`active` or `archived`), `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy`.
+
+## Records
+
+Base path `/workspaces/:slug/collections/:id`.
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `.../records` | member (`work:write`) | Add a record |
+| `GET` | `.../records` | member | List records (cursor paginated) |
+| `GET` | `.../retrieve` | member | Records plus criterion in one call |
+| `GET` | `.../records/:recordId` | member | Record detail |
+| `PATCH` | `.../records/:recordId` | member (`work:write`) | Update a record |
+| `DELETE` | `.../records/:recordId` | member (`work:write`) | Delete a record |
+
+Record body (`CreateRecordDto` / `UpdateRecordDto`): `fields`, `status`, `field_meta`, `entity_id`, and `drifted` on update. A record's `status` is validated against the collection's stages. List and retrieve accept `status`, `entity_id`, `drifted`, `updated_after`, `view`, `fields`, `limit`, and `cursor`.
+
+## Entities
+
+| Method | Path | Perm | Purpose |
+|---|---|---|---|
+| `POST` | `/workspaces/:slug/entities` | member (`work:write`) | Upsert an entity |
+| `GET` | `/workspaces/:slug/entities` | member | List entities (`?kind`) |
+| `GET` | `/workspaces/:slug/entities/:id` | member | Entity detail |
+
+Upsert body (`UpsertEntityDto`): `kind` (required), `name` (required), `dedup_key`, `attributes`. The upsert is idempotent on `(kind, dedup_key)`.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/entities \
+  -H "x-api-key: drift_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"company","name":"Acme","dedup_key":"acme.com"}'
+```
+
+## Pagination and errors
+
+Records and retrieve paginate by keyset (`limit` plus `cursor`, returning `nextCursor`). Collections and entities list without a cursor. An invalid `status` (outside the collection's stages) or `archetype`, or an unknown body field, returns `400 VALIDATION_FAILED`. See [errors](/api/errors) for the envelope.
+
+## Related
+
+- [Collections](/concepts/collections) - archetypes, field types, and the criterion seam.
+- [CLI: Collections, Records, and Entities](/cli/collections) - the command-line surface.

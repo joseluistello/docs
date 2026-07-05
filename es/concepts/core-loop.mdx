@@ -1,20 +1,77 @@
 ---
 title: 'El loop de Driftless'
-description: "Persistir, entregar, gobernar, drift: el loop de todos los días."
+description: "Los tres tipos de estado que un workspace conecta, y el loop que convierte una señal en Knowledge revisado."
 ---
 
-Driftless es un **vault**: lo lees antes de tocar un área, y escribes una nota limpia dentro después de aprender algo. Ese es todo el loop, dos movimientos. **Trae lo que el equipo ya sabe antes de trabajar, persiste lo que aprendiste después.** La mayoría de lo que escribes se queda como Nota, y eso es sano y esperado; solo unas pocas notas llegan a ser Knowledge. No hay una compuerta de aprobación que tengas que pasar, así que **la calidad se exige al momento de escribir**, con las seis reglas de *Persistir* más abajo. La gobernanza y el drift envuelven a los dos movimientos.
+Driftless es un solo workspace para un equipo y sus agentes. El problema que resuelve es la continuidad, no solo la memoria: los modelos cambian, los chats terminan, las sesiones se reinician y los agentes pierden su estado, pero el cliente, la decisión y el proyecto siguen ahí a la mañana siguiente. Cuando ese estado vive en una docena de herramientas, una persona se pasa el día cargándolo a mano, volviendo a explicar lo que ya pasó y decidiendo qué versión sigue siendo verdad. Driftless mantiene ese estado en un solo lugar para que el trabajo recuerde, y para que la siguiente persona o agente empiece desde lo que el equipo ya sabe.
 
-## 1. Persistir
+## Tres tipos de estado
 
-Después de una sesión, anota lo que fue durable: un gotcha, una decisión, un invariante. Aterriza como una **Nota**, todavía no como Knowledge. Una Nota es de primera clase, así que escríbela limpia la primera vez, porque no hay compuerta que la arregle por ti más tarde.
+El estado de una empresa suele estar en tres formas distintas, en tres herramientas distintas. Driftless mantiene las tres en un solo workspace, para que se alimenten entre sí en lugar de separarse.
 
-**Las seis reglas que sigue toda escritura:**
+### Knowledge: lo que el equipo decidió conservar
+
+El Knowledge es el contexto revisado y durable en el que un equipo quiere que futuras personas y agentes confíen: la decisión detrás de un enfoque, la restricción que debe cumplirse, la trampa que le costó un día a alguien. Lo capturas como una **Nota**, una observación rápida o un borrador. Un **Topic** es el objeto durable en el que se convierte una Nota cuando vale la pena conservarla, anclado al código o sistema exacto que describe, así puede avisar por sí mismo cuando ese código se mueve. Una Nota es una pista; el **Knowledge** es aquello que el equipo de verdad acordó usar como base. No toda Nota se vuelve Knowledge, y eso es sano: la mayoría se queda como pista, y unas pocas se vuelven la verdad compartida sobre la que todos construyen.
+
+### Operations: lo que la empresa opera
+
+Las Operations son el estado recurrente que un equipo trabaja día a día: leads en un pipeline, bugs en un tracker, señales de clientes, posts en un calendario. En Driftless cada una de estas es una **Collection**, una tabla configurada con campos tipados y un ciclo de vida, y cada fila es un **Record**. Un CRM, un bug tracker y un calendario de contenido son el mismo primitivo con distinta configuración, no tres apps que construyes. Una **Entity** es una identidad compartida que une Records entre distintas Collections, así el mismo cliente en un pipeline y en una cola de soporte se entiende como uno solo. Antes de que un agente trabaje un Record, puede leer el Knowledge que el equipo asoció a esa Collection, así el trabajo ocurre con los criterios del equipo en vez de partir de cero.
+
+### Work: lo que está en marcha
+
+El Work es el esfuerzo finito y con forma de objetivo que hace avanzar algo: un lanzamiento, una migración, una renovación. Un **Project** contiene un objetivo y su definición de terminado, y una **card** es una unidad de trabajo dentro de él, que puede llevar un criterio de aceptación, un comando de validación y dependencias de otras cards. Cuando una persona o un agente toma una card, el workspace le entrega el Knowledge anclado al código que esa card toca, y cualquier aprendizaje que aparezca en el camino regresa como una Nota. El Work es donde vive la verificación: lo "generado" no es lo "terminado" hasta que un resultado se contrasta con lo que se suponía que era terminar.
+
+## El loop
+
+Ninguno de los tres es el producto por sí solo. El producto es el loop entre ellos:
+
+> **Signal → Context → Work → Action → Knowledge**
+
+Llega una señal. Se interpreta contra el contexto que el equipo ya tiene. Se vuelve trabajo. El trabajo produce una acción sobre un sistema real. La acción deja atrás un aprendizaje que mejora la siguiente interpretación. Dos formas de todos los días:
+
+- Un mensaje de un cliente puede actualizar un Record en una Collection, abrir una card de trabajo con responsable, entregarle al agente los criterios que el equipo registró para ese tipo de trabajo y, una vez verificado el trabajo, dejar un aprendizaje revisado para la siguiente persona o agente.
+- Un cambio de producto puede marcar Knowledge relacionado como posiblemente stale, crear una tarea de revisión y mejorar lo que reciben los futuros agentes la próxima vez que toquen esa área.
+
+Esto describe el modelo, no una promesa de que cada paso ocurra solo. Algunos pasos son una persona haciendo clic en un botón, otros son un agente actuando bajo permiso, y otros son una regla que tú configuras. Lo importante es que el estado se mueve por un solo workspace en vez de cargarse entre herramientas a mano.
+
+## Cómo llegas al workspace
+
+Los tres tipos de estado son el producto. Todo lo demás es una forma de llegar a ellos, o un participante que actúa sobre ellos.
+
+- El **dashboard** es el workspace visible para las personas: boards, el grafo de topics, la cola de revisión.
+- La **CLI**, el servidor **MCP** y la **REST API** son superficies de acceso sobre el mismo workspace, mantenidas cerca unas de otras. MCP es cómo un cliente de IA como Claude o ChatGPT llega a Driftless, la CLI es cómo lo hace una terminal o un agente de código, y la API es cómo lo hace tu propio código. Ninguna es un producto aparte, y ninguna es la arquitectura; son puertas al mismo estado.
+- Los **agentes** son participantes, no magia. Un agente lee dentro de los permisos que le das, toma acciones acotadas, registra observaciones como Notas y propone cambios, mientras una persona sigue siendo responsable de todo lo que la empresa asume como verdadero.
+- Las **automatizaciones** corren un paso en un horario o ante un disparador, para las partes del loop que un equipo elige volver automáticas. Asisten al loop; no reemplazan el modelo que hay debajo.
+- Las **integraciones** son acceso gobernado a sistemas que Driftless no posee, como GitHub o Notion. Una integración no es una subfeature de MCP: MCP es una puerta para los agentes, mientras que una integración es una conexión acotada y auditada a una herramienta externa que puede seguir siendo el system of record mientras Driftless coordina el trabajo a su alrededor.
+
+## Quién decide qué se vuelve Knowledge
+
+Un agente puede descubrir algo verdadero, y también puede afirmar una interpretación equivocada con mucha seguridad. Por eso escribir una afirmación y convertirla en Knowledge institucional son actos deliberadamente separados. Los agentes observan, redactan, relacionan y proponen. Fusionar una Nota en Knowledge es una decisión de un owner o admin, porque el Knowledge es aquello en lo que todo el equipo confiará después. Esto no es fricción por gusto: es lo que permite que un agente lea el Knowledge como verdad y una Nota como pista, en vez de tratar cada frase generada como un hecho. Las personas conservan la autoría sobre lo que la empresa asume como verdadero, y los agentes amplían hasta dónde llega ese alcance.
+
+## Los dos movimientos que más haces
+
+Para quien construye, la parte del loop que tocas todos los días es el plano de Knowledge, y se reduce a dos movimientos: lee antes de trabajar, escribe una nota limpia después de aprender.
+
+### Lee antes de trabajar
+
+Antes de editar un área, trae lo que el equipo ya sabe sobre ella. Los Topics en drift llevan un badge de frescura en línea, así que no hay un paso aparte que correr.
+
+```bash
+driftless context get --files "src/auth/guard.ts"   # match topics to files you're about to touch
+driftless context get auth-flow                      # full context for one topic
+driftless context get --diff                         # context for your local uncommitted changes
+```
+
+Lee el `what / how / gotchas / decisions / invariants`, y el flag `governance.authoritative`, antes de escribir cualquier cosa.
+
+### Escribe una nota limpia después de aprender
+
+Cuando te topas con algo durable, un gotcha, una decisión, un invariante, deja exactamente una Nota limpia. No hay una compuerta de aprobación que arregle una nota descuidada más tarde, así que la calidad se exige al momento de escribir, con seis reglas.
 
 1. **Un concepto por nota.** ¿Tentado de cubrir dos? Escribe dos.
 2. **Siempre archívala en un área** (`--area`). Nunca la dejes en Unassigned; ahí es donde se pudren los vaults.
 3. **Ancla angosto** (`--pattern`, ~5-40 archivos, nunca `src/**`). Para lo que no es código, ancla el doc o el sistema del que trata.
-4. **La confianza es una señal, no una compuerta.** Knowledge es verdad, una Nota es una pista, y ambas son reales. Escribe una buena nota; no persigas la aprobación.
+4. **La confianza es una señal, no una compuerta.** El Knowledge es verdad, una Nota es una pista, y ambas son reales. Escribe una buena nota; no persigas la aprobación.
 5. **Reescribe para consolidar; agrega para sumar.** Nunca apiles un muro.
 6. **El contenido es el _porqué_ durable, no un changelog.** Sin fechas, sin "shipped", sin referencias a PR; eso vive en git.
 
@@ -33,21 +90,7 @@ driftless context update auth-flow \
   --rel depends_on:token-refresh
 ```
 
-## 2. Entregar
-
-Antes de editar un área, trae lo que el equipo ya sabe. Los topics con drift llevan un badge de frescura en línea, así que no hay un paso aparte que correr.
-
-```bash
-driftless context get --files "src/auth/guard.ts"   # match topics to files you're about to touch
-driftless context get auth-flow                      # full context for one topic
-driftless context get --diff                         # context for your local uncommitted changes
-```
-
-Lee el `what / how / gotchas / decisions / invariants`, y el flag `governance.authoritative`, antes de escribir cualquier cosa.
-
-## 3. Gobernar
-
-Una nota se vuelve Knowledge una vez que se fusiona. Los agentes proponen; fusionar es un acto de owner/admin, y un agente lo corre solo cuando se le pide explícitamente. El agente trata `reviewed` como verdad y `draft`/`proposed` como una pista. **La mayoría de las notas se quedan como notas, y eso es lo esperado.** La promoción a Knowledge es para las pocas verdades transversales de las que depende todo el equipo, no un paso que tengas que completar en cada nota.
+Una Nota se vuelve Knowledge una vez que se fusiona. Los agentes proponen; fusionar es un acto de owner o admin, y un agente lo corre solo cuando se le pide explícitamente. La mayoría de las notas se quedan como notas, y eso es lo esperado: la promoción es para las pocas verdades transversales de las que depende todo el equipo, no un paso que completes en cada nota.
 
 ```bash
 driftless context propose auth-flow     # draft → proposed
@@ -57,9 +100,9 @@ driftless context pr auth-flow --open --summary "..." --content @new.md   # chan
 
 Ver [Gobernanza](/es/concepts/governance).
 
-## 4. Drift
+## El drift mantiene honesto al Knowledge
 
-Cuando el código cambia en una rama rastreada, los topics cuyos anchors se solapan con los archivos cambiados quedan marcados como **stale**, con una razón legible para humanos. El drift te llega como un badge cuando haces `context get` del área; no tienes que ir a buscarlo. En un PR que toca un área documentada, el bot entrega al reviewer el contexto que el equipo dejó registrado.
+Guardar texto no basta, porque una afirmación vieja en la que un agente confía puede ser peor que ninguna. Cuando el código cambia en una rama rastreada, los Topics cuyos anchors se solapan con los archivos cambiados quedan marcados como **stale**, con una razón legible para humanos. El drift te llega como un badge cuando haces `context get` del área, así no tienes que ir a buscarlo, y en un pull request que toca un área documentada, el Auditor le entrega al reviewer el contexto que el equipo dejó registrado. Así se mantiene honesto el Knowledge: sabe cuándo dejó de ser verdad y pide que lo vuelvan a mirar.
 
 ```bash
 driftless context doctor          # health audit: stale, zombie, orphaned, draft
@@ -67,3 +110,12 @@ driftless sync                    # optional team-wide digest of what drifted
 ```
 
 `driftless sync` es un digest **opcional**. Casi nunca lo necesitas, porque el drift ya te llega en línea. `context doctor` audita la capa de topics en sí: `stale`, `orphaned` (repo borrado), `zombie` (los anchors no matchean ningún archivo), `draft`.
+
+## Lo que Driftless no es
+
+Ser claro sobre los bordes mantiene honesto al modelo:
+
+- No es el foundation model, y no tiene por qué ser el runtime ni el harness de tu agente. El harness corre el agente; Driftless guarda el estado desde el que el agente trabaja.
+- No reemplaza a todos los systems of record. GitHub, tu CRM o Notion pueden seguir siendo la fuente autoritativa mientras Driftless coordina el trabajo y el criterio a su alrededor.
+- No convierte cualquier output de un agente en verdad. Una afirmación generada es una Nota hasta que una persona la fusiona.
+- No promete autonomía sin gobernanza. Los agentes actúan dentro de permisos que puedes ver, y una persona sigue siendo responsable de las decisiones que importan.

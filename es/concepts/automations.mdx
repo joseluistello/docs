@@ -31,6 +31,10 @@ El hook está **instalado localmente** pero **controlado de forma remota**:
 
 Para quitar el hook por completo de una máquina, corre ahí `driftless hooks disable`.
 
+<Note>
+`hook` y `hooks` son dos comandos distintos, no un error de tipeo. `driftless hook` es el pegamento en runtime que Claude Code invoca (`pre-edit`, `post-edit`, `stop`, `sync`); nunca lo corres a mano. `driftless hooks` es el comando de gestión (`enable` / `disable`) que instala o quita las entradas del hook en `.claude/settings.json`.
+</Note>
+
 ## Por qué es la recompensa de la gobernanza
 
 Solo los topics que son Knowledge (`reviewed`) se auto-inyectan. Una Nota es una pista, no la verdad del equipo, así que nunca llega al agente de forma automática. Por eso **agregar una nota a Knowledge es, literalmente, lo que hace que tus agentes empiecen a programar con ella.** La decisión del owner/admin y el hook son el mismo loop: revisar → fusionar (por un owner/admin, o un agente al que le piden) → el hook lo entrega → el agente lo hace bien.

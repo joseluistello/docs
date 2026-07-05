@@ -1,11 +1,15 @@
 ---
 title: 'Welcome to Driftless'
-description: 'The workspace where your team and its coding agents share one living, code-anchored context, so anyone can see what matters before they touch the code.'
+description: "One workspace where your team and its agents share what you know, what you operate, and the work in flight, so context survives the next session, model, or tool."
 ---
 
 Your agent can write the code. What it can't do is know why your team ruled out that exact approach six months ago. That kind of context is real, but it lives scattered across chats, pull requests, and people's heads, and it goes stale the moment the code moves underneath it.
 
-Driftless is where that stops happening. You and your team work alongside your agents in one place, and you write a note whenever you learn something worth keeping. The durable notes become Knowledge: anchored to the code, honest enough to flag itself when it drifts, and read by every agent before it touches a file. Keeping everyone in sync turns into something that happens while you work, not a second job you maintain on the side.
+It is rarely just the code. The customer you spoke to last week, the decision that ended a long debate, the pipeline you are halfway through, the reason a project matters at all: each of those lives in a different tool, and you become the connective tissue between them. You re-explain the same state to the next teammate, the next agent, and the next session. The work gets done, and the context that made it possible quietly disappears.
+
+Driftless is one workspace for a team and its agents. Instead of letting that state scatter, it keeps three kinds of it together: the **Knowledge** you have reviewed and want to rely on later, the **Operations** you run day to day like customers, signals, and pipelines, and the **Work** in flight with its goals, criteria, and definition of done. Agents read and act on that shared state through permissions you set, and people stay responsible for what the company treats as true.
+
+No single one of those is the point. The value is the loop between them: a signal becomes context, context becomes work, work produces an action, and the action leaves behind reviewed Knowledge for whoever comes next. A message from a customer can become an operational update, open a piece of accountable work, hand an agent the context it needs, and leave a learning the team has actually approved. [The Driftless loop](/concepts/core-loop) walks through the whole model, and coding agents are the most concrete place to start.
 
 ## Connect in about a minute
 
@@ -49,14 +53,17 @@ Same workspace whether a human or an agent reaches it. Install the CLI, point yo
 ## Explore the docs
 
 <CardGroup cols={2}>
+  <Card title="How it fits together" icon="compass" href="/concepts/core-loop">
+    Knowledge, Operations, and Work, and the loop that turns a signal into reviewed Knowledge. Start here for the whole model.
+  </Card>
   <Card title="Connect" icon="plug" href="/cli/setup">
     Every way a human or an agent plugs in: the CLI, agent skills, MCP, the GitHub App, Notion, and self-hosted agents.
   </Card>
   <Card title="Concepts" icon="brain" href="/concepts/workspaces">
-    The mental model. Workspaces, areas, topics, governance, and how drift keeps context honest.
+    The Knowledge plane up close: workspaces, areas, topics, governance, and how drift keeps context honest.
   </Card>
   <Card title="Work & collaborate" icon="layers" href="/concepts/projects">
-    Projects, collections, notes, and comments. The operational side, where the work actually happens.
+    Projects, collections, notes, and comments: the Operations and Work sides, where the doing actually happens.
   </Card>
   <Card title="Agents & automation" icon="bot" href="/concepts/pr-bot">
     The Auditor's PR comments, the server-side Audit and Architect agents, and the auto-pull hook.

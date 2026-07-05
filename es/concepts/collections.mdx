@@ -24,11 +24,30 @@ Todo caso de uso colapsa en una de tres formas:
 - **`record_schema`**: las definiciones de campos tipados (las columnas). Tipos de campo: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. Un campo `status` lleva `stages[]`, el ciclo de vida por el que fluye un record.
 - **`views`**: vistas guardadas sobre los records: `board`, `table`, `list`, `calendar`, `gallery`, cada una con `group_by`, `filter`, `sort` y `visible_fields`.
 - **`criterion_rel_slugs`**: los **Topics de Knowledge que el trabajo lee antes de actuar**. Esta es la costura que baja: un pipeline de leads lee `how-we-sell` e `icp`, así el trabajo ocurre con los criterios del equipo.
-- **`distill_policy`**: cómo un record terminal se destila de vuelta en una Nota (la costura que sube): cerrar un bug o ganar un deal puede dejar un aprendizaje durable en el vault.
+- **`distill_policy`**: un campo de configuración de cómo un record terminal debería destilarse de vuelta en una Nota (la costura que sube): cerrar un bug o ganar un deal puede dejar un aprendizaje durable en el vault.
 
 ## Un Record
 
 Un Record es una fila: sus `fields` son los valores tipados (indexados por las field keys de la Collection), y su `status` se **valida contra los stages propios de la Collection**. Cada Collection define su propio ciclo de vida, así que un record solo puede estar en un stage que su Collection declara.
+
+## Entities
+
+Un Record es una fila dentro de una Collection. Una **Entity** es una identidad que puede abarcar varias Collections: el mismo cliente que aparece como lead en el pipeline de ventas y como ticket en soporte. Una entity no es una fila de una Collection; es un objeto aparte al que los Records apuntan.
+
+Una entity lleva:
+
+- **`kind`**: el tipo de identidad (por ejemplo `company`, `person`).
+- **`name`**: su nombre para mostrar.
+- **`dedup_key`**: la clave estable que la hace única dentro de su `kind`.
+- **`attributes`**: valores tipados de forma libre.
+
+Las entities hacen **upsert** idempotente sobre `(kind, dedup_key)`: escribir el mismo par dos veces actualiza la entity en vez de crear un duplicado. Un Record se enlaza a una entity al setear su `entity_id`, así varios Records de distintas Collections pueden resolver a una sola identidad.
+
+Las entities están disponibles en tres superficies: la CLI (`driftless collection entity add|list`), MCP (`driftless_entity`, `action: list | get | upsert`) y REST (`/workspaces/:slug/entities`).
+
+<Note>
+El `import` de conector (vía el [Broker](/es/integrations/broker)) mapea los records espejados de un provider a Records de Collection. Eso es distinto del `index` del Broker, que materializa connector documents para retrieve, no Records de Collection. Ver [Broker: lecturas y materialización](/es/integrations/broker).
+</Note>
 
 ## Usar collections
 

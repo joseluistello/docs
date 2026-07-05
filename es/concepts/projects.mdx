@@ -9,7 +9,7 @@ Esta es la mitad de Driftless que no es documentación. Los Topics capturan lo q
 
 ## Projects y cards
 
-- Un **project** pertenece a un workspace y tiene un status: `active`, `done` o `archived`. Puede llevar un **goal** (la definición de terminado para todo el project) y un **playbook** (un topic que el agente lee para aprender a ejecutarlo).
+- Un **project** pertenece a un workspace y tiene un status: `active`, `done` o `archived`. Puede llevar un **goal** (la definición de terminado para todo el project) y un **`playbook_slug`** (un topic de Knowledge que el agente lee para aprender a ejecutarlo), que se setea con `--playbook` en la CLI o `playbook_slug` en la REST API. El tool MCP `driftless_project` todavía no expone `playbook_slug`; cuando un project tiene uno, el bundle de `next` de la card lleva un `playbook_hint`.
 - Una **card** pertenece a un project y se mueve por un carril de status: `todo` · `in_progress` · `blocked` · `review` · `done`. Una card puede llevar:
   - un **owner** (un member del workspace),
   - un criterio de **`acceptance`**: qué significa "done", verificado antes de cerrar la card,
@@ -35,12 +35,12 @@ Persiste todo lo durable que aprendiste, marca la card como `done` y pide la pr�
 </Step>
 </Steps>
 
-El **dep-gating** ordena el loop sin microgestión: una card en `todo` con dependencias sin cumplir nunca aparece en `next`. Pasa a estar "ready" solo cuando cada card de su lista `depends_on` está en `done`. Cuando ninguna card está lista y ninguna está en vuelo, `project_done` es `true`.
+El **dep-gating** ordena el loop sin microgestión: una card en `todo` con dependencias sin cumplir nunca aparece en `next`. Pasa a estar "ready" solo cuando cada card de su lista `depends_on` está en `done`. Entre las cards accionables, `next` elige en orden de prioridad: `in_progress` primero, luego `review`, luego `blocked`, y por último un `todo` ready. Listar cards con `project cards` usa un orden distinto, orientado al board (`blocked`, `review`, `in_progress`, `todo`, `done`). Cuando ninguna card está lista y ninguna está en vuelo, `project_done` es `true`.
 
 **Blocked, no adivinado:** si el agente no puede avanzar sin una decisión humana, pone la card en `blocked` en vez de marcarla como done.
 
 <Note>
-La verificación es **reportar y exponer**, no imponer. El agente reporta el resultado de correr `validate`; Driftless lo guarda y lo expone, pero nunca corre el comando por sí mismo. Una transición a `done` sin un resultado que pase se permite por defecto (la card se expone como "needs verification"), salvo que el workspace opte por bloquear con `require_card_validation`.
+La verificación es **reportar y exponer**, no imponer. El agente reporta el resultado de correr `validate`; Driftless lo guarda y lo expone, pero nunca corre el comando por sí mismo. Una transición a `done` sin un resultado que pase se permite por defecto (la card se expone como "needs verification"), salvo que el workspace opte por bloquear con `require_card_validation`, un setting a nivel de workspace (apagado por defecto) que un owner o admin setea con `PATCH /workspaces/:slug` y `{ settings: { require_card_validation: true } }`. No es un flag por card ni por project.
 </Note>
 
 ## Devolver lo aprendido a mitad del loop

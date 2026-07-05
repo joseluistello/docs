@@ -1,0 +1,131 @@
+---
+title: 'Integraciones y Connections'
+description: 'Conecta sistemas externos que Driftless no posee, como Connections gobernadas, auditadas y acotadas al workspace. Qué te da conectar, y qué no.'
+---
+
+Una **integración** enlaza tu workspace con un sistema que Driftless no posee: una fuente de records, documentos o acciones que vive en el producto de otra empresa. La conectas una vez y, a partir de ahí, Driftless puede leer (y, donde esté habilitado, actuar) a través de un enlace acotado, auditado y limitado al workspace.
+
+Esta página es el mapa de esa superficie: cómo un proveedor se vuelve una Connection, qué te da y qué no te da una Connection, y qué proveedores están realmente operativos hoy. Los verbos de ejecución (`operations`, `invoke`, `records` y el resto) viven en la [referencia del Broker](/es/integrations/broker).
+
+## Qué es una integración
+
+Tres palabras se usan como sinónimos y no deberían serlo:
+
+- **Proveedor** es el sistema externo en sí: Notion, HubSpot, GitHub. Un proveedor es *conectable* solo si Driftless incluye un conector para él (ver [Disponibilidad por proveedor](#disponibilidad-por-proveedor)). Aparecer en un catálogo externo no equivale a estar operativo en Driftless.
+- **Connection** es un enlace autorizado y con credenciales desde tu workspace hacia un proveedor, guardado como una integración de tipo `nango:<proveedor>`. Es lo que opera el Broker.
+- **Integración** es el enlace guardado en general. Hoy existen dos tipos: las **Connections** del Broker (`nango:<proveedor>`) y la **GitHub App** (`github`), que es otra superficie con otro propósito (ver [Disponibilidad por proveedor](#disponibilidad-por-proveedor)).
+
+<Note>
+Conectar un proveedor **no** hace por sí solo que sus datos aparezcan en el retrieve de contexto. Los datos externos no son Knowledge. Solo llegan al retrieve tras un paso explícito de index y una petición de retrieve de fuente externa explícita. Ver [Broker: lecturas y materialización](/es/integrations/broker).
+</Note>
+
+## Disponibilidad
+
+La superficie de Broker y Connections está **gated**. Está apagada por defecto en producción y se enciende por entorno; la lane externa para agentes es un interruptor aparte encima de eso. Estados de verdad usados en estas páginas:
+
+| Estado | Significado |
+| --- | --- |
+| **Available** | Shipped y utilizable ahora. |
+| **Beta** | Shipped y utilizable, todavía estabilizándose. |
+| **Gated** | Existe pero se retiene salvo que un flag, rollout o grant lo abra. |
+| **Internal** | Presente en el código para uso interno/staging; no es una capacidad pública. |
+| **Stub** | Un placeholder declarado sin sync ni acción viva. |
+| **Not available** | No shipped como capacidad utilizable. |
+
+Hoy el único conector de producción es **Notion**, de solo lectura (Beta). Las operaciones de escritura no están expuestas para ningún proveedor en producción.
+
+## Conectar un proveedor
+
+El setup ocurre en el dashboard o en el CLI, nunca por MCP. Conectar es un flujo privilegiado y guiado por un humano: establece credenciales, que Driftless nunca guarda ni ve (viven en el vault de credenciales y se inyectan server-side).
+
+```bash
+driftless integration catalog            # proveedores que puedes conectar
+driftless integration connect notion     # inicia el flujo de autorización
+driftless integration confirm notion     # persiste la connection tras autorizar
+driftless integration list               # tus integraciones conectadas
+driftless integration rm <integration-id>   # desconectar (alias: delete, disconnect)
+```
+
+En el dashboard el mismo flujo es **Settings -> Connections**. Reconectar una connection expirada es re-autorizar (corre `connect` de nuevo, o usa la acción de reconexión del dashboard). Desconectar revoca la credencial en el vault. Ninguno de estos verbos existe en la superficie MCP: un agente opera una connection que ya existe, nunca conecta ni desconecta una.
+
+## Estado de la Connection
+
+Una Connection reporta un estado plano, derivado en el servidor. El CLI (`driftless broker connections`) y el dashboard renderizan el mismo valor.
+
+| Estado | Significado |
+| --- | --- |
+| `disconnected` | Sin credencial viva; conecta o reconecta. |
+| `needs_reconnect` | La credencial expiró o fue revocada en el proveedor. |
+| `setup_failed` | El flujo de conexión no terminó de aprovisionar. |
+| `no_syncs` | Conectada, pero aún sin sync configurado. |
+| `syncing` | El primer sync (o uno posterior) está corriendo. |
+| `sync_failed` | El último sync falló; se muestra el error. |
+| `synced_empty` | Sincronizada, pero no se compartió nada para leer (comparte una página/base). |
+| `synced` | Saludable: hay records disponibles. |
+
+## Capabilities y su estado
+
+Una **capability** es una cosa que una Connection puede hacer: un sync, un record model, una read action, contenido de documento o una write policy (declarada pero deshabilitada). El capability directory reporta cada una con su propio estado, distinto del de la Connection:
+
+| Estado de capability | Significado |
+| --- | --- |
+| `declared` / `deploy_pending` / `deployed` | Aprovisionándose; aún no utilizable. |
+| `deploy_failed` | El aprovisionamiento falló. |
+| `sync_starting` / `syncing` | Se están espejando datos; aún no lista. |
+| `ready` | Utilizable ahora. |
+| `empty` | Lista, pero aún sin records. |
+| `needs_reconnect` | Bloqueada por una credencial vencida. |
+| `gated` | Retenida por rollout o por un grant faltante. |
+| `disabled` | Apagada, o una escritura declarada-pero-deshabilitada. |
+| `unsupported` | No ofrecida para este proveedor. |
+
+Solo una capability con estado `ready` es utilizable. `gated` y `disabled` son los estados que más fácil se confunden con "disponible": la capability es real y está registrada, pero el entorno o tus grants la mantienen cerrada.
+
+## De conectado a utilizable
+
+Una Connection OAuth saludable es el primer peldaño, no la meta. Para que un agente externo pueda de verdad invocar una capability, cada eslabón de esta cadena debe cumplirse:
+
+1. **Proveedor** con un conector en el registry de Driftless (con su propio rollout: internal, beta o ga).
+2. **Connection** saludable (`synced`).
+3. **Capability** que llegó a `ready`.
+4. **Rollout / lane externa** abierta: el Broker habilitado *y* la lane externa OAuth/MCP encendida.
+5. **Grant** existente: un owner/admin concedió al principal que llama acceso para ese proveedor y efecto.
+6. **Operación** permitida por la política.
+
+Un caller interno (una sesión humana del dashboard, o una API key propia que porta una identidad humana) se salta el gate de grant pero necesita el resto. Un bearer OAuth/MCP sin rostro y sin grant ve una lista de connections **vacía**, incluso para una connection perfectamente saludable. Ver [Broker: gates](/es/integrations/broker).
+
+## Permisos y grants
+
+- El **setup** (connect, confirm, disconnect) es una acción de miembro del workspace, por CLI o dashboard. No es alcanzable por OAuth/MCP.
+- Las **lecturas y escrituras** por el Broker se gobiernan por identidad y scopes para callers internos, y además por rollout más **grants** para callers externos (OAuth/MCP).
+- Un **grant** es una fila de autorización gruesa: `{ principal, proveedor, efecto }`, con comodines `*`, fail-closed (sin grant, sin acceso). Gestionar grants es **solo owner/admin** y se hace por la API o el dashboard, no por la superficie del agente.
+
+## Disponibilidad por proveedor
+
+Basada en evidencia, del connector registry y la política de operaciones. "Import" significa mapear records espejados a [Records de Collection](/es/concepts/collections); "Index" significa materializar contenido de páginas en connector documents propios de Driftless para retrieve. En producción, las escrituras no son invocables para ningún proveedor (el registry de política de operaciones va vacío), así que toda celda "Writes" abajo es Not available hoy.
+
+| Proveedor | Connection | Reads | Writes | Import | Index | Retrieve | Estado |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Notion** | Available | Available | Not available | Available | Available | Available (tras index) | **Beta, solo lectura** |
+| **HubSpot** | Gated | Gated | Not available | Not available | Not available | Not available | **Internal** |
+| **Google Drive** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
+| **Google Docs** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
+| **GitHub App** | Available | n/a | n/a | n/a | n/a | n/a | **Available (superficie aparte)** |
+| **GitHub (Broker)** | Not available | Not available | Not available | Not available | Not available | Not available | **Not available** |
+
+<Warning>
+**La GitHub App y una Connection GitHub del Broker son superficies distintas.** La GitHub App (`type: github`) observa pull requests y pushes para evitar que el contexto derive y para alimentar al Auditor; no es una Connection del Broker y no expone `invoke`. Una Connection GitHub del Broker (`type: nango:github`) para escrituras como crear un issue **no está shipped** (no hay entrada en el connector registry). Las referencias a operaciones de GitHub en descripciones de tools son solo ilustrativas.
+</Warning>
+
+## Cómo usa Driftless a Nango
+
+Nango es el vault de credenciales y el substrato de ejecución detrás de las Connections del Broker. Es dueño del handshake OAuth, guarda las credenciales del proveedor cifradas y las inyecta server-side por petición, de modo que un secreto nunca llega al código de aplicación de Driftless, al CLI, a MCP ni a un modelo. Driftless solo pasa una clave de config de proveedor y un id de connection.
+
+Una consecuencia importa al leer esta superficie: el catálogo de Nango es de Nango, no una lista de disponibilidad de Driftless. Un proveedor que Nango técnicamente puede conectar solo está operativo en Driftless si tiene entrada en el connector registry de Driftless y una política de operación permitida. Por eso [Disponibilidad por proveedor](#disponibilidad-por-proveedor) es más corta que cualquier catálogo externo.
+
+## Relacionado
+
+- [Referencia del Broker](/es/integrations/broker) - los verbos de ejecución, los gates y la semántica de lectura/escritura.
+- [Conector de Notion](/es/integrations/notion) - el único conector de producción, de punta a punta.
+- [GitHub App](/es/integrations/github-app) - la superficie de observación (drift y Auditor).
+- [Collections](/es/concepts/collections) - donde aterrizan los records importados.

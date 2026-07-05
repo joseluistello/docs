@@ -1,0 +1,131 @@
+---
+title: 'Integrations and Connections'
+description: 'Connect external systems Driftless does not own, as governed, audited, workspace-scoped Connections. What connecting gives you, and what it does not.'
+---
+
+An **integration** links your workspace to a system Driftless does not own: a source of records, documents, or actions that lives in someone else's product. You connect it once, and from then on Driftless can read (and, where enabled, act) through a bounded, audited, workspace-scoped link.
+
+This page is the map of that surface: how a provider becomes a Connection, what a Connection does and does not give you, and which providers are actually operational today. The execution verbs themselves (`operations`, `invoke`, `records`, and the rest) live in the [Broker reference](/integrations/broker).
+
+## What an integration is
+
+Three words get used interchangeably and should not be:
+
+- **Provider** is the external system itself: Notion, HubSpot, GitHub. A provider is *connectable* only if Driftless ships a connector for it (see [Provider availability](#provider-availability)). Being listed in an upstream catalog is not the same as being operational in Driftless.
+- **Connection** is one authorized, credential-bearing link from your workspace to a provider, stored as an integration of type `nango:<provider>`. This is what the Broker operates.
+- **Integration** is the stored link in general. Today two kinds exist: Broker **Connections** (`nango:<provider>`) and the **GitHub App** (`github`), which is a different surface with a different purpose (see [Provider availability](#provider-availability)).
+
+<Note>
+Connecting a provider does **not** by itself make its data appear in context retrieve. External data is not Knowledge. It reaches retrieve only after an explicit index step and an explicit connector-source retrieve request. See [Broker: reads and materialization](/integrations/broker#reads-and-materialization).
+</Note>
+
+## Availability
+
+The Broker and Connections surface is **gated**. It is off by default in production and turns on per environment; the external agent lane is a separate switch on top of that. Truth states used across these pages:
+
+| State | Meaning |
+| --- | --- |
+| **Available** | Shipped and usable now. |
+| **Beta** | Shipped, usable, still stabilizing. |
+| **Gated** | Exists but withheld unless a flag, rollout, or grant opens it. |
+| **Internal** | Present in code for internal/staging use; not a public capability. |
+| **Stub** | A declared placeholder with no live sync or action. |
+| **Not available** | Not shipped as a usable capability. |
+
+Today the one production connector is **Notion**, read-only (Beta). Write operations are not exposed for any provider in production.
+
+## Connect a provider
+
+Setup happens in the dashboard or the CLI, never over MCP. Connecting is a privileged, human-led flow: it establishes credentials, which Driftless never stores or sees (they live in the credential vault and are injected server-side).
+
+```bash
+driftless integration catalog            # providers you can connect
+driftless integration connect notion     # start the authorize flow
+driftless integration confirm notion     # persist the connection after authorizing
+driftless integration list               # your connected integrations
+driftless integration rm <integration-id>   # disconnect (aliases: delete, disconnect)
+```
+
+In the dashboard the same flow is **Settings -> Connections**. Reconnecting an expired connection is a re-authorize (run `connect` again, or use the dashboard reconnect action). Disconnecting revokes the credential at the vault. None of these verbs exist on the MCP surface: an agent operates a connection that already exists, it never connects or disconnects one.
+
+## Connection status
+
+A Connection reports one plain, server-derived status. The CLI (`driftless broker connections`) and dashboard render the same value.
+
+| Status | Meaning |
+| --- | --- |
+| `disconnected` | No live credential; connect or reconnect. |
+| `needs_reconnect` | The credential expired or was revoked upstream. |
+| `setup_failed` | The connect flow did not finish provisioning. |
+| `no_syncs` | Connected, but no sync is configured yet. |
+| `syncing` | The first or a subsequent sync is running. |
+| `sync_failed` | The last sync failed; the error is surfaced. |
+| `synced_empty` | Synced, but nothing was shared to read (share a page/database). |
+| `synced` | Healthy: records are available. |
+
+## Capabilities and their status
+
+A **capability** is one thing a Connection can do: a sync, a record model, a read action, document content, or a (declared but disabled) write policy. The capability directory reports each one with its own status, distinct from the Connection's:
+
+| Capability status | Meaning |
+| --- | --- |
+| `declared` / `deploy_pending` / `deployed` | Being provisioned; not usable yet. |
+| `deploy_failed` | Provisioning failed. |
+| `sync_starting` / `syncing` | Data is being mirrored; not ready yet. |
+| `ready` | Usable now. |
+| `empty` | Ready, but no records yet. |
+| `needs_reconnect` | Blocked on a stale credential. |
+| `gated` | Withheld by rollout or a missing grant. |
+| `disabled` | Toggled off, or a declared-but-disabled write. |
+| `unsupported` | Not offered for this provider. |
+
+Only a capability with status `ready` is usable. `gated` and `disabled` are the states most easily mistaken for "available": the capability is real and registered, but the environment or your grants keep it closed.
+
+## From connected to usable
+
+A healthy OAuth Connection is the first rung, not the finish line. For an external agent to actually invoke a capability, every link in this chain must hold:
+
+1. **Provider** ships a connector in the Driftless registry (with its own rollout: internal, beta, or ga).
+2. **Connection** is healthy (`synced`).
+3. **Capability** has reached `ready`.
+4. **Rollout / external lane** is open: the Broker is enabled *and* the external OAuth/MCP lane is on.
+5. **Grant** exists: an owner/admin has granted the calling principal access for that provider and effect.
+6. **Operation** is policy-allowed.
+
+An internal caller (a human dashboard session, or an owned API key carrying a human identity) skips the grant gate but still needs the rest. A faceless OAuth/MCP bearer with no grant sees an **empty** connections list, even for a perfectly healthy connection. See [Broker: gates](/integrations/broker#gates).
+
+## Permissions and grants
+
+- **Setup** (connect, confirm, disconnect) is a workspace-member action, done via the CLI or dashboard. It is not reachable over OAuth/MCP.
+- **Reads and writes** through the Broker are governed by identity and scopes for internal callers, and additionally by rollout plus **grants** for external (OAuth/MCP) callers.
+- A **grant** is a coarse authorization row: `{ principal, provider, effect }`, with `*` wildcards, fail-closed (no grant means no access). Managing grants is **owner/admin only** and is done through the API or dashboard, not the agent surface.
+
+## Provider availability
+
+Evidence-based, from the connector registry and operation policy. "Import" means mapping mirrored records into [Collection Records](/concepts/collections); "Index" means materializing page content into Driftless-owned connector documents for retrieve. In production, writes are not invokable for any provider (the operation-policy registry ships empty), so every "Writes" cell below is Not available today.
+
+| Provider | Connection | Reads | Writes | Import | Index | Retrieve | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Notion** | Available | Available | Not available | Available | Available | Available (after index) | **Beta, read-only** |
+| **HubSpot** | Gated | Gated | Not available | Not available | Not available | Not available | **Internal** |
+| **Google Drive** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
+| **Google Docs** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
+| **GitHub App** | Available | n/a | n/a | n/a | n/a | n/a | **Available (separate surface)** |
+| **GitHub (Broker)** | Not available | Not available | Not available | Not available | Not available | Not available | **Not available** |
+
+<Warning>
+**GitHub App and a GitHub Broker Connection are different surfaces.** The GitHub App (`type: github`) observes pull requests and pushes to keep context from drifting and to feed the Auditor; it is not a Broker Connection and exposes no `invoke`. A GitHub Broker Connection (`type: nango:github`) for write operations like creating an issue is **not shipped** (no connector registry entry). References to GitHub operations in tool descriptions are illustrative only.
+</Warning>
+
+## How Driftless uses Nango
+
+Nango is the credential vault and execution substrate behind Broker Connections. It owns the OAuth handshake, stores provider credentials encrypted, and injects them server-side per request, so a secret never reaches Driftless application code, the CLI, MCP, or a model. Driftless only ever passes a provider config key and a connection id.
+
+One consequence matters for reading this surface: the Nango catalog is Nango's, not a Driftless availability list. A provider that Nango can technically connect is operational in Driftless only if it has an entry in the Driftless connector registry and an allowed operation policy. That is why [Provider availability](#provider-availability) is shorter than any upstream catalog.
+
+## Related
+
+- [Broker reference](/integrations/broker) - the execution verbs, gates, and read/write semantics.
+- [Notion connector](/integrations/notion) - the one production connector, end to end.
+- [GitHub App](/integrations/github-app) - the observation surface (drift and Auditor).
+- [Collections](/concepts/collections) - where imported records land.
