@@ -68,10 +68,11 @@ Si no coincide nada, lee el código y deja una Nota primero (ver [Govern agent l
 
 <Steps>
 <Step title="Resuelve o crea el Project">
-Lista los projects activos para encontrar uno, o créalo con un goal y (opcionalmente) un playbook. El goal es la definición de terminado para todo el board.
+Encuentra un project por intención, o lista los activos para elegir. Solo si ninguno calza, créalo con un goal y (opcionalmente) un playbook. El goal es la definición de terminado para todo el board.
 
 ```bash
-driftless project list --status active
+driftless project search "webhook idempotency"     # por intención; active-only
+driftless project list --status active --cursor <token>   # página acotada de projects activos
 driftless project add "Webhook hardening" \
   --goal "Webhook handling is idempotent and order-safe" \
   --playbook webhook-runbook
@@ -142,16 +143,39 @@ driftless project card next <project-id>
 Un modelo, sesión o cliente distinto continúa con el mismo comando. Nada se vuelve a explicar: el Project sigue siendo dueño del goal, las cards restantes y el contexto por card.
 
 ```bash
-driftless project get <project-id>          # el goal y el índice de cards, como estado
-driftless project card next <project-id>    # retoma desde la próxima card accionable
+driftless project get <project-id> --view full   # el goal y el índice de cards, como estado
+driftless project card next <project-id>          # retoma desde la próxima card accionable
 ```
+</Step>
+
+<Step title="Cierra el project con un context outcome">
+Cuando `next` devuelve `project_done: true`, cierra el project. `project close` valida la terminación y destila las notas de las cards en un Topic borrador **una sola vez**, devolviendo un `context_outcome` observable. Es idempotente — un reintento devuelve `already_exists` y nunca re-destila.
+
+```bash
+driftless project close <project-id>
+# context_outcome: created | already_exists | skipped | failed
+# - created        las Notes se destilaron en un Topic borrador nuevo
+# - already_exists un close previo ya destiló; reintento seguro
+# - skipped        sin Notes durables; pasa --no-durable-learning para afirmar eso
+# - failed         reinténtalo; reason indicado (ej. topic_writer_unavailable)
+```
+
+El Topic borrador del outcome `created` cae en el Inbox para que un owner o admin lo integre en Knowledge. No cierres con `--no-durable-learning` cuando sí existen Notes durables — la llamada lo rechaza.
 </Step>
 </Steps>
 
-Cuando `next` devuelve `project_done: true`, cada card está `done` o retirada y el goal se cumplió. Marcar el project como `done` en el dashboard abre el **compact**, donde un owner o admin elige las notas adjuntas de qué cards se vuelven Topics borrador en el Inbox.
+Retirar el project es un paso separado y gobernado una vez está en `done`:
+
+```bash
+driftless project archive <project-id>            # retira (inmutable; solo restore/purge lo tocan)
+driftless project purge <project-id> --dry-run    # owner/admin; impact = { version, cards, context_refs, origin_notes_preserved }
+driftless project purge <project-id> --expected-version <n>   # confirmación CAS; idempotente
+```
+
+`purge` es permanente y **solo owner/admin**; preserva las write-back **origin Notes** que engendró el project (sobreviven al borrado, contadas en `origin_notes_preserved`). Un reintento tras el purge devuelve `already_absent`, nunca `404`. El dashboard expone el mismo flujo close → archive → purge.
 
 <Note>
-Mismo loop por MCP: `driftless_project_card action:'next'` devuelve el bundle, y `action:'set'` cambia el status. La superficie REST lo refleja bajo `/workspaces/:slug/projects/:projectId/cards/next`; un `PATCH` de card acepta `validate_result` y `validate_passed` para registrar un resultado, y `add_context` para adjuntar un Topic a mitad del loop. Ver [API: Projects and Cards](/es/api/projects).
+Mismo loop por MCP: `driftless_project_card action:'next'` devuelve el bundle, y `action:'set'` cambia el status. `driftless_project action:'close'` devuelve el `context_outcome`; `action:'archive'` / `action:'restore'` retiran y reviven; `driftless_project_purge` borra de forma permanente (owner/admin). La superficie REST lo refleja bajo `/workspaces/:slug/projects/:id/close|archive|restore` y `DELETE .../:id`; un `PATCH` de card acepta `validate_result` y `validate_passed` para registrar un resultado, y `add_context` para adjuntar un Topic a mitad del loop. Ver [API: Projects and Cards](/es/api/projects).
 </Note>
 
 ## Estados esperados
@@ -164,6 +188,9 @@ Mismo loop por MCP: `driftless_project_card action:'next'` devuelve el bundle, y
 | Una card que no puede avanzar | Puesta en `blocked`, no en `done`. |
 | `validate` que falla | La card sigue abierta; stop-and-fix, luego vuelve a correr. |
 | Fin del board | `next` devuelve `project_done: true`. |
+| Tras `project close` | El `context_outcome` es `created` (Notes destiladas), `skipped` (sin Notes; necesita `--no-durable-learning`) o `already_exists` (reintento idempotente). |
+| Tras `project archive` | Status `archived`; inmutable — solo `restore`/`purge` lo tocan. |
+| Tras `project purge --dry-run` | `impact` previsualiza `version`, cards, context refs y `origin_notes_preserved`. Confirma con `--expected-version`. |
 
 ## Knowledge write-back
 
@@ -171,7 +198,7 @@ Empareja cada aprendizaje con la primitiva a la que pertenece:
 
 - **El trabajo que sigue** se queda como Card. Súmalo al board en vez de escribir prosa sobre él.
 - **Un aprendizaje descubierto mientras trabajas** es una Nota adjunta a la card (mostrado arriba). Viaja en el loop y se sintetiza al cierre.
-- **Un porqué durable** (una decisión, un invariante, un gotcha que un cambio de código futuro contradiría) es un Topic. Cuando el project cierra, el compact borronea uno desde las notas de la card; un owner o admin lo integra en Knowledge.
+- **Un porqué durable** (una decisión, un invariante, un gotcha que un cambio de código futuro contradiría) es un Topic. Cuando el project cierra, el close destila las notas de las cards en un Topic borrador (el `context_outcome` `created`); un owner o admin lo integra en Knowledge.
 
 ```bash
 driftless note add --content "Idempotency key is required on every webhook handler" \

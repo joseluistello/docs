@@ -30,11 +30,15 @@ Cuando el broker está deshabilitado, toda la superficie devuelve `503`. Cuando 
 | `POST` | `/workspaces/:slug/broker/connections/:provider/invoke` | member (`broker:invoke` / `work:write`) | Ejecuta una operación inline |
 | `POST` | `/workspaces/:slug/broker/connections/:provider/criterion` | member (`broker:admin` / `work:write`) | Adjunta un slug de criterion |
 | `DELETE` | `/workspaces/:slug/broker/connections/:provider/criterion/:topic` | member (`broker:admin` / `work:write`) | Quita un slug de criterion |
-| `POST` | `/workspaces/:slug/broker/connections/:provider/index/preview` | member (API key / sesión) | Index en seco |
-| `POST` | `/workspaces/:slug/broker/connections/:provider/index` | member (API key / sesión) | Materializa connector documents |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index/preview` | member (`broker:admin` / `work:write`) | Index en seco |
+| `POST` | `/workspaces/:slug/broker/connections/:provider/index` | member (`broker:admin` / `work:write`) | Materializa connector documents |
 | `POST` | `/workspaces/:slug/broker/connections/:provider/import` | member (`broker:invoke` / `work:write`) | Importa records del mirror a Records de Collection |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/context` | member (`broker:read`) | El contexto efectivo de la connection (criterion resuelto a trust/staleness) |
+| `GET` | `/workspaces/:slug/broker/connections/:provider/documents/:externalId/content` | member (`broker:read`) | Contenido acotado de un documento, general para providers |
 
-`invoke` ejecuta inline (no hay cola de aprobación). Para un efecto de escritura, pasa `idempotency_key` para un replay seguro; las escrituras nunca se reintentan solas. `index` e `index/preview` no están mapeados para OAuth, así que un bearer OAuth sin rostro no puede llamarlos; una API key propia o una sesión sí.
+`invoke` ejecuta inline (no hay cola de aprobación). Para un efecto de escritura, pasa `idempotency_key` para un replay seguro; las escrituras nunca se reintentan solas. `index` e `index/preview` están mapeados en OAuth a `broker:admin` (o al scope amplio `work:write`): indexar selecciona lo que todo el workspace puede recuperar y citar, la misma clase de acto que adjuntar criterion, así que nunca usa `broker:invoke`; la capa de servicio aún aplica los grants del principal externo a las lecturas de records subyacentes. La ruta de escritura `preview` sigue deliberadamente sin mapear (denegada para OAuth) hasta que se publique el contrato de escritura gobernada.
+
+La lectura `context` devuelve `{provider, connection, criterion, context: [{slug, title, what, trust, stale, missing?}], next_action}` y se audita como un recibo de lectura (`broker.context.read`): es la llamada que un agente hace **antes** de trabajar con una connection. La lectura genérica `documents/:externalId/content` reemplaza la ruta exclusiva de Notion `connections/notion/pages/:pageId/content` (que se conserva como alias deprecado). Ambas aceptan un selector opcional `?connection=`, preparado para múltiples cuentas; hoy cada provider tiene una sola connection, así que se omite.
 
 ```bash
 curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/broker/connections/notion/invoke \

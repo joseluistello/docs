@@ -17,7 +17,10 @@ context for a task description, a set of files, or both, ranked drifted-first an
 bounded. It composes search + match-files + list filters so you don't hand-chain
 them. Bodies come back **brief** by default (the durable *why*, not the full
 `content`); call `driftless_context_get` for the one topic whose full body you
-need, or pass `view: "full"`. See [Payload views](#payload-views-keep-reads-fast)
+need, or pass `view: "full"`. The same **active-only, bounded, brief-by-default**
+contract applies to the work surface: `driftless_project` / `driftless_collection`
+`list` is active-only (opt into archived with `include_archived:true`), and `get`
+is brief unless you pass `view:'full'`. See [Payload views](#payload-views-keep-reads-fast)
 below.
 
 ## Tool families
@@ -49,10 +52,14 @@ vocabulary is the same everywhere (`summary` / `brief` / `full`):
 - **`full`**: everything, including the heavy `content` body. **Never a default
   elsewhere**; you opt in with `view: "full"`. `driftless_context_get` is the
   exception: it defaults to `full` because you named the one topic you want.
+  The same `view: "full"` opt-in applies to `driftless_project` / `driftless_collection`
+  `action:'get'` (brief by default, full on request).
 
 The pattern: `retrieve` / `get_for_files` in `brief` to see *which* topic governs
 the work, then `driftless_context_get` (full) for the single body you actually
-need, instead of pulling every full body up front.
+need, instead of pulling every full body up front. The work surface mirrors this —
+`driftless_project` / `driftless_collection` `action:'get'` in brief, `view:'full'`
+for the one project/collection whose full config you need.
 
 ### Broker (execution) vs integration setup
 

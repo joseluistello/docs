@@ -32,8 +32,8 @@ The broker is gated (off by default in production) and fail-closed. `driftless b
 | `broker operations [provider]` | List operations, or search with `--query`, `--provider`, `--effect read\|write`, `--risk low\|medium\|high`, `--limit`, `--cursor`, `--refresh`. |
 | `broker capabilities <provider>` | The capability directory. |
 | `broker inspect <provider> <op>` | One operation's full spec. |
-| `broker invoke <provider> <op> [--input <json>\|@file]` | Execute one operation inline. |
-| `broker criterion <provider> [--add <slug>\|--rm <slug>]` | Attach or detach a criterion topic slug. |
+| `broker invoke <provider> <op> [--input <json>\|@file] [--idempotency-key <k>]` | Execute one operation inline; the key makes a write retry replay, never re-execute. |
+| `broker criterion <provider> [--add <slug>\|--rm <slug>]` | Bare: the connection's EFFECTIVE context (criterion resolved to trust/staleness — read it before working the provider). With flags: attach or detach a topic slug. |
 
 ```bash
 driftless broker connections
@@ -47,11 +47,13 @@ driftless broker invoke notion <operation> --input @payload.json
 |---|---|
 | `broker models <provider>` | Importable record models (enabled syncs). |
 | `broker records <provider> --model <m>` | Read a model's records from the mirror (`--modified-after`, `--cursor`, `--limit`). |
-| `broker page <pageId>` | Read one page's bounded, live, citeable content (`--max-bytes`). |
+| `broker document <provider> <externalId>` | Read one document's bounded, live, citeable content from any content provider (`--max-bytes`). |
+| `broker page <pageId>` | DEPRECATED Notion-only alias of `broker document notion <id>`. |
 | `broker index <provider>` | Materialize connector documents. `--dry-run` previews; also `--model`, `--limit`, `--sample-limit`, `--max-bytes`, `--import-run-id`. |
+| `broker import <provider> --collection <id>` | Import mirror records into a Collection via its saved connector mapping (`--model`, `--modified-after`, `--max-pages`). |
 | `broker events [provider]` | The inbound provider event feed (`--limit`). |
 
-`records` reads a cache; `page` reads live; `index` writes Driftless-owned connector documents (never the provider). Normal context retrieve never queries a provider.
+`records` reads a cache; `document` reads live; `index` writes Driftless-owned connector documents (never the provider); `import` writes Collection Records. Normal context retrieve never queries a provider. A record deleted at the provider tombstones its connector document on the next `index` run (it stops being citable); a disconnect soft-deletes all of the provider's documents.
 
 ## Gates and grants
 

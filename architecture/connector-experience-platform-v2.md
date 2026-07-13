@@ -327,12 +327,23 @@ The staging gate must prove:
 
 ## Human decisions
 
-The following remain human-gated:
+Resolved (owner-delegated decisions, 2026-07-07):
 
-- whether materialized connector content lives in a new connector index table or
-  reuses an existing operational substrate;
-- whether imported connector content is visible by default in retrieve or only
-  behind an explicit source/include flag;
+- **Storage substrate:** materialized connector content lives in the dedicated
+  `connector_documents` table (shipped; not an existing operational substrate).
+- **Retrieve default:** imported connector content is **never** visible by
+  default in retrieve — permanently opt-in via `sources:['connectors']`. There
+  is no future rollout gate that flips the default. Discoverability is a
+  `next_action` suggestion on a matching query, never results.
+- **Post-disconnect retention:** a disconnect soft-deletes the provider's
+  connector documents (`status='deleted'`; reconnect + re-index reactivates the
+  same rows) and deactivates its materialized operations.
+- **Index authorization:** connector-document indexing is workspace curation —
+  OAuth-mapped to `broker:admin` (or broad `work:write`), the same class as
+  attaching criterion, never `broker:invoke`.
+
+Still human-gated:
+
 - the first governed write wedge, if any;
 - when a read-only beta becomes GA;
 - when connector-backed retrieve is safe for production.

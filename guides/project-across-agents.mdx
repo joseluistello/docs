@@ -68,10 +68,11 @@ If nothing matches, read the code and leave a Note first (see [Govern agent lear
 
 <Steps>
 <Step title="Resolve or create the Project">
-List active projects to find one, or create it with a goal and (optionally) a playbook. The goal is the definition of done for the whole board.
+Find a project by intent, or list active ones to pick from. Only if none fits, create it with a goal and (optionally) a playbook. The goal is the definition of done for the whole board.
 
 ```bash
-driftless project list --status active
+driftless project search "webhook idempotency"     # intent-ranked; active-only
+driftless project list --status active --cursor <token>   # bounded page of active projects
 driftless project add "Webhook hardening" \
   --goal "Webhook handling is idempotent and order-safe" \
   --playbook webhook-runbook
@@ -142,16 +143,39 @@ driftless project card next <project-id>
 A different model, session, or client continues with the same command. Nothing is re-explained: the Project still holds the goal, the remaining cards, and the per-card context.
 
 ```bash
-driftless project get <project-id>          # the goal and card index, as state
-driftless project card next <project-id>    # resume from the next actionable card
+driftless project get <project-id> --view full   # the goal and card index, as state
+driftless project card next <project-id>          # resume from the next actionable card
 ```
+</Step>
+
+<Step title="Close the project with a context outcome">
+When `next` returns `project_done: true`, close the project. `project close` validates completion and distills the card Notes into a draft Topic **once**, returning an observable `context_outcome`. It is idempotent — a repeat returns `already_exists` and never re-distills.
+
+```bash
+driftless project close <project-id>
+# context_outcome: created | already_exists | skipped | failed
+# - created        the Notes were distilled into a new draft Topic
+# - already_exists a prior close already distilled; safe retry
+# - skipped        no durable Notes; pass --no-durable-learning to assert that
+# - failed         retryable; reason given (e.g. topic_writer_unavailable)
+```
+
+The draft Topic from a `created` outcome lands in the Inbox for an owner or admin to merge into Knowledge. Do not close with `--no-durable-learning` when durable Notes exist — the call rejects that.
 </Step>
 </Steps>
 
-When `next` returns `project_done: true`, every card is `done` or retired and the goal is met. Marking the project `done` on the dashboard opens the **compact**, where an owner or admin selects which cards' attached notes become draft Topics in the Inbox.
+Retiring the project is a separate, governed step once it is `done`:
+
+```bash
+driftless project archive <project-id>            # retire (immutable; only restore/purge touch it)
+driftless project purge <project-id> --dry-run    # owner/admin; impact = { version, cards, context_refs, origin_notes_preserved }
+driftless project purge <project-id> --expected-version <n>   # CAS confirm; idempotent
+```
+
+`purge` is permanent and **owner/admin only**; it preserves the write-back **origin Notes** the project spawned (they survive the delete, counted in `origin_notes_preserved`). A repeat after the purge returns `already_absent`, never `404`. The dashboard exposes the same close → archive → purge flow.
 
 <Note>
-Same loop over MCP: `driftless_project_card action:'next'` returns the bundle, and `action:'set'` changes status. The REST surface mirrors it under `/workspaces/:slug/projects/:projectId/cards/next`; a card `PATCH` accepts `validate_result` and `validate_passed` to record an outcome, and `add_context` to attach a Topic mid-loop. See [API: Projects and Cards](/api/projects).
+Same loop over MCP: `driftless_project_card action:'next'` returns the bundle, and `action:'set'` changes status. `driftless_project action:'close'` returns the `context_outcome`; `action:'archive'` / `action:'restore'` retire and revive; `driftless_project_purge` permanently deletes (owner/admin). The REST surface mirrors it under `/workspaces/:slug/projects/:id/close|archive|restore` and `DELETE .../:id`; a card `PATCH` accepts `validate_result` and `validate_passed` to record an outcome, and `add_context` to attach a Topic mid-loop. See [API: Projects and Cards](/api/projects).
 </Note>
 
 ## Expected states
@@ -164,6 +188,9 @@ Same loop over MCP: `driftless_project_card action:'next'` returns the bundle, a
 | A card that cannot proceed | Set to `blocked`, not `done`. |
 | Failed `validate` | Card stays open; stop-and-fix, then re-run. |
 | End of the board | `next` returns `project_done: true`. |
+| After `project close` | `context_outcome` is `created` (Notes distilled), `skipped` (no Notes; needs `--no-durable-learning`), or `already_exists` (idempotent retry). |
+| After `project archive` | Status `archived`; immutable — only `restore`/`purge` touch it. |
+| After `project purge --dry-run` | `impact` previews `version`, cards, context refs and `origin_notes_preserved`. Confirm with `--expected-version`. |
 
 ## Knowledge write-back
 
@@ -171,7 +198,7 @@ Match each learning to the primitive it belongs in:
 
 - **Work that comes next** stays a Card. Add it to the board rather than writing prose about it.
 - **A learning discovered while working** is a Note attached to the card (shown above). It rides the loop and is synthesized at close.
-- **A durable why** (a decision, an invariant, a gotcha a future code change would contradict) is a Topic. When the project closes, the compact drafts one from the card's notes; an owner or admin merges it into Knowledge.
+- **A durable why** (a decision, an invariant, a gotcha a future code change would contradict) is a Topic. When the project closes, the close distills the card's notes into a draft Topic (the `created` `context_outcome`); an owner or admin merges it into Knowledge.
 
 ```bash
 driftless note add --content "Idempotency key is required on every webhook handler" \

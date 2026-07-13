@@ -1,23 +1,30 @@
 ---
 title: 'CLI: Projects and Cards'
-description: 'Drive project boards and the card loop from the CLI: create projects and cards, walk the loop, set dependencies, and validate.'
+description: 'Drive project boards and the card loop from the CLI: search and list projects, walk the loop, set dependencies, validate, close with a context outcome, and retire with archive/purge.'
 ---
 
 The `project` command family drives the [projects](/concepts/projects) surface: a project holds cards, and an agent walks the board with `project card next`. Every command an agent runs here, a human can run too. Add `--json` to any command for machine output.
+
+Reads are **active-only, bounded and brief by default**. `project list` returns active projects in a bounded, cursor-paged response; `--status all` opted into done/archived. Intent search is `project search <intent>`, active-only unless `--include-archived`. `project get` is brief unless you pass `--view full`. Lifecycle is **explicit**: `close`, `archive`, `restore` and `purge` are separate commands — `project update` rejects a `--status` that touches lifecycle.
 
 ## Projects
 
 | Command | Description |
 |---|---|
 | `project add <title>` | Create a project. Optional `--goal "..."`, `--playbook <slug>`. |
-| `project list [--status <s>]` | List projects. `--status` is one of `active`, `done`, `archived`. |
-| `project get <id>` | Project detail plus its card index. |
-| `project update <id> [flags]` | Update `--status`, `--title`, `--goal`, or `--playbook`. |
+| `project list [--status active\|all] [--owner me] [--limit n] [--cursor c]` | List active projects in a bounded page; `--status all` opts in to done/archived. |
+| `project search <intent> [--owner me] [--include-archived] [--updated-after <iso>] [--limit n] [--cursor c]` | Intent-ranked search over title, goal and card bodies. Active-only unless `--include-archived`. |
+| `project get <id> [--view summary\|brief\|full]` | Project detail; **brief by default**, `full` is explicit. |
+| `project close <id> [--no-durable-learning]` | Validate completion and return a `context_outcome` (idempotent). |
+| `project archive <id>` | Reversibly retire a completed project. |
+| `project restore <id>` | Restore an archived project to `done`. |
+| `project purge <id> --dry-run` \| `--expected-version <n>` | Permanently remove an archived project (owner/admin; version CAS). |
+| `project update <id> [flags]` | Update `--title`, `--goal` or `--playbook`. Lifecycle is via close/archive/restore. |
 | `project cards <id> [flags]` | List a project's cards in board order. Filters: `--status`, `--owner`, `--limit`, `--cursor`. |
 | `project apply <id> --file @plan.json` | Apply a declarative plan of cards (with `--dry-run`). |
 
 - **`--goal`** sets the project's definition of done; **`--playbook <slug>`** points at a Knowledge topic the agent reads to learn how to run the project (stored as `playbook_slug`).
-- Project status is one of `active`, `done`, `archived`.
+- Project status is one of `active`, `done`, `archived`. `list` defaults to `active`; `search` is active-only unless you pass `--include-archived`.
 
 ## Cards
 
@@ -31,9 +38,9 @@ Cards are managed under `project card`. Card status is one of `todo`, `in_progre
 | `project card update <pid> <cid> [flags]` | Update title, description, acceptance, validate, deps, status, or owner. |
 | `project card status <pid> <cid> <status>` | Move a card to a status. |
 | `project card move <pid> <cid> <to-project-id>` | Move a card to another project. |
-| `project card rm <pid> <cid>` | Delete a card. |
+| `project card rm <pid> <cid> [--dry-run]` | Delete a `todo` card. Rejects dependents and origin Notes; `--dry-run` previews impact. |
 
-Card `add` and `update` accept: `--description "..."` (or `@file`), `--acceptance "..."`, `--validate "cmd"`, `--dep <card-id>` (repeatable, sets `depends_on`), and `--owner <member-id>` (stored as `owner_clerk_id`).
+Card `add` and `update` accept: `--description "..."` (or `@file`), `--acceptance "..."`, `--validate "cmd"`, `--dep <card-id>` (repeatable, sets `depends_on`) and `--owner <member-id>` (stored as `owner_clerk_id`).
 
 ```bash
 driftless project add "Refunds revamp" --goal "Refund path is idempotent" --playbook refund-flow
@@ -57,23 +64,48 @@ driftless project card add prj_abc --file @cards.json
 driftless project apply prj_abc --file @plan.json --dry-run
 ```
 
+## Lifecycle: close, archive and purge
+
+`project close`, `project archive`, `project restore` and `project purge` are the only ways to move a project forward or retire it:
+
+```bash
+# Close — validates completion; distills write-back Notes once; idempotent
+driftless project close prj_abc
+# context_outcome: created | already_exists | skipped | failed
+
+# Archive — retire a done project (immutable; only restore/purge can touch it)
+driftless project archive prj_abc
+
+# Purge — owner/admin only; preview impact, then confirm with version CAS
+driftless project purge prj_abc --dry-run
+# impact: { version, cards, context_refs, origin_notes_preserved }
+driftless project purge prj_abc --expected-version 7
+# purge_outcome: purged | already_absent
+```
+
+`close` refuses to run while non-`done` cards remain, and rejects `--no-durable-learning` when durable Notes exist. `purge` preserves the write-back **origin Notes** the project spawned (they survive the delete); they're counted in `impact.origin_notes_preserved`. A repeat `purge` after the project is gone returns `already_absent`, never errors.
+
+The safe card delete follows the same shape — `project card rm` only deletes a `todo` card, **rejects** cards that other cards depend on, and **rejects** cards that carry origin write-back Notes (re-home them first). `--dry-run` previews the `dependents` and `origin_notes` that block it.
+
 ## Flags, files, and JSON
 
-- **`@file`** is accepted by `--description`, `--file` (card batch), and `apply --file`.
+- **`@file`** is accepted by `--description`, `--file` (card batch) and `apply --file`.
 - **`--json`** works on every command for machine output.
+- **`--cursor`** pages a bounded list/get; the value is opaque, from the prior page's `nextCursor`.
 - Cards are scanned for secrets on write, like topics; pass `--allow-secrets` only when you intend to store one.
 
 ## Permissions
 
-Project and card writes are workspace-member actions. Over MCP the same operations require the `work:write` scope; an API key acts with the role of the member who created it. Assigning an owner uses a member id from `driftless member list`.
+Project and card writes are workspace-member actions; **purge is owner/admin only**. Over MCP the same operations require the `work:write` scope; an API key acts with the role of the member who created it (a faceless agent key cannot purge). Assigning an owner uses a member id from `driftless member list`.
 
 ## Errors
 
-An invalid `--status` (outside the card or project enum) is rejected before the call. A `--dep` or batch `depends_on` that names an unknown card fails the create. A zero-exit `validate` is a convention the agent runs, not a server check.
+An invalid `--status` (outside the card or project enum) is rejected before the call. A `--dep` or batch `depends_on` that names an unknown card fails the create. A `project purge` without `--dry-run` or `--expected-version` is rejected; a wrong `expected_version` returns `409 VERSION_CONFLICT` (re-run `--dry-run` and retry). A zero-exit `validate` is a convention the agent runs, not a server check.
 
 ## Related
 
 - [Projects](/concepts/projects) - the concept and the loop.
 - [Context commands](/cli/context) - topics, notes, and governance from the CLI.
+- [MCP: Work](/mcp/work) - the MCP parity surface (`driftless_project`, `driftless_project_card`, `*_purge`, `*_delete`).
 - [API: Projects and Cards](/api/projects) - the REST surface.
 - [Guide: Continue a project across agents](/guides/project-across-agents) - the workflow end to end.

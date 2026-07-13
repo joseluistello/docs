@@ -1,22 +1,28 @@
 ---
 title: 'Collections, Records & Entities'
-description: 'REST endpoints for the operational substrate: configured collections, typed records, and cross-collection entities.'
+description: 'REST endpoints for the operational substrate: configured collections, typed records, and cross-collection entities. Reads are active-only and brief by default; archive, restore and purge are explicit, governed lifecycle routes.'
 ---
 
-All paths are under the base URL (`/api/v1`) and require authentication. Reads are workspace-member; writes require the `work:write` scope over OAuth. See [Collections](/concepts/collections) for the model.
+All paths are under the base URL (`/api/v1`) and require authentication. Reads are workspace-member; writes require the `work:write` scope over OAuth; **purge is owner/admin only**. Reads are **active-only, bounded and brief by default** — archived objects only surface with an explicit opt-in. See [Collections](/concepts/collections) for the model.
 
 ## Collections
 
 | Method | Path | Perm | Purpose |
 |---|---|---|---|
 | `POST` | `/workspaces/:slug/collections` | member (`work:write`) | Create a collection |
-| `GET` | `/workspaces/:slug/collections` | member | List collections (`?status`) |
-| `GET` | `/workspaces/:slug/collections/doctor` | member | Audit collections (`?full`) |
-| `GET` | `/workspaces/:slug/collections/:id` | member | Collection detail |
-| `GET` | `/workspaces/:slug/collections/:id/context` | member | Resolve the criterion Knowledge |
-| `PATCH` | `/workspaces/:slug/collections/:id` | member (`work:write`) | Update a collection |
+| `GET` | `/workspaces/:slug/collections` | member | List collections (`?status=&owner=&updated_after=&limit=&cursor=`). Default `active`; bare array, or `{items, shown, has_more, nextCursor}` when any paging param is present |
+| `GET` | `/workspaces/:slug/collections/search` | member | Intent-ranked search (`?q=&status=&include_archived=&owner=&updated_after=&limit=&cursor=`). `q` required; `items[]` carry `score`; active-only unless `include_archived=true` |
+| `GET` | `/workspaces/:slug/collections/doctor` | member | Audit collections (`?full`); read-only, bounded findings |
+| `GET` | `/workspaces/:slug/collections/:id` | member | Collection detail (`?view=brief\|full`). **Brief by default**; `full` returns config + `stage_counts` |
+| `GET` | `/workspaces/:slug/collections/:id/context` | member | Resolve the criterion Knowledge (`{criterion, missing}`) |
+| `GET` | `/workspaces/:slug/collections/:id/connector-mapping` | member | Read the connector mapping config |
+| `PATCH` | `/workspaces/:slug/collections/:id` | member (`work:write`) | Update config. Rejects `status=archived` (`409`) — use archive/restore |
+| `PUT` | `/workspaces/:slug/collections/:id/connector-mapping` | member (`work:write`) | Set the connector mapping; validates fields against `record_schema`; never runs a provider action |
+| `POST` | `/workspaces/:slug/collections/:id/archive` | member (`work:write`) | Reversibly retire an active collection; `version += 1`; archived is immutable |
+| `POST` | `/workspaces/:slug/collections/:id/restore` | member (`work:write`) | Restore an archived collection to `active` |
+| `DELETE` | `/workspaces/:slug/collections/:id` | owner/admin | Purge an archived collection (`?dry_run=&expected_version=`). CAS, audited, idempotent, preserves distilled Notes |
 
-Create body (`CreateCollectionDto`): `name` (required), `archetype` (required, one of `pipeline`, `analysis`, `content`), `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy`, `owner_clerk_id`. Update accepts `name`, `status` (`active` or `archived`), `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy`.
+Create body (`CreateCollectionDto`): `name` (required), `archetype` (required, one of `pipeline`, `analysis`, `content`), `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy`, `owner_clerk_id`. Update accepts `name`, `record_schema`, `views`, `criterion_rel_slugs`, `distill_policy` — a `status` of `archived` returns `409` and names the lifecycle route to use.
 
 ## Records
 
@@ -24,14 +30,14 @@ Base path `/workspaces/:slug/collections/:id`.
 
 | Method | Path | Perm | Purpose |
 |---|---|---|---|
-| `POST` | `.../records` | member (`work:write`) | Add a record |
-| `GET` | `.../records` | member | List records (cursor paginated) |
-| `GET` | `.../retrieve` | member | Records plus criterion in one call |
+| `POST` | `.../records` | member (`work:write`) | Add a record; returns the record (with `context_outcome` when the stage is terminal) |
+| `GET` | `.../records` | member | List records (`?status=&entity_id=&drifted=&updated_after=&view=&limit=&cursor=`). Dual-shaped: bare array (no new param), or `{records, nextCursor}` |
+| `GET` | `.../retrieve` | member | Records plus criterion in one bounded call (`?query=&fields=&status=&entity_id=&drifted=&updated_after=&view=&limit=&cursor=`); returns `{records, nextCursor, criterion, criterion_missing}` |
 | `GET` | `.../records/:recordId` | member | Record detail |
-| `PATCH` | `.../records/:recordId` | member (`work:write`) | Update a record |
-| `DELETE` | `.../records/:recordId` | member (`work:write`) | Delete a record |
+| `PATCH` | `.../records/:recordId` | member (`work:write`) | Update a record; returns `context_outcome` on a terminal transition |
+| `DELETE` | `.../records/:recordId` | member (`work:write`) | Delete a record (`?dry_run=`). Idempotent; preserves distilled Notes |
 
-Record body (`CreateRecordDto` / `UpdateRecordDto`): `fields`, `status`, `field_meta`, `entity_id`, and `drifted` on update. A record's `status` is validated against the collection's stages. List and retrieve accept `status`, `entity_id`, `drifted`, `updated_after`, `view`, `fields`, `limit`, and `cursor`.
+Record body (`CreateRecordDto` / `UpdateRecordDto`): `fields`, `status`, `field_meta`, `entity_id`, and `drifted` on update. A record's `status` is validated against the collection's stages. `entity_id` is a top-level record property, **never** a field inside `fields` (pass `""` on update to clear the link). A transition to a terminal stage triggers the `distill_policy` and may attach a `context_outcome` (`created` · `already_exists` · `skipped` · `failed`) to the record — best-effort, it never blocks the write.
 
 ## Entities
 
@@ -41,7 +47,7 @@ Record body (`CreateRecordDto` / `UpdateRecordDto`): `fields`, `status`, `field_
 | `GET` | `/workspaces/:slug/entities` | member | List entities (`?kind`) |
 | `GET` | `/workspaces/:slug/entities/:id` | member | Entity detail |
 
-Upsert body (`UpsertEntityDto`): `kind` (required), `name` (required), `dedup_key`, `attributes`. The upsert is idempotent on `(kind, dedup_key)`.
+Upsert body (`UpsertEntityDto`): `kind` (required), `name` (required), `dedup_key`, `attributes`. The upsert is idempotent on `(kind, dedup_key)` — re-upserting the same pair merges `name`/`attributes` instead of creating a duplicate.
 
 ```bash
 curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/entities \
@@ -52,9 +58,17 @@ curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/entities \
 
 ## Pagination and errors
 
-Records and retrieve paginate by keyset (`limit` plus `cursor`, returning `nextCursor`). Collections and entities list without a cursor. An invalid `status` (outside the collection's stages) or `archetype`, or an unknown body field, returns `400 VALIDATION_FAILED`. See [errors](/api/errors) for the envelope.
+Collection `list` and `search` paginate by **keyset cursor** (`limit` 1–50, default 20; `cursor` opaque from the prior `nextCursor`); `list` is back-compat dual-shaped — bare array when no paging/filter param is present, the `{items, nextCursor}` envelope otherwise. Records `list` and `retrieve` paginate by keyset (`limit` 1–100, default 25; keyset on `created_at, id`). Entities list is a bounded array (no cursor). An invalid `status` (outside the collection's stages) or `archetype`, or an unknown body field, returns `400 VALIDATION_FAILED`. A malformed `fields` JSON on `retrieve` is ignored silently, never an error. See [errors](/api/errors) for the envelope.
+
+## Lifecycle: archive and purge
+
+- **`POST .../:id/archive`** retires an active collection. **`POST .../:id/restore`** revives an archived collection to `active`. Both increment `version` and are audited. An archived collection is **immutable** — `PATCH`, record writes and `retrieve` return `409 PROTECTED_RESOURCE`.
+- **`DELETE .../:id?dry_run=true`** previews impact (`distilled_notes_preserved` counts the distilled Notes that **survive** the delete; `entity_links_removed` counts broken record links). **`DELETE .../:id?expected_version=<n>`** performs the purge with compare-and-set; a mismatched `expected_version` returns `409 VERSION_CONFLICT`. **Owner/admin only**, audited, idempotent — a repeat after the purge returns `already_absent`.
+
+The safe **record delete** is the same shape: `DELETE .../records/:recordId` only deletes from a non-archived collection; `?dry_run=true` previews the Entity link removed and the distilled Notes preserved (they survive the delete, they're not re-evaluated). The delete is workspace-membership gated (not owner/admin), audited, idempotent — a repeat after the delete returns `already_absent`.
 
 ## Related
 
 - [Collections](/concepts/collections) - archetypes, field types, and the criterion seam.
 - [CLI: Collections, Records, and Entities](/cli/collections) - the command-line surface.
+- [MCP: Projects and operations](/mcp/work) - the MCP surface.

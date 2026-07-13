@@ -1,21 +1,27 @@
 ---
 title: 'CLI: Collections, Records, and Entities'
-description: 'Configure collections, add and advance records, and manage cross-collection entities from the CLI.'
+description: 'Search and list collections, add and advance records, manage cross-collection entities, retrieve with criterion, and retire with archive/purge — all from the CLI.'
 ---
 
 The `collection` command family drives the [operational substrate](/concepts/collections): a collection is a configured table, a record is a typed row, and an entity is a cross-collection identity. Add `--json` to any command for machine output.
+
+Reads are **active-only, bounded and brief by default**. `collection list` returns active collections in a bounded, cursor-paged response; `--status all` opts in to archived. Intent search is `collection search <intent>`, active-only unless `--include-archived`. `collection get` is brief unless you pass `--view full`. Lifecycle is **explicit**: `archive`, `restore` and `purge` are separate commands — `collection update` rejects a `--status` that touches lifecycle.
 
 ## Collections
 
 | Command | Description |
 |---|---|
 | `collection add <name> --archetype <a>` | Create a collection. `--archetype` is required, one of `pipeline`, `analysis`, `content`. |
-| `collection list [--status <s>]` | List collections. `--status` is `active` or `archived`. |
-| `collection get <id>` | Collection detail. |
-| `collection update <id> [flags]` | Update `--name`, `--status`, `--schema`, `--views`, `--distill`, `--criterion`. |
+| `collection list [--status active\|all] [--owner me] [--limit n] [--cursor c]` | List active collections in a bounded page; `--status all` opts in to archived. |
+| `collection search <intent> [--owner me] [--include-archived] [--updated-after <iso>] [--limit n] [--cursor c]` | Intent-ranked search over collection config and criterion. Active-only unless `--include-archived`. |
+| `collection get <id> [--view brief\|full]` | Collection detail; **brief by default**, `full` is explicit. |
 | `collection context <id>` | Resolve the collection's criterion Knowledge (what to read first). |
+| `collection update <id> [flags]` | Update `--name`, `--schema`, `--views`, `--distill`, `--criterion`. Lifecycle is via archive/restore. |
+| `collection archive <id>` | Reversibly retire an active collection. |
+| `collection restore <id>` | Restore an archived collection to `active`. |
+| `collection purge <id> --dry-run` \| `--expected-version <n>` | Permanently remove an archived collection (owner/admin; version CAS). |
 | `collection doctor` | Audit records off-lifecycle, schema violations, drifted records, orphaned entities. |
-| `collection retrieve <id> [flags]` | Relevant records plus their criterion in one call. |
+| `collection retrieve <id> [flags]` | Relevant records plus their criterion in one bounded call. |
 
 Configuration flags on `add` and `update`: `--schema` (the `record_schema`), `--views`, `--distill` (the `distill_policy` config), and `--criterion a,b` (the `criterion_rel_slugs`). Each of `--schema`, `--views`, `--distill` accepts inline JSON or `@file`.
 
@@ -30,12 +36,14 @@ driftless collection add "Sales Pipeline" --archetype pipeline \
 
 | Command | Description |
 |---|---|
-| `collection records <cid> [flags]` | List records. Filters: `--status`, `--limit`, `--cursor`. |
-| `collection record add <cid> [flags]` | Add a record. `--fields` (JSON or `@file`), `--status`, `--entity <id>`. |
+| `collection records <cid> [flags]` | List records. Filters: `--status`, `--limit`, `--cursor`. Keyset-paginated server-side. |
+| `collection retrieve <cid> [flags]` | Intent search at scale: relevant records **plus** the criterion to read first. Same filters as records + `--query`, `--fields`, `--view`, `--entity`, `--drift`/`--no-drift`, `--updated-after`. |
+| `collection record add <cid> [flags]` | Add a record. `--fields` (JSON or `@file`), `--status`, `--entity <id>`. A status move to a terminal stage returns a `context_outcome`. |
 | `collection record get <cid> <rid>` | Record detail. |
-| `collection record update <cid> <rid> [flags]` | Update `--fields`, `--status`, `--entity`, `--drift`/`--no-drift`. |
+| `collection record update <cid> <rid> [flags]` | Update `--fields`, `--status`, `--entity`, `--drift`/`--no-drift`. A status change to terminal returns a `context_outcome`. |
+| `collection record rm <cid> <rid> [--dry-run]` | Delete a record. `--dry-run` previews Entity link removed and distilled Notes preserved. |
 
-A record's `--status` is validated against the collection's own stages: a record can only sit in a stage its collection declares. `--entity <id>` links the record to an [entity](#entities).
+A record's `--status` is validated against the collection's own stages: a record can only sit in a stage its collection declares. `--entity <id>` links the record to an [entity](#entities) — it's a **top-level record property**, never a field inside `--fields`. Moving a record to a terminal stage triggers the `distill_policy`, returning a `context_outcome` (`created` · `already_exists` · `skipped` · `failed`) — best-effort, never blocks the write.
 
 ## Entities
 
@@ -54,6 +62,23 @@ driftless collection entity add --kind company --name "Acme" --dedup acme.com
 driftless collection record add col_abc --fields '{"company":"Acme","mrr":500}' --status new --entity ent_123
 ```
 
+## Lifecycle: archive and purge
+
+`collection archive`, `collection restore` and `collection purge` are the only ways to retire a collection:
+
+```bash
+# Archive — retire an active collection (immutable; only restore/purge can touch it)
+driftless collection archive col_abc
+
+# Purge — owner/admin only; preview impact, then confirm with version CAS
+driftless collection purge col_abc --dry-run
+# impact: { version, records, entity_links_removed, distilled_notes_preserved }
+driftless collection purge col_abc --expected-version 4
+# purge_outcome: purged | already_absent
+```
+
+`purge` preserves the **distilled Notes** the collection spawned (they survive the delete); they're counted in `impact.distilled_notes_preserved`. A repeat `purge` after the collection is gone returns `already_absent`, never errors. The safe record delete follows the same shape — `collection record rm --dry-run` previews the **Entity link** removed and the **distilled Notes** preserved (the delete is workspace-membership gated, not owner/admin).
+
 ## Retrieve and criterion
 
 `collection retrieve <id>` returns relevant records and the collection's criterion Knowledge together, so an agent reads the team's "how we do this" before acting. Filters: `--query`, `--status`, `--view`, `--entity`, `--updated-after`, `--drift`/`--no-drift`, `--fields`, `--limit`, `--cursor`. For just the criterion (no records), use `collection context <id>`.
@@ -62,15 +87,17 @@ driftless collection record add col_abc --fields '{"company":"Acme","mrr":500}' 
 
 - **`@file`** is accepted by `--schema`, `--views`, `--distill`, `--fields`, and `--attrs`.
 - **`--json`** works on every command.
-- `distill_policy` set with `--distill` is a configuration field; it declares how a terminal record should distill back into a Note.
+- **`--cursor`** pages a bounded list/retrieve; the value is opaque, from the prior page's `nextCursor`.
+- `distill_policy` set with `--distill` is a configuration field; it declares how a terminal record should distill back into a Note, returning an observable `context_outcome`.
 
 ## Permissions
 
-Collection, record, and entity writes are workspace-member actions; over MCP they require the `work:write` scope. `collection doctor` and reads are member-level.
+Collection, record, and entity writes are workspace-member actions; **purge is owner/admin only**. Over MCP they require the `work:write` scope. `collection doctor`, reads and `record rm` are member-level.
 
 ## Related
 
 - [Collections](/concepts/collections) - the concept, archetypes, and field types.
 - [Integrations and Connections](/integrations/overview) - where imported records come from.
+- [MCP: Work](/mcp/work) - the MCP parity surface (`driftless_collection`, `driftless_collection_record`, `*_purge`, `*_delete`, `driftless_entity`).
 - [API: Collections, Records, and Entities](/api/collections) - the REST surface.
 - [Guide: Operate a Collection with governed context](/guides/operate-a-collection) - the workflow end to end.

@@ -9,6 +9,10 @@ description: "Instala, autentícate y empieza a crear topics de contexto."
 npm install -g @driftless-sh/cli
 ```
 
+<Note>
+El contrato agent-first de [Projects](/es/concepts/projects) y [Collections](/es/concepts/collections) — `search` por intención, lecturas acotadas active-only, `--view full`, `close` con `context_outcome`, y `archive`/`restore`/`purge` como operaciones de ciclo de vida separadas — necesita **`@driftless-sh/cli` ≥ 0.27.8**. Corre `driftless --version` para verificar; reinstala con el comando de arriba para actualizar.
+</Note>
+
 ## Autenticación
 
 Corre `driftless login` para abrir el navegador en el dashboard de Driftless, donde puedes copiar tu API key:

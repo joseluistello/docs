@@ -1,40 +1,51 @@
 ---
 title: 'MCP: Projects and operations'
-description: 'The Work and Operations surfaces over MCP: walk a project board with the card loop, and configure collections, advance records, and resolve cross-collection entities.'
+description: 'The Work and Operations surfaces over MCP: walk a project board with the card loop; search, configure, and retire collections; advance records; and resolve cross-collection entities. Reads are active-only and bounded; lifecycle is explicit and governed.'
 ---
 
-These are the tools for the half of Driftless that is not documentation: [Projects](/concepts/projects) (the card loop) and [Collections](/concepts/collections) (the operational substrate). They are action-based tools: pass `action` to pick the operation. Writes need the `work:write` scope; an API key acts with the role of the member who created it.
+These are the tools for the half of Driftless that is not documentation: [Projects](/concepts/projects) (the card loop) and [Collections](/concepts/collections) (the operational substrate). They are action-based tools: pass `action` to pick the operation. Reads are **active-only, bounded and brief by default**; `view:'full'` is explicit opt-in. Writes need the `work:write` scope; an API key acts with the role of the member who created it.
 
 ## Projects and cards
 
-`driftless_project_card action:'next'` is the loop tick: it returns the next actionable card plus its context bundle in one call.
+`driftless_project_card action:'next'` is the loop tick: it returns the next actionable card plus its context bundle in one call. `driftless_project` walks the lifecycle: `search` finds a project by intent, `get` is brief by default, `close` distills write-back Notes into a Topic and returns a `context_outcome`, `archive`/`restore` retire and revive, and `set` creates or updates.
 
 | Tool | Actions | Main params | Notes |
 | --- | --- | --- | --- |
-| `driftless_project` | `list`, `get`, `set` | `id` (omit to create), `title`, `goal` | does not expose `playbook_slug` yet |
-| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `delete`, `next` | `project_id`, `card_id`, `status`, `owner` | `next` returns `{ card, context_bundle, project_done }` |
+| `driftless_project` | `search`, `list`, `get`, `set`, `close`, `archive`, `restore` | `id`, `title`, `goal`, `query`, `status`, `view`, `include_archived`, `owner`, `updated_after`, `cursor`, `limit`, `no_durable_learning` | `list` is active-only; `search` is active-only unless `include_archived:true`; `get` is brief unless `view:'full'`; `close` is idempotent and returns `{ project, context_outcome }` |
+| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `next` | `project_id`, `card_id`, `title`, `status`, `depends_on`, `owner`, `limit`, `cursor` | `next` returns `{ card, context_bundle, project_done }`; `list` is bounded and cursor-paged |
+| `driftless_project_purge` | (single call) | `id`, `dry_run`, `expected_version` | **Owner/admin only**; permanent; version CAS; preserves origin Notes; idempotent (`already_absent`) |
+| `driftless_project_card_delete` | (single call) | `project_id`, `card_id`, `dry_run` | Safe delete: rejects dependents and origin Notes; `dry_run` previews impact |
 
-Permissions: reads are member-level; writes need `work:write`. Availability: Available. Card verification is report-and-surface: the server stores the `validate` command and the result you report, and never runs it.
+Permissions: reads are member-level; writes need `work:write`; **purge is owner/admin only**. Availability: Available. Card verification is report-and-surface: the server stores the `validate` command and the result you report, and never runs it.
 
 ```text
 driftless_project_card action:'next' project_id:'<project-id>'
   → { card: { id, status }, context_bundle: [ ... ], project_done: false }
+
+driftless_project action:'search' query:'refunds revamp' include_archived:false
+  → { items: [ { id, status, title, score } ], nextCursor, next_action }
+
+driftless_project action:'close' id:'<project-id>'
+  → { project: { id, status }, next_action,
+      context_outcome: { status:'created'|'already_exists'|'skipped'|'failed', retryable, topic?, reason? } }
 ```
 
 ## Collections and records
 
-`driftless_collection action:'retrieve'` delivers both halves of the seam at once: the relevant records plus the criterion Knowledge to read first. For criterion only, use `action:'context'`.
+`driftless_collection action:'retrieve'` delivers both halves of the seam at once: the relevant records plus the criterion Knowledge to read first. For criterion only, use `action:'context'`. `retrieve` is bounded and keyset-paginated; `get` is brief unless you pass `view:'full'`.
 
 | Tool | Actions | Main params | Notes |
 | --- | --- | --- | --- |
-| `driftless_collection` | `list`, `get`, `add`, `update`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `limit`, `cursor` | `retrieve` returns `{ records, nextCursor, criterion, criterion_missing }` |
-| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id` | `status` is validated against the collection's stages |
+| `driftless_collection` | `search`, `list`, `get`, `add`, `update`, `archive`, `restore`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `include_archived`, `owner`, `updated_after`, `cursor`, `limit`, `fields`, `entity_id`, `drifted` | `retrieve` returns `{ records, nextCursor, criterion, criterion_missing }`; `list`/`get` active-only and brief by default |
+| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id`, `limit`, `cursor` | `status` validated against the collection's stages; a transition to a terminal stage returns a `context_outcome` |
+| `driftless_collection_purge` | (single call) | `id`, `dry_run`, `expected_version` | **Owner/admin only**; permanent; version CAS; preserves distilled Notes; idempotent (`already_absent`) |
+| `driftless_collection_record_delete` | (single call) | `collection_id`, `record_id`, `dry_run` | `dry_run` previews Entity link removed and distilled Notes preserved (not deleted) |
 
-Permissions: reads are member-level; writes need `work:write`. Availability: Available.
+Permissions: reads are member-level; writes need `work:write`; **purge is owner/admin only**; record delete is workspace-membership gated. Availability: Available.
 
 ```text
 driftless_collection action:'retrieve' id:'<collection-id>' status:'qualified' limit:25
-  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [] }
+  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [], next_action }
 ```
 
 ## Entities
@@ -51,21 +62,36 @@ Permissions: `list` / `get` are member-level; `upsert` needs `work:write`. Avail
 driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
 ```
 
+## Lifecycle: close, archive and purge
+
+Lifecycle is **explicit and governed**, with separate, audited operations on every surface:
+
+- `driftless_project action:'close'` validates completion and distills write-back Notes into a draft Topic **once**. Returns a `context_outcome` (`created` · `already_exists` · `skipped` · `failed`). Idempotent — a repeat returns `already_exists` and never re-distills. `no_durable_learning:true` asserts no durable Notes exist (rejected when they do).
+- `driftless_project action:'archive'` / `action:'restore'` retire and revive a `done` project. An archived project is **immutable** — only `restore` and `purge` can touch it.
+- `driftless_project_purge` is permanent and **owner/admin only**. Run `dry_run:true` first to read the `impact` (`{ version, cards, context_refs, origin_notes_preserved }`), then confirm with `expected_version`. Repeats after deletion return `already_absent`.
+- Collections mirror this shape: `driftless_collection action:'archive'` / `action:'restore'`, and `driftless_collection_purge` (which preserves the **distilled Notes** the collection spawned — counted in `impact.distilled_notes_preserved`).
+
+The CLI and REST surface mirror these tools one-to-one — same action names, filters, defaults and lifecycle semantics. See [CLI: Projects](/cli/projects), [CLI: Collections](/cli/collections), [API: Projects](/api/projects), [API: Collections](/api/collections).
+
 ## Permissions
 
 | Scope | Covers |
 | --- | --- |
-| `work:write` | Create and update projects, cards, collections, records, and entities |
+| `work:write` | Create and update projects, cards, collections, records, and entities; `archive`/`restore` of projects and collections |
 | member (read) | `list` / `get` / `next` / `context` / `retrieve` / `doctor` |
+| owner/admin | `driftless_project_purge`, `driftless_collection_purge` (require a human owner/admin identity — a faceless agent key cannot purge) |
 
-There is no separate scope per surface; `work:write` covers the whole work and operations plane.
+There is no separate scope per surface; `work:write` covers the whole work and operations plane except purge, which is gated on a human owner/admin role.
 
 ## Availability
 
 | Capability | State |
 | --- | --- |
 | Projects, cards, and the `next` loop | Available |
-| Collections, records, and the criterion seam | Available |
+| Project `search`, `close` with `context_outcome`, `archive`/`restore`, `purge` | Available |
+| Collections, records, and the criterion seam (`retrieve`, `context`) | Available |
+| Collection `search`, `archive`/`restore`, `purge` | Available |
+| Safe card delete (`driftless_project_card_delete`) and record delete (`driftless_collection_record_delete`) | Available |
 | Entity dedup on `(kind, dedup_key)` | Available |
 | `playbook_slug` on `driftless_project` | Not available (set it from the CLI or API) |
 | Server-side execution of a card's `validate` | Not available (report-and-surface only) |

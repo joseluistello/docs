@@ -32,8 +32,8 @@ El broker está gated (apagado por defecto en producción) y es fail-closed. `dr
 | `broker operations [provider]` | Lista operaciones, o busca con `--query`, `--provider`, `--effect read\|write`, `--risk low\|medium\|high`, `--limit`, `--cursor`, `--refresh`. |
 | `broker capabilities <provider>` | El capability directory. |
 | `broker inspect <provider> <op>` | La spec completa de una operación. |
-| `broker invoke <provider> <op> [--input <json>\|@file]` | Ejecuta una operación inline. |
-| `broker criterion <provider> [--add <slug>\|--rm <slug>]` | Adjunta o quita un slug de topic criterion. |
+| `broker invoke <provider> <op> [--input <json>\|@file] [--idempotency-key <k>]` | Ejecuta una operación inline; la clave hace que reintentar una escritura repita el resultado, sin volver a ejecutarla. |
+| `broker criterion <provider> [--add <slug>\|--rm <slug>]` | Sin flags: el contexto EFECTIVO de la connection (criterion resuelto a trust/staleness; léelo antes de trabajar con el provider). Con flags: adjunta o quita un slug de topic criterion. |
 
 ```bash
 driftless broker connections
@@ -47,11 +47,13 @@ driftless broker invoke notion <operation> --input @payload.json
 |---|---|
 | `broker models <provider>` | Record models importables (syncs habilitados). |
 | `broker records <provider> --model <m>` | Lee los records de un modelo desde el mirror (`--modified-after`, `--cursor`, `--limit`). |
-| `broker page <pageId>` | Lee el contenido acotado, en vivo y citable de una página (`--max-bytes`). |
+| `broker document <provider> <externalId>` | Lee el contenido acotado, en vivo y citable de un documento de cualquier content provider (`--max-bytes`). |
+| `broker page <pageId>` | Alias DEPRECADO y exclusivo de Notion para `broker document notion <id>`. |
 | `broker index <provider>` | Materializa connector documents. `--dry-run` previsualiza; también `--model`, `--limit`, `--sample-limit`, `--max-bytes`, `--import-run-id`. |
+| `broker import <provider> --collection <id>` | Importa records del mirror a una Collection mediante su connector mapping guardado (`--model`, `--modified-after`, `--max-pages`). |
 | `broker events [provider]` | El feed de eventos entrantes del provider (`--limit`). |
 
-`records` lee un cache; `page` lee en vivo; `index` escribe connector documents propios de Driftless (nunca el provider). El retrieve de contexto normal nunca consulta un provider.
+`records` lee un cache; `document` lee en vivo; `index` escribe connector documents propios de Driftless (nunca el provider); `import` escribe Records de Collection. El retrieve de contexto normal nunca consulta un provider. Un record eliminado en el provider crea una tombstone para su connector document en la siguiente ejecución de `index` (deja de ser citable); al desconectar se hace soft-delete de todos los documentos del provider.
 
 ## Gates y grants
 

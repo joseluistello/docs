@@ -1,40 +1,51 @@
 ---
 title: 'MCP: Projects y operaciones'
-description: 'Las superficies de Work y Operations por MCP: recorre un board de project con el loop de cards, y configura collections, avanza records y resuelve entities cross-collection.'
+description: 'Las superficies de Work y Operations por MCP: recorre un board de project con el loop de cards; busca, configura y retira collections; avanza records y resuelve entities cross-collection. Las lecturas son active-only y acotadas; el ciclo de vida es explícito y gobernado.'
 ---
 
-Estas son las tools para la mitad de Driftless que no es documentación: [Projects](/es/concepts/projects) (el loop de cards) y [Collections](/es/concepts/collections) (el sustrato operacional). Son tools basadas en `action`: pasa `action` para elegir la operación. Las escrituras requieren el scope `work:write`; una API key actúa con el rol del member que la creó.
+Estas son las tools para la mitad de Driftless que no es documentación: [Projects](/es/concepts/projects) (el loop de cards) y [Collections](/es/concepts/collections) (el sustrato operacional). Son tools basadas en `action`: pasa `action` para elegir la operación. Las lecturas son **active-only, acotadas y brief por defecto**; `view:'full'` es opt-in explícito. Las escrituras requieren el scope `work:write`; una API key actúa con el rol del member que la creó.
 
 ## Projects y cards
 
-`driftless_project_card action:'next'` es el tick del loop: devuelve la próxima card accionable más su context bundle en una sola llamada.
+`driftless_project_card action:'next'` es el tick del loop: devuelve la próxima card accionable más su context bundle en una sola llamada. `driftless_project` recorre el ciclo de vida: `search` encuentra un project por intención, `get` es brief por defecto, `close` destila las write-back Notes en un Topic y devuelve un `context_outcome`, `archive`/`restore` retira y reviven, y `set` crea o actualiza.
 
 | Tool | Actions | Params principales | Notas |
 | --- | --- | --- | --- |
-| `driftless_project` | `list`, `get`, `set` | `id` (omite para crear), `title`, `goal` | todavía no expone `playbook_slug` |
-| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `delete`, `next` | `project_id`, `card_id`, `status`, `owner` | `next` devuelve `{ card, context_bundle, project_done }` |
+| `driftless_project` | `search`, `list`, `get`, `set`, `close`, `archive`, `restore` | `id`, `title`, `goal`, `query`, `status`, `view`, `include_archived`, `owner`, `updated_after`, `cursor`, `limit`, `no_durable_learning` | `list` es active-only; `search` es active-only salvo `include_archived:true`; `get` es brief salvo `view:'full'`; `close` es idempotente y devuelve `{ project, context_outcome }` |
+| `driftless_project_card` | `list`, `get`, `add`, `set`, `move`, `next` | `project_id`, `card_id`, `title`, `status`, `depends_on`, `owner`, `limit`, `cursor` | `next` devuelve `{ card, context_bundle, project_done }`; `list` es acotado y paginado por cursor |
+| `driftless_project_purge` | (llamada única) | `id`, `dry_run`, `expected_version` | **Solo owner/admin**; permanente; version CAS; preserva origin Notes; idempotente (`already_absent`) |
+| `driftless_project_card_delete` | (llamada única) | `project_id`, `card_id`, `dry_run` | Safe delete: rechaza dependientes y Notes de origen; `dry_run` previsualiza el impacto |
 
-Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`. Disponibilidad: Available. La verificación de cards es reportar y exponer: el servidor almacena el comando `validate` y el resultado que reportas, y nunca lo corre.
+Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`; **purge es solo owner/admin**. Disponibilidad: Available. La verificación de cards es reportar y exponer: el servidor almacena el comando `validate` y el resultado que reportas, y nunca lo corre.
 
 ```text
 driftless_project_card action:'next' project_id:'<project-id>'
   → { card: { id, status }, context_bundle: [ ... ], project_done: false }
+
+driftless_project action:'search' query:'refunds revamp' include_archived:false
+  → { items: [ { id, status, title, score } ], nextCursor, next_action }
+
+driftless_project action:'close' id:'<project-id>'
+  → { project: { id, status }, next_action,
+      context_outcome: { status:'created'|'already_exists'|'skipped'|'failed', retryable, topic?, reason? } }
 ```
 
 ## Collections y records
 
-`driftless_collection action:'retrieve'` entrega las dos mitades de la costura a la vez: los records relevantes más el criterion de Knowledge para leer primero. Para solo el criterion, usa `action:'context'`.
+`driftless_collection action:'retrieve'` entrega las dos mitades de la costura a la vez: los records relevantes más el criterion de Knowledge para leer primero. Para solo el criterion, usa `action:'context'`. `retrieve` es acotado y paginado por keyset; `get` es brief salvo que pases `view:'full'`.
 
 | Tool | Actions | Params principales | Notas |
 | --- | --- | --- | --- |
-| `driftless_collection` | `list`, `get`, `add`, `update`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `limit`, `cursor` | `retrieve` devuelve `{ records, nextCursor, criterion, criterion_missing }` |
-| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id` | el `status` se valida contra los stages de la collection |
+| `driftless_collection` | `search`, `list`, `get`, `add`, `update`, `archive`, `restore`, `doctor`, `context`, `retrieve` | `id`, `query`, `status`, `view`, `include_archived`, `owner`, `updated_after`, `cursor`, `limit`, `fields`, `entity_id`, `drifted` | `retrieve` devuelve `{ records, nextCursor, criterion, criterion_missing }`; `list`/`get` active-only y brief por defecto |
+| `driftless_collection_record` | `list`, `get`, `add`, `update` | `collection_id`, `record_id`, `fields`, `status`, `entity_id`, `limit`, `cursor` | `status` validado contra los stages de la collection; una transición a un stage terminal devuelve un `context_outcome` |
+| `driftless_collection_purge` | (llamada única) | `id`, `dry_run`, `expected_version` | **Solo owner/admin**; permanente; version CAS; preserva distilled Notes; idempotente (`already_absent`) |
+| `driftless_collection_record_delete` | (llamada única) | `collection_id`, `record_id`, `dry_run` | `dry_run` previsualiza el Entity link removido y las distilled Notes preservadas (no se borran) |
 
-Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`. Disponibilidad: Available.
+Permisos: las lecturas son de nivel member; las escrituras requieren `work:write`; **purge es solo owner/admin**; el delete de records está gateado por membresía del workspace. Disponibilidad: Available.
 
 ```text
 driftless_collection action:'retrieve' id:'<collection-id>' status:'qualified' limit:25
-  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [] }
+  → { records: [ ... ], nextCursor, criterion: [ ... ], criterion_missing: [], next_action }
 ```
 
 ## Entities
@@ -51,21 +62,36 @@ Permisos: `list` / `get` son de nivel member; `upsert` requiere `work:write`. Di
 driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
 ```
 
+## Ciclo de vida: close, archive y purge
+
+El ciclo de vida es **explícito y gobernado**, con operaciones separadas y auditadas en toda la superficie:
+
+- `driftless_project action:'close'` valida la terminación y destila las write-back Notes en un Topic borrador **una sola vez**. Devuelve un `context_outcome` (`created` · `already_exists` · `skipped` · `failed`). Idempotente — un reintento devuelve `already_exists` y nunca re-destila. `no_durable_learning:true` afirma que no existen Notes durables (se rechaza cuando sí existen).
+- `driftless_project action:'archive'` / `action:'restore'` retiran y reviven un project en `done`. Un project archived es **inmutable** — solo `restore` y `purge` pueden tocarlo.
+- `driftless_project_purge` es permanente y **solo owner/admin**. Corre `dry_run:true` primero para leer el `impact` (`{ version, cards, context_refs, origin_notes_preserved }`), luego confirma con `expected_version`. Los reintentos tras el borrado devuelven `already_absent`.
+- Las Collections reflejan esta forma: `driftless_collection action:'archive'` / `action:'restore'`, y `driftless_collection_purge` (que preserva las **distilled Notes** que engendró la collection — contadas en `impact.distilled_notes_preserved`).
+
+La CLI y la REST reflejan estas tools uno a uno — mismos nombres de action, filtros, defaults y semántica de ciclo de vida. Ver [CLI: Projects](/es/cli/projects), [CLI: Collections](/es/cli/collections), [API: Projects](/es/api/projects), [API: Collections](/es/api/collections).
+
 ## Permisos
 
 | Scope | Cubre |
 | --- | --- |
-| `work:write` | Crear y actualizar projects, cards, collections, records y entities |
+| `work:write` | Crear y actualizar projects, cards, collections, records y entities; `archive`/`restore` de projects y collections |
 | member (lectura) | `list` / `get` / `next` / `context` / `retrieve` / `doctor` |
+| owner/admin | `driftless_project_purge`, `driftless_collection_purge` (requieren una identidad humana owner/admin — una agent key faceless no puede purgar) |
 
-No hay un scope separado por superficie; `work:write` cubre todo el plano de work y operations.
+No hay un scope separado por superficie; `work:write` cubre todo el plano de work y operations excepto purge, que está gateado por un rol humano owner/admin.
 
 ## Disponibilidad
 
 | Capacidad | Estado |
 | --- | --- |
 | Projects, cards y el loop de `next` | Available |
-| Collections, records y la costura de criterion | Available |
+| `search` de projects, `close` con `context_outcome`, `archive`/`restore`, `purge` | Available |
+| Collections, records y la costura de criterion (`retrieve`, `context`) | Available |
+| `search` de collections, `archive`/`restore`, `purge` | Available |
+| Safe delete de cards (`driftless_project_card_delete`) y de records (`driftless_collection_record_delete`) | Available |
 | Dedup de Entity sobre `(kind, dedup_key)` | Available |
 | `playbook_slug` en `driftless_project` | Not available (setéalo desde la CLI o API) |
 | Ejecución del `validate` de una card en el servidor | Not available (solo reportar y exponer) |

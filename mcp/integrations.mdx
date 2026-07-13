@@ -17,16 +17,19 @@ The Broker is **gated**: off by default in production (`DRIFTLESS_BROKER_ENABLED
 
 | Action | Purpose | Effect |
 | --- | --- | --- |
-| `connections` | List the workspace's Connections with health and criterion | read |
+| `connections` | List the workspace's Connections with health, criterion and next actions | read |
+| `context` | The connection's effective context: criterion resolved to trust/staleness + next action (read it BEFORE working the provider) | read |
 | `operations` | List a provider's operations, or search across providers | read |
 | `capabilities` | The capability directory (kinds, effects, states, gates) | read |
 | `inspect` | Full spec of one operation (schema, effect, risk, idempotency) | read |
 | `invoke` | Execute one named operation inline (read or write) | read / write |
 | `models` | Importable record models (enabled syncs) | read |
 | `records` | Read a synced model's records from the mirror | read |
-| `page-content` | Read one page's bounded, citeable text, live | read |
+| `document-content` | Read one document's bounded, citeable text, live (any content provider) | read |
+| `page-content` | DEPRECATED Notion-only alias of `document-content` | read |
 | `index-preview` | Dry-run index: candidate counts and samples | read |
-| `index` | Materialize connector documents (Driftless-owned) | write (internal) |
+| `index` | Materialize connector documents (Driftless-owned) | admin |
+| `import` | Import mirror records into a Collection (saved connector mapping) | write |
 | `events` | The inbound provider event feed | read |
 | `attach-criterion` / `detach-criterion` | Attach or remove a Knowledge criterion slug on a Connection | admin |
 
@@ -41,19 +44,21 @@ Three independent, fail-closed gates apply to an external caller, in order: the 
 
 | Scope | Covers |
 | --- | --- |
-| `broker:read` | `connections`, `operations`, `capabilities`, `inspect`, `models`, `records`, `page-content`, `events` |
-| `broker:invoke` | `invoke` (a read or write operation) |
-| `broker:admin` | `attach-criterion` / `detach-criterion`; grants are owner/admin |
+| `broker:read` | `connections`, `context`, `operations`, `capabilities`, `inspect`, `models`, `records`, `document-content`, `page-content`, `events` |
+| `broker:invoke` | `invoke` (a read or write operation), `import` |
+| `broker:admin` | `attach-criterion` / `detach-criterion`, `index-preview`, `index` (indexing curates what the workspace can retrieve/cite — connection administration, not invocation); grants are owner/admin |
 
 The `broker:*` scopes are enforced only when the Broker is enabled, and they gate the lane on top of rollout and grants. An internal caller (an owned API key or dashboard session) skips the grant gate but still needs the rest.
 
 ## Reads and materialization
 
-The reads differ in whether they hit the provider live and what they create. `records` reads the mirror/cache; `page-content` reads live; `index` materializes Driftless-owned connector documents; `import` (a REST route, not an MCP action) maps mirror records into Collection Records. Normal context retrieve never queries a provider.
+The reads differ in whether they hit the provider live and what they create. `records` reads the mirror/cache; `document-content` reads live through the provider-general documents route; `index` materializes Driftless-owned connector documents; `import` maps mirror records into Collection Records. Normal context retrieve never queries a provider — and when a retrieve query matches indexed connector documents you didn't request, the response suggests `sources:['connectors']` in `next_action` instead of including them.
 
 ```text
-driftless_broker action:'records' provider:'notion' model:'ContentMetadata' limit:5   → from the mirror
-driftless_broker action:'page-content' page_id:'<pageId>'                              → live, bounded, cited
+driftless_broker action:'context' provider:'notion'                                       → read the criterion FIRST
+driftless_broker action:'records' provider:'notion' model:'ContentMetadata' limit:5       → from the mirror
+driftless_broker action:'document-content' provider:'notion' external_id:'<id>'           → live, bounded, cited
+driftless_broker action:'import' provider:'notion' collection_id:'<uuid>'                 → mirror → Collection Records
 ```
 
 ## Availability
@@ -61,9 +66,9 @@ driftless_broker action:'page-content' page_id:'<pageId>'                       
 | Capability | State |
 | --- | --- |
 | `driftless_broker` tool listed | Only when `DRIFTLESS_BROKER_ENABLED` is on |
-| Notion reads (`records`, `page-content`, `index`) | Beta, read-only |
+| Notion reads (`records`, `document-content`, `index`) | Beta, read-only |
 | Broker writes (`invoke` a write op) in production | Not available (policy registry ships empty) |
-| Synthesized per-workspace read tools (`driftless_<provider>_records`) | Available only when synthesis is enabled and a capability is `ready` |
+| Synthesized per-workspace read tools (`driftless_<provider>_records`, `driftless_<provider>_document_content`) | Available only when synthesis is enabled and a capability is `ready` |
 | Write-capability synthesis | Not available (never synthesized) |
 
 ## Related

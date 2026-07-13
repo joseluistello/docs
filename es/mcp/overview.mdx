@@ -17,7 +17,10 @@ para una descripción de tarea, un conjunto de archivos, o ambos, ordenado con l
 drifteado primero y acotado. Compone search + match-files + list filters para que no
 los encadenes a mano. Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no
 el `content` completo); llama a `driftless_context_get` para el único topic cuyo cuerpo
-completo necesites, o pasa `view: "full"`. Ver [Payload views](#payload-views-keep-reads-fast)
+completo necesites, o pasa `view: "full"`. El mismo contrato **active-only, acotado,
+brief por defecto** aplica a la superficie de trabajo: `driftless_project` /
+`driftless_collection` `list` es active-only (opta a archived con `include_archived:true`),
+y `get` es brief salvo que pases `view:'full'`. Ver [Payload views](#payload-views-keep-reads-fast)
 más abajo.
 
 ## Familias de herramientas
@@ -48,11 +51,15 @@ inunde tu contexto. El vocabulario es el mismo en todos lados (`summary` / `brie
   que un cuerpo completo.
 - **`full`**: todo, incluyendo el pesado cuerpo `content`. **Nunca es default en otro
   lado**; entras a él con `view: "full"`. `driftless_context_get` es la excepción: usa
-  `full` por defecto porque nombraste el único topic que querías.
+  `full` por defecto porque nombraste el único topic que querías. El mismo opt-in
+  `view: "full"` aplica a `driftless_project` / `driftless_collection`
+  `action:'get'` (brief por defecto, full a pedido).
 
 El patrón: `retrieve` / `get_for_files` en `brief` para ver *cuál* topic gobierna el
 trabajo, y después `driftless_context_get` (full) para el único cuerpo que de verdad
-necesitas, en vez de traer todos los cuerpos completos de entrada.
+necesitas, en vez de traer todos los cuerpos completos de entrada. La superficie de
+trabajo lo refleja — `driftless_project` / `driftless_collection` `action:'get'` en
+brief, `view:'full'` para el único project/collection cuya config completa necesitas.
 
 ### Broker (ejecución) vs setup de integración
 

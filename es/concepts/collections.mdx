@@ -1,11 +1,13 @@
 ---
 title: 'Colecciones'
-description: "El sustrato operacional nativo de objetos. Una Collection es una tabla configurada; un Record es una fila tipada. Un CRM, un bug tracker, tickets de soporte, un calendario de contenido: cada uno es una Collection configurada, no código nuevo."
+description: "El sustrato operacional nativo de objetos. Una Collection es una tabla configurada; un Record es una fila tipada. Un CRM, un bug tracker, tickets de soporte, un calendario de contenido: cada uno es una Collection configurada, no código nuevo. Las lecturas son active-only y acotadas por defecto; archive, restore y purge son operaciones de ciclo de vida explícitas y gobernadas."
 ---
 
 Una **Collection** es una tabla configurada sobre la spine del workspace; un **Record** es una fila tipada en ella. Esta es la mitad operacional del workspace, donde el trabajo *vive* (leads, bugs, tickets, posts), a diferencia de los Topics, que capturan lo que el equipo *sabe*.
 
 La gracia del sustrato es que no construyes apps. Un CRM, un bug tracker, una mesa de soporte y un calendario de contenido son todos el **mismo primitivo**: un Record tipado que fluye por una Collection configurada. Un caso de uso nuevo es una configuración, no código nuevo.
+
+Las lecturas son **active-only, acotadas y brief por defecto** en toda la superficie. Un `collection list` devuelve collections activas en una página acotada; las archived solo aparecen cuando optas explícitamente con `--include-archived` (CLI), `include_archived: true` (MCP) o `?include_archived=true` (REST). Un `collection get` vuelve **brief** salvo que pidas `full`. Archive, restore y purge son **operaciones separadas y explícitas** — el ciclo de vida nunca se colapsa en `update --status`.
 
 <Note>
 Las Collections son un **primitivo separado de los [Proyectos](/es/concepts/projects)**. Un Project es un loop de ejecución donde un agente recorre un board; una Collection es data operacional que un humano opera, aumentada por IA. Coexisten, y ninguno se construye sobre el otro.
@@ -24,7 +26,7 @@ Todo caso de uso colapsa en una de tres formas:
 - **`record_schema`**: las definiciones de campos tipados (las columnas). Tipos de campo: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. Un campo `status` lleva `stages[]`, el ciclo de vida por el que fluye un record.
 - **`views`**: vistas guardadas sobre los records: `board`, `table`, `list`, `calendar`, `gallery`, cada una con `group_by`, `filter`, `sort` y `visible_fields`.
 - **`criterion_rel_slugs`**: los **Topics de Knowledge que el trabajo lee antes de actuar**. Esta es la costura que baja: un pipeline de leads lee `how-we-sell` e `icp`, así el trabajo ocurre con los criterios del equipo.
-- **`distill_policy`**: un campo de configuración de cómo un record terminal debería destilarse de vuelta en una Nota (la costura que sube): cerrar un bug o ganar un deal puede dejar un aprendizaje durable en el vault.
+- **`distill_policy`**: un campo de configuración de cómo un record terminal debería destilarse de vuelta en una Nota (la costura que sube): cerrar un bug o ganar un deal puede dejar un aprendizaje durable en el vault. El distill devuelve un **`context_outcome`** (`created` · `already_exists` · `skipped` · `failed`), expuesto en la respuesta de create/update del record — un resultado observable y best-effort que nunca bloquea la escritura.
 
 ## Un Record
 
@@ -41,7 +43,7 @@ Una entity lleva:
 - **`dedup_key`**: la clave estable que la hace única dentro de su `kind`.
 - **`attributes`**: valores tipados de forma libre.
 
-Las entities hacen **upsert** idempotente sobre `(kind, dedup_key)`: escribir el mismo par dos veces actualiza la entity en vez de crear un duplicado. Un Record se enlaza a una entity al setear su `entity_id`, así varios Records de distintas Collections pueden resolver a una sola identidad.
+Las entities hacen **upsert** idempotente sobre `(kind, dedup_key)`: escribir el mismo par dos veces actualiza la entity en vez de crear un duplicado. Un Record se enlaza a una entity al setear su `entity_id` top-level (nunca un campo dentro de `fields`), así varios Records de distintas Collections pueden resolver a una sola identidad.
 
 Las entities están disponibles en tres superficies: la CLI (`driftless collection entity add|list`), MCP (`driftless_entity`, `action: list | get | upsert`) y REST (`/workspaces/:slug/entities`).
 
@@ -60,10 +62,18 @@ driftless collection add "Sales Pipeline" --archetype pipeline \
   --views  '[{"type":"board","group_by":"stage"}]' \
   --criterion "how-we-sell,icp"
 
-# Agrega y avanza records
+# Encuentra una collection por intención, luego léela brief o full
+driftless collection search "sales pipeline con stage won"
+driftless collection get <collection-id> --view full
+
+# Agrega y avanza records; un move a un stage terminal devuelve un context_outcome
 driftless collection record add <collection-id> --fields '{"company":"Acme","mrr":500}' --status new
-driftless collection records   <collection-id> --status won
+driftless collection records   <collection-id> --status won --limit 25 --cursor <token>
 driftless collection record update <collection-id> <record-id> --status won
+
+# Audita el sustrato; safe-delete un record
+driftless collection doctor
+driftless collection record rm <collection-id> <record-id> --dry-run
 ```
 
 ## Recuperar antes de actuar: la costura en una sola llamada
@@ -80,6 +90,7 @@ MCP: driftless_collection action:'retrieve' id:'<collection-id>'
      [query / status / entity_id / drifted / updated_after / fields / view / limit / cursor]
   → { records, nextCursor, criterion, criterion_missing }
 API: GET /workspaces/:slug/collections/:id/retrieve?status=won&limit=25
+CLI: driftless collection retrieve <collection-id> --query "won acme" --limit 25
 ```
 
 `criterion` es el Knowledge del equipo a aplicar; `criterion_missing` marca cualquier
@@ -90,3 +101,17 @@ usa `driftless_collection action:'context'`.
 
 Esto refleja el [retrieve](/es/mcp/overview) de topics: una sola llamada devuelve *qué leer* y
 *en qué trabajar*, en lugar de encadenar a mano una lista y una búsqueda de criterion aparte.
+
+## Ciclo de vida, archive y purge
+
+Una collection se mueve por uno de dos estados de ciclo de vida (`active` · `archived`):
+
+1. **Active** — los records se leen y trabajan.
+2. **Archived** — `collection archive` retira una collection activa. Una collection archived es **inmutable**: solo `restore` (de vuelta a `active`) y `purge` pueden tocarla. `update`, las escrituras de records y `retrieve` se rechazan con `409`.
+3. **Purged** — `collection purge` es permanente y **solo owner/admin**. Corre `--dry-run` primero para leer el impacto (`version`, records, `entity_links_removed` y `distilled_notes_preserved` — las distilled Notes que engendró la collection se **preservan**, no se borran). Confirma con `--expected-version <n>` (compare-and-set sobre la versión que acabas de leer). La llamada se audita y es idempotente: un reintento tras borrar la collection devuelve `already_absent`, nunca `404`.
+
+El safe delete de records tiene la misma forma: `collection record rm` solo elimina un record de una collection no archived, y `--dry-run` previsualiza el **Entity link** que se removería y las **distilled Notes** que se preservan (no se borran). El delete está gateado por membresía del workspace, no por owner/admin — cualquier member puede remover un record.
+
+<Note>
+`archive` y `restore` son reversibles; `purge` es la única operación permanente. Son **comandos/rutas/actions separados** en toda la superficie — un `update --status` que intente archivar se rechaza con `409` y nombra la ruta de ciclo de vida que usar en su lugar.
+</Note>

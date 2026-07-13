@@ -40,11 +40,12 @@ You need the CLI installed and logged in. Over MCP or OAuth, collection, record,
 
 ## Before you begin
 
-Find the collection you mean to work, and confirm the workspace.
+Find the collection you mean to work, and confirm the workspace. Searches are intent-ranked and active-only by default.
 
 ```bash
 driftless workspace current
-driftless collection list --status active
+driftless collection search "qualified accounts pipeline"   # intent-ranked; active-only
+driftless collection list --status active --cursor <token>   # bounded page of active collections
 ```
 
 ## Context preflight
@@ -64,10 +65,10 @@ driftless collection retrieve <collection-id> --status qualified --limit 25   # 
 
 <Steps>
 <Step title="Resolve the Collection and read its shape">
-Read the archetype, schema, stages, views, and criterion relations before touching a record. The stages are the only statuses a record may sit in.
+Read the archetype, schema, stages, views, and criterion relations before touching a record. The stages are the only statuses a record may sit in. `get` is brief by default; pass `--view full` to read the full config (`record_schema`, `views`, `distill_policy`).
 
 ```bash
-driftless collection get <collection-id>
+driftless collection get <collection-id> --view full
 ```
 </Step>
 
@@ -111,10 +112,11 @@ driftless collection record update <collection-id> <record-id> \
 </Step>
 
 <Step title="Advance status only when the state actually changed">
-A status is a claim about reality. Move the record to a new stage only because the underlying thing changed, never because the workflow reached this step.
+A status is a claim about reality. Move the record to a new stage only because the underlying thing changed, never because the workflow reached this step. A transition to a **terminal stage** triggers the `distill_policy` and the response carries a `context_outcome` (`created` · `already_exists` · `skipped` · `failed`) — best-effort, never blocks the write.
 
 ```bash
 driftless collection record update <collection-id> <record-id> --status engaged
+# a move to a terminal stage (e.g. won, published) returns context_outcome on the record
 ```
 
 The status is validated against the collection's own stages; a value outside them is rejected.
@@ -129,21 +131,43 @@ driftless project card add <project-id> \
   --description "Record <record-id> in <collection-id> may duplicate an existing entity"
 ```
 </Step>
+
+<Step title="Delete a record, or retire the collection">
+Safe record delete previews impact before it touches anything: the Entity link that would be removed and the distilled Notes that are preserved (not deleted).
+
+```bash
+driftless collection record rm <collection-id> <record-id> --dry-run
+driftless collection record rm <collection-id> <record-id>   # idempotent; repeats return already_absent
+```
+
+When the collection itself is done, archive it and (if truly permanent) purge it. Lifecycle is **explicit** — `collection update --status` cannot archive.
+
+```bash
+driftless collection archive <collection-id>
+driftless collection purge <collection-id> --dry-run    # owner/admin; impact = { version, records, entity_links_removed, distilled_notes_preserved }
+driftless collection purge <collection-id> --expected-version <n>   # CAS confirm; idempotent
+```
+
+`purge` is owner/admin only and permanent; it preserves the distilled Notes the collection spawned (they survive the delete). Restore is `collection restore <id>` (archived → active).
+</Step>
 </Steps>
 
 <Note>
-Same surface over MCP: `driftless_collection action:'retrieve'`, `driftless_collection_record action:'update'`, and `driftless_entity action:'upsert'`. Over REST it is `GET /workspaces/:slug/collections/:id/retrieve` and the record and entity routes under the same base. See [API: Collections, Records, and Entities](/api/collections).
+Same surface over MCP: `driftless_collection action:'search' \| 'retrieve' \| 'context' \| 'archive' \| 'restore'`, `driftless_collection_record action:'update'`, `driftless_collection_purge` (owner/admin), `driftless_collection_record_delete` (safe, with `dry_run`), and `driftless_entity action:'upsert'`. Over REST it is `GET /workspaces/:slug/collections/:id/retrieve`, `POST .../:id/archive|restore`, `DELETE .../:id?expected_version=`, and the record and entity routes under the same base. See [API: Collections, Records, and Entities](/api/collections).
 </Note>
 
 ## Expected states
 
 | Moment | What you should see |
 | --- | --- |
-| After `collection get` | The archetype, `record_schema`, stages, views, and criterion. |
+| After `collection get` | The archetype, `record_schema`, stages, views, and criterion. `--view full` adds `distill_policy`. |
 | After `retrieve` | `{ records, nextCursor, criterion, criterion_missing }`. |
 | After `entity add` | An `<entity-id>`; re-adding the same `(kind, dedup_key)` updates, not duplicates. |
 | After a field `update` | The record carries the new fields and its `entity_id`. |
+| After a terminal stage move | The record carries a `context_outcome` (`created` · `already_exists` · `skipped` · `failed`). |
+| After `record rm --dry-run` | `impact` previews `entity_link` removed and `distilled_notes_preserved`. |
 | A status outside the stages | Rejected with `400 VALIDATION_FAILED`. |
+| After `collection archive` | Status `archived`; immutable — only `restore`/`purge` touch it. |
 
 ## Knowledge write-back
 

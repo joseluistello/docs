@@ -1,20 +1,25 @@
 ---
 title: 'Projects y Cards'
-description: 'Endpoints REST para los boards de projects y el loop de cards.'
+description: 'Endpoints REST para los boards de projects y el loop de cards. Las lecturas son active-only y brief por defecto; close, archive, restore y purge son rutas de ciclo de vida explícitas y gobernadas.'
 ---
 
-Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación (una API key o una sesión del dashboard). Las lecturas son de miembro del workspace; las escrituras requieren el scope `work:write` por OAuth. Ver [Projects](/es/concepts/projects) para el modelo.
+Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación (una API key o una sesión del dashboard). Las lecturas son de miembro del workspace; las escrituras requieren el scope `work:write` por OAuth; **purge es solo owner/admin**. Las lecturas son **active-only, acotadas y brief por defecto** — los objetos archived solo aparecen con un opt-in explícito. Ver [Projects](/es/concepts/projects) para el modelo.
 
 ## Projects
 
 | Método | Ruta | Perm | Propósito |
 |---|---|---|---|
 | `POST` | `/workspaces/:slug/projects` | member (`work:write`) | Crea un project |
-| `GET` | `/workspaces/:slug/projects` | member | Lista projects (`?status`) |
-| `GET` | `/workspaces/:slug/projects/:id` | member | Detalle del project (`?view`, `card_limit`, `card_offset`, `card_status`) |
-| `PATCH` | `/workspaces/:slug/projects/:id` | member (`work:write`) | Actualiza un project |
+| `GET` | `/workspaces/:slug/projects` | member | Lista projects (`?status=&owner=&updated_after=&limit=&cursor=`). Por defecto `active`; bare array, o `{items, shown, has_more, nextCursor}` cuando hay un param de paging |
+| `GET` | `/workspaces/:slug/projects/search` | member | Búsqueda por intención (`?q=&status=&include_archived=&owner=&updated_after=&limit=&cursor=`). `q` obligatorio; los `items[]` llevan `score`; active-only salvo `include_archived=true` |
+| `GET` | `/workspaces/:slug/projects/:id` | member | Detalle del project (`?view=summary\|brief\|full`, `card_limit`, `card_offset`, `card_status`). **Brief por defecto**; `full` es explícito |
+| `PATCH` | `/workspaces/:slug/projects/:id` | member (`work:write`) | Actualiza metadatos. Rechaza `status` que toca ciclo de vida (`409`) — usa close/archive/restore |
+| `POST` | `/workspaces/:slug/projects/:id/close` | member (`work:write`) | Valida la terminación y destila las write-back Notes; devuelve `{project, context_outcome}` (idempotente) |
+| `POST` | `/workspaces/:slug/projects/:id/archive` | member (`work:write`) | Retira de forma reversible un project en `done`; `version += 1`; archived es inmutable |
+| `POST` | `/workspaces/:slug/projects/:id/restore` | member (`work:write`) | Restaura un project archived a `done` |
+| `DELETE` | `/workspaces/:slug/projects/:id` | owner/admin | Purga un project archived (`?dry_run=&expected_version=`). CAS, auditado, idempotente, preserva origin Notes |
 
-Cuerpo de creación (`CreateProjectDto`): `title` (obligatorio), `goal`, `playbook_slug`, `owner_clerk_id`, `context[]`. El update acepta `title`, `status`, `goal`, `playbook_slug`, `owner_clerk_id`, `add_context`.
+Cuerpo de creación (`CreateProjectDto`): `title` (obligatorio), `goal`, `playbook_slug`, `owner_clerk_id`, `context[]`. El update acepta `title`, `goal`, `playbook_slug`, `owner_clerk_id`, `add_context` — un `status` de `done`/`archived` devuelve `409` y nombra la ruta de ciclo de vida que usar.
 
 ## Cards
 
@@ -23,11 +28,11 @@ Ruta base `/workspaces/:slug/projects/:projectId/cards`.
 | Método | Ruta | Perm | Propósito |
 |---|---|---|---|
 | `POST` | `.../cards` | member (`work:write`) | Crea una card |
-| `GET` | `.../cards` | member | Lista cards (`?status`, `limit`, `offset`, `owner`) |
-| `GET` | `.../cards/next` | member | El tick del loop (`?context=refs\|summaries\|full`) |
-| `GET` | `.../cards/:cardId` | member | Detalle de la card |
-| `PATCH` | `.../cards/:cardId` | member (`work:write`) | Actualiza una card |
-| `DELETE` | `.../cards/:cardId` | member (`work:write`) | Elimina una card |
+| `GET` | `.../cards` | member | Lista cards (`?status=&limit=&owner=&offset=`). Acotado; paging por `offset`; ordenadas por prioridad de planificación |
+| `GET` | `.../cards/next` | member | El tick del loop (`?context=refs\|summaries\|full`); devuelve una card más su context bundle, o una señal terminal |
+| `GET` | `.../cards/:cardId` | member | Detalle de la card (incluye `origin_notes`) |
+| `PATCH` | `.../cards/:cardId` | member (`work:write`) | Actualiza una card (o mueve con `to_project_id`) |
+| `DELETE` | `.../cards/:cardId` | member (`work:write`) | Safe delete de una card `todo` (`?dry_run=`). Rechaza dependientes y Notes de origen; idempotente |
 
 Cuerpo de creación (`CreateCardDto`): `title` (obligatorio), `description`, `status`, `owner_clerk_id`, `acceptance`, `validate`, `depends_on` (array de uuid), `context`, `allow_secrets`. El update también acepta `to_project_id`, `validate_result`, `validate_passed` y `add_context`.
 
@@ -40,9 +45,18 @@ curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/projects \
 
 ## Cuerpos, paginación y errores
 
-Las cards paginan con `limit` (1 a 100) y `offset`; `next` devuelve una card más su context bundle, o una señal terminal cuando no hay nada accionable. Los valores de status se validan contra el enum de card (`todo`, `in_progress`, `blocked`, `review`, `done`) y el enum de project (`active`, `done`, `archived`); un valor inválido devuelve `400 VALIDATION_FAILED`. Los campos de cuerpo desconocidos se rechazan. Ver [errores](/es/api/errors) para el sobre.
+`list` y `search` de projects paginan por **keyset cursor** (`limit` 1–50, default 20; `cursor` opaco del `nextCursor` previo). El embed de cards dentro de `GET /:id` pagina por `card_offset`/`card_limit` (paging por offset) y se acota con `card_status`. `next` devuelve una card más su context bundle, o una señal terminal cuando no hay nada accionable. Un `context_outcome` de `close` es `{ status, retryable, topic?, reason? }` con `status` uno de `created` · `already_exists` · `skipped` · `failed`. El `impact` del purge es `{ project_id, version, cards, context_refs, origin_notes_preserved }`; el `impact` del delete de card es `{ card_id, dependents, origin_notes, context_refs }`. Los valores de status se validan contra el enum de card (`todo`, `in_progress`, `blocked`, `review`, `done`) y el enum de project (`active`, `done`, `archived`); un valor inválido devuelve `400 VALIDATION_FAILED`. Los campos de cuerpo desconocidos se rechazan. Ver [errores](/es/api/errors) para el sobre.
+
+## Ciclo de vida: close, archive y purge
+
+- **`POST .../:id/close`** valida la terminación (sin cards en `todo`/`in_progress`/`blocked`/`review`), destila las write-back Notes del project en un Topic borrador **una sola vez**, y guarda `close_context_outcome`. Body `{no_durable_learning?: true}`. Idempotente — un reintento devuelve `already_exists` y nunca re-destila. Rechaza `--no-durable-learning` cuando sí existen Notes durables (`400`); se rehúsa a correr contra un project archived (`409`).
+- **`POST .../:id/archive`** retira un project en `done` a `archived`. **`POST .../:id/restore`** reviven un project `archived` a `done`. Ambos incrementan `version` y se auditan. Un project archived es **inmutable** — `PATCH`, `close` y las escrituras de cards devuelven `409 PROTECTED_RESOURCE`.
+- **`DELETE .../:id?dry_run=true`** previsualiza el impacto (`origin_notes_preserved` cuenta las write-back Notes que **sobreviven** al borrado). **`DELETE .../:id?expected_version=<n>`** ejecuta el purge con compare-and-set; un `expected_version` que no coincide devuelve `409 VERSION_CONFLICT`. **Solo owner/admin**, auditado, idempotente — un reintento tras el purge devuelve `already_absent`.
+
+El safe **delete de cards** sigue la misma forma: `DELETE .../cards/:cardId` solo elimina una card `todo`, **rechaza** cards de las que dependen otras (`409`, lista los dependientes), y **rechaza** cards con write-back Notes de origen (`409`). `?dry_run=true` previsualiza los bloqueantes. Un reintento tras el borrado devuelve `already_absent`.
 
 ## Relacionado
 
 - [Projects](/es/concepts/projects) - el concepto y el loop.
 - [CLI: Projects y Cards](/es/cli/projects) - la superficie de línea de comandos.
+- [MCP: Projects y operaciones](/es/mcp/work) - la superficie MCP.

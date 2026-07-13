@@ -1,11 +1,13 @@
 ---
 title: 'Projects'
-description: "A shared execution environment for humans and agents. Cards are the unit of work, and an agent walks the board in a loop, pulling team context per card and writing learnings back."
+description: "A shared execution environment for humans and agents. Cards are the unit of work, and an agent walks the board in a loop, pulling team context per card and writing learnings back. Projects are active-only and bounded by default; archive, purge and close are explicit, governed lifecycle operations."
 ---
 
 A **project** is where work happens in a Driftless workspace. It is a shared execution environment for humans and their agents: the project holds **cards** (the unit of work), and the same board is operable from the CLI, the REST API, and the dashboard. The product lives in the headless surface; the board is occasional visibility for the human.
 
 This is the half of Driftless that isn't documentation. Topics capture what the team *knows*; projects capture what the team is *doing*. Because both live in the same workspace, an agent picking up a card pulls the Knowledge anchored to the code it's about to touch, and the gotchas it learns flow back into the vault.
+
+Reads are **active-only, bounded and brief by default** across every surface. A `project list` returns active projects in a bounded page; archived ones only surface when you explicitly opt in with `--include-archived` (CLI), `include_archived: true` (MCP), or `?include_archived=true` (REST). A `project get` comes back **brief** unless you ask for `full`. Archive, restore and purge are three **separate, explicit** operations — lifecycle is never collapsed into `update --status`.
 
 ## Projects and cards
 
@@ -30,12 +32,12 @@ The agent works with the bundle loaded. This is what sets it apart from an ordin
 <Step title="Validate against acceptance">
 If the card has a `validate` command, the agent runs it. A non-zero exit is **stop-and-fix**: do not mark the card done, repair and re-validate. `acceptance` is the human-readable definition of done the agent checks against.
 </Step>
-<Step title="Write back and close">
-Persist anything durable learned, mark the card `done`, and ask for the next card. Repeat until `project_done` is true.
+<Step title="Close with a context outcome">
+Persist anything durable learned, mark the last card `done`, then `project close <id>`. Close is a governed, idempotent operation that distills the project's write-back Notes into a draft Topic once and returns a `context_outcome` — so the agent knows whether the memory landed. Repeat `close` safely; a second call returns `already_exists` and never re-distills.
 </Step>
 </Steps>
 
-**Dep-gating** orders the loop without micro-management: a `todo` card with unmet dependencies never appears in `next`. It becomes "ready" only once every card in its `depends_on` list is `done`. Among actionable cards, `next` picks in priority order: `in_progress` first, then `review`, then `blocked`, then a ready `todo`. Listing cards with `project cards` uses a different, board-oriented order (`blocked`, `review`, `in_progress`, `todo`, `done`). When no cards are ready and none are in flight, `project_done` is `true`.
+**Dep-gating** orders the loop without micro-management: a `todo` card with unmet dependencies never appears in `next`. It becomes "ready" only once every card in its `depends_on` list is `done`. Among actionable cards, `next` picks in priority order: `in_progress` first, then `review`, then `blocked`, then a ready `todo`. Listing cards with `project cards` uses a different, board-oriented order (`blocked`, `review`, `in_progress`, `todo`, `done`) and is bounded by `--limit`/`--cursor`. When no cards are ready and none are in flight, `project_done` is `true`.
 
 **Blocked, not guessed:** if the agent cannot proceed without a human decision, it sets the card to `blocked` rather than marking it done.
 
@@ -53,23 +55,35 @@ driftless note add \
   --project prj_abc --card card_xyz
 ```
 
-That note rides the card's `next` context bundle (the next loop tick sees it), and when the project closes, the **compact** synthesizes the card's attached notes into a draft Topic, sent to the Inbox for an owner or admin to merge into Knowledge (themselves, or via an agent they ask). Work boundaries are where memory should attach: `next` is the moment to inject context, card-close is the moment to capture it.
+That note rides the card's `next` context bundle (the next loop tick sees it), and when the project closes, the **compact** distills the card's attached notes into a draft Topic, once per project. The close returns a `context_outcome` describing what happened:
+
+```bash
+driftless project close prj_abc
+# Project closed — context created (refunds-revamp-a1b2): 3 notes distilled.
+```
+
+The `context_outcome` has four states — `created` (notes distilled into a new draft topic), `already_exists` (a prior close already distilled; safe retry), `skipped` (no durable Notes; requires `--no-durable-learning`), and `failed` (retryable; reason given). Work boundaries are where memory should attach: `next` is the moment to inject context, close is the moment to capture it.
 
 <Note>
-`--card` requires `--project` (a card lives inside a project). Over MCP, `driftless_note_add` takes the same `project_id` and `card_id`.
+`--card` requires `--project` (a card lives inside a project). Over MCP, `driftless_note_add` takes the same `project_id` and `card_id`. `project close` refuses to run while non-`done` cards remain, and rejects `--no-durable-learning` when durable Notes do exist.
 </Note>
 
 ## From the CLI
 
-Projects and cards are first-class CLI citizens; an agent runs the same commands a human would.
+Projects and cards are first-class CLI citizens; an agent runs the same commands a human would. Reads are active-only and bounded; lifecycle is explicit.
 
 | Command | Description |
 |---|---|
 | `project add <title>` | Create a project |
-| `project list [--status active\|done\|archived]` | List projects |
-| `project get <id>` | Project detail + card index |
-| `project update <id> [--status …] [--title "…"]` | Update a project |
-| `project cards <project-id> [--status s] [--limit n]` | List cards (priority order) |
+| `project list [--status active\|all] [--owner me] [--limit n] [--cursor c]` | List active projects (bounded; page with `--cursor`). `--status all` opts in to done/archived |
+| `project search <intent> [--owner me] [--include-archived] [--updated-after <iso>] [--limit n] [--cursor c]` | Intent-ranked search over title, goal and card bodies. Active-only unless `--include-archived` |
+| `project get <id> [--view summary\|brief\|full]` | Project detail; **brief by default**, `full` is explicit |
+| `project close <id> [--no-durable-learning]` | Validate completion and return a `context_outcome` (idempotent) |
+| `project archive <id>` | Reversibly retire a completed project |
+| `project restore <id>` | Restore an archived project to `done` |
+| `project purge <id> --dry-run` \| `--expected-version <n>` | Permanently remove an archived project (owner/admin; version CAS) |
+| `project update <id> [--title "…"] [--goal "…"] [--playbook <slug>]` | Update project metadata (lifecycle is via close/archive/restore) |
+| `project cards <project-id> [--status s] [--owner id] [--limit n] [--cursor c]` | List cards (priority order, bounded; page with `--cursor`) — not the loop tick |
 | `project card next <project-id>` | **Next actionable card + context bundle (the loop tick)** |
 | `project card add <project-id> --title "…" [--description "…"\|@file] [--acceptance "…"] [--validate "cmd"] [--dep <card-id>] [--owner <id>]` | Create a card |
 | `project card add <project-id> --file @cards.json` | Batch-create cards (`depends_on` by title or id) |
@@ -77,7 +91,7 @@ Projects and cards are first-class CLI citizens; an agent runs the same commands
 | `project card get <project-id> <card-id>` | Card detail |
 | `project card status <project-id> <card-id> <status>` | Change a card's status |
 | `project card move <project-id> <card-id> <to-project-id>` | Move a card to another project |
-| `project card rm <project-id> <card-id>` | Delete a card |
+| `project card rm <project-id> <card-id> [--dry-run]` | Delete a `todo` card (rejects dependents and origin Notes; `--dry-run` previews impact) |
 
 ```bash
 # Spin up a project with an acceptance-checked, validated card
@@ -91,6 +105,12 @@ driftless project card add prj_abc \
 # Then walk it
 driftless project card next prj_abc          # card + its context bundle
 driftless project card status prj_abc card_xyz done
+
+# Close with an observable outcome, then retire it
+driftless project close prj_abc              # context_outcome: created | already_exists | skipped | failed
+driftless project archive prj_abc
+driftless project purge prj_abc --dry-run    # impact: version, cards, context_refs, origin_notes_preserved
+driftless project purge prj_abc --expected-version 7   # owner/admin; CAS confirm
 ```
 
 Cards are scanned for secrets on write, like topics; pass `--allow-secrets` only when you intend to store one. Add `--json` to any command for machine output.
@@ -99,20 +119,35 @@ Cards are scanned for secrets on write, like topics; pass `--allow-secrets` only
 
 Everything above maps to REST under the workspace:
 
-| Method | Path |
-|---|---|
-| `POST` / `GET` | `/workspaces/:slug/projects` |
-| `GET` / `PATCH` | `/workspaces/:slug/projects/:id` |
-| `POST` / `GET` | `/workspaces/:slug/projects/:projectId/cards` |
-| `GET` | `/workspaces/:slug/projects/:projectId/cards/next` |
-| `GET` / `PATCH` / `DELETE` | `/workspaces/:slug/projects/:projectId/cards/:cardId` |
+| Method | Path | Notes |
+|---|---|---|
+| `POST` / `GET` | `/workspaces/:slug/projects` | list: `?status=&owner=&updated_after=&limit=&cursor=` (bare array, or `{items, nextCursor}` with paging) |
+| `GET` | `/workspaces/:slug/projects/search?q=&status=&include_archived=&owner=&updated_after=&limit=&cursor=` | intent-ranked; `items[]` carry `score` |
+| `GET` / `PATCH` | `/workspaces/:slug/projects/:id` | `?view=summary\|brief\|full` — brief default; `card_limit`/`card_offset`/`card_status` embed a card page |
+| `POST` | `/workspaces/:slug/projects/:id/close` | body `{no_durable_learning?}`; returns `{project, context_outcome}` (idempotent) |
+| `POST` | `/workspaces/:slug/projects/:id/archive` · `/restore` | reversible lifecycle; `version += 1`; archived is immutable |
+| `DELETE` | `/workspaces/:slug/projects/:id?dry_run=&expected_version=` | owner/admin; version CAS; preserves origin Notes |
+| `POST` / `GET` | `/workspaces/:slug/projects/:projectId/cards` | cards list: `?status=&limit=&owner=&offset=` |
+| `GET` | `/workspaces/:slug/projects/:projectId/cards/next` | loop tick |
+| `GET` / `PATCH` / `DELETE` | `/workspaces/:slug/projects/:projectId/cards/:cardId` | delete: `?dry_run=` (safe delete) |
 
-A card `PATCH` accepts `add_context` to attach a note or topic to the card mid-loop, mirroring the project's own `add_context`.
+A card `PATCH` accepts `add_context` to attach a note or topic to the card mid-loop, mirroring the project's own `add_context`. Archive, restore, purge and close are **separate routes** — a `PATCH` that tries to set `status` to `done`/`archived` is rejected with `409` and tells you which lifecycle route to use instead.
+
+## Lifecycle, archive and purge
+
+A project moves forward, then retires:
+
+1. **Active** — cards are worked through the loop.
+2. **Done** — `project close` validates completion and distills write-back Notes into a draft Topic, returning a `context_outcome` (`created`, `already_exists`, `skipped`, `failed`). Close is idempotent: a repeat returns `already_exists` and never re-distills.
+3. **Archived** — `project archive` retires a `done` project. An archived project is **immutable**: only `restore` (back to `done`) and `purge` can touch it. `update`, `close` and card writes are rejected with `409`.
+4. **Purged** — `project purge` is permanent and **owner/admin only**. Run `--dry-run` first to read the impact (`version`, cards, context refs, and `origin_notes_preserved` — the write-back Notes the project spawned are **preserved**, not deleted). Confirm with `--expected-version <n>` (compare-and-set on the version you just read). The call is audited and idempotent: a repeat after the project is gone returns `already_absent`, never `404`.
+
+Safe card delete is the same shape: `project card rm` only deletes a `todo` card, **rejects** cards that other cards depend on, and **rejects** cards that carry origin write-back Notes (re-home them first). `--dry-run` previews the dependents and Notes that block it.
 
 ## On the dashboard
 
-The board renders the same projects and cards as a kanban: columns are the card statuses, and dragging a card calls the same `PATCH` the CLI does. The project header surfaces its goal and playbook; cards show `verified` and `ready` badges and their acceptance / validate in detail. Marking a project done opens the **compact**, where you pick the cards whose learnings become Topic drafts in your Inbox; the rest retire with the project. It's a visibility surface, not a separate source of truth: a card created by an agent from the CLI shows up immediately.
+The board renders the same projects and cards as a kanban: columns are the card statuses, and dragging a card calls the same `PATCH` the CLI does. The project header surfaces its goal and playbook; cards show `verified` and `ready` badges and their acceptance / validate in detail. Closing a project runs the same governed **compact** the CLI does, with the same observable `context_outcome`. It's a visibility surface, not a separate source of truth: a card created by an agent from the CLI shows up immediately.
 
 <Note>
-Projects and cards live in the workspace and are visible to its members. They're governed by [workspace roles](/concepts/workspaces#identity-vs-membership), not by the Note → Knowledge lifecycle; that lifecycle is for **topics**. The compact's draft topics, however, do enter that lifecycle. See [Governance](/concepts/governance).
+Projects and cards live in the workspace and are visible to its members. They're governed by [workspace roles](/concepts/workspaces#identity-vs-membership), not by the Note → Knowledge lifecycle; that lifecycle is for **topics**. The compact's draft topics, however, do enter that lifecycle — they're the `created` outcome of `project close`. See [Governance](/concepts/governance).
 </Note>
