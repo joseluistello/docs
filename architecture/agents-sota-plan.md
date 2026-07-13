@@ -39,7 +39,7 @@ determinismo explicable, proposer ≠ approver, no-scripting del broker).
    al degradarse (arXiv:2606.22484; patrón Mintlify PR-gated→opt-in-push; Rovo admin-gated).
 9. **pass^k, no pass@1, para decidir autonomía.** Un agente 90% pass@1 es ~57% consistente a k=8
    (τ-bench). Un skill no gradúa ni shippea sin pass^k sobre corpus sembrado.
-10. **Supresión > generación.** Presupuesto de FP <10% (el "cry-wolf effect" es la razón #1 de
+10. **Supresión > generación.** Presupuesto de FP &lt;10% (el "cry-wolf effect" es la razón #1 de
     abandono de bots de review); suprimir 35% de sugerencias subió la aceptación +15.8pp
     (arXiv:2511.18849). Invertir en *cuándo callar* tanto como en la calidad del draft.
 
@@ -89,7 +89,7 @@ tokens/run del Auditor −30% con igual o mejor recall en el eval de loop.
 | 3.1 | **Refuter pass**: post-parse y pre-landing, cada proposal pasa por un turno corto de refutación con "kill mandate", contexto asimétrico y modelo DISTINTO de la lista (los verificadores de la misma familia comparten sesgos). El refuter ve el claim + el código, no el razonamiento del generador. Sobrevive → aterriza con `verified:true`; muere → se registra en el trace (no llega al humano) | nuevo paso en `agent-runner.service.ts:339-347` (land loop); reusar `ThinLoopRuntime` con maxSteps 4-6 |
 | 3.2 | **Filtrado de claims estilo DocPrism** para drift: clasificar cada claim del topic localmente (fact/invariant/decision/ephemeral) y filtrar qué categorías de inconsistencia son reportables antes de auditar — mata el FP de "abstracción ≠ inconsistencia" | skill del Auditor + `agent-output.ts` |
 | 3.3 | `agent_stats` **desagregado por clase de acción** (update/flag/new_topic/relate/…) — el insumo de WS5 | `proposals.service` stats |
-| 3.4 | Política de supresión: presupuesto FP <10%; el comment de PR solo cuando el hallazgo sobrevivió al refuter Y la clase de acción tiene approval histórico >X | `auditor-comment.ts` |
+| 3.4 | Política de supresión: presupuesto FP &lt;10%; el comment de PR solo cuando el hallazgo sobrevivió al refuter Y la clase de acción tiene approval histórico &gt;X | `auditor-comment.ts` |
 
 **Aceptación:** en el corpus sembrado, el refuter mata ≥70% de proposals falsas plantadas sin
 matar >5% de verdaderas; approval rate humano sube de 86% → ≥92%.
@@ -104,7 +104,7 @@ matar >5% de verdaderas; approval rate humano sube de 86% → ≥92%.
 | 4.4 | Coverage multi-superficie del Architect: collections activas sin criterion, docs indexados con uso alto en Chat sin topic gobernante | `coverage.service.ts` |
 
 **Aceptación:** un cambio en una página Notion indexada que contradice Knowledge produce una
-propuesta de update en <1h (staleness gap SLA); drift local llega al Auditor sin clicks.
+propuesta de update en &lt;1h (staleness gap SLA); drift local llega al Auditor sin clicks.
 
 ### WS5 — Autonomía graduada (earn-autonomy)
 
@@ -180,9 +180,9 @@ revisable/revertible como commit independiente.*
 - **MTTR de drift** (detección → Knowledge reparado), por superficie (git / docs / records).
 - **pass^k (k=4)** por skill en el corpus sembrado — gate de release y de autonomía.
 - **Approval rate por clase de acción** (hoy 86% global) — objetivo ≥92% con refuter.
-- **FP rate de hallazgos** <10% (presupuesto cry-wolf).
+- **FP rate de hallazgos** &lt;10% (presupuesto cry-wolf).
 - **Tokens/run y cache hit-rate** (objetivo: −30% tokens, ≥80% cache warm).
-- **Staleness gap** de fuentes conectadas (SLA <1h con webhook, <24h batch).
+- **Staleness gap** de fuentes conectadas (SLA &lt;1h con webhook, &lt;24h batch).
 
 ## Trampas a evitar (todas documentadas en la literatura)
 
