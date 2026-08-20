@@ -33,6 +33,7 @@ La superficie de MCP está documentada por familia en la **Referencia MCP**. Usa
 | Projects y operaciones | El loop de cards del project, collections, records y entities | [MCP: Projects y operaciones](/es/mcp/work) |
 | Integraciones y Broker | Operar un provider conectado (gated) | [MCP: Integraciones y Broker](/es/mcp/integrations) |
 | Workspace y colaboración | Comments, members, workspaces y estadísticas de propuestas | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
+| Market data | `driftless_market_data`: suppliers, opportunities, awards, marcas de riesgo y permits — once actions semánticas, sin modelo ni SQL detrás | [Market Data](/es/api/market-data) |
 
 La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (proyectos, cards, tags, areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
 
@@ -175,9 +176,12 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `broker:read` | Lee connections, capabilities y records del broker |
 | `broker:invoke` | Invoca una operación del broker |
 | `broker:admin` | Gestiona grants y criterion del broker |
+| `market_data:read` | Lee inteligencia comercial (suppliers, opportunities, awards, marcas de riesgo, permits) — ver [Market Data](/es/api/market-data) |
 | `offline_access` | Refresca el acceso sin reconectar |
 
 Los scopes `broker:*` se aplican solo cuando el Broker está habilitado, y gobiernan su lane encima del rollout y los grants. La metadata de discovery anuncia un subconjunto de scopes; el conjunto aplicado es la autoridad.
+
+`market_data:read` es el scope documentado y canónico para las lecturas de market-data, pero la emisión OAuth por defecto de hoy todavía no lo otorga — `context:read` sigue satisfaciendo esas rutas de forma transicional para que ningún caller existente se rompa.
 
 ### Endpoints
 

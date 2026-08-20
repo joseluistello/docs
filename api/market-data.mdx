@@ -1,0 +1,276 @@
+---
+title: 'Market Data'
+description: 'Commercial intelligence over Mexican public-sector suppliers, opportunities, awards, risk marks, and permits — a governed, read-only warehouse with typed refusals and keyset pagination.'
+---
+
+Market data is a separate, read-only warehouse of Mexican commercial intelligence — suppliers, public opportunities, awards, adverse risk marks, and permits — layered under a **semantic contract**, not a SQL surface. It answers governed questions ("who could supply this?", "what has this RFC won?", "does this party carry a published risk mark?"); it does not expose a query language, and every response states what it actually saw so an empty page is never confused with a market that doesn't exist.
+
+The same eleven operations are reachable from four surfaces that all call the same services in-process: this HTTP API, the MCP tool `driftless_market_data`, the CLI's `driftless market` command, and the agent tool belt used by [chat and Investigations](#chat-and-due-diligence-screening). None of them run a model or SQL behind the scenes — the caller plans the sequence and synthesizes the answer.
+
+<Note>
+Every route is workspace-scoped and requires authentication like the rest of the API — there is no public/unauthenticated market-data route. A market-data read is a paid, attributable operation on a shared warehouse.
+</Note>
+
+## Base path
+
+```text
+/workspaces/:slug/market-data
+```
+
+## The eleven operations
+
+Every path below is relative to the base path above. `example` is a minimal, valid request body straight from the route table the API itself serves at `GET capabilities` — every operation's `method`/`path`/`example` is discoverable at runtime, not just documented here.
+
+| Operation | Method & path | Paginates | Example |
+|---|---|---|---|
+| `market_capabilities` | `GET capabilities` | no | — |
+| `search_suppliers` | `POST suppliers/search` | yes | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
+| `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
+| `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
+| `search_opportunities` | `POST opportunities/search` | yes | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
+| `get_opportunity` | `GET opportunities/:id` | no | — |
+| `search_awards` | `POST awards/search` | yes | `{ "supplier_rfc": "XAXX010101000", "limit": 5 }` |
+| `get_supplier_history` | `POST awards/history` | yes | `{ "supplier_rfc": "XAXX010101000", "currency": "MXN", "amount_scope": "supplier_contract" }` |
+| `aggregate_awards` | `POST awards/aggregate` | yes (groups) | `{ "currency": "MXN", "amount_scope": "supplier_contract", "group_by": ["buyer_name"] }` |
+| `search_risks` | `POST risks/search` | yes | `{ "rfc": "XAXX010101000" }` |
+| `screen_risks` | `POST risks/screen` | no (batch, not a page) | `{ "rfcs": ["XAXX010101000"] }` |
+| `search_permits` | `POST permits/search` | yes | `{ "holder_name": "Constructora Ejemplo" }` |
+
+`GET coverage` and `GET capabilities/compact` sit alongside these as platform-owned discovery routes (see [Discoverability](#discoverability) below).
+
+### Suppliers
+
+`search_suppliers` needs at least one narrowing dimension (`query`, `state`, `scian_codes`, `source_slugs`, or `rfc`) — an unbounded scan of the whole directory is refused with `query_too_broad` rather than served. Each result is **one published observation**, never a consolidated company or a demonstration of capability; it carries contact *presence* and counts, not contact values. `get_supplier` is the only operation that returns contact coordinates — and only what the publisher printed on a public card, subject to the live licence gate.
+
+`count_suppliers` shares the same narrowing rule and returns one exact `{ "count": number }`, computed with `SELECT count(*)`, never sampled or estimated. If the count itself can't finish inside the statement timeout, it fails with `market_data_timeout` rather than substituting an approximation.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/market-data/suppliers/count \
+  -H "x-api-key: drift_your_api_key_here" -H "Content-Type: application/json" \
+  -d '{ "state": "Nuevo León", "scian_codes": ["811111"] }'
+```
+
+### Opportunities and awards
+
+`search_opportunities` returns `actionability` and `actionability_reason` on every row. There is no deadline field: this corpus publishes none, and the layer refuses to invent one — `is_open` is a status recorded at load time, not a live verification. `get_opportunity` returns its awards as a nested `awards` child collection plus `award_count`, never a flat join (one procedure can carry hundreds of awards).
+
+An **award** is a publication — a contract was recorded as awarded — never a payment, a delivery, or an execution. `supplier_rfc` is strong identity; `supplier_name` is approximate and returns candidates. `get_supplier_history` requires `supplier_rfc`, `currency`, and `amount_scope` together (a history keyed on a name is a history of a string), and its response lists every other `(currency, amount_scope)` pair that RFC has rows in, so the total returned is never read as the whole history. `search_awards` also accepts `cog_partidas` — 1–20 five-digit SHCP "partida específica" (Clasificador por Objeto del Gasto) codes the *buyer* assigned at award time, matched by array overlap so a contract carrying several codes matches on any one of them; a code not shaped like five digits is refused as `invalid_field_value` before the corpus is read. Every award row carries `cogPartidas` (`[]` when the publisher recorded none).
+
+`aggregate_awards` requires `currency`, `amount_scope`, and at least one allowlisted `group_by` (`supplier_rfc`, `buyer_name`, `buyer_acronym`, `procedure_type`, `contracting_type`, `supplier_size`, `award_month`, `award_year`, `cog_partida`, `cog_capitulo` — at most three). `supplier_name` is deliberately not a grouping dimension: grouping by approximate identity would merge unrelated organizations. Amounts are never summed across currencies or across amount scopes (`supplier_contract` and `award_group_published_total` are different quantities).
+
+#### `compare_period`
+
+Pass `compare_period: { from_date, to_date }` alongside the request's own `from_date`/`to_date` to run a period-over-period comparison **inside the same grouped statement**, never a second query:
+
+```json
+{
+  "currency": "MXN",
+  "amount_scope": "supplier_contract",
+  "group_by": ["buyer_name"],
+  "from_date": "2026-01-01",
+  "to_date": "2026-06-30",
+  "compare_period": { "from_date": "2025-01-01", "to_date": "2025-06-30" }
+}
+```
+
+Every returned group carries, in the envelope's own camelCase (`results` is not translated to snake_case):
+
+```ts
+periodA: { awardCount: number; totalAmount: string }
+periodB: { awardCount: number; totalAmount: string }   // identical to the top-level awardCount/totalAmount
+deltaAmount: string                                     // periodB.totalAmount − periodA.totalAmount
+deltaPct: number | null                                 // as a fraction; null when periodA's total was zero
+```
+
+`delta_pct` is computed in Postgres in `numeric` and cast to `float8` only after the exact division already decided whether the denominator was zero — it is never `Infinity` or a fabricated number when period A totalled zero. Ranking and pagination order are always period B's: `compare_period` compares against the ranking, it never changes what is being ranked. A cursor issued without `compare_period` is invalidated (`invalid_cursor`) if resumed with one, and vice versa.
+
+#### `group_by: cog_partida` / `cog_capitulo`
+
+These two dimensions group by the SHCP object-of-expense code(s) a mixed contract carries — `cog_partida` on the raw five-digit code, `cog_capitulo` on its first digit — by unnesting `cog_partidas` before grouping. A contract carrying several codes is **not split** across them: it counts in full under *every* code it carries, so a group's `awardCount`/`totalAmount` can double-count relative to the corpus, and the sum across groups can exceed the corpus total. This is never resolved by prorating — the publisher never declared how to divide one contract across its codes. Grouping by either dimension always attaches the `cog_partida_totals_may_exceed_corpus` semantic warning, and both compose with `compare_period` the same way every other `group_by` does. There is no `cog_capitulo` *filter* on `search_awards` — an unindexed scan of the leading digit over the ~500K rows this relation serves was judged too slow to offer; `aggregate_awards` is the way to ask a capítulo-shaped question.
+
+### Risk marks
+
+`search_risks` finds published adverse marks — a barred-supplier listing (`efos`) or a `sancion`/inhabilitación. `rfc` is strong identity; `entity_name` is approximate and returns candidates with their RFCs. A mark is a **published listing**, never a judicial conviction, and a party can carry several, including published exonerations.
+
+`screen_risks` batches 1–50 RFCs into **one** bounded `rfc = ANY($1)` scan instead of one `search_risks` call per RFC:
+
+```json
+{ "rfcs": ["XAXX010101000", "AAA010101AAA"] }
+```
+
+`results` carries one entry per requested RFC, **in the order requested**, including an RFC with zero marks — that is a valid, coverage-backed answer for that RFC alone, never evidence about any other RFC in the same batch. More than 50 RFCs is refused with `batch_too_large` rather than silently truncated.
+
+### Permits
+
+`search_permits` finds published permits, concessions, and capex commitments. `holder_rfc` is strong identity where published (rare in this corpus); `holder_name` is approximate and is the join this relation was built around. A permit is a granted right recorded at load time, never a live operational verification — treat `is_active_risk`, `status_text`, `is_expansion`, and capex/capacity fields (`investment_mdd`, `capacity_mw`, `estimated_generation`) as what the publisher printed, not audited or disbursed spend.
+
+## The envelope
+
+Every success response — search, get, aggregate, count, screen alike — is one envelope, and every key in it is **camelCase**, deliberately distinct from the snake_case the rest of the platform (Knowledge, Collections, Projects) uses. This is not an inconsistency to fix: it's the dialect the shipped market-data contract, the MCP tool result, and the ChatGPT plugin already speak.
+
+```ts
+interface MarketDataEnvelope<T> {
+  schemaVersion: 'market-data/domain/1'
+  requestId: string
+  operation: string
+  interpretedRequest: object   // the request AFTER normalization
+  results: T
+  page: PageInfo | null        // null for a single-record read or a count
+  coverage: CoverageDeclaration[]
+  corpusBasis: CorpusBasis
+  semanticWarnings: SemanticWarning[]
+  provenance: Provenance[]
+  diagnostics: { elapsedMs: number; rowsExamined: number; truncated: boolean }
+}
+```
+
+- **`interpretedRequest`** is what the layer actually ran after normalizing the caller's input (a state name resolved to its code, a fuzzy municipality resolved to its canonical spelling) — `normalizations` says what changed and why.
+- **`results`** is the operation's own payload: a row array for a search, one object for a `get_*`/`count_*` read, a group array for an aggregate.
+- **`page`** is `null` whenever the operation doesn't paginate (`get_supplier`, `get_opportunity`, `market_capabilities`, `count_suppliers`).
+- **`coverage`** and **`corpusBasis`** are what makes an answer honest: which published sources contributed, and which snapshot of the corpus this read saw. Neither can be authored by a model or a caller.
+- **`semanticWarnings`** names a misreading this domain actively invites (an award is not a payment, a risk mark is not a conviction, a name is approximate identity) — always attached by the layer, never decoration.
+- **`provenance`** says where each row was read, explicitly not that it is current or verified.
+
+## Pagination — keyset, never offset
+
+Every operation that returns more than one row (`search_*`, `aggregate_awards`, `get_supplier_history`) pages with an opaque keyset cursor, never `OFFSET`:
+
+```ts
+interface PageInfo {
+  limit: number
+  returned: number
+  hasMore: boolean
+  nextCursor: string | null
+}
+```
+
+`page.nextCursor` carries the contract version (so a cursor from an older response shape can't be resumed against a newer one), the corpus snapshot it was issued against (so pagination can never interleave two published snapshots), a digest of the filters — and, for `aggregate_awards`, of `compare_period` — so continuing with a *different* filter set is refused rather than served, and the last row's position in the total order.
+
+`page.hasMore`/`page.returned` are computed from an honest `limit + 1` read, never inferred from `returned === limit`. Two distinct refusals come out of a broken cursor because the correct recovery differs: a **filter change** mid-pagination is `invalid_cursor`; a **corpus change** is `cursor_stale` — nobody's mistake, the published data moved. Both recover the same way: restart without a cursor.
+
+Default page size is 20 (50 for `aggregate_awards`); `limit` caps at **50** for every search-shaped operation and at **200** for `aggregate_awards`.
+
+## Refusals
+
+A refusal is never a bare 400. Every domain-specific rejection carries a `market_data` block alongside the platform's own `code`/`message`/`request_id`:
+
+```json
+{
+  "code": "VALIDATION_FAILED",
+  "message": "This batch carries 60 rfcs, above the 50 this operation screens in one call.",
+  "request_id": "req-1",
+  "market_data": {
+    "semantic_code": "batch_too_large",
+    "why": "A batch screen answers one bounded scan, not an open-ended list. Serving more than 50 would mean either scanning unboundedly or silently dropping the RFCs past the ceiling — both are worse than telling you the ceiling up front.",
+    "suggested_correction": "Split \"rfcs\" into batches of at most 50 and call once per batch.",
+    "retryable": false,
+    "recovery": { "action": "fix_arguments" }
+  }
+}
+```
+
+- **`why`** explains the misunderstanding, not just the rule — most refusals in this domain are a well-formed question about a field or shape that doesn't mean what the caller assumed, not a typo.
+- **`suggested_correction`** is prose aimed at an LLM: the concrete next call that would work.
+- **`recovery.action`** is the same fact, machine-readable, drawn from a closed vocabulary so a caller can branch without parsing prose. It's derived one-to-one from `semantic_code` — never set independently of it.
+- **`retryable`** is `false` for every shape/value/vocabulary refusal (the identical call reproduces the identical refusal), and `true` only for the operational handful — timeout, unavailable, stale projection — where the world, not the request, is expected to change.
+
+| `semantic_code` | Fires when | `recovery.action` |
+|---|---|---|
+| `query_too_broad` | A search or count carries no narrowing dimension | `narrow_query` |
+| `invalid_field_value`, `unknown_state`, `invalid_observed_kind`, `invalid_mark_kind`, `deadline_not_available`, `amount_requires_currency_and_scope`, `unknown_filter_value`, `unknown_facet` | A value is structurally or semantically wrong for its field | `fix_arguments` |
+| `batch_too_large` | `screen_risks` carries more than 50 RFCs | `fix_arguments` |
+| `invalid_cursor` | A cursor's filters don't match the query it's attached to | `restart_without_cursor` |
+| `cursor_stale` | The corpus changed underneath a cursor mid-pagination | `restart_without_cursor` |
+| `market_data_timeout`, `market_data_unavailable`, `serving_projection_unavailable`, `serving_projection_stale` | A bounded statement timeout, an outage, or a serving projection with no active publication yet | `retry_backoff` |
+
+`suppliers/count` reuses `query_too_broad`; `risks/screen` reuses `invalid_field_value`/`batch_too_large` — no operation invents its own one-off error vocabulary.
+
+<Note>
+A structural DTO violation (a bad enum, a missing required field, `forbidNonWhitelisted` rejecting an unknown property) is a plain `VALIDATION_FAILED` from the platform's [error envelope](/api/errors) — it never carries the `market_data` block. That block is earned only by a real domain refusal: the shape was valid, but the request asked a question this layer won't answer as posed.
+</Note>
+
+## Discoverability
+
+Two things a blind client (an agent with only `curl` and this API's own descriptions) needs and a bare 404 can't give it: what verb *would* have worked, and what paths exist at all.
+
+- **Wrong verb, real path** → `405 Method Not Allowed` with an RFC 9110-compliant `Allow` header naming the methods that do work, plus the same fact in the JSON body (`allowed_methods`).
+- **Unknown path under `market-data/*`** → `404` carrying `documentation_url` (the workspace's own `capabilities` route) and `operations` — the complete method/path list — instead of leaving the caller to guess from silence:
+
+```json
+{
+  "statusCode": 404,
+  "code": "NOT_FOUND",
+  "message": "No market-data route matches this path.",
+  "request_id": "req-1",
+  "endpoint": "GET /api/v1/workspaces/acme/market-data/suplier/search",
+  "documentation_url": "/api/v1/workspaces/acme/market-data/capabilities",
+  "operations": [
+    { "operation": "search_suppliers", "method": "POST", "path": "/workspaces/{slug}/market-data/suppliers/search" }
+  ]
+}
+```
+
+(`operations` lists all eleven, trimmed above for space.)
+
+`GET capabilities` is the full contract for integrators: every operation's `question`, `requires`, `refuses`, `method`, `path`, and a runnable `example`, plus the corpus-observed filter value lists (state names, SCIAN codes, procedure types, …), each stamped with the `corpusBasis` it was read against — never presented as timeless constants. An optional `?facets=a,b` query param restricts both the computation and the response to named corpus dimensions. `GET capabilities/compact` is the bounded, source-aware projection the agent runtimes (chat, MCP) are injected instead of spending a tool call on the full catalogue. Both carry `openapiUrl`, which points at the machine-readable OpenAPI document — served **root-absolute** at `/openapi.json`, unlike every other market-data path, which is workspace-relative.
+
+`GET coverage` returns the same `coverage` block attached to every other response, standalone: which published sources contributed to each relation, how fresh, and whether it's licensed for display. It is what separates "no results" from "no such market".
+
+## Authentication and scopes
+
+Market-data routes require the same authentication as the rest of the API (API key or OAuth bearer token) — there is no public route. Over OAuth, they map to a dedicated `market_data:read` scope, OR-listed with `context:read` for back-compat:
+
+| Scope | Status |
+|---|---|
+| `market_data:read` | The documented, canonical scope for market-data reads. Dedicated so a client that should only consume commercial intelligence (an external plugin, say) isn't handed read access to the whole Topics/Knowledge vault via `context:read`. |
+| `context:read` | Still satisfies every market-data route transitionally: today's default OAuth issuance (the ChatGPT plugin, the MCP connector, CLI OAuth) does not yet grant `market_data:read`, so retiring `context:read` from this OR-list is a later, deliberate step, not automatic. |
+
+## MCP: `driftless_market_data`
+
+One compact MCP tool, eleven semantic `action` values (the same operation names as the table above). See [MCP reference](/mcp/overview) for connecting a client.
+
+```json
+{ "action": "search_suppliers", "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
+```
+
+The tool result adds house-standard top-level pagination (`shown`, `has_more`) alongside the envelope's own `page.returned`/`page.hasMore` — additive, never a replacement — plus a `next_action` hint telling the caller what to do next (continue with a cursor, inspect a candidate with `get_supplier`, read `coverage` before concluding "no marks", and so on).
+
+For textual supplier, opportunity, and award operations (including `aggregate_awards`), `query_mode` is optional: `auto` preserves existing behavior, while `exact_phrase`, `all_terms`, and `any_terms` are bounded interpretations of tokenized text. An explicit opportunity mode uses lexical retrieval and cannot be combined with `strategy=hybrid`. The platform-authored `interpretedRequest.query_interpretation` reports requested and applied modes, normalized terms, recognized state aliases and filters, and any warning. It never includes SQL, schema, or a compiled query.
+
+<Note>
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. When `driftless_market_data`'s parameters change, reconnect the connector (or start a fresh session) to see the new fields — see [MCP & OAuth](/mcp/overview) for the general caching note.
+</Note>
+
+## CLI: `driftless market`
+
+```bash
+driftless market capabilities
+driftless market suppliers search --query "tornillos industriales" --state "Nuevo León" --limit 5
+driftless market suppliers get <source-slug> <source-record-id>
+driftless market suppliers count --state "Nuevo León"
+driftless market opportunities search --query "mantenimiento de bombas"
+driftless market opportunities get <id> --include-awards true
+driftless market awards search --supplier-rfc XAXX010101000
+driftless market awards history <supplier-rfc> --currency MXN --amount-scope supplier_contract
+driftless market awards aggregate --currency MXN --amount-scope supplier_contract --group-by buyer_name \
+  --compare-from-date 2025-01-01 --compare-to-date 2025-06-30 --from-date 2026-01-01 --to-date 2026-06-30
+driftless market risks search --rfc XAXX010101000
+driftless market risks screen --rfcs XAXX010101000,AAA010101AAA
+driftless market permits search --holder-name "Constructora Ejemplo"
+```
+
+Every command supports `--json` for the complete semantic envelope; without it, the CLI prints a compact human summary (row count, per-row label, warnings, coverage, next cursor). Repeat an array flag or pass comma-separated values. `--compare-from-date`/`--compare-to-date` are flat CLI flags that nest into one `compare_period` object on the wire — pass both together or neither.
+
+## Chat and due-diligence screening
+
+The dashboard's market-research chat plans and calls these same operations directly (no separate model-facing API) and can run a **due-diligence screening** method that composes `search_risks` and `search_permits`:
+
+1. Resolve identity by RFC first — from a prior `search_suppliers`/`search_awards` result or given directly — and call `search_risks { rfc }` / `search_permits { holder_rfc }` with it. Name-approximate resolution (`entity_name` / `holder_name`) is the fallback, with the match caveat stated.
+2. Never conclude "no risk marks" or "not authorized" from an empty page alone — `coverage` is read first and the search is stated against it.
+3. A permit and a risk mark answer different questions and are reported separately — never merged into one verdict of "clean" or "authorized". A risk mark is a published listing, not a conviction; a permit is a granted right recorded at load time, not current operational status.
+
+## Related
+
+- [MCP & OAuth](/mcp/overview) - connecting a client and the schema-caching note.
+- [Errors](/api/errors) - the platform-wide error envelope and code catalog.
+- [Security](/security/overview) - authentication and API keys.

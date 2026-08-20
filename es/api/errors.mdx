@@ -61,6 +61,7 @@ Después de esas dos, un `500` significa lo que debe: un bug real o una caída. 
 | `MISSING_HUMAN_IDENTITY` | 403 | Un principal sin rostro (una key sin dueño, o un token OAuth sin un owner/admin detrás) intentó fusionar en Knowledge. Vuelve a emitir la key desde el dashboard para que lleve tu identidad, o ejecuta la fusión bajo un owner/admin. |
 | `INSUFFICIENT_ROLE` | 403 | No tienes el rol de workspace para esta acción: solo un owner/admin puede aprobar. Pídele a uno que te promueva en Settings → Members. |
 | `NOT_FOUND` | 404 | El recurso no existe (o es el borrador privado de otro miembro que no puedes ver, así que devolvemos 404, nunca 403). |
+| `METHOD_NOT_ALLOWED` | 405 | La ruta es real pero el verbo no — lleva un header `Allow` compatible con RFC 9110 que nombra los métodos que sí funcionan. La superficie HTTP de [Market Data](/es/api/market-data#discoverability) devuelve esto en vez de un 404 desnudo ante una petición con el verbo equivocado. |
 
 ### Gobernanza y conflictos
 | `code` | Estado | Cuándo |

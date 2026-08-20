@@ -61,6 +61,7 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `MISSING_HUMAN_IDENTITY` | 403 | A faceless principal (an ownerless key, or an OAuth token with no owner/admin behind it) tried to merge into Knowledge. Re-issue the key from the dashboard so it carries your identity, or run the merge under an owner/admin. |
 | `INSUFFICIENT_ROLE` | 403 | You lack the workspace role for this action: only an owner/admin can approve. Ask one to promote you in Settings → Members. |
 | `NOT_FOUND` | 404 | The resource doesn't exist (or another member's private draft you can't see, so we return 404, never 403). |
+| `METHOD_NOT_ALLOWED` | 405 | The path is real but the verb isn't — carries an RFC 9110 `Allow` header naming the methods that do work. [Market Data](/api/market-data#discoverability)'s HTTP surface returns this instead of a bare 404 for a wrong-verb request. |
 
 ### Governance & conflicts
 | `code` | Status | When |

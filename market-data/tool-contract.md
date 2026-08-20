@@ -146,9 +146,9 @@ multiple of the page size would otherwise produce a phantom empty last page.
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | same narrowing rule as `search_suppliers`; returns one exact integer, never an approximation |
 | `search_opportunities` | `POST opportunities/search` | yes | hybrid or lexical strategy |
 | `get_opportunity` | `GET opportunities/:id` | no | |
-| `search_awards` | `POST awards/search` | yes | one currency + one amount scope |
+| `search_awards` | `POST awards/search` | yes | one currency + one amount scope; `cog_partidas` filters by SHCP object-of-expense code overlap |
 | `get_supplier_history` | `POST awards/history` | yes | one RFC's awards |
-| `aggregate_awards` | `POST awards/aggregate` | yes (groups) | optional `compare_period` — see below |
+| `aggregate_awards` | `POST awards/aggregate` | yes (groups) | optional `compare_period` — see below; `group_by: cog_partida`/`cog_capitulo` can overcount — see below |
 | `search_risks` | `POST risks/search` | yes | one RFC or entity name at a time |
 | `screen_risks` | `POST risks/screen` | no (batch, not a page) | 1–50 RFCs, one bounded `rfc = ANY($1)` scan |
 | `search_permits` | `POST permits/search` | yes | |
@@ -199,6 +199,33 @@ are always period B's: `compare_period` compares against the ranking, it
 never changes what is being ranked. A cursor issued without `compare_period`
 is invalidated (`invalid_cursor`) if resumed with one, and vice versa — the
 filters digest a cursor carries includes `comparePeriod`.
+
+### `search_awards` and `aggregate_awards` on `cog_partida`
+
+`cog_partidas` on `search_awards` is 1–20 five-digit SHCP "partida específica"
+(Clasificador por Objeto del Gasto) codes — the object-of-expense code the
+buyer assigned at award time. A code not shaped like five digits is refused
+as `invalid_field_value` before the corpus is read; a well-formed code is
+never further validated against a label catalogue, because none exists to
+check it against. The match is `cog_partidas && $1::text[]` — overlap, not
+containment — so a contract carrying several codes matches on any one of
+them. Every returned award row carries `cogPartidas` (`[]` when the publisher
+recorded none). There is no `cog_capitulo` filter on `search_awards`: an
+unindexed capítulo scan (the code's leading digit) over the ~500K rows this
+relation serves was judged too slow to offer as a filter — `aggregate_awards`
+is the way to ask a capítulo-shaped question.
+
+`aggregate_awards` accepts `group_by: cog_partida` (the raw code) and
+`group_by: cog_capitulo` (its first digit), both by unnesting `cog_partidas`
+before grouping. A contract carrying several codes is not split across
+them — it counts **in full** under every code it carries, so a group's
+`totalAmount`/`awardCount` can double-count relative to the corpus, and the
+sum across groups can exceed the corpus total. This is never resolved by
+prorating: the publisher never declared how to divide one contract across
+its codes, and inventing a split would be a number this layer never read
+anywhere. Grouping by either dimension always attaches the
+`cog_partida_totals_may_exceed_corpus` semantic warning, and both dimensions
+compose with `compare_period` the same way every other `group_by` does.
 
 ## What is out of scope here
 

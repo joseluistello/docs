@@ -1,0 +1,276 @@
+---
+title: 'Market Data'
+description: 'Inteligencia comercial sobre suppliers, opportunities, awards, marcas de riesgo y permits del sector público mexicano — un warehouse gobernado y de solo lectura, con refusals tipados y paginación keyset.'
+---
+
+Market data es un warehouse separado y de solo lectura de inteligencia comercial mexicana — suppliers, opportunities públicas, awards, marcas de riesgo adversas y permits — construido sobre un **contrato semántico**, no una superficie SQL. Responde preguntas gobernadas ("¿quién podría suministrar esto?", "¿qué se ha adjudicado a este RFC?", "¿esta parte lleva una marca de riesgo publicada?"); no expone un lenguaje de consulta, y cada respuesta declara qué vio realmente, para que una página vacía nunca se confunda con un mercado que no existe.
+
+Las mismas once operaciones se alcanzan desde cuatro superficies que llaman a los mismos servicios in-process: esta HTTP API, la tool de MCP `driftless_market_data`, el comando `driftless market` de la CLI, y el tool belt del agente que usan [el chat e Investigations](#chat-y-el-método-de-due-diligence). Ninguna corre un modelo o SQL detrás de escena — quien llama planea la secuencia y sintetiza la respuesta.
+
+<Note>
+Cada ruta está acotada al workspace y requiere autenticación como el resto de la API — no hay ninguna ruta pública/sin autenticar en market-data. Una lectura de market-data es una operación paga y atribuible sobre un warehouse compartido.
+</Note>
+
+## Ruta base
+
+```text
+/workspaces/:slug/market-data
+```
+
+## Las once operaciones
+
+Cada ruta de abajo es relativa a la ruta base de arriba. `example` es un cuerpo de petición mínimo y válido, tomado directamente de la tabla de rutas que la propia API sirve en `GET capabilities`: el `method`/`path`/`example` de cada operación es descubrible en tiempo de ejecución, no solo documentado acá.
+
+| Operación | Método y ruta | Pagina | Ejemplo |
+|---|---|---|---|
+| `market_capabilities` | `GET capabilities` | no | — |
+| `search_suppliers` | `POST suppliers/search` | sí | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
+| `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
+| `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
+| `search_opportunities` | `POST opportunities/search` | sí | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
+| `get_opportunity` | `GET opportunities/:id` | no | — |
+| `search_awards` | `POST awards/search` | sí | `{ "supplier_rfc": "XAXX010101000", "limit": 5 }` |
+| `get_supplier_history` | `POST awards/history` | sí | `{ "supplier_rfc": "XAXX010101000", "currency": "MXN", "amount_scope": "supplier_contract" }` |
+| `aggregate_awards` | `POST awards/aggregate` | sí (grupos) | `{ "currency": "MXN", "amount_scope": "supplier_contract", "group_by": ["buyer_name"] }` |
+| `search_risks` | `POST risks/search` | sí | `{ "rfc": "XAXX010101000" }` |
+| `screen_risks` | `POST risks/screen` | no (batch, no una página) | `{ "rfcs": ["XAXX010101000"] }` |
+| `search_permits` | `POST permits/search` | sí | `{ "holder_name": "Constructora Ejemplo" }` |
+
+`GET coverage` y `GET capabilities/compact` se suman a estas como rutas de discovery propiedad de la plataforma (ver [Discoverability](#discoverability) más abajo).
+
+### Suppliers
+
+`search_suppliers` necesita al menos una dimensión de acotamiento (`query`, `state`, `scian_codes`, `source_slugs`, o `rfc`) — un escaneo sin límite de todo el directorio se rechaza con `query_too_broad` en vez de servirse. Cada resultado es **una observación publicada**, nunca una empresa consolidada ni una demostración de capacidad; lleva la *presencia* de contacto y sus conteos, no los valores de contacto. `get_supplier` es la única operación que devuelve coordenadas de contacto — y solo lo que el publisher imprimió en una ficha pública, sujeto al gate de licencia vigente.
+
+`count_suppliers` comparte la misma regla de acotamiento y devuelve un entero exacto `{ "count": number }`, calculado con `SELECT count(*)`, nunca muestreado ni estimado. Si el conteo mismo no puede terminar dentro del statement timeout, falla con `market_data_timeout` en vez de sustituir una aproximación.
+
+```bash
+curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/market-data/suppliers/count \
+  -H "x-api-key: drift_your_api_key_here" -H "Content-Type: application/json" \
+  -d '{ "state": "Nuevo León", "scian_codes": ["811111"] }'
+```
+
+### Opportunities y awards
+
+`search_opportunities` devuelve `actionability` y `actionability_reason` en cada fila. No hay campo de fecha límite: este corpus no publica ninguno, y la capa se rehúsa a inventar uno — `is_open` es un estado grabado al momento de la carga, no una verificación en vivo. `get_opportunity` devuelve sus awards como una child collection anidada `awards` más `award_count`, nunca un join plano (un procedimiento puede llevar cientos de awards).
+
+Un **award** es una publicación — se registró que un contrato fue adjudicado — nunca un pago, una entrega o una ejecución. `supplier_rfc` es identidad fuerte; `supplier_name` es aproximado y devuelve candidatos. `get_supplier_history` requiere `supplier_rfc`, `currency` y `amount_scope` juntos (una historia indexada por nombre es la historia de un string), y su respuesta lista cada otro par `(currency, amount_scope)` en el que ese RFC tiene filas, para que el total devuelto nunca se lea como la historia completa. `search_awards` también acepta `cog_partidas` — de 1 a 20 códigos de cinco dígitos de "partida específica" SHCP (Clasificador por Objeto del Gasto) que el *comprador* asignó al momento de la adjudicación, comparados por overlap de arreglo, de modo que un contrato que lleva varios códigos hace match con cualquiera de ellos; un código que no tiene forma de cinco dígitos se rehúsa como `invalid_field_value` antes de leer el corpus. Cada fila de award lleva `cogPartidas` (`[]` cuando el publicador no registró ninguno).
+
+`aggregate_awards` requiere `currency`, `amount_scope`, y al menos un `group_by` en la lista permitida (`supplier_rfc`, `buyer_name`, `buyer_acronym`, `procedure_type`, `contracting_type`, `supplier_size`, `award_month`, `award_year`, `cog_partida`, `cog_capitulo` — como máximo tres). `supplier_name` deliberadamente no es una dimensión de agrupación: agrupar por identidad aproximada fusionaría organizaciones distintas. Los montos nunca se suman entre currencies ni entre amount scopes (`supplier_contract` y `award_group_published_total` son cantidades distintas).
+
+#### `compare_period`
+
+Pasa `compare_period: { from_date, to_date }` junto con el `from_date`/`to_date` propio de la petición para correr una comparación periodo contra periodo **dentro del mismo statement agrupado**, nunca una segunda consulta:
+
+```json
+{
+  "currency": "MXN",
+  "amount_scope": "supplier_contract",
+  "group_by": ["buyer_name"],
+  "from_date": "2026-01-01",
+  "to_date": "2026-06-30",
+  "compare_period": { "from_date": "2025-01-01", "to_date": "2025-06-30" }
+}
+```
+
+Cada grupo devuelto lleva, en el propio camelCase del envelope (`results` no se traduce a snake_case):
+
+```ts
+periodA: { awardCount: number; totalAmount: string }
+periodB: { awardCount: number; totalAmount: string }   // identical to the top-level awardCount/totalAmount
+deltaAmount: string                                     // periodB.totalAmount − periodA.totalAmount
+deltaPct: number | null                                 // as a fraction; null when periodA's total was zero
+```
+
+`delta_pct` se calcula en Postgres en `numeric` y se castea a `float8` solo después de que la división exacta ya decidió si el denominador era cero — nunca es `Infinity` ni un número inventado cuando el periodo A totalizó cero. El orden de ranking y de paginación siempre es el del periodo B: `compare_period` compara contra el ranking, nunca cambia qué se está rankeando. Un cursor emitido sin `compare_period` se invalida (`invalid_cursor`) si se reanuda con uno, y viceversa.
+
+#### `group_by: cog_partida` / `cog_capitulo`
+
+Estas dos dimensiones agrupan por el/los código(s) de objeto del gasto SHCP que lleva un contrato mixto — `cog_partida` sobre el código de cinco dígitos, `cog_capitulo` sobre su primer dígito — desanidando `cog_partidas` antes de agrupar. Un contrato que lleva varios códigos **no se reparte** entre ellos: cuenta íntegro bajo *cada* código que lleva, así que el `awardCount`/`totalAmount` de un grupo puede duplicar respecto al corpus, y la suma entre grupos puede exceder el total del corpus. Esto nunca se resuelve prorrateando — el publicador nunca declaró cómo dividir un contrato entre sus códigos. Agrupar por cualquiera de las dos dimensiones siempre adjunta la advertencia semántica `cog_partida_totals_may_exceed_corpus`, y ambas componen con `compare_period` igual que cualquier otro `group_by`. No existe un *filtro* `cog_capitulo` en `search_awards` — un escaneo sin índice del primer dígito sobre las ~500K filas que sirve esta relación se consideró demasiado lento para ofrecerlo; `aggregate_awards` es la forma de hacer una pregunta con forma de capítulo.
+
+### Marcas de riesgo
+
+`search_risks` encuentra marcas adversas publicadas — un listado de supplier vetado (`efos`) o una `sancion`/inhabilitación. `rfc` es identidad fuerte; `entity_name` es aproximado y devuelve candidatos con sus RFCs. Una marca es un **listado publicado**, nunca una condena judicial, y una parte puede llevar varias, incluyendo exoneraciones publicadas.
+
+`screen_risks` agrupa de 1 a 50 RFCs en **un solo** escaneo acotado `rfc = ANY($1)` en vez de una llamada a `search_risks` por RFC:
+
+```json
+{ "rfcs": ["XAXX010101000", "AAA010101AAA"] }
+```
+
+`results` lleva una entrada por cada RFC pedido, **en el orden pedido**, incluyendo un RFC con cero marcas — esa es una respuesta válida, respaldada por coverage, para ese RFC solamente, nunca evidencia sobre otro RFC del mismo batch. Más de 50 RFCs se rechaza con `batch_too_large` en vez de truncarse en silencio.
+
+### Permits
+
+`search_permits` encuentra permits, concesiones y compromisos de capex publicados. `holder_rfc` es identidad fuerte donde se publica (raro en este corpus); `holder_name` es aproximado y es el join sobre el que se construyó esta relación. Un permit es un derecho otorgado grabado al momento de la carga, nunca una verificación operacional en vivo — trata `is_active_risk`, `status_text`, `is_expansion`, y los campos de capex/capacidad (`investment_mdd`, `capacity_mw`, `estimated_generation`) como lo que el publisher imprimió, no como gasto auditado o desembolsado.
+
+## El envelope
+
+Cada respuesta exitosa — search, get, aggregate, count, screen por igual — es un solo envelope, y cada key en él es **camelCase**, deliberadamente distinta del snake_case que usa el resto de la plataforma (Knowledge, Collections, Projects). Esto no es una inconsistencia por corregir: es el dialecto que ya habla el contrato de market-data en producción, el resultado de la tool de MCP, y el plugin de ChatGPT.
+
+```ts
+interface MarketDataEnvelope<T> {
+  schemaVersion: 'market-data/domain/1'
+  requestId: string
+  operation: string
+  interpretedRequest: object   // the request AFTER normalization
+  results: T
+  page: PageInfo | null        // null for a single-record read or a count
+  coverage: CoverageDeclaration[]
+  corpusBasis: CorpusBasis
+  semanticWarnings: SemanticWarning[]
+  provenance: Provenance[]
+  diagnostics: { elapsedMs: number; rowsExamined: number; truncated: boolean }
+}
+```
+
+- **`interpretedRequest`** es lo que la capa realmente corrió después de normalizar la entrada de quien llama (un nombre de state resuelto a su código, un municipio impreciso resuelto a su ortografía canónica) — `normalizations` dice qué cambió y por qué.
+- **`results`** es el payload propio de la operación: un array de filas para un search, un objeto para una lectura `get_*`/`count_*`, un array de grupos para un aggregate.
+- **`page`** es `null` cuando la operación no pagina (`get_supplier`, `get_opportunity`, `market_capabilities`, `count_suppliers`).
+- **`coverage`** y **`corpusBasis`** son lo que hace honesta una respuesta: qué fuentes publicadas contribuyeron, y qué snapshot del corpus vio esta lectura. Ninguno de los dos puede ser autorado por un modelo o por quien llama.
+- **`semanticWarnings`** nombra una mala lectura que este dominio invita activamente (un award no es un pago, una marca de riesgo no es una condena, un nombre es identidad aproximada) — siempre adjuntado por la capa, nunca decoración.
+- **`provenance`** dice dónde se leyó cada fila, explícitamente no que esté vigente o verificada.
+
+## Paginación — keyset, nunca offset
+
+Cada operación que devuelve más de una fila (`search_*`, `aggregate_awards`, `get_supplier_history`) pagina con un cursor keyset opaco, nunca `OFFSET`:
+
+```ts
+interface PageInfo {
+  limit: number
+  returned: number
+  hasMore: boolean
+  nextCursor: string | null
+}
+```
+
+`page.nextCursor` lleva la versión del contrato (para que un cursor de una forma de respuesta más vieja no se pueda reanudar contra una más nueva), el snapshot del corpus contra el que se emitió (para que la paginación nunca pueda entrelazar dos snapshots publicados), un digest de los filtros — y, para `aggregate_awards`, de `compare_period` — para que continuar con un conjunto de filtros *distinto* se rechace en vez de servirse, y la posición de la última fila en el orden total.
+
+`page.hasMore`/`page.returned` se calculan con una lectura honesta de `limit + 1`, nunca se infieren de `returned === limit`. De un cursor roto salen dos refusals distintos porque la recuperación correcta difiere: un **cambio de filtro** a mitad de paginación es `invalid_cursor`; un **cambio de corpus** es `cursor_stale` — no es error de nadie, los datos publicados se movieron. Ambos se recuperan igual: reiniciar sin cursor.
+
+El tamaño de página por defecto es 20 (50 para `aggregate_awards`); `limit` topa en **50** para toda operación con forma de search y en **200** para `aggregate_awards`.
+
+## Refusals
+
+Un refusal nunca es un 400 desnudo. Todo rechazo específico del dominio lleva un bloque `market_data` junto al `code`/`message`/`request_id` propio de la plataforma:
+
+```json
+{
+  "code": "VALIDATION_FAILED",
+  "message": "This batch carries 60 rfcs, above the 50 this operation screens in one call.",
+  "request_id": "req-1",
+  "market_data": {
+    "semantic_code": "batch_too_large",
+    "why": "A batch screen answers one bounded scan, not an open-ended list. Serving more than 50 would mean either scanning unboundedly or silently dropping the RFCs past the ceiling — both are worse than telling you the ceiling up front.",
+    "suggested_correction": "Split \"rfcs\" into batches of at most 50 and call once per batch.",
+    "retryable": false,
+    "recovery": { "action": "fix_arguments" }
+  }
+}
+```
+
+- **`why`** explica el malentendido, no solo la regla — la mayoría de los refusals en este dominio son una pregunta bien formada sobre un campo o una forma que no significa lo que quien llama asumió, no un error de tipeo.
+- **`suggested_correction`** es prosa dirigida a un LLM: la siguiente llamada concreta que funcionaría.
+- **`recovery.action`** es el mismo hecho, legible por máquina, tomado de un vocabulario cerrado para que quien llama pueda ramificar sin parsear prosa. Se deriva uno a uno de `semantic_code` — nunca se define de forma independiente.
+- **`retryable`** es `false` para todo refusal de forma/valor/vocabulario (la misma llamada reproduce el mismo refusal), y `true` solo para el puñado operacional — timeout, no disponible, proyección stale — donde se espera que el mundo cambie, no la petición.
+
+| `semantic_code` | Ocurre cuando | `recovery.action` |
+|---|---|---|
+| `query_too_broad` | Un search o count no lleva ninguna dimensión de acotamiento | `narrow_query` |
+| `invalid_field_value`, `unknown_state`, `invalid_observed_kind`, `invalid_mark_kind`, `deadline_not_available`, `amount_requires_currency_and_scope`, `unknown_filter_value`, `unknown_facet` | Un valor está estructural o semánticamente mal para su campo | `fix_arguments` |
+| `batch_too_large` | `screen_risks` lleva más de 50 RFCs | `fix_arguments` |
+| `invalid_cursor` | Los filtros de un cursor no coinciden con la consulta a la que está atado | `restart_without_cursor` |
+| `cursor_stale` | El corpus cambió debajo de un cursor a mitad de paginación | `restart_without_cursor` |
+| `market_data_timeout`, `market_data_unavailable`, `serving_projection_unavailable`, `serving_projection_stale` | Un statement timeout acotado, una caída, o una proyección de serving sin publicación activa todavía | `retry_backoff` |
+
+`suppliers/count` reutiliza `query_too_broad`; `risks/screen` reutiliza `invalid_field_value`/`batch_too_large` — ninguna operación inventa su propio vocabulario de error de un solo uso.
+
+<Note>
+Una violación estructural del DTO (un enum inválido, un campo requerido faltante, `forbidNonWhitelisted` rechazando una propiedad desconocida) es un `VALIDATION_FAILED` plano del [envelope de error](/es/api/errors) de la plataforma — nunca lleva el bloque `market_data`. Ese bloque solo se gana con un refusal real del dominio: la forma era válida, pero la petición hizo una pregunta que esta capa no va a responder tal como se planteó.
+</Note>
+
+## Discoverability
+
+Hay dos cosas que un cliente ciego (un agente que solo tiene `curl` y las descripciones propias de esta API) necesita y que un 404 desnudo no puede darle: qué verbo *sí* habría funcionado, y qué rutas existen en absoluto.
+
+- **Verbo equivocado, ruta real** → `405 Method Not Allowed` con un header `Allow` compatible con RFC 9110 que nombra los métodos que sí funcionan, más el mismo hecho en el cuerpo JSON (`allowed_methods`).
+- **Ruta desconocida bajo `market-data/*`** → `404` con `documentation_url` (la propia ruta `capabilities` del workspace) y `operations` — la lista completa de método/ruta — en vez de dejar que quien llama adivine desde el silencio:
+
+```json
+{
+  "statusCode": 404,
+  "code": "NOT_FOUND",
+  "message": "No market-data route matches this path.",
+  "request_id": "req-1",
+  "endpoint": "GET /api/v1/workspaces/acme/market-data/suplier/search",
+  "documentation_url": "/api/v1/workspaces/acme/market-data/capabilities",
+  "operations": [
+    { "operation": "search_suppliers", "method": "POST", "path": "/workspaces/{slug}/market-data/suppliers/search" }
+  ]
+}
+```
+
+(`operations` lista las once, recortado arriba por espacio.)
+
+`GET capabilities` es el contrato completo para integradores: el `question`, `requires`, `refuses`, `method`, `path`, y un `example` ejecutable de cada operación, más las listas de valores de filtro observadas en el corpus (nombres de state, códigos SCIAN, procedure types, …), cada una estampada con el `corpusBasis` contra el que se leyó — nunca presentada como una constante atemporal. Un query param opcional `?facets=a,b` acota tanto el cómputo como la respuesta a las dimensiones del corpus nombradas. `GET capabilities/compact` es la proyección acotada y consciente de la fuente que se inyecta a los runtimes de agente (chat, MCP) en vez de gastar una llamada a tool en el catálogo completo. Ambas llevan `openapiUrl`, que apunta al documento OpenAPI legible por máquina — servido **root-absolute** en `/openapi.json`, a diferencia de cualquier otra ruta de market-data, que es relativa al workspace.
+
+`GET coverage` devuelve el mismo bloque `coverage` que se adjunta a cada otra respuesta, de forma independiente: qué fuentes publicadas contribuyeron a cada relación, qué tan fresca está, y si está licenciada para mostrarse. Es lo que separa "sin resultados" de "no existe ese mercado".
+
+## Autenticación y scopes
+
+Las rutas de market-data requieren la misma autenticación que el resto de la API (API key o token bearer de OAuth) — no hay ninguna ruta pública. Sobre OAuth, se mapean a un scope dedicado `market_data:read`, en OR-list con `context:read` por compatibilidad hacia atrás:
+
+| Scope | Estado |
+|---|---|
+| `market_data:read` | El scope documentado y canónico para las lecturas de market-data. Dedicado para que un cliente que solo debería consumir inteligencia comercial (un plugin externo, digamos) no reciba acceso de lectura a todo el vault de Topics/Knowledge vía `context:read`. |
+| `context:read` | Todavía satisface cada ruta de market-data de forma transicional: la emisión OAuth por defecto de hoy (el plugin de ChatGPT, el conector MCP, el OAuth de la CLI) todavía no otorga `market_data:read`, así que retirar `context:read` de este OR-list es un paso posterior y deliberado, no automático. |
+
+## MCP: `driftless_market_data`
+
+Una tool de MCP compacta, once valores semánticos de `action` (los mismos nombres de operación de la tabla de arriba). Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
+
+```json
+{ "action": "search_suppliers", "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
+```
+
+El resultado de la tool agrega la paginación estándar de la casa al nivel superior (`shown`, `has_more`) junto al propio `page.returned`/`page.hasMore` del envelope — aditivo, nunca un reemplazo — más una pista `next_action` que le dice a quien llama qué hacer después (continuar con un cursor, inspeccionar un candidato con `get_supplier`, leer `coverage` antes de concluir "sin marcas", etcétera).
+
+En operaciones textuales de proveedores, oportunidades y adjudicaciones (incluyendo `aggregate_awards`), `query_mode` es opcional: `auto` preserva el comportamiento existente; `exact_phrase`, `all_terms` y `any_terms` son interpretaciones acotadas del texto tokenizado. Un modo explícito en oportunidades usa recuperación léxica y no puede combinarse con `strategy=hybrid`. `interpretedRequest.query_interpretation`, escrito por la plataforma, declara el modo pedido y aplicado, términos normalizados, aliases de estado y filtros reconocidos, y cualquier advertencia. Nunca incluye SQL, schema ni una consulta compilada.
+
+<Note>
+Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Cuando cambian los parámetros de `driftless_market_data`, reconecta el conector (o arranca una sesión nueva) para ver los campos nuevos — ver [MCP y OAuth](/es/mcp/overview) para la nota general sobre este caching.
+</Note>
+
+## CLI: `driftless market`
+
+```bash
+driftless market capabilities
+driftless market suppliers search --query "tornillos industriales" --state "Nuevo León" --limit 5
+driftless market suppliers get <source-slug> <source-record-id>
+driftless market suppliers count --state "Nuevo León"
+driftless market opportunities search --query "mantenimiento de bombas"
+driftless market opportunities get <id> --include-awards true
+driftless market awards search --supplier-rfc XAXX010101000
+driftless market awards history <supplier-rfc> --currency MXN --amount-scope supplier_contract
+driftless market awards aggregate --currency MXN --amount-scope supplier_contract --group-by buyer_name \
+  --compare-from-date 2025-01-01 --compare-to-date 2025-06-30 --from-date 2026-01-01 --to-date 2026-06-30
+driftless market risks search --rfc XAXX010101000
+driftless market risks screen --rfcs XAXX010101000,AAA010101AAA
+driftless market permits search --holder-name "Constructora Ejemplo"
+```
+
+Todo comando soporta `--json` para el envelope semántico completo; sin él, la CLI imprime un resumen humano compacto (cantidad de filas, etiqueta por fila, warnings, coverage, próximo cursor). Repite un flag de array o pasa valores separados por coma. `--compare-from-date`/`--compare-to-date` son flags planos de la CLI que se anidan en un solo objeto `compare_period` sobre el wire — pasa ambos juntos o ninguno.
+
+## Chat y el método de due-diligence
+
+El chat de investigación de mercado del dashboard planea y llama estas mismas operaciones directamente (sin una API separada de cara al modelo) y puede correr un método de **due-diligence screening** que compone `search_risks` y `search_permits`:
+
+1. Resolver identidad por RFC primero — de un resultado previo de `search_suppliers`/`search_awards` o dado directamente — y llamar `search_risks { rfc }` / `search_permits { holder_rfc }` con él. La resolución por nombre aproximado (`entity_name` / `holder_name`) es el fallback, con la advertencia del match declarada.
+2. Nunca concluir "sin marcas de riesgo" o "no autorizado" solo a partir de una página vacía — se lee `coverage` primero y se declara la búsqueda contra él.
+3. Un permit y una marca de riesgo responden preguntas distintas y se reportan por separado — nunca se fusionan en un veredicto de "limpio" o "autorizado". Una marca de riesgo es un listado publicado, no una condena; un permit es un derecho otorgado grabado al momento de la carga, no un estado operacional vigente.
+
+## Relacionado
+
+- [MCP y OAuth](/es/mcp/overview) - conectar un cliente y la nota sobre el caching de schemas.
+- [Errores](/es/api/errors) - el envelope de error de toda la plataforma y el catálogo de códigos.
+- [Seguridad](/es/security/overview) - autenticación y API keys.

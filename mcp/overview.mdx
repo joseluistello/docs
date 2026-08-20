@@ -33,6 +33,7 @@ The MCP surface is documented by family in the **MCP reference**. Use this page 
 | Projects and operations | The project card loop, collections, records, and entities | [MCP: Projects and operations](/mcp/work) |
 | Integrations and Broker | Operating a connected provider (gated) | [MCP: Integrations and Broker](/mcp/integrations) |
 | Workspace and collaboration | Comments, members, workspaces, and proposal stats | [MCP: Workspace and collaboration](/mcp/collaboration) |
+| Market data | `driftless_market_data`: suppliers, opportunities, awards, risk marks, and permits — eleven semantic actions, no model or SQL behind them | [Market Data](/api/market-data) |
 
 The surface covers **context** (topics, governance, the graph), the **work surface** (projects, cards, tags, areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
 
@@ -174,9 +175,12 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `broker:read` | Read broker connections, capabilities, and records |
 | `broker:invoke` | Invoke a broker operation |
 | `broker:admin` | Manage broker grants and criterion |
+| `market_data:read` | Read commercial intelligence (suppliers, opportunities, awards, risk marks, permits) — see [Market Data](/api/market-data) |
 | `offline_access` | Refresh access without reconnecting |
 
 The `broker:*` scopes are enforced only when the Broker is enabled, and they gate its lane on top of rollout and grants. Discovery metadata advertises a subset of scopes; the enforced set is the authority.
+
+`market_data:read` is the documented, canonical scope for market-data reads, but today's default OAuth issuance does not yet grant it — `context:read` still satisfies those routes transitionally so no existing caller breaks.
 
 ### Endpoints
 

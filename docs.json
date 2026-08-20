@@ -164,7 +164,8 @@
               "api/collaboration",
               "api/integrations",
               "api/broker",
-              "api/repos"
+              "api/repos",
+              "api/market-data"
             ]
           },
           {
@@ -280,7 +281,8 @@
               "es/api/collaboration",
               "es/api/integrations",
               "es/api/broker",
-              "es/api/repos"
+              "es/api/repos",
+              "es/api/market-data"
             ]
           },
           {
