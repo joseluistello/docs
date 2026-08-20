@@ -1,0 +1,47 @@
+{
+  "artifact_status": "cleanup_complete_single_canonical_delivery_left",
+  "created_at_utc": "2026-08-13T01:04:02.630971+00:00",
+  "canonical_folder": "api_search_field_profile_20260813_DELIVERY_CANONICAL",
+  "canonical_zip": "api_search_field_profile_20260813_DELIVERY_CANONICAL.zip",
+  "canonical_sha256_file": "api_search_field_profile_20260813_DELIVERY_CANONICAL.sha256",
+  "deleted_non_canonical_api_search_items": [
+    {
+      "item": "api_search_field_profile_20260813_100pct.sha256",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_100pct.zip",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_final",
+      "type": "dir"
+    },
+    {
+      "item": "api_search_field_profile_20260813_final_candidate.zip",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_partial",
+      "type": "dir"
+    }
+  ],
+  "removed_inside_canonical": [
+    "api_search_field_profile_20260813_DELIVERY_CANONICAL/_superseded_notes"
+  ],
+  "protected_not_touched": [
+    "domain_evidence_pack"
+  ],
+  "remaining_api_search_items": [
+    "api_search_field_profile_20260813_DELIVERY_CANONICAL",
+    "api_search_field_profile_20260813_DELIVERY_CANONICAL.sha256",
+    "api_search_field_profile_20260813_DELIVERY_CANONICAL.zip"
+  ],
+  "validation": {
+    "required_files_pass": true,
+    "csv_json_pairs_pass": true,
+    "missing_required_files": [],
+    "validation_errors": [],
+    "dataframe_count": 26
+  }
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "measured_at":"2026-08-12T23:59:53.506Z",
+    "domain":"directory",
+    "source_scope":"dirind",
+    "field_name":"categories",
+    "rows_examined":12799,
+    "null_count":0,
+    "empty_array_count":0,
+    "rows_with_categories":12799,
+    "categories_type_distribution":{
+      "array":12799
+    }
+  }
+]

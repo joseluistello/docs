@@ -1,0 +1,38 @@
+[
+  {
+    "measured_at":"2026-08-12T23:57:37.796Z",
+    "domain":"directory",
+    "source_slug":"dirind",
+    "field_name":"industry_codes",
+    "rows_examined":12799,
+    "null_count":0,
+    "empty_array_count":12799,
+    "rows_with_codes":0,
+    "total_code_items":0,
+    "distinct_code_count":0,
+    "distinct_label_count":0,
+    "top_25_code_label_pairs":[
+
+    ],
+    "singleton_pair_count":0,
+    "low_frequency_pair_count_le_10":0
+  },
+  {
+    "measured_at":"2026-08-12T23:57:37.796Z",
+    "domain":"directory",
+    "source_slug":"mexicoindustry",
+    "field_name":"industry_codes",
+    "rows_examined":4149,
+    "null_count":0,
+    "empty_array_count":4149,
+    "rows_with_codes":0,
+    "total_code_items":0,
+    "distinct_code_count":0,
+    "distinct_label_count":0,
+    "top_25_code_label_pairs":[
+
+    ],
+    "singleton_pair_count":0,
+    "low_frequency_pair_count_le_10":0
+  }
+]

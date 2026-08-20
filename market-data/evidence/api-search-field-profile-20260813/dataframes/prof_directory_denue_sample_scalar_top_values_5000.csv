@@ -1,0 +1,153 @@
+measured_at,domain,source_scope,sample_method,field_name,field_value,frequency,sample_rows_examined,frequency_pct
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Alquiler sin intermediación de salones para fiestas y convenciones,561,5000,11.22
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,"Alquiler de mesas, sillas, vajillas y similares",313,5000,6.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Banca múltiple,312,5000,6.24
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Casas de empeño,307,5000,6.14
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Inmobiliarias y corredores de bienes raíces,272,5000,5.44
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,"Agentes, ajustadores y gestores de seguros y fianzas",247,5000,4.94
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Operadores de servicios de telecomunicaciones alámbricas,199,5000,3.98
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Alquiler de prendas de vestir,197,5000,3.94
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Centros cambiarios,173,5000,3.46
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,"Alquiler de maquinaria y equipo para construcción, minería y actividades forestales",162,5000,3.24
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Servicios de mensajería y paquetería foránea,145,5000,2.9
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Sociedades financieras de objeto múltiple,122,5000,2.44
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Otras instituciones de intermediación crediticia y financiera no bursátil,119,5000,2.38
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Alquiler sin intermediación de oficinas y locales comerciales,112,5000,2.24
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Servicios de administración de bienes raíces,79,5000,1.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,"Comercio al por menor en tiendas de abarrotes, ultramarinos y misceláneas",74,5000,1.48
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Otros servicios relacionados con los servicios inmobiliarios,71,5000,1.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Bibliotecas y archivos del sector público,70,5000,1.4
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Centros generales de alquiler,57,5000,1.14
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Banca de desarrollo,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Compañías de seguros,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Operadores de servicios de telecomunicaciones inalámbricas,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Alquiler de automóviles sin chofer,50,5000,1.0
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Cajas de ahorro popular,38,5000,0.76
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,activity_text,Fondos de aseguramiento campesino,38,5000,0.76
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,country_code,MX,5000,5000,100.0
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-25,4287,5000,85.74
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-21,63,5000,1.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-14,59,5000,1.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-15-part-1,59,5000,1.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-09,52,5000,1.04
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-30,43,5000,0.86
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-11,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-16,34,5000,0.68
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-07,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-20,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-15-part-2,29,5000,0.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-19,29,5000,0.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-08,22,5000,0.44
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-12,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-13,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-02,19,5000,0.38
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-24,17,5000,0.34
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-26,15,5000,0.3
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-05,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-10,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-22,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-01,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-28,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-31,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,dataset_name,directory-state-18,9,5000,0.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Culiacán,1504,5000,30.08
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Mazatlán,893,5000,17.86
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Ahome,751,5000,15.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Guasave,353,5000,7.06
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Salvador Alvarado,171,5000,3.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Navolato,109,5000,2.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Escuinapa,70,5000,1.4
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,El Fuerte,69,5000,1.38
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Eldorado,58,5000,1.16
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Angostura,55,5000,1.1
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Elota,46,5000,0.92
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Juan José Ríos,41,5000,0.82
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Rosario,41,5000,0.82
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Mocorito,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Sinaloa,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Puebla,18,5000,0.36
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,San Ignacio,17,5000,0.34
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Choix,16,5000,0.32
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Cosalá,16,5000,0.32
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Concordia,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Juárez,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Guadalajara,12,5000,0.24
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Iztapalapa,11,5000,0.22
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,Zapopan,11,5000,0.22
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,municipality,León,9,5000,0.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,observed_kind,establishment,5000,5000,100.0
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80000,295,5000,5.9
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81200,291,5000,5.82
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81000,129,5000,2.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82110,106,5000,2.12
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80020,83,5000,1.66
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82000,82,5000,1.64
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81400,65,5000,1.3
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80060,58,5000,1.16
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80200,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80220,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80450,51,5000,1.02
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82103,50,5000,1.0
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82010,44,5000,0.88
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82139,42,5000,0.84
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80090,39,5000,0.78
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81240,38,5000,0.76
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80030,37,5000,0.74
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82127,36,5000,0.72
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82129,36,5000,0.72
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,80058,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81040,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,81110,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82134,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82124,33,5000,0.66
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,postal_code,82400,33,5000,0.66
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-SIN,4287,5000,85.74
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-MEX,88,5000,1.76
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-PUE,63,5000,1.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-JAL,59,5000,1.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-CDMX,52,5000,1.04
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-VER,43,5000,0.86
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-GUA,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-MIC,34,5000,0.68
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-CHP,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-OAX,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-NLE,29,5000,0.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-CHH,22,5000,0.44
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-GRO,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-HID,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-BCN,19,5000,0.38
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-SLP,17,5000,0.34
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-SON,15,5000,0.3
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-COA,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-DUR,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-QUE,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-AGU,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-TAM,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-YUC,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-NAY,9,5000,0.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_code,MX-TAB,9,5000,0.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Sinaloa,4287,5000,85.74
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,México,88,5000,1.76
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Puebla,63,5000,1.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Jalisco,59,5000,1.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Ciudad de México,52,5000,1.04
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Veracruz de Ignacio de la Llave,43,5000,0.86
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Guanajuato,35,5000,0.7
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Michoacán de Ocampo,34,5000,0.68
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Chiapas,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Oaxaca,30,5000,0.6
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Nuevo León,29,5000,0.58
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Chihuahua,22,5000,0.44
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Guerrero,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Hidalgo,21,5000,0.42
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Baja California,19,5000,0.38
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,San Luis Potosí,17,5000,0.34
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Sonora,15,5000,0.3
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Coahuila de Zaragoza,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Durango,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Querétaro,14,5000,0.28
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Aguascalientes,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Tamaulipas,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Yucatán,13,5000,0.26
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Nayarit,9,5000,0.18
+2026-08-13 00:41:48.876454+00:00,directory,denue,view_limit_5000_no_order_scalar_top_values,state_name,Tabasco,9,5000,0.18

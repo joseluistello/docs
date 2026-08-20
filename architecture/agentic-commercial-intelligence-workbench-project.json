@@ -1,0 +1,118 @@
+{
+  "title": "Commercial Intelligence — Agentic Workbench",
+  "goal": "Convertir el Chat comercial en un Workbench agentico durable: un solo director visible compila contratos, pregunta sólo huecos materiales, muestra un plan vivo, ejecuta probes baratos, construye artifacts progresivos, adapta el plan según yield/costo/cobertura y se suspende ante gasto, enrichment, acciones externas, monitores o gobierno. Mastra conserva el runtime; el protocolo de UI adopta snapshots/deltas y acciones tipadas; warehouse, evidencia, licencia, credits, provider ports y proposer distinto de approver permanecen intactos. El ejecutor trabaja una tarjeta por vez, carga el context bundle, preserva cambios ajenos, valida, documenta evidencia y deja la tarjeta en review; nunca la marca done. El reviewer decide done o devuelve hallazgos. La fase sólo termina por trayectorias end-to-end observables en staging, no por mocks aislados.",
+  "playbook": "agentic-commercial-workbench",
+  "cards": [
+    {
+      "key": "a0_trajectory_and_ui_spike",
+      "title": "A0. Congelar trayectorias y decidir shell de Chat",
+      "description": "Leer el playbook completo y el código real de Chat/Mastra/Dashboard. Construir evals herméticos rojos para: entrevista por capas, plan visible, artifact progresivo, revisión por bajo yield, aprobación pagada dentro del mismo run, monitor con checkpoint, cancel/resume/reconnect y enrichment separado. Hacer un spike reversible de assistant-ui ExternalStoreRuntime/AssistantTransport contra los mensajes y SSE actuales y compararlo con extender ChatThreadView directamente. No cambiar producción. Documentar compatibilidad con Vite/React, auth, threads, citations, tool UI, queue, cancel, artifact sidecar y costo de migración. Recomendar una opción con evidencia. Dejar en review, nunca done.",
+      "acceptance": "Existe baseline rojo que falla por comportamiento real y no por búsqueda de strings; el spike prueba al menos un thread real con texto incremental, tool activity, cancel y un artifact patch; la decisión keep/adapt/replace tiene rollback y no introduce un segundo dueño del estado.",
+      "validate": "pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts && pnpm --filter @driftless/dashboard test -- ChatThreadView && git diff --check"
+    },
+    {
+      "key": "a1_interaction_contracts",
+      "title": "A1. Congelar contratos de Work Session y eventos",
+      "description": "Definir schemas versionados para WorkContract, MaterialGap, ContractConflict, HumanCheckpoint, ExecutionPlan, PlanRevision, TypedAction, ArtifactEnvelope y eventos de run/step/text/tool/state/activity/artifact/checkpoint/quote. Validación fail-closed, idempotency keys, workspace/principal y causal refs obligatorios. Adoptar semántica AG-UI sin entregar el dominio a una dependencia. Documentar compatibilidad expand/contract con los cuatro eventos actuales. No ejecutar modelos ni providers. Dejar en review.",
+      "acceptance": "Los contratos reconstruyen una Work Session desde snapshot+deltas; eventos duplicados no duplican estado; acciones inválidas o cross-tenant se rechazan; cada artifact y checkpoint queda ligado a plan/run/contract version; fixtures prueban N fuentes por señal, una fuente en varias capabilities, consulta multi-capability y provider sustituto sin cambiar contratos ni UI; fixture legacy sigue legible durante migración.",
+      "validate": "pnpm --filter @driftless/api test -- agentic-contracts && pnpm --filter @driftless/dashboard test -- agentic-events && pnpm --filter @driftless/api build && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["a0_trajectory_and_ui_spike"]
+    },
+    {
+      "key": "a2_durable_mastra_runtime",
+      "title": "A2. Hacer durable el workflow de Mastra",
+      "description": "Configurar storage PostgreSQL de Mastra y registrar un workflow versionado de Work Session con suspend/resume, closeOnSuspend, cancel, retries acotados y queued steering. Guardar sólo referencias pequeñas en snapshots. Revalidar auth, workspace, autoridad, contrato y checkpoint en resume. SSE queda como proyección recuperable de eventos persistidos. No cambiar todavía el copy de oportunidad. Dejar en review con migración, grants/RLS y rollback P1.",
+      "acceptance": "Un run sobrevive restart de API, reconecta sin duplicar deltas, suspende y reanuda en otro turno, cancela conservando partials y rechaza resume cross-tenant/stale/ya consumido; no hay cache ni datasets en snapshots.",
+      "validate": "pnpm --filter @driftless/api test -- mastra-workflow && pnpm --filter @driftless/api test -- chat-stream && pnpm --filter @driftless/api build",
+      "depends_on": ["a1_interaction_contracts"]
+    },
+    {
+      "key": "a3_question_policy",
+      "title": "A3. Implementar Contract Compiler y Question Policy",
+      "description": "Compilar lenguaje natural + CommercialContext a WorkContract. Detectar huecos, contradicciones y geography aliases canónicos. Rankear preguntas por cambio en validez/routing/costo/falsos positivos/autoridad menos fricción e información existente. Implementar capas: objetivo, compilación, precisión semántica y autoridad. Opciones, custom, back y stop son checkpoints tipados. Structured model output se valida determinísticamente; unknown no se vuelve false. Dejar en review.",
+      "acceptance": "Peticiones completas no sufren entrevista; peticiones ambiguas preguntan sólo lo material; Jalisco/MX-JAL resuelven igual sin exponer códigos; una contradicción descubierta abre segunda ronda dirigida; respuestas repetidas no se vuelven a preguntar; tool args inválidos no ejecutan nada.",
+      "validate": "pnpm --filter @driftless/api test -- work-contract && pnpm --filter @driftless/api test -- question-policy && pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts",
+      "depends_on": ["a1_interaction_contracts"]
+    },
+    {
+      "key": "a4_artifact_store",
+      "title": "A4. Persistir plans y artifacts vivos",
+      "description": "Añadir almacenamiento propio y tenant-safe para Work Session, ExecutionPlan versionado, ArtifactEnvelope y patches append-only. Soportar Plan, Opportunity Set, Dossier, Monitor, Contact Selection y Outreach Draft mediante payloads allowlisted. Publicar snapshot/delta y artifact created/patched/finalized. No guardar HTML/datasets en workflow snapshots. Añadir compaction o snapshot periódico sin borrar historial causal. Dejar en review con migration expand/contract.",
+      "acceptance": "Un artifact se reconstruye determinísticamente, patches repetidos son idempotentes, versiones conservan revisión causal, revocación de evidencia afecta exhibición, cross-tenant falla y el consumer no recibe payload arbitrario generado por el modelo.",
+      "validate": "pnpm --filter @driftless/db build && pnpm --filter @driftless/api test -- work-session && pnpm --filter @driftless/api test -- artifact-store && pnpm --filter @driftless/api build",
+      "depends_on": ["a1_interaction_contracts"]
+    },
+    {
+      "key": "a5_plan_probe_supervisor",
+      "title": "A5. Implementar plan, probe y adaptación",
+      "description": "Crear Plan Compiler provider-neutral con capabilities, etapas, estimados, stop conditions y autoridad. Ejecutar el probe gratuito/más barato capaz de probar la hipótesis. Medir reviewed, qualified, coverage, yield, latency, external cost y duplicados. PlanSupervisor decide continue, cover gap, revise o suspend; toda revisión explica observación→supuesto invalidado→patch y reutiliza evidencia existente. Modelo puede proponer, política valida. Dejar en review.",
+      "acceptance": "Warehouse suficiente genera costo externo cero; bajo yield produce recomendación comprobable, no rerun automático; corrección de falso positivo reusa evidencia; costo marginal/cap suspende; planear nunca invoca provider; revisión conserva versiones y causalidad.",
+      "validate": "pnpm --filter @driftless/api test -- plan-compiler && pnpm --filter @driftless/api test -- plan-supervisor && pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts",
+      "depends_on": ["a2_durable_mastra_runtime", "a3_question_policy", "a4_artifact_store"]
+    },
+    {
+      "key": "a6_workbench_ui",
+      "title": "A6. Construir shell de Workbench y tool UI",
+      "description": "Implementar la opción elegida en A0. Unificar thread, plan/activity y artifact workspace. Renderizar texto streaming real, tool calls/results, checkpoints tipados, opciones/custom/back/stop, queue de mensajes, cancel/resume, plan revisions y typed actions. Opportunity rows/cells progresan found→verifying→qualified/discarded con razón y evidencia. Mantener provider jargon fuera. Usar registry allowlisted, schema validation, design tokens, responsive, teclado y aria-live. Mantener fallback sólo durante rollout; no dos productos visibles. Dejar en review con capturas y prueba manual.",
+      "acceptance": "El usuario siempre sabe qué está haciendo el sistema, por qué y qué falta; puede detener/corregir sin perder partials; reconexión reconstruye estado; tool UI no aparece como texto crudo; desktop/mobile/teclado cumplen; el fallback se puede retirar por flag server-side.",
+      "validate": "pnpm --filter @driftless/dashboard test -- agentic-workbench && pnpm --filter @driftless/dashboard test -- ChatThreadView && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["a4_artifact_store", "a5_plan_probe_supervisor"]
+    },
+    {
+      "key": "a7_opportunity_vertical_slice",
+      "title": "A7. Entregar Opportunity Flow completo warehouse-first",
+      "description": "Cablear la primera trayectoria real: oferta/cliente→WorkContract→plan→discoverCapabilities→querySignals→evidence para seleccionadas→Opportunity Set progresivo→síntesis organización/qué pasó/por qué ahora/ángulo/citas→typed next actions. Nunca enumerar CRM como mercado, nunca exponer source-pack slug ni geography code. Estados: resultados, empty, partial, contradictory, unauthorized, unsupported y unavailable. Dejar en review con staging P1 y rollback.",
+      "acceptance": "En staging licitaciones Jalisco entrega oportunidades reales citadas en menos de dos minutos; texto y artifact hacen streaming; toda afirmación factual resuelve EvidenceRef; unavailable no culpa al usuario ni exige setup irrelevante; pipeline sigue disponible sólo cuando se pregunta por pipeline.",
+      "validate": "pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts && pnpm --filter @driftless/dashboard test -- opportunity-artifact && bash scripts/harness/check.sh",
+      "depends_on": ["a6_workbench_ui"]
+    },
+    {
+      "key": "a8_paid_research_continuation",
+      "title": "A8. Integrar investigación pagada sin cambiar de flujo",
+      "description": "Cuando warehouse queda partial, conservar filas y explicar el hueco verificable. Crear quote ligada a planVersion, costo/cap, cobertura marginal esperada y stop condition. Suspender; al aprobar reanudar el mismo workflow/artifact y ejecutar WebResearchProviderPort/Parallel sólo sobre el gap. Decline produce final útil gratuito. Cancel/retry/reconcile idempotentes. No usar provider como fallback ante error técnico. Dejar en review.",
+      "acceptance": "Cero gasto sin aprobación válida del plan actual; aprobar no abre entrevista/Radar/run separado; rechazar conserva resultados; provider types/marca no llegan a UI; evidencia adquirida se normaliza antes de síntesis; cap y revocación detienen nuevas llamadas.",
+      "validate": "pnpm --filter @driftless/api test -- paid-research && pnpm --filter @driftless/api test -- quote-approval && pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts",
+      "depends_on": ["a7_opportunity_vertical_slice"]
+    },
+    {
+      "key": "a9_monitor_vertical_slice",
+      "title": "A9. Crear monitores como workflows persistentes",
+      "description": "Implementar create-monitor desde TypedAction. Contract Compiler debe fijar señal, universo, geografía, freshness, dedupe semantics, cadence/timezone, destino y authority; segunda ronda sólo para conflictos. Mostrar preview y primera ejecución antes del checkpoint activate_monitor. Al aprobar, persistir schedule/watermark/kill switch y reportar deltas en artifacts/reporte, no repetir la lista completa. Sin aprobación no existe scheduler. Dejar en review con clock determinístico y staging smoke.",
+      "acceptance": "Monitor ambiguo no se activa; exact time/timezone se valida; dos ejecuciones iguales producen cero duplicados; cambios actualizan el mismo objeto y conservan evidencia; disable/revoke es inmediato; ningún run excede budget/authority.",
+      "validate": "pnpm --filter @driftless/api test -- commercial-monitor && pnpm --filter @driftless/dashboard test -- monitor-artifact && pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts",
+      "depends_on": ["a7_opportunity_vertical_slice"]
+    },
+    {
+      "key": "a10_contact_and_outreach_gate",
+      "title": "A10. Añadir contacto y borrador como opt-in posterior",
+      "description": "Habilitar find_contacts sólo para una oportunidad seleccionada con Entity resuelta. Mostrar campos buscados, categoría de fuente, costo/ToS y alcance; suspender para aprobación. Resolver/enriquecer detrás de EntityEnrichmentProviderPort, provenance y licencia por atributo. Crear Contact Selection y luego Outreach Draft con la señal citada; no enviar. Contacto no se mezcla con señal ni genera universo. Dejar en review.",
+      "acceptance": "No existe ruta de enrichment antes de selección+aprobación; sólo compra campos faltantes/frescos; persona física y atributos restringidos respetan policy; borrador distingue hechos de inferencia; cancel/decline no pierden la oportunidad; cero envío externo.",
+      "validate": "pnpm --filter @driftless/api test -- contact-gate && pnpm --filter @driftless/dashboard test -- contact-artifact && pnpm --filter @driftless/api exec vitest run --config vitest.trajectory.config.ts",
+      "depends_on": ["a7_opportunity_vertical_slice"]
+    },
+    {
+      "key": "a11_proactive_home_reports",
+      "title": "A11. Producir reportes proactivos con acciones tipadas",
+      "description": "Derivar hallazgos desde estado verificable: artifact sin revisar, oportunidad sin contacto, monitor con cambios, yield/costo degradado, fuente silenciosa, contradicción de perfil y promised action pendiente. Rankear por impacto y mostrar máximo cuatro; cada uno tiene dato, consecuencia, TypedAction y Not relevant. Nada ejecuta gasto/acción externa. Entrega en home y opcional email usando infraestructura existente. Dejar en review.",
+      "acceptance": "Cada recomendación reconstruye sus refs; no hay consejo genérico sin estado; acciones respetan precondiciones/checkpoints; Not relevant registra feedback; cero gasto, contacto o Knowledge mutation por abrir el reporte.",
+      "validate": "pnpm --filter @driftless/api test -- proactive-report && pnpm --filter @driftless/dashboard test -- proactive-home && pnpm --filter @driftless/api build && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["a8_paid_research_continuation", "a9_monitor_vertical_slice", "a10_contact_and_outreach_gate"]
+    },
+    {
+      "key": "a12_memory_candidates",
+      "title": "A12. Recordar preferencias sin mutar Knowledge",
+      "description": "Persistir automáticamente sólo estado de run/thread. Convertir aprendizajes reusables confirmados en PreferenceCandidate visible con acción Use next time; si afecta verdad del equipo, crear Note o Suggested edit conforme a governance. No copiar la escritura silenciosa de ICP. Resolver contradicciones entre preferencia, Knowledge y pedido actual mediante precedencia y checkpoint material. Dejar en review.",
+      "acceptance": "Preferencia aceptada reaparece con provenance; rechazada no se insiste; pedido actual puede override sin mutar Knowledge; Knowledge existente sólo recibe Suggested edit; reintentos no duplican candidatos/Notes.",
+      "validate": "pnpm --filter @driftless/api test -- preference-candidate && pnpm --filter @driftless/api test -- memory-refinery && pnpm --filter @driftless/dashboard test -- memory-actions",
+      "depends_on": ["a3_question_policy", "a11_proactive_home_reports"]
+    },
+    {
+      "key": "a13_observability_and_rollout",
+      "title": "A13. Cerrar observabilidad, rollout y retiro legado",
+      "description": "Medir time-to-first-useful-artifact, question count, clarification abandonment, reconnect recovery, probe yield, plan revisions, accepted/rejected recommendations, coverage, external cost, quote conversion, citations missing, monitor deltas y enrichment opt-ins. Ejecutar evals con DeepSeek real controlado y modelo scripted. Probar tool calling/streaming; batch silencioso es fallo. Rollout cohort/kill switch server-side. Retirar stream/UI legado sólo tras paridad; reintegrar trajectory eval en suite normal y borrar config aislada. Harness y staging P1 completos; dejar en review para decisión humana de GA.",
+      "acceptance": "Todas las trayectorias A0 quedan verdes e incluidas en suite normal; cero P0/P1; streaming y tool calling son observables; rollback probado; no hay dos superficies visibles; ninguna referencia alcanzable al Radar conversacional; reporte compara baseline con staging y enumera riesgos residuales.",
+      "validate": "npm run typecheck && npm run test && bash scripts/harness/check.sh && driftless context get --diff",
+      "depends_on": ["a12_memory_candidates"]
+    }
+  ]
+}

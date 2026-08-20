@@ -1,0 +1,7 @@
+measured_at,domain,source_scope,sample_method,field_name,sampled_rows_examined,null_count,array_count,object_count,string_count,other_count,empty_array_count,non_empty_array_count,avg_array_length,max_array_length
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,business_contacts,1000,0,1000,0,0,0,500,500,0.65,3.0
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,categories,1000,0,1000,0,0,0,1000,0,0.0,0.0
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,industry_codes,1000,0,1000,0,0,0,0,1000,1.0,1.0
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,products_services,1000,0,1000,0,0,0,0,1000,1.0,1.0
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,source_fields,1000,0,0,1000,0,0,0,0,,
+2026-08-13 00:41:30.405921+00:00,directory,denue,view_limit_1000_no_order_jsonb_fields,supplier_roles,1000,1000,0,0,0,0,0,0,,

@@ -38,7 +38,7 @@ On `pull_request.opened`, `synchronize`, `reopened`, and `ready_for_review` even
 2. Matches each file against all workspace topic patterns using glob intersection
 3. **Records** every PR↔topic match (powers the dashboard's PR activity) and **queues the Auditor**
 
-The only comment Driftless posts is the **Auditor's**, and only when it has a finding. When it does, the affected topics' recorded context (gotchas, decisions, invariants, stale flags) rides along with it. A clean PR, or a workspace without the Auditor configured (no model key), gets no comment. See [PR Comments](/concepts/pr-bot).
+The only comment Driftless posts is the **Auditor's**, and only when it has a finding. When it does, the affected topics' recorded context (gotchas, decisions, invariants, stale flags) rides along with it. A clean PR, or a workspace with the Auditor toggled off, gets no comment. See [PR Comments](/concepts/pr-bot).
 
 The comment **informs; it never blocks**. Findings land as proposals a human approves. It is updated in place on new commits, never re-posted.
 

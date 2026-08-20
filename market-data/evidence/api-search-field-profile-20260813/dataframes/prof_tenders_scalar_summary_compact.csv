@@ -1,0 +1,9 @@
+measured_at,domain,source_scope,field_name,rows_examined,null_count,null_rate_pct,cardinality
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,actionability,64418,0,0.0,4
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,announcement_character,64418,0,0.0,3
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,contracting_type,64418,0,0.0,6
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,is_open,64418,0,0.0,2
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,procedure_type,64418,0,0.0,8
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,source_slug,64418,0,0.0,1
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,state_name,64418,0,0.0,32
+2026-08-13 00:05:37.696976+00:00,tenders,comprasmx-contratos,status,64418,0,0.0,16

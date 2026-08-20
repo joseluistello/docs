@@ -1,6 +1,6 @@
 ---
 title: 'CLI: Agents and hooks'
-description: 'Configure and inspect the server-side agents (BYOM), and manage the local auto-pull hook.'
+description: 'Configure and inspect the server-side agents, and manage the local auto-pull hook.'
 ---
 
 Two things live here: the `agent` family configures and inspects the server-side agents ([Auditor, Architect, Librarian](/agents/agentic-layer)), and the `hook` / `hooks` commands manage the local [auto-pull](/concepts/automations) hook. They are unrelated: `agent` talks to the server, `hooks` edits a local file. Add `--json` to any `agent` command for machine output.
@@ -17,19 +17,19 @@ The agents run automatically server-side; the CLI inspects and configures them. 
 | `agent config --set <key>=<value>` | Set a config key (repeatable). |
 | `agent usage [--days <n>]` | Token and cost rollup. |
 | `agent stats` | Proposal acceptance stats. |
-| `agent models` | The BYOM model catalog. |
 
-## BYOM configuration
+## Configuration
 
-Settable keys on `agent config --set`: `opencode_key` (the bring-your-own-model key, write-only), `model` (a comma-separated priority list of `provider/model`; the runner rotates on a rate-limit or credit error), and the toggles `auditor`, `architect`, `librarian`, and `librarian_autovouch`.
+Settable keys on `agent config --set`: the toggles `auditor`, `architect`, `librarian`, and `librarian_autovouch`.
+
+There is no provider, model, or API-key setting. Driftless operates and pays for the inference the agents run on, and selects the model per turn; `agent config --set model=…` and `--set opencode_key=…` are rejected rather than ignored, so a stale script fails loudly instead of appearing to work.
 
 ```bash
-driftless agent config --set opencode_key=oc_xxx --set model="opencode/claude-sonnet-4-6"
 driftless agent config --set auditor=true --set architect=true
-driftless agent config --show    # key is redacted
+driftless agent config --show
 ```
 
-Each agent is off until its toggle is on and a model key is configured; otherwise a run records a `no_op`.
+Each agent is off until its toggle is on; otherwise a run records a `no_op`.
 
 ## Hooks (auto-pull)
 
@@ -50,7 +50,7 @@ driftless hooks disable    # remove it from this machine
 
 ## Permissions
 
-Reading agent runs and setting BYOM config are workspace-member actions from the CLI. The agent-runs surface is not reachable over OAuth/MCP (agent runs spend model inference); the MCP surface exposes only `driftless_agent_stats`.
+Reading agent runs and setting agent config are workspace-member actions from the CLI. The agent-runs surface is not reachable over OAuth/MCP (agent runs spend model inference); the MCP surface exposes only `driftless_agent_stats`.
 
 ## Related
 

@@ -1,0 +1,223 @@
+{
+  "title": "Commercial Intelligence Chat — governed multi-source execution",
+  "goal": "Implementar el plan docs/architecture/commercial-intelligence-chat-plan.md para que Chat compile contexto comercial gobernado, distinga claims y capacidades de fuentes, consulte warehouse primero, escale por costo con aprobación, entregue Entities/Records con evidencia y aprenda de outcomes sin mutar Knowledge silenciosamente. El ejecutor trabaja una tarjeta por vez y siempre la deja en review; sólo el supervisor humano/agent reviewer puede marcarla done.",
+  "status": "active",
+  "playbook": "opportunity-flow-research-contracts",
+  "cards": [
+    {
+      "key": "p0_product_contract",
+      "title": "P0.1 Ratificar producto, milestone y surface brief comercial",
+      "description": "Leer AGENTS.md, product.md, DESIGN.md, docs/architecture/commercial-intelligence-chat-plan.md secciones 1-5 y los Topics outcome-centered-product, chat-product-contract, fabrica-de-fuentes-arquitectura y opportunity-flow-research-contracts. Actualizar product.md para que resultados comerciales verificables sean la unidad de valor y Commercial Intelligence sea un caso de uso de la memoria gobernada. Actualizar DESIGN.md con el surface brief de Chat, Research Artifact y Commercial Setup. No tocar código. No duplicar el cuerpo de Topics dentro de product.md. Entregar diff, decisiones abiertas y cómo se preservan proposer != approver, warehouse-first y no-cache. Cuando valide, poner la tarjeta en review, nunca done.",
+      "acceptance": "product.md identifica milestone vigente, contratos de salida, no-goals, wedge pyme/founder-led México y cadena Signal→State→Context→Criterion→Inference→Action→Evidence→Human Decision→Learning→State. DESIGN.md define jerarquía visual, estados y lenguaje provider-neutral. No contradice AGENTS.md ni Topics gobernados.",
+      "validate": "git diff --check -- product.md DESIGN.md docs/architecture/commercial-intelligence-chat-plan.md"
+    },
+    {
+      "key": "p0_contracts",
+      "title": "P0.2 Congelar contratos versionados y fixtures canónicas",
+      "description": "Depende de la ratificación de producto. Implementar únicamente contratos/fixtures de CommercialContextBundle 1.0, ResearchContract 2.0 compatible con v1, ResearchPlan 1.0, ClaimRequirement, SourceCapabilityManifest, SignalRecipe, OutcomePolicy 1.0 y citation kinds. Ubicar contratos de API en apps/api y tipos de persistencia estrictamente estructurales en libs/db; no crear una lib nueva. Añadir parsers/validators y fixtures para pyme, corporativo, DENUE+COFEPRIS, warehouse-only y warehouse-gap. Ningún adapter/provider call. Documentar deprecation/version negotiation. Dejar en review.",
+      "acceptance": "Todos los contratos tienen schema_version, required/optional explícitos, parser que rechaza shape inválida, fixtures positivos/negativos y compatibilidad probada con ResearchContract actual. Provider names no aparecen en vocabulario de dominio salvo manifests/fixtures de adapters.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/research-contract.spec.ts src/chat/chat.contracts.spec.ts && pnpm --filter @driftless/api build",
+      "depends_on": ["p0_product_contract"]
+    },
+    {
+      "key": "p1_entity_orm",
+      "title": "P1.1 Alinear Entity ORM con el bridge GTM existente",
+      "description": "Inspeccionar primero libs/db/src/migrations/1715200000130-AddEntitiesGtmLink.ts. Añadir a libs/db/src/entities/entity.entity.ts exactamente las propiedades/Tipos de columnas que ya existen; no generar columnas duplicadas ni migration innecesaria. Añadir test de metadata/schema drift si existe patrón. Mantener libs/db sin lógica de negocio. Dejar en review.",
+      "acceptance": "TypeORM Entity representa todas las columnas de la migración 130 con nullability/tipos correctos; build DB/API pasa; no hay DDL redundante.",
+      "validate": "pnpm --filter @driftless/db build && pnpm --filter @driftless/api build",
+      "depends_on": ["p0_contracts"]
+    },
+    {
+      "key": "p1_radar_causality",
+      "title": "P1.2 Propagar actor y run_id de Radar a RecordEvent",
+      "description": "Inspeccionar RadarRunService y RecordsService. Hacer que create y update desde Radar pasen agentWrite actor agent:radar y Radar run id. Preservar criterion_versions y la distinción humana approval vs agent stage_change. Añadir tests de create, update, retry y failure; trace y RecordEvent deben compartir run id. No ampliar payload con raw evidence. Dejar en review.",
+      "acceptance": "Cada Record creado o actualizado por Radar genera el evento correcto con actor_kind agent y run_id del Radar run. Reintento no duplica creation; una transición humana sigue siendo approval y una del agente no.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/radar-run.service.spec.ts src/collections/records.service.spec.ts",
+      "depends_on": ["p1_entity_orm"]
+    },
+    {
+      "key": "p1_entity_dedup",
+      "title": "P1.3 Reemplazar dedup JSONB por Entity-first transaccional",
+      "description": "Eliminar el fallback que carga hasta 500 Records y compara entityKey en JavaScript. Resolver/crear workspace Entity por domain/dedup_key y linked_gtm_entity_id, después vincular Record.entity_id. Conservar candidate_ref como provenance, no identidad primaria. Usar unique constraint/upsert y transacción corta sin external calls. Tratar zona gris con candidate link/review, no false merge. Añadir concurrencia, dos fuentes y dos Collections. Dejar en review.",
+      "acceptance": "Misma organización desde dos fuentes produce una Entity; dos Collections pueden tener Records diferentes ligados a la misma Entity; retries concurrentes no duplican; no queda scan de 500 Records.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/radar-run.service.spec.ts src/radar/gtm/entity-merge.service.integration.spec.ts src/collections/collections.service.integration.spec.ts",
+      "depends_on": ["p1_radar_causality"]
+    },
+    {
+      "key": "p1_evidence_refs",
+      "title": "P1.4 Estructurar evidencia y ampliar citations",
+      "description": "Implementar RecordEvidenceRef y nuevos citation kinds evidence_claim, gtm_artifact, research_run, commercial_context_bundle y record_event. Writer nuevo guarda refs, no JSON.stringify; reader tolera formato legacy durante expand/contract. No guardar raw provider payload. Actualizar UI sólo lo mínimo para no romper citas; panel completo viene después. Fixtures corruptas deben degradar a unavailable/review. Dejar en review.",
+      "acceptance": "Cada lead puede abrir claims/source families/freshness; citas inválidas no rompen respuesta; formato legacy sigue leyendo; writer produce sólo refs estructuradas.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/cognitive/tool-citations.spec.ts src/radar/radar-run.service.spec.ts && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["p1_entity_dedup"]
+    },
+    {
+      "key": "p2_setup_storage",
+      "title": "P2.1 Persistir Commercial Setup reanudable",
+      "description": "Crear commercial_setup_sessions como sidecar server-only en libs/db con workspace_id, started_by, status, archetype, step, draft, source_refs y timestamps. Añadir migration, índices y DTOs/endpoints autenticados bajo apps/api/src/commercial-context siguiendo patrón Nest. Validar única draft activa por workspace/usuario. Revisar RLS/grants/exposure: no exponer al Data API. No crear Topics todavía. Dejar en review con rollback/backfill N/A.",
+      "acceptance": "Setup se crea, actualiza, reanuda y completa con tenant isolation; duplicate start es idempotente; secrets/PII no aparecen en logs; migration up/down válida.",
+      "validate": "pnpm --filter @driftless/db build && pnpm --filter @driftless/api test -- commercial-context && pnpm --filter @driftless/api build",
+      "depends_on": ["p1_evidence_refs"]
+    },
+    {
+      "key": "p2_profile_projection",
+      "title": "P2.2 Compilar CommercialProfile desde Topics atómicos",
+      "description": "Implementar CommercialProfileService como proyección no persistida. Recuperar oferta, cliente ideal/no ideal, compradores, señales, geografía, estrategia, objetivos y lenguaje de mercado; fijar slug/version/trust/freshness. Clasificar Known/Assumed/Missing/Conflicts y aplicar precedencia. No crear un perfil gigante ni embeddings como verdad. Tests con Knowledge, Notes, drift y contradicción thread-vs-Knowledge. Dejar en review.",
+      "acceptance": "Mismo workspace compila perfil determinístico; Notes no desplazan Knowledge; conflictos materiales quedan explícitos; no hay mutación de Topics ni segunda fuente de verdad.",
+      "validate": "pnpm --filter @driftless/api test -- commercial-profile && pnpm --filter @driftless/api build",
+      "depends_on": ["p2_setup_storage"]
+    },
+    {
+      "key": "p2_setup_governance",
+      "title": "P2.3 Completar Setup con Notes o Suggested edits gobernados",
+      "description": "Al completar setup, crear Topics atómicos faltantes como Notes en InteligenciaComercial, títulos cortos y relaciones hub/spoke. Si existe Knowledge, abrir Suggested edit; nunca update directo ni auto-approve. Batch por concepto y provenance de source refs. Agregar casos de completar dos veces, Knowledge existente, sin área y content conflictivo. Dejar en review.",
+      "acceptance": "Completar setup no crea Knowledge automáticamente; reintento no duplica Topics/proposals; cada Note tiene área y scope/anchor conforme al modelo real; proposer != approver queda probado.",
+      "validate": "pnpm --filter @driftless/api test -- commercial-onboarding && pnpm --filter @driftless/api build",
+      "depends_on": ["p2_profile_projection"]
+    },
+    {
+      "key": "p2_setup_ui",
+      "title": "P2.4 Construir onboarding comercial y calibración de 5 cuentas",
+      "description": "Construir Commercial Setup después del onboarding global, no reemplazarlo. Flujo skippable/resumable: oferta, mejores/peores clientes, buyers, señales, mercado, motion, objetivo, Company Map y aprobación. Import opcional conserva provenance. Terminar con 5 cuentas del warehouse o muestra gratuita, aceptar/descartar con motivo. Estado server-side; no localStorage. Usar design tokens, teclado, responsive y estados empty/error. Dejar en review con evidencia visual.",
+      "acceptance": "Usuario obtiene valor sin setup completo; reanuda en otro dispositivo; distingue Known/Assumed/Missing/Conflicts; calibración registra motivos y produce sólo Note/proposal; navegación teclado y móvil funcionan.",
+      "validate": "pnpm --filter @driftless/dashboard test -- onboarding && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["p2_setup_governance"]
+    },
+    {
+      "key": "p3_context_compiler",
+      "title": "P3.1 Implementar Commercial Context Compiler",
+      "description": "Implementar compile(input) con principal/workspace confiables, perfil, criterion, operational refs, evidence refs, outcome summary, authority, budget, conflicts y token budget. Nunca truncar permisos, exclusiones, presupuesto o conflicto material. Generar bundle id/hash, pins y selection rationale. Consultas directas Postgres, sin cache. Añadir context delivery sources chat_context/commercial_context con migration/grants/RLS review. Dejar en review.",
+      "acceptance": "Bundle reproducible para mismas versiones; tenant isolation; pins de Topic exactos; rationale/truncation observable; p95 medido en fixture de escala; no cache.",
+      "validate": "pnpm --filter @driftless/api test -- commercial-context && pnpm --filter @driftless/api test -- context-delivery && pnpm --filter @driftless/api build",
+      "depends_on": ["p2_setup_ui"]
+    },
+    {
+      "key": "p3_chat_preflight",
+      "title": "P3.2 Integrar preflight, compiler y compactación al Chat",
+      "description": "Añadir IntentPreflight determinístico para setup/discovery/analyze/act con structured fallback sin tool pagada. Compilar contexto antes de construir AgentSpec, guardar ref/pins en AgentRun y mantener un resumen estructurado de thread con decisions, assumptions, open_questions, entities y promised_actions. Mensajes originales inmutables. No crear runtime separado. Dejar en review.",
+      "acceptance": "Pedidos comerciales compilan contexto antes de tools; dos workspaces no mezclan contexto; clasificación no gasta; resumen conserva decisiones más allá de 12 mensajes; Chat no cambia para intents no comerciales.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/chat/chat.service.spec.ts src/chat/chat.integration.spec.ts src/chat/chat-evals.spec.ts",
+      "depends_on": ["p3_context_compiler"]
+    },
+    {
+      "key": "p3_context_ui",
+      "title": "P3.3 Mostrar contexto usado y conflictos en Chat",
+      "description": "Añadir pill por turno/run 'Usando: ICP vN…' y drawer Known/Assumed/Missing/Conflicts con Topic pins y selection reasons. Editar abre Note/Suggested edit, no mutación directa. Soportar loading/degraded/empty y citas nuevas. No rediseñar toda la pantalla todavía. Dejar en review con screenshots desktop/mobile y keyboard evidence.",
+      "acceptance": "Usuario ve qué contexto influyó; conflicto material visible; acción de cambio respeta governance; componente accesible y no expone provider jargon.",
+      "validate": "pnpm --filter @driftless/dashboard test -- ChatThreadView && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["p3_chat_preflight"]
+    },
+    {
+      "key": "p4_capability_registry",
+      "title": "P4.1 Implementar catálogo semántico de capacidades y Recipes",
+      "description": "Extender Source Pack manifests para verbs harvest/resolve, subject kinds, observations/claim scope, authority, geography, temporal semantics, exhaustiveness, join keys, cannot_establish, false positives, freshness, access, license/cost/health. Implementar registry query; no hardcodear COFEPRIS/DENUE en Chat. Añadir SignalRecipe contract con allowed assertions, forbidden conclusions, negative checks e independence. Migrar manifests existentes aditivamente con fixtures. Dejar en review.",
+      "acceptance": "DENUE declara que no prueba autorización sanitaria; COFEPRIS no prueba operación actual; manifests activos validan; una familia sindicada no cuenta dos veces; packs legacy migran sin romper ingestion.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/gtm/source-pack-registry.service.integration.spec.ts src/radar/gtm/gtm-schema.integration.spec.ts && pnpm --filter @driftless/api build",
+      "depends_on": ["p3_context_ui"]
+    },
+    {
+      "key": "p4_intent_compiler",
+      "title": "P4.2 Compilar pedidos a ClaimRequirements y ambigüedades",
+      "description": "Implementar IntentCompilation: universe, qualification, reachability, forbidden conclusions, interpretations y una clarifying question sólo si cambia materialmente el plan. Structured LLM parse + validator determinístico. Eval específico 'empresas dadas de alta en medicina' con activity DENUE, establishment authorization, product holder, clinical trial y intersection. Unknown != false. Conservar texto original. Dejar en review.",
+      "acceptance": "El sistema no elige fuentes por keyword; ambigüedad médica produce alternativas correctas; pedidos no ambiguos no generan entrevista innecesaria; tipos/operadores inválidos se rechazan; no hay provider call.",
+      "validate": "pnpm --filter @driftless/api test -- intent-compiler && pnpm --filter @driftless/api exec vitest run src/chat/chat-evals.spec.ts",
+      "depends_on": ["p4_capability_registry"]
+    },
+    {
+      "key": "p4_warehouse_research",
+      "title": "P4.3 Construir query contract de research sobre warehouse",
+      "description": "Mantener WarehouseQueryService como read-only. Añadir servicio superior que traduzca ClaimRequirements soportados a SQL parametrizado, agregue por Entity, calcule evidence/freshness coverage, exponga predicates no soportados y use keyset pagination. Evitar exact geography como única semántica; geography normalization vive fuera del read primitive. Diseñar índices sólo tras EXPLAIN ANALYZE BUFFERS en staging. Dejar en review con query plans.",
+      "acceptance": "Warehouse responde Research Contract soportado, reporta gaps sin truncar silenciosamente, no hace live fetch ni routing, pagina estable y evita N+1/full scans en datasets representativos.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/gtm/warehouse-query.service.integration.spec.ts && pnpm --filter @driftless/api build",
+      "depends_on": ["p4_intent_compiler"]
+    },
+    {
+      "key": "p4_research_planner",
+      "title": "P4.4 Implementar Research Planner warehouse-first",
+      "description": "Crear planner puro: capability match, hard constraints, set cover ponderado, dependencies, probe, stages, stop/fallback y quote. Orden base warehouse→Source Packs→web search→entity enrichment→exhaustive discovery. Excepciones sólo con routing_reason. Separar plan de ejecución. Rutas independientes pueden paralelizarse dentro del cap; no todas por default. Añadir coverage/economics fixtures. Dejar en review.",
+      "acceptance": "Warehouse suficiente genera plan de costo externo cero; gaps seleccionan capacidad mínima; licencia/freshness/budget son hard constraints; score no puede violarlos; ningún provider es invocado al planear.",
+      "validate": "pnpm --filter @driftless/api test -- research-planner && pnpm --filter @driftless/api build",
+      "depends_on": ["p4_warehouse_research"]
+    },
+    {
+      "key": "p4_exa_adapter",
+      "title": "P4.5 Añadir Exa como web search/fetch con evidencia",
+      "description": "Crear WebSearchProviderPort y Exa adapter para search/fetch/estimate. Keys cifradas/ConfigService, domain policy, timeout/retry, rate-limit, kill switch, usage/cost telemetry. Convertir output a Artifact→Observation→Claim; texto web es untrusted y no puede dar instrucciones. Fixtures redactadas, sin live CI. El planner lo usa sólo para evidence gaps/web discovery. Dejar en review.",
+      "acceptance": "Tipos Exa no escapan adapter; claims citan artifact/span y freshness; 429/5xx/partial/cancel degradan por etapa; cost parsing probado; prompt injection fixture no altera tools.",
+      "validate": "pnpm --filter @driftless/api test -- exa && pnpm --filter @driftless/api build",
+      "depends_on": ["p4_research_planner"]
+    },
+    {
+      "key": "p4_apollo_adapter",
+      "title": "P4.6 Añadir Apollo sólo como entity/contact enrichment",
+      "description": "Crear EntityEnrichmentProviderPort y Apollo adapter. Requiere Entity/domain resuelto; organization first, people sólo cuando contract lo pide. Batch dentro del límite vigente, field-level provenance/freshness, estimate/credits, no re-enrich de campos frescos. Secrets cifrados, fixtures y fallbacks. Dejar en review.",
+      "acceptance": "Apollo nunca genera universo desde cero; no recibe duplicados/no-resueltos; sólo compra campos faltantes; cost cap se respeta; provider types quedan encapsulados.",
+      "validate": "pnpm --filter @driftless/api test -- apollo && pnpm --filter @driftless/api build",
+      "depends_on": ["p4_exa_adapter"]
+    },
+    {
+      "key": "p4_parallel_policy",
+      "title": "P4.7 Reencuadrar Parallel como exhaustive discovery",
+      "description": "Conservar DiscoveryProviderPort/adapter, pero registrar la capacidad exhaustive_discovery como último escalón. Añadir preview, quote/approval, marginal coverage, stop condition y reconciliation. Remover cualquier ruta que lo use como search genérico o enrichment rutinario. No hardcodear tarifa; cost policy versionada. Dejar en review.",
+      "acceptance": "Parallel no corre sin aprobación/cap; warehouse y rutas baratas preceden salvo routing_reason; preview no contamina Records; cancel/retry/reconcile son idempotentes.",
+      "validate": "pnpm --filter @driftless/api exec vitest run src/radar/adapters/parallel.smoke.spec.ts src/radar/parallel-fixtures.spec.ts src/radar/radar-run.service.spec.ts",
+      "depends_on": ["p4_apollo_adapter"]
+    },
+    {
+      "key": "p4_multisource_resolution",
+      "title": "P4.8 Resolver e interpretar multi-source sin false claims",
+      "description": "Implementar execution path Compile→Match→Probe→Acquire→Normalize→Resolve→Interpret→Qualify→Stop. Caso dorado DENUE∩COFEPRIS resuelve product/license→holder legal→company→facility→economic unit; no join por nombre ingenuo. Aplicar source-family independence, contradictions, unknown semantics y separación event confidence/commercial fit/contact readiness. Registrar obstructions/coverage gaps y enviar faltantes al backlog de la Fábrica, sin scraper dinámico. Dejar en review.",
+      "acceptance": "El caso médico explica qué demuestra cada fuente; ausencia no se vuelve false; false merges quedan en review; web secundaria no suplanta registro oficial; cada assertion conserva source, scope, tiempos, confidence y contradicción.",
+      "validate": "pnpm --filter @driftless/api test -- multisource && pnpm --filter @driftless/api test -- entity-resolution && pnpm --filter @driftless/api exec vitest run src/chat/chat-evals.spec.ts",
+      "depends_on": ["p4_parallel_policy"]
+    },
+    {
+      "key": "p4_unified_artifact_ui",
+      "title": "P4.9 Unificar WarehousePanel y LeadsPanel en ResearchArtifactPanel",
+      "description": "Crear un solo artifact visual con planning, warehouse_results, awaiting_quote, acquiring, normalizing, completed, partial y failed. Filas progresivas con cuenta, fit, why now, confidence, criterion coverage, source/evidence, freshness, contact, status y next action. Provider-neutral copy, quote approval, cancel/retry por etapa, evidence drawer. Preservar cambios dirty existentes; rebase/inspeccionar antes. Dejar en review con screenshots y flujo manual en navegador.",
+      "acceptance": "Cambiar de warehouse a web/enrichment no cambia de panel; usuario entiende origen y limitaciones sin provider jargon; partial/cancel/retry conservan filas; responsive, teclado y aria-live verificados.",
+      "validate": "pnpm --filter @driftless/dashboard test -- ChatThreadView && pnpm --filter @driftless/dashboard build",
+      "depends_on": ["p4_multisource_resolution"]
+    },
+    {
+      "key": "p5_outcome_schema",
+      "title": "P5.1 Extender RecordEvent como Outcome Ledger idempotente",
+      "description": "Añadir Collection.outcome_policy 1.0 y extender RecordEvent con outcome, occurred_at, idempotency_key, source_event_id, cause_refs y evidence_refs acotados. Unique parcial workspace+idempotency. Migration expand/contract, índices de FK/query, grants/RLS review. No tabla ledger duplicada ni raw meeting/email body. Dejar en review con migration rollback.",
+      "acceptance": "Stages propios mapean a canonical outcomes; duplicate webhook no duplica; occurred_at se distingue de ingestion; cadena causal refiere run/action/event; migration/backfill por lotes seguro.",
+      "validate": "pnpm --filter @driftless/db build && pnpm --filter @driftless/api test -- outcome && pnpm --filter @driftless/api build",
+      "depends_on": ["p4_unified_artifact_ui"]
+    },
+    {
+      "key": "p5_outcome_ingestion",
+      "title": "P5.2 Ingerir outcomes desde humanos y broker con causalidad",
+      "description": "Implementar validation/ingestion service para humans, CRM/outreach/call provider events ya disponibles vía broker. Consultar broker operations; si falta operación, bloquear y reportar, no crear scripts/Nango actions. Mapear external ids, replay idempotente, PII mínima. Vincular Record, Entity, action correlation, agent/radar run cuando exista. Dejar en review.",
+      "acceptance": "Accepted/rejected/contacted/replied/meeting/opportunity/won/lost se registran con actor y causal refs; retry no duplica; operation ausente no se improvisa; cross-tenant ids se rechazan.",
+      "validate": "pnpm --filter @driftless/api test -- outcome-ingestion && pnpm --filter @driftless/api test -- broker && pnpm --filter @driftless/api build",
+      "depends_on": ["p5_outcome_schema"]
+    },
+    {
+      "key": "p5_analytics_learning",
+      "title": "P5.3 Analítica causal y propuestas de aprendizaje",
+      "description": "Crear queries directas o views security_invoker para cohortes por criterion version, signal y source family; no cache/materialized view. Mostrar muestra, ventana, confidence y atribución conservadora. Extender Memory Refinery para candidate claim→compare→Note/Suggested edit; nunca Knowledge automática. UI mínima para revisar propuesta. Dejar en review.",
+      "acceptance": "Se puede calcular aceptación, reunión y win por criterio/fuente con causal refs; correlación no se presenta como causalidad; muestras pequeñas se etiquetan; aprendizaje requiere revisión y no auto-promueve.",
+      "validate": "pnpm --filter @driftless/api test -- commercial-analytics && pnpm --filter @driftless/api test -- memory-refinery && pnpm --filter @driftless/api build",
+      "depends_on": ["p5_outcome_ingestion"]
+    },
+    {
+      "key": "p6_evals_rollout",
+      "title": "P6.1 Completar evals, observabilidad, flags y rollout shadow",
+      "description": "Implementar eventos/métricas del plan, feature flags server-side, kill switches por provider/source/paid acquisition, cohortes y shadow planner. Añadir eval pack español con warehouse hit/partial/stale, COFEPRIS+DENUE ambiguity/intersection, conflicts, no-paid, prompt injection, corp scopes y negative ICP. Ejecutar harness completo y staging smoke para cambios P0/P1. Producir rollback y comparación contra baseline. Dejar en review; no activar GA.",
+      "acceptance": "Trajectory evals prueban compiler-before-tools, warehouse-before-paid, no Parallel sin approval, Apollo sólo resolved, evidence citations, no Knowledge mutation, causal run ids y cap. Kill switches probados. Harness cero fallos. Reporte de precision/costo/latencia y riesgos residuales disponible.",
+      "validate": "npm run typecheck && npm run test && npm run harness:chat-evals && bash scripts/harness/check.sh && driftless context get --diff",
+      "depends_on": ["p5_analytics_learning"]
+    },
+    {
+      "key": "p7_program_review",
+      "title": "P7.1 Revisión integral y decisión de lanzamiento",
+      "description": "No implementar features. Auditar Definition of Done del plan, migraciones/backfills, RLS/grants, causal completeness, unit economics, UX en español, accessibility, degraded paths, licensing, provider contracts y rollback. Ejecutar casos manuales como cliente y comparar con baseline/Origami sólo como referencia de experiencia, no copia. Consolidar hallazgos por P0/P1/P2. Dejar en review para decisión humana de GA.",
+      "acceptance": "Checklist del supervisor completa; cero P0/P1 abiertos; métricas de promoción cumplidas o decisión explícita de no lanzar; documentación y Topics actualizados mediante Note/Suggested edit; rollback probado.",
+      "validate": "bash scripts/harness/check.sh && npm run evals:fast && driftless context get --diff",
+      "depends_on": ["p6_evals_rollout"]
+    }
+  ]
+}

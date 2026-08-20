@@ -1,0 +1,71 @@
+schema,relname,relkind,reltuples_estimate,relpages,view_definition
+market_data,directory_rows,v,-1.0,0," WITH current_file AS (
+         SELECT DISTINCT ON (ingest_runs.source_slug, ingest_runs.dataset_name) ingest_runs.source_slug,
+            ingest_runs.dataset_name,
+            ingest_runs.source_file_id,
+            ingest_runs.coverage
+           FROM ingest_runs
+          WHERE ingest_runs.relation_name = 'directory'::text AND ingest_runs.status = 'complete'::text AND ingest_runs.source_file_id IS NOT NULL
+          ORDER BY ingest_runs.source_slug, ingest_runs.dataset_name, ingest_runs.finished_at DESC, ingest_runs.started_at DESC
+        ), completed_source AS (
+         SELECT current_file.source_slug
+           FROM current_file
+          GROUP BY current_file.source_slug
+         HAVING bool_or(current_file.dataset_name = 'directory-current'::text) OR count(*) FILTER (WHERE current_file.dataset_name ~ '^directory-state-[0-9]{2}(-part-[0-9]+)?$'::text) >= COALESCE(max(
+                CASE
+                    WHEN (current_file.coverage ->> 'publisher_file_count'::text) ~ '^[0-9]+$'::text THEN (current_file.coverage ->> 'publisher_file_count'::text)::integer
+                    ELSE NULL::integer
+                END), 2147483647)
+        ), active_taxonomy AS (
+         SELECT taxonomy_publications.id,
+            taxonomy_publications.classifier_version,
+            taxonomy_publications.directory_basis_sha256,
+            taxonomy_publications.published_at
+           FROM taxonomy_publications
+          WHERE taxonomy_publications.status = 'published'::text
+          ORDER BY taxonomy_publications.published_at DESC, taxonomy_publications.id DESC
+         LIMIT 1
+        )
+ SELECT d.id,
+    d.source_slug,
+    COALESCE(c.dataset_name, 'legacy-cutover'::text) AS dataset_name,
+    d.source_record_id,
+    d.observed_kind,
+    d.legal_name,
+    d.trade_name,
+    d.activity_text,
+    d.products_services,
+    d.industry_codes,
+    d.categories,
+    d.country_code,
+    d.state_code,
+    d.state_name,
+    d.municipality,
+    d.postal_code,
+    d.website,
+    d.domain,
+    exhibited_business_contacts(d.source_slug, d.source_record_id, d.business_contacts, d.raw_record) AS business_contacts,
+    d.source_url,
+    d.source_span,
+    d.artifact_sha256,
+    d.storage_uri,
+    d.provenance,
+    d.source_retrieved_at,
+    d.updated_at,
+    exhibited_source_fields(d.source_slug, d.raw_record) AS source_fields,
+    te.supplier_roles,
+        CASE
+            WHEN te.directory_entry_id IS NOT NULL THEN at.classifier_version
+            ELSE NULL::integer
+        END AS role_classifier_version,
+    te.classified_at AS role_classified_at,
+    row_evidence(d.source_slug, COALESCE(c.dataset_name, 'legacy-cutover'::text), d.source_record_id, d.source_url, d.source_span, NULL::bigint, NULL::bigint, d.artifact_sha256, d.source_retrieved_at) AS evidence
+   FROM directory_entries d
+     LEFT JOIN current_file c ON c.source_slug = d.source_slug AND c.source_file_id = d.source_file_id
+     LEFT JOIN active_taxonomy at ON true
+     LEFT JOIN taxonomy_entries te ON te.publication_id = at.id AND te.directory_entry_id = d.id AND te.directory_row_hash = d.row_hash
+  WHERE c.source_file_id IS NOT NULL OR d.source_file_id IS NULL AND NOT (EXISTS ( SELECT 1
+           FROM completed_source done
+          WHERE done.source_slug = d.source_slug)) AND NOT (EXISTS ( SELECT 1
+           FROM current_file c2
+          WHERE c2.source_slug = d.source_slug AND c2.dataset_name ~ '^directory-state-[0-9]{2}(-part-[0-9]+)?$'::text AND ((c2.coverage ->> 'state_code'::text) = d.state_code OR d.source_slug = 'denue'::text AND (c2.coverage ->> 'entity'::text) ~ '^[0-9]{1,2}$'::text AND ""left""(d.source_record_id, 2) = lpad(c2.coverage ->> 'entity'::text, 2, '0'::text))));"

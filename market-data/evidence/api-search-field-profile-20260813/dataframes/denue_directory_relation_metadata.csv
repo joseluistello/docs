@@ -1,0 +1,36 @@
+schema,relname,relkind,reltuples_estimate,relpages,view_definition
+market_data,directory,v,-1.0,0," SELECT r.id,
+    r.source_slug,
+    r.dataset_name,
+    r.source_record_id,
+    r.observed_kind,
+    r.legal_name,
+    r.trade_name,
+    r.activity_text,
+    r.products_services,
+    r.industry_codes,
+    r.categories,
+    r.country_code,
+    r.state_code,
+    r.state_name,
+    r.municipality,
+    r.postal_code,
+    r.website,
+    r.domain,
+    r.business_contacts,
+    r.source_url,
+    r.source_span,
+    r.artifact_sha256,
+    r.storage_uri,
+    r.provenance,
+    r.source_retrieved_at,
+    r.updated_at,
+    r.source_fields,
+    r.supplier_roles,
+    r.role_classifier_version,
+    r.role_classified_at,
+    r.evidence
+   FROM directory_rows r
+     JOIN sources s ON s.slug = r.source_slug
+     JOIN gtm_source_packs live ON live.slug = r.source_slug
+  WHERE s.enabled AND live.licensed_for_display;"

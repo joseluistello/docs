@@ -29,9 +29,9 @@ The Librarian tends the knowledge graph itself. On a weekly sweep it surveys the
 
 The one exception is opt-in. With `librarian_autovouch` on (experimental, off by default), a high-confidence promotion of a **human-authored** draft can auto-apply. Everything else stays a suggestion.
 
-## How they run: BYOM
+## How they run
 
-The agents run **server-side on Driftless** using **your OpenCode API key** (bring-your-own-model). OpenCode bills the inference; Driftless never serves your key back out. It stays server-side only.
+The agents run **server-side on Driftless**, on inference Driftless operates and pays for. There is no provider account to open and no API key to paste. If a provider degrades mid-run, the run continues on another one.
 
 - **Read-only.** The agents read and reason; they never execute, edit, or write code.
 - **Propose-only.** Everything these autonomous agents produce lands as a **Note** or **Suggested edit** in your Review Queue. They never merge. Merging into Knowledge is an owner/admin act, and these autonomous agents never merge their own work in (separation of powers stays). That's distinct from *your own* agent (CLI/MCP, acting under your identity), which you can explicitly ask to run a merge on your behalf.
@@ -40,12 +40,11 @@ The agents run **server-side on Driftless** using **your OpenCode API key** (bri
 
 In the dashboard: **Settings → Agents**.
 
-1. Paste your **OpenCode API key**.
-2. Pick a **model**, or a comma-separated priority list (e.g. `opencode/claude-sonnet-4-6, opencode/big-pickle`); the runner rotates to the next on a rate-limit or credit error.
-3. Toggle the **Auditor**, **Architect**, and **Librarian** on. `librarian_autovouch` is a separate, experimental, off-by-default switch.
+1. Toggle the **Auditor**, **Architect**, and **Librarian** on. `librarian_autovouch` is a separate, experimental, off-by-default switch.
+2. Optionally set **budget guardrails** — per-run token and time caps (hard: a run stops when it hits them) and daily / 30-day spend caps (a soft perimeter: they block the *next* run once observed spend crosses the cap).
 
-Each agent is off until you enable it: a run happens only when the workspace has a model key configured and that agent's toggle is on. Otherwise the run records a `no_op` and does nothing.
+Each agent is off until you enable it: a run happens only when that agent's toggle is on. Otherwise the run records a `no_op` and does nothing.
 
 ## See what they did
 
-The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), the model, tokens used, proposals created, and a code-free summary of what the agent concluded, including `no-op` runs (a healthy signal: the agent looked and found nothing to change).
+The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), tokens used, proposals created, and a code-free summary of what the agent concluded, including `no-op` runs (a healthy signal: the agent looked and found nothing to change).

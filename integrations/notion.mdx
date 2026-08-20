@@ -122,7 +122,7 @@ The broker is feature-flagged and fails fast at boot if enabled without its cred
 | --- | --- |
 | `DRIFTLESS_BROKER_ENABLED` | `true` turns the broker on (default off; `staging` defaults on). |
 | `DRIFTLESS_BROKER_ROLLOUT` | `off` (default) closes the external OAuth/MCP lane; `internal` / `ga` open it (grants still apply). |
-| `DRIFTLESS_BROKER_POLICY` | `enforce` (prod default) hides any operation not explicitly allowed; `open` (staging) shows all, flagged. |
+Production (`NODE_ENV=production`) always enforces the reviewed operation policy; staging/dev stays open for testing and marks unknown operations.
 | `NANGO_SECRET_KEY` | Nango backend API key (server-side only). |
 | `NANGO_WEBHOOK_SIGNING_KEY` | Verifies Nango-forwarded webhooks (required when the broker is on). |
 

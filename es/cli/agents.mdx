@@ -1,6 +1,6 @@
 ---
 title: 'CLI: Agentes y hooks'
-description: 'Configura e inspecciona los agentes del lado del servidor (BYOM), y gestiona el hook local de auto-pull.'
+description: 'Configura e inspecciona los agentes del lado del servidor, y gestiona el hook local de auto-pull.'
 ---
 
 Aquí viven dos cosas: la familia `agent` configura e inspecciona los agentes del lado del servidor ([Auditor, Architect, Librarian](/es/agents/agentic-layer)), y los comandos `hook` / `hooks` gestionan el hook local de [auto-pull](/es/concepts/automations). No están relacionados: `agent` habla con el servidor, `hooks` edita un archivo local. Agrega `--json` a cualquier comando `agent` para salida de máquina.
@@ -13,23 +13,23 @@ Los agentes corren de forma automática del lado del servidor; la CLI los inspec
 |---|---|
 | `agent runs [--limit <n>]` | Corridas recientes (id, agente, status, hora). |
 | `agent run <id>` | Una corrida con su trace completo. |
-| `agent config [--show]` | Imprime la config actual. Las keys secretas nunca se muestran. |
+| `agent config [--show]` | Imprime la config actual. |
 | `agent config --set <key>=<value>` | Setea una key de config (repetible). |
 | `agent usage [--days <n>]` | Resumen de tokens y costo. |
 | `agent stats` | Estadísticas de aceptación de propuestas. |
-| `agent models` | El catálogo de modelos BYOM. |
 
-## Configuración BYOM
+## Configuración
 
-Keys seteables en `agent config --set`: `opencode_key` (la key de bring-your-own-model, de solo escritura), `model` (una lista de prioridad separada por comas de `provider/model`; el runner rota ante un error de rate-limit o de crédito), y los toggles `auditor`, `architect`, `librarian` y `librarian_autovouch`.
+Keys seteables en `agent config --set`: los toggles `auditor`, `architect`, `librarian` y `librarian_autovouch`.
+
+No hay ajuste de proveedor, de modelo ni de API key. Driftless opera y paga la inferencia sobre la que corren los agentes, y elige el modelo en cada turno; `agent config --set model=…` y `--set opencode_key=…` se rechazan en lugar de ignorarse, para que un script viejo falle de forma visible en vez de aparentar que funcionó.
 
 ```bash
-driftless agent config --set opencode_key=oc_xxx --set model="opencode/claude-sonnet-4-6"
 driftless agent config --set auditor=true --set architect=true
-driftless agent config --show    # la key se redacta
+driftless agent config --show
 ```
 
-Cada agente está apagado hasta que su toggle está encendido y hay una key de modelo configurada; si no, una corrida registra un `no_op`.
+Cada agente está apagado hasta que su toggle está encendido; si no, una corrida registra un `no_op`.
 
 ## Hooks (auto-pull)
 
@@ -50,7 +50,7 @@ driftless hooks disable    # quítalo de esta máquina
 
 ## Permisos
 
-Leer las corridas de agentes y setear la config BYOM son acciones de miembro del workspace desde la CLI. La superficie de agent-runs no es alcanzable por OAuth/MCP (las corridas de agentes gastan inferencia de modelo); la superficie MCP solo expone `driftless_agent_stats`.
+Leer las corridas de agentes y setear la config de agentes son acciones de miembro del workspace desde la CLI. La superficie de agent-runs no es alcanzable por OAuth/MCP (las corridas de agentes gastan inferencia de modelo); la superficie MCP solo expone `driftless_agent_stats`.
 
 ## Relacionado
 

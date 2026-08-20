@@ -1,0 +1,17 @@
+measured_at,domain,field_name,source_scope,metadata_field,metadata_value,frequency
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,classification,published_business_contact,23400
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,kind,phone,11908
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,kind,email,6683
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,kind,whatsapp,2522
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,kind,mobile,1400
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,kind,toll_free,887
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,source_field,dirind.tel,11908
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,source_field,dirind.email,6683
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,source_field,dirind.whatsapp,2522
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,source_field,dirind.tel_celular,1400
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,dirind,source_field,dirind.lada_sin_costo,887
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,mexicoindustry,classification,published_business_contact,603
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,mexicoindustry,kind,phone,509
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,mexicoindustry,kind,email,94
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,mexicoindustry,source_field,mexicoindustry.telefono,509
+2026-08-13 00:04:45.893249+00:00,directory,business_contacts,mexicoindustry,source_field,mexicoindustry.correo electronico,94

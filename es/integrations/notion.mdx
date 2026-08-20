@@ -122,7 +122,7 @@ El broker está detrás de un feature-flag y falla rápido al arrancar si se hab
 | --- | --- |
 | `DRIFTLESS_BROKER_ENABLED` | `true` prende el broker (por defecto off; `staging` viene on por defecto). |
 | `DRIFTLESS_BROKER_ROLLOUT` | `off` (por defecto) cierra el carril externo de OAuth/MCP; `internal` / `ga` lo abren (los grants igual aplican). |
-| `DRIFTLESS_BROKER_POLICY` | `enforce` (por defecto en prod) esconde cualquier operación no permitida explícitamente; `open` (staging) las muestra todas, marcadas. |
+Producción (`NODE_ENV=production`) siempre aplica la política revisada de operaciones; staging/dev queda abierto para pruebas y marca las operaciones desconocidas.
 | `NANGO_SECRET_KEY` | La API key de backend de Nango (solo server-side). |
 | `NANGO_WEBHOOK_SIGNING_KEY` | Verifica los webhooks reenviados por Nango (requerido cuando el broker está prendido). |
 

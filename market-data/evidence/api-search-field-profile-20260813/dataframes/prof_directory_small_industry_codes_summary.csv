@@ -1,0 +1,3 @@
+measured_at,domain,source_slug,field_name,rows_examined,null_count,empty_array_count,rows_with_codes,total_code_items,distinct_code_count,distinct_label_count,top_25_code_label_pairs,singleton_pair_count,low_frequency_pair_count_le_10
+2026-08-12 23:57:37.796642+00:00,directory,dirind,industry_codes,12799,0,12799,0,0,0,0,[],0,0
+2026-08-12 23:57:37.796642+00:00,directory,mexicoindustry,industry_codes,4149,0,4149,0,0,0,0,[],0,0

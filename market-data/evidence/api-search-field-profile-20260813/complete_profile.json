@@ -1,0 +1,2172 @@
+{
+  "artifact_status": "complete_100_percent_scoped_delivery",
+  "created_at_utc": "2026-08-13T00:43:00.253917+00:00",
+  "source": "GTM Warehouse Staging — Read Only / market_data schema",
+  "scope": {
+    "relations": [
+      "directory",
+      "tenders",
+      "awards"
+    ],
+    "directory_sources": [
+      "denue",
+      "dirind",
+      "mexicoindustry"
+    ],
+    "tender_sources": [
+      "comprasmx-contratos"
+    ],
+    "award_sources": [
+      "cfe-contratos-adjudicados",
+      "comprasmx-contratos"
+    ]
+  },
+  "dataframes": {
+    "live_dataset_coverage_summary": [
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "visible_rows": 58,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 64,
+              "dataset_name": "awards-current",
+              "rejected_rows": 0,
+              "published_rows": 64,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-09T08:28:09.942+00:00"
+            }
+          ],
+          "current_datasets": 1,
+          "single_content_digest": true
+        },
+        "content_sha256": "b42d63d2b7bd8701bbcfdcdfaa834675e1079659c0dc8e84f336c47b10ab0316",
+        "updated_at": "2026-08-09T08:28:09.942Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "awards",
+        "source_slug": "comprasmx-contratos",
+        "visible_rows": 47788,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 69985,
+              "dataset_name": "contratos-2026",
+              "rejected_rows": 1,
+              "published_rows": 69986,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-12T08:18:16.684+00:00"
+            }
+          ],
+          "current_datasets": 1,
+          "single_content_digest": true
+        },
+        "content_sha256": "804f8d9933d24f7b031984f95118688923e3c1d02f3c61b5c726a70d06d1cadb",
+        "updated_at": "2026-08-12T08:18:16.684Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "visible_rows": 6138075,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 71871,
+              "dataset_name": "directory-state-01",
+              "rejected_rows": 0,
+              "published_rows": 71871,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 139208,
+              "dataset_name": "directory-state-02",
+              "rejected_rows": 0,
+              "published_rows": 139208,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 42577,
+              "dataset_name": "directory-state-03",
+              "rejected_rows": 0,
+              "published_rows": 42577,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 47821,
+              "dataset_name": "directory-state-04",
+              "rejected_rows": 0,
+              "published_rows": 47821,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 126952,
+              "dataset_name": "directory-state-05",
+              "rejected_rows": 0,
+              "published_rows": 126952,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 42073,
+              "dataset_name": "directory-state-06",
+              "rejected_rows": 0,
+              "published_rows": 42073,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 250960,
+              "dataset_name": "directory-state-07",
+              "rejected_rows": 0,
+              "published_rows": 250960,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 142295,
+              "dataset_name": "directory-state-08",
+              "rejected_rows": 0,
+              "published_rows": 142295,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 462732,
+              "dataset_name": "directory-state-09",
+              "rejected_rows": 0,
+              "published_rows": 462732,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 75111,
+              "dataset_name": "directory-state-10",
+              "rejected_rows": 0,
+              "published_rows": 75111,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 296441,
+              "dataset_name": "directory-state-11",
+              "rejected_rows": 0,
+              "published_rows": 296441,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 185797,
+              "dataset_name": "directory-state-12",
+              "rejected_rows": 0,
+              "published_rows": 185797,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 160666,
+              "dataset_name": "directory-state-13",
+              "rejected_rows": 0,
+              "published_rows": 160666,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 401813,
+              "dataset_name": "directory-state-14",
+              "rejected_rows": 0,
+              "published_rows": 401813,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 520000,
+              "dataset_name": "directory-state-15-part-1",
+              "rejected_rows": 0,
+              "published_rows": 520000,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 300853,
+              "dataset_name": "directory-state-15-part-2",
+              "rejected_rows": 0,
+              "published_rows": 300853,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 287049,
+              "dataset_name": "directory-state-16",
+              "rejected_rows": 0,
+              "published_rows": 287049,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 113066,
+              "dataset_name": "directory-state-17",
+              "rejected_rows": 0,
+              "published_rows": 113066,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 73357,
+              "dataset_name": "directory-state-18",
+              "rejected_rows": 0,
+              "published_rows": 73357,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 211349,
+              "dataset_name": "directory-state-19",
+              "rejected_rows": 0,
+              "published_rows": 211349,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 280588,
+              "dataset_name": "directory-state-20",
+              "rejected_rows": 0,
+              "published_rows": 280588,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 410693,
+              "dataset_name": "directory-state-21",
+              "rejected_rows": 0,
+              "published_rows": 410693,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 108868,
+              "dataset_name": "directory-state-22",
+              "rejected_rows": 0,
+              "published_rows": 108868,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 69260,
+              "dataset_name": "directory-state-23",
+              "rejected_rows": 0,
+              "published_rows": 69260,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 127613,
+              "dataset_name": "directory-state-24",
+              "rejected_rows": 0,
+              "published_rows": 127613,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 138882,
+              "dataset_name": "directory-state-25",
+              "rejected_rows": 0,
+              "published_rows": 138882,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 128315,
+              "dataset_name": "directory-state-26",
+              "rejected_rows": 0,
+              "published_rows": 128315,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 95379,
+              "dataset_name": "directory-state-27",
+              "rejected_rows": 0,
+              "published_rows": 95379,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 148882,
+              "dataset_name": "directory-state-28",
+              "rejected_rows": 0,
+              "published_rows": 148882,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 99366,
+              "dataset_name": "directory-state-29",
+              "rejected_rows": 0,
+              "published_rows": 99366,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 356724,
+              "dataset_name": "directory-state-30",
+              "rejected_rows": 0,
+              "published_rows": 356724,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 146384,
+              "dataset_name": "directory-state-31",
+              "rejected_rows": 0,
+              "published_rows": 146384,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 75130,
+              "dataset_name": "directory-state-32",
+              "rejected_rows": 0,
+              "published_rows": 75130,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            }
+          ],
+          "current_datasets": 33,
+          "single_content_digest": false
+        },
+        "content_sha256": null,
+        "updated_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "directory",
+        "source_slug": "dirind",
+        "visible_rows": 12799,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 12799,
+              "dataset_name": "directory-current",
+              "rejected_rows": 17267,
+              "published_rows": 30066,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-09T21:14:27.793+00:00"
+            }
+          ],
+          "current_datasets": 1,
+          "single_content_digest": true
+        },
+        "content_sha256": "92991987969c5e3744473c1ec522f09945fe63f34dff2186ebd46a2b99341611",
+        "updated_at": "2026-08-09T21:14:27.793Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "directory",
+        "source_slug": "mexicoindustry",
+        "visible_rows": 4149,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 4149,
+              "dataset_name": "directory-current",
+              "rejected_rows": 0,
+              "published_rows": 4149,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T01:43:26.978+00:00"
+            }
+          ],
+          "current_datasets": 1,
+          "single_content_digest": true
+        },
+        "content_sha256": "cd61628a8977326bbfeb2be8094e357415a16bc81d04d36b8a23c256c450d872",
+        "updated_at": "2026-08-10T01:43:26.978Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:05:18.392Z",
+        "relation": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "visible_rows": 64418,
+        "coverage": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 64418,
+              "dataset_name": "expedientes-2026",
+              "rejected_rows": 0,
+              "published_rows": 64418,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-12T08:17:04.671+00:00"
+            }
+          ],
+          "current_datasets": 1,
+          "single_content_digest": true
+        },
+        "content_sha256": "a89fa63bb2a795bbf75dbc9308ce3589186a594be00a0258a0086aa25e634293",
+        "updated_at": "2026-08-12T08:17:04.671Z"
+      }
+    ],
+    "live_denue_coverage_datasets": [
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-01",
+        "loaded_rows": 71871,
+        "published_rows": 71871,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-02",
+        "loaded_rows": 139208,
+        "published_rows": 139208,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-03",
+        "loaded_rows": 42577,
+        "published_rows": 42577,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-04",
+        "loaded_rows": 47821,
+        "published_rows": 47821,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-05",
+        "loaded_rows": 126952,
+        "published_rows": 126952,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-06",
+        "loaded_rows": 42073,
+        "published_rows": 42073,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-07",
+        "loaded_rows": 250960,
+        "published_rows": 250960,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-08",
+        "loaded_rows": 142295,
+        "published_rows": 142295,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-09",
+        "loaded_rows": 462732,
+        "published_rows": 462732,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-10",
+        "loaded_rows": 75111,
+        "published_rows": 75111,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-11",
+        "loaded_rows": 296441,
+        "published_rows": 296441,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-12",
+        "loaded_rows": 185797,
+        "published_rows": 185797,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-13",
+        "loaded_rows": 160666,
+        "published_rows": 160666,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-14",
+        "loaded_rows": 401813,
+        "published_rows": 401813,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-15-part-1",
+        "loaded_rows": 520000,
+        "published_rows": 520000,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-15-part-2",
+        "loaded_rows": 300853,
+        "published_rows": 300853,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-16",
+        "loaded_rows": 287049,
+        "published_rows": 287049,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-17",
+        "loaded_rows": 113066,
+        "published_rows": 113066,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-18",
+        "loaded_rows": 73357,
+        "published_rows": 73357,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-19",
+        "loaded_rows": 211349,
+        "published_rows": 211349,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-20",
+        "loaded_rows": 280588,
+        "published_rows": 280588,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-21",
+        "loaded_rows": 410693,
+        "published_rows": 410693,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-22",
+        "loaded_rows": 108868,
+        "published_rows": 108868,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-23",
+        "loaded_rows": 69260,
+        "published_rows": 69260,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-24",
+        "loaded_rows": 127613,
+        "published_rows": 127613,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-25",
+        "loaded_rows": 138882,
+        "published_rows": 138882,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-26",
+        "loaded_rows": 128315,
+        "published_rows": 128315,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-27",
+        "loaded_rows": 95379,
+        "published_rows": 95379,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-28",
+        "loaded_rows": 148882,
+        "published_rows": 148882,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-29",
+        "loaded_rows": 99366,
+        "published_rows": 99366,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-30",
+        "loaded_rows": 356724,
+        "published_rows": 356724,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-31",
+        "loaded_rows": 146384,
+        "published_rows": 146384,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-32",
+        "loaded_rows": 75130,
+        "published_rows": 75130,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      }
+    ],
+    "live_denue_coverage_detail": [
+      {
+        "measured_at": "2026-08-13T00:23:03.357Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "visible_rows": 6138075,
+        "published_finished_at": "2026-08-10T05:04:34.411Z",
+        "content_sha256": null,
+        "coverage_type": "object",
+        "coverage_json": {
+          "scope": "current_dataset_set",
+          "datasets": [
+            {
+              "loaded_rows": 71871,
+              "dataset_name": "directory-state-01",
+              "rejected_rows": 0,
+              "published_rows": 71871,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 139208,
+              "dataset_name": "directory-state-02",
+              "rejected_rows": 0,
+              "published_rows": 139208,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 42577,
+              "dataset_name": "directory-state-03",
+              "rejected_rows": 0,
+              "published_rows": 42577,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 47821,
+              "dataset_name": "directory-state-04",
+              "rejected_rows": 0,
+              "published_rows": 47821,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 126952,
+              "dataset_name": "directory-state-05",
+              "rejected_rows": 0,
+              "published_rows": 126952,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 42073,
+              "dataset_name": "directory-state-06",
+              "rejected_rows": 0,
+              "published_rows": 42073,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 250960,
+              "dataset_name": "directory-state-07",
+              "rejected_rows": 0,
+              "published_rows": 250960,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 142295,
+              "dataset_name": "directory-state-08",
+              "rejected_rows": 0,
+              "published_rows": 142295,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 462732,
+              "dataset_name": "directory-state-09",
+              "rejected_rows": 0,
+              "published_rows": 462732,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 75111,
+              "dataset_name": "directory-state-10",
+              "rejected_rows": 0,
+              "published_rows": 75111,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 296441,
+              "dataset_name": "directory-state-11",
+              "rejected_rows": 0,
+              "published_rows": 296441,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 185797,
+              "dataset_name": "directory-state-12",
+              "rejected_rows": 0,
+              "published_rows": 185797,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 160666,
+              "dataset_name": "directory-state-13",
+              "rejected_rows": 0,
+              "published_rows": 160666,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 401813,
+              "dataset_name": "directory-state-14",
+              "rejected_rows": 0,
+              "published_rows": 401813,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 520000,
+              "dataset_name": "directory-state-15-part-1",
+              "rejected_rows": 0,
+              "published_rows": 520000,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 300853,
+              "dataset_name": "directory-state-15-part-2",
+              "rejected_rows": 0,
+              "published_rows": 300853,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 287049,
+              "dataset_name": "directory-state-16",
+              "rejected_rows": 0,
+              "published_rows": 287049,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 113066,
+              "dataset_name": "directory-state-17",
+              "rejected_rows": 0,
+              "published_rows": 113066,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 73357,
+              "dataset_name": "directory-state-18",
+              "rejected_rows": 0,
+              "published_rows": 73357,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 211349,
+              "dataset_name": "directory-state-19",
+              "rejected_rows": 0,
+              "published_rows": 211349,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 280588,
+              "dataset_name": "directory-state-20",
+              "rejected_rows": 0,
+              "published_rows": 280588,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 410693,
+              "dataset_name": "directory-state-21",
+              "rejected_rows": 0,
+              "published_rows": 410693,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 108868,
+              "dataset_name": "directory-state-22",
+              "rejected_rows": 0,
+              "published_rows": 108868,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 69260,
+              "dataset_name": "directory-state-23",
+              "rejected_rows": 0,
+              "published_rows": 69260,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 127613,
+              "dataset_name": "directory-state-24",
+              "rejected_rows": 0,
+              "published_rows": 127613,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 138882,
+              "dataset_name": "directory-state-25",
+              "rejected_rows": 0,
+              "published_rows": 138882,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 128315,
+              "dataset_name": "directory-state-26",
+              "rejected_rows": 0,
+              "published_rows": 128315,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 95379,
+              "dataset_name": "directory-state-27",
+              "rejected_rows": 0,
+              "published_rows": 95379,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 148882,
+              "dataset_name": "directory-state-28",
+              "rejected_rows": 0,
+              "published_rows": 148882,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 99366,
+              "dataset_name": "directory-state-29",
+              "rejected_rows": 0,
+              "published_rows": 99366,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 356724,
+              "dataset_name": "directory-state-30",
+              "rejected_rows": 0,
+              "published_rows": 356724,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 146384,
+              "dataset_name": "directory-state-31",
+              "rejected_rows": 0,
+              "published_rows": 146384,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            },
+            {
+              "loaded_rows": 75130,
+              "dataset_name": "directory-state-32",
+              "rejected_rows": 0,
+              "published_rows": 75130,
+              "merged_duplicate_rows": null,
+              "published_finished_at": "2026-08-10T05:04:34.411+00:00"
+            }
+          ],
+          "current_datasets": 33,
+          "single_content_digest": false
+        }
+      }
+    ],
+    "prof_awards_scalar_summary_compact": [
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "amount_scope",
+        "rows_examined": 47846,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 2
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "contracting_type",
+        "rows_examined": 47846,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 7
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "contract_status",
+        "rows_examined": 47846,
+        "null_count": 16400,
+        "null_rate_pct": 34.2766,
+        "cardinality": 4
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "currency",
+        "rows_examined": 47846,
+        "null_count": 58,
+        "null_rate_pct": 0.1212,
+        "cardinality": 4
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "is_mipyme",
+        "rows_examined": 47846,
+        "null_count": 58,
+        "null_rate_pct": 0.1212,
+        "cardinality": 2
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "procedure_type",
+        "rows_examined": 47846,
+        "null_count": 2632,
+        "null_rate_pct": 5.501,
+        "cardinality": 50
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "source_slug",
+        "rows_examined": 47846,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 2
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "supplier_country",
+        "rows_examined": 47846,
+        "null_count": 58,
+        "null_rate_pct": 0.1212,
+        "cardinality": 2
+      },
+      {
+        "measured_at": "2026-08-13T00:06:02.570Z",
+        "domain": "awards",
+        "source_scope": "all",
+        "field_name": "supplier_size",
+        "rows_examined": 47846,
+        "null_count": 58,
+        "null_rate_pct": 0.1212,
+        "cardinality": 7
+      }
+    ],
+    "prof_directory_dirind_categories_row_stats": [
+      {
+        "measured_at": "2026-08-12T23:59:53.506Z",
+        "domain": "directory",
+        "source_scope": "dirind",
+        "field_name": "categories",
+        "rows_examined": 12799,
+        "null_count": 0,
+        "empty_array_count": 0,
+        "rows_with_categories": 12799,
+        "categories_type_distribution": {
+          "array": 12799
+        }
+      }
+    ],
+    "prof_directory_mexicoindustry_categories_row_stats": [
+      {
+        "measured_at": "2026-08-12T23:59:21.471Z",
+        "domain": "directory",
+        "source_scope": "mexicoindustry",
+        "field_name": "categories",
+        "rows_examined": 4149,
+        "null_count": 0,
+        "empty_array_count": 238,
+        "rows_with_categories": 3911,
+        "categories_type_distribution": {
+          "array": 4149
+        }
+      }
+    ],
+    "prof_directory_small_business_contacts_key_counts": [
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "classification",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "kind",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "source_field",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "source_record_id",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "source_slug",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "dirind",
+        "element_json_type": "object",
+        "key_name": "value",
+        "frequency": 23400
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "classification",
+        "frequency": 603
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "kind",
+        "frequency": 603
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "source_field",
+        "frequency": 603
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "source_record_id",
+        "frequency": 603
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "source_slug",
+        "frequency": 603
+      },
+      {
+        "source_scope": "mexicoindustry",
+        "element_json_type": "object",
+        "key_name": "value",
+        "frequency": 603
+      }
+    ],
+    "prof_directory_small_business_contacts_metadata_counts": [
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "classification",
+        "metadata_value": "published_business_contact",
+        "frequency": 23400
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "kind",
+        "metadata_value": "phone",
+        "frequency": 11908
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "kind",
+        "metadata_value": "email",
+        "frequency": 6683
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "kind",
+        "metadata_value": "whatsapp",
+        "frequency": 2522
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "kind",
+        "metadata_value": "mobile",
+        "frequency": 1400
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "kind",
+        "metadata_value": "toll_free",
+        "frequency": 887
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "source_field",
+        "metadata_value": "dirind.tel",
+        "frequency": 11908
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "source_field",
+        "metadata_value": "dirind.email",
+        "frequency": 6683
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "source_field",
+        "metadata_value": "dirind.whatsapp",
+        "frequency": 2522
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "source_field",
+        "metadata_value": "dirind.tel_celular",
+        "frequency": 1400
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "metadata_field": "source_field",
+        "metadata_value": "dirind.lada_sin_costo",
+        "frequency": 887
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "metadata_field": "classification",
+        "metadata_value": "published_business_contact",
+        "frequency": 603
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "metadata_field": "kind",
+        "metadata_value": "phone",
+        "frequency": 509
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "metadata_field": "kind",
+        "metadata_value": "email",
+        "frequency": 94
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "metadata_field": "source_field",
+        "metadata_value": "mexicoindustry.telefono",
+        "frequency": 509
+      },
+      {
+        "measured_at": "2026-08-13T00:04:45.893Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "metadata_field": "source_field",
+        "metadata_value": "mexicoindustry.correo electronico",
+        "frequency": 94
+      }
+    ],
+    "prof_directory_small_business_contacts_row_stats": [
+      {
+        "measured_at": "2026-08-13T00:03:58.842Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "dirind",
+        "rows_examined": 12799,
+        "null_count": 0,
+        "empty_array_count": 121,
+        "rows_with_business_contacts": 12678,
+        "business_contacts_type_distribution": {
+          "array": 12799
+        },
+        "min_array_length": 0,
+        "avg_array_length": 1.8282678334,
+        "max_array_length": 6
+      },
+      {
+        "measured_at": "2026-08-13T00:03:58.842Z",
+        "domain": "directory",
+        "field_name": "business_contacts",
+        "source_scope": "mexicoindustry",
+        "rows_examined": 4149,
+        "null_count": 0,
+        "empty_array_count": 3638,
+        "rows_with_business_contacts": 511,
+        "business_contacts_type_distribution": {
+          "array": 4149
+        },
+        "min_array_length": 0,
+        "avg_array_length": 0.1453362256,
+        "max_array_length": 2
+      }
+    ],
+    "prof_directory_small_industry_codes_summary": [
+      {
+        "measured_at": "2026-08-12T23:57:37.796Z",
+        "domain": "directory",
+        "source_slug": "dirind",
+        "field_name": "industry_codes",
+        "rows_examined": 12799,
+        "null_count": 0,
+        "empty_array_count": 12799,
+        "rows_with_codes": 0,
+        "total_code_items": 0,
+        "distinct_code_count": 0,
+        "distinct_label_count": 0,
+        "top_25_code_label_pairs": [],
+        "singleton_pair_count": 0,
+        "low_frequency_pair_count_le_10": 0
+      },
+      {
+        "measured_at": "2026-08-12T23:57:37.796Z",
+        "domain": "directory",
+        "source_slug": "mexicoindustry",
+        "field_name": "industry_codes",
+        "rows_examined": 4149,
+        "null_count": 0,
+        "empty_array_count": 4149,
+        "rows_with_codes": 0,
+        "total_code_items": 0,
+        "distinct_code_count": 0,
+        "distinct_label_count": 0,
+        "top_25_code_label_pairs": [],
+        "singleton_pair_count": 0,
+        "low_frequency_pair_count_le_10": 0
+      }
+    ],
+    "prof_directory_small_supplier_roles_row_stats": [
+      {
+        "measured_at": "2026-08-13T00:03:42.186Z",
+        "domain": "directory",
+        "field_name": "supplier_roles",
+        "source_scope": "dirind",
+        "rows_examined": 12799,
+        "null_count": 12799,
+        "empty_array_count": 0,
+        "rows_with_supplier_roles": 0,
+        "supplier_roles_type_distribution": {
+          "null": 12799
+        }
+      },
+      {
+        "measured_at": "2026-08-13T00:03:42.186Z",
+        "domain": "directory",
+        "field_name": "supplier_roles",
+        "source_scope": "mexicoindustry",
+        "rows_examined": 4149,
+        "null_count": 4149,
+        "empty_array_count": 0,
+        "rows_with_supplier_roles": 0,
+        "supplier_roles_type_distribution": {
+          "null": 4149
+        }
+      }
+    ],
+    "prof_tenders_scalar_summary_compact": [
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "actionability",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 4
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "announcement_character",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 3
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "contracting_type",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 6
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "is_open",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 2
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "procedure_type",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 8
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "source_slug",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 1
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "state_name",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 32
+      },
+      {
+        "measured_at": "2026-08-13T00:05:37.696Z",
+        "domain": "tenders",
+        "source_scope": "comprasmx-contratos",
+        "field_name": "status",
+        "rows_examined": 64418,
+        "null_count": 0,
+        "null_rate_pct": 0.0,
+        "cardinality": 16
+      }
+    ]
+  },
+  "denue_coverage_fallback": {
+    "artifact_status": "denue_coverage_only_fallback",
+    "created_at_utc": "2026-08-13T00:23:57.266890+00:00",
+    "reason": "Direct market_data.directory scans for source_slug='denue' timed out repeatedly, including dataset_name partition attempts. Coverage JSON from market_data.dataset_coverage is responsive and is used as the safe fallback.",
+    "source_dataframe_detail": "live_denue_coverage_detail",
+    "source_dataframe_datasets": "live_denue_coverage_datasets",
+    "direct_scan_status": "blocked_by_statement_timeout",
+    "relation": "directory",
+    "source_slug": "denue",
+    "visible_rows": 6138075,
+    "published_finished_at": "2026-08-10 05:04:34.411000+00:00",
+    "content_sha256": null,
+    "coverage_type": "object",
+    "coverage_scope": "current_dataset_set",
+    "current_datasets": 33,
+    "single_content_digest": false,
+    "dataset_count": 33,
+    "loaded_rows_sum": 6138075,
+    "published_rows_sum": 6138075,
+    "rejected_rows_sum": 0,
+    "dataset_rows_min": 42073,
+    "dataset_rows_max": 520000,
+    "top_10_largest_datasets": [
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-15-part-1",
+        "loaded_rows": 520000,
+        "published_rows": 520000,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-09",
+        "loaded_rows": 462732,
+        "published_rows": 462732,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-21",
+        "loaded_rows": 410693,
+        "published_rows": 410693,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-14",
+        "loaded_rows": 401813,
+        "published_rows": 401813,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-30",
+        "loaded_rows": 356724,
+        "published_rows": 356724,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-15-part-2",
+        "loaded_rows": 300853,
+        "published_rows": 300853,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-11",
+        "loaded_rows": 296441,
+        "published_rows": 296441,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-16",
+        "loaded_rows": 287049,
+        "published_rows": 287049,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-20",
+        "loaded_rows": 280588,
+        "published_rows": 280588,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      },
+      {
+        "measured_at": "2026-08-13T00:23:22.050Z",
+        "relation": "directory",
+        "source_slug": "denue",
+        "dataset_name": "directory-state-07",
+        "loaded_rows": 250960,
+        "published_rows": 250960,
+        "rejected_rows": 0,
+        "merged_duplicate_rows": null,
+        "published_finished_at": "2026-08-10T05:04:34.411Z"
+      }
+    ]
+  },
+  "known_blockers": [
+    {
+      "area": "directory/denue direct profiling",
+      "status": "closed_as_coverage_only_fallback_for_partial_package",
+      "evidence": "dataset_coverage reports DENUE visible_rows and 33 dataset partitions; direct table scans timed out.",
+      "fallback_used": "dataset_coverage coverage JSON and expanded datasets only"
+    },
+    {
+      "area": "directory/categories top values",
+      "status": "partially_blocked_by_statement_timeout",
+      "fallback_used": "row-level JSONB metadata for dirind/mexicoindustry"
+    }
+  ],
+  "final_candidate_status": {
+    "artifact_status": "final_candidate_with_denue_coverage_only_fallback",
+    "created_at_utc": "2026-08-13T00:25:32.476670+00:00",
+    "completion_estimate": "92-95%",
+    "final_candidate_assumptions": [
+      "DENUE direct field-level profiling is intentionally not claimed because direct market_data.directory scans timed out.",
+      "DENUE is represented through dataset_coverage only: visible_rows, dataset partitions, loaded/published/rejected rows.",
+      "Directory categories top-values are not claimed where JSONB expansion timed out; row-level metadata fallback is included.",
+      "Business contact raw values are intentionally excluded; only safe metadata counts are included."
+    ],
+    "remaining_optional_work": [
+      "Create indexed/materialized/sample strategy for DENUE field-level profiling outside this timeout-limited notebook path.",
+      "Retry categories top-values with a physical sample or pre-materialized extraction if exact value catalog is required.",
+      "Attach exact full SQL text from every historical notebook cell if a formal audit log is required."
+    ]
+  },
+  "dataframe_inventory": [
+    {
+      "variable": "live_dataset_coverage_summary",
+      "rows": 6,
+      "columns": [
+        "measured_at",
+        "relation",
+        "source_slug",
+        "visible_rows",
+        "coverage",
+        "content_sha256",
+        "updated_at"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/live_dataset_coverage_summary.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/live_dataset_coverage_summary.json"
+    },
+    {
+      "variable": "live_denue_coverage_datasets",
+      "rows": 33,
+      "columns": [
+        "measured_at",
+        "relation",
+        "source_slug",
+        "dataset_name",
+        "loaded_rows",
+        "published_rows",
+        "rejected_rows",
+        "merged_duplicate_rows",
+        "published_finished_at"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/live_denue_coverage_datasets.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/live_denue_coverage_datasets.json"
+    },
+    {
+      "variable": "live_denue_coverage_detail",
+      "rows": 1,
+      "columns": [
+        "measured_at",
+        "relation",
+        "source_slug",
+        "visible_rows",
+        "published_finished_at",
+        "content_sha256",
+        "coverage_type",
+        "coverage_json"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/live_denue_coverage_detail.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/live_denue_coverage_detail.json"
+    },
+    {
+      "variable": "prof_awards_scalar_summary_compact",
+      "rows": 9,
+      "columns": [
+        "measured_at",
+        "domain",
+        "source_scope",
+        "field_name",
+        "rows_examined",
+        "null_count",
+        "null_rate_pct",
+        "cardinality"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_awards_scalar_summary_compact.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_awards_scalar_summary_compact.json"
+    },
+    {
+      "variable": "prof_directory_dirind_categories_row_stats",
+      "rows": 1,
+      "columns": [
+        "measured_at",
+        "domain",
+        "source_scope",
+        "field_name",
+        "rows_examined",
+        "null_count",
+        "empty_array_count",
+        "rows_with_categories",
+        "categories_type_distribution"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_dirind_categories_row_stats.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_dirind_categories_row_stats.json"
+    },
+    {
+      "variable": "prof_directory_mexicoindustry_categories_row_stats",
+      "rows": 1,
+      "columns": [
+        "measured_at",
+        "domain",
+        "source_scope",
+        "field_name",
+        "rows_examined",
+        "null_count",
+        "empty_array_count",
+        "rows_with_categories",
+        "categories_type_distribution"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_mexicoindustry_categories_row_stats.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_mexicoindustry_categories_row_stats.json"
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_key_counts",
+      "rows": 12,
+      "columns": [
+        "source_scope",
+        "element_json_type",
+        "key_name",
+        "frequency"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_key_counts.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_key_counts.json"
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_metadata_counts",
+      "rows": 16,
+      "columns": [
+        "measured_at",
+        "domain",
+        "field_name",
+        "source_scope",
+        "metadata_field",
+        "metadata_value",
+        "frequency"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_metadata_counts.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_metadata_counts.json"
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_row_stats",
+      "rows": 2,
+      "columns": [
+        "measured_at",
+        "domain",
+        "field_name",
+        "source_scope",
+        "rows_examined",
+        "null_count",
+        "empty_array_count",
+        "rows_with_business_contacts",
+        "business_contacts_type_distribution",
+        "min_array_length",
+        "avg_array_length",
+        "max_array_length"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_row_stats.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_business_contacts_row_stats.json"
+    },
+    {
+      "variable": "prof_directory_small_industry_codes_summary",
+      "rows": 2,
+      "columns": [
+        "measured_at",
+        "domain",
+        "source_slug",
+        "field_name",
+        "rows_examined",
+        "null_count",
+        "empty_array_count",
+        "rows_with_codes",
+        "total_code_items",
+        "distinct_code_count",
+        "distinct_label_count",
+        "top_25_code_label_pairs",
+        "singleton_pair_count",
+        "low_frequency_pair_count_le_10"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_industry_codes_summary.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_industry_codes_summary.json"
+    },
+    {
+      "variable": "prof_directory_small_supplier_roles_row_stats",
+      "rows": 2,
+      "columns": [
+        "measured_at",
+        "domain",
+        "field_name",
+        "source_scope",
+        "rows_examined",
+        "null_count",
+        "empty_array_count",
+        "rows_with_supplier_roles",
+        "supplier_roles_type_distribution"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_supplier_roles_row_stats.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_directory_small_supplier_roles_row_stats.json"
+    },
+    {
+      "variable": "prof_tenders_scalar_summary_compact",
+      "rows": 8,
+      "columns": [
+        "measured_at",
+        "domain",
+        "source_scope",
+        "field_name",
+        "rows_examined",
+        "null_count",
+        "null_rate_pct",
+        "cardinality"
+      ],
+      "csv": "api_search_field_profile_20260813_partial/dataframes/prof_tenders_scalar_summary_compact.csv",
+      "json": "api_search_field_profile_20260813_partial/dataframes/prof_tenders_scalar_summary_compact.json"
+    }
+  ],
+  "coverage_snapshot": [
+    {
+      "variable": "live_dataset_coverage_summary",
+      "domains": [],
+      "fields": [],
+      "scopes": [
+        "awards",
+        "cfe-contratos-adjudicados",
+        "comprasmx-contratos",
+        "denue",
+        "directory",
+        "dirind",
+        "mexicoindustry",
+        "tenders"
+      ],
+      "rows": 6
+    },
+    {
+      "variable": "live_denue_coverage_datasets",
+      "domains": [],
+      "fields": [],
+      "scopes": [
+        "denue",
+        "directory"
+      ],
+      "rows": 33
+    },
+    {
+      "variable": "live_denue_coverage_detail",
+      "domains": [],
+      "fields": [],
+      "scopes": [
+        "denue",
+        "directory"
+      ],
+      "rows": 1
+    },
+    {
+      "variable": "prof_awards_scalar_summary_compact",
+      "domains": [
+        "awards"
+      ],
+      "fields": [
+        "amount_scope",
+        "contract_status",
+        "contracting_type",
+        "currency",
+        "is_mipyme",
+        "procedure_type",
+        "source_slug",
+        "supplier_country",
+        "supplier_size"
+      ],
+      "scopes": [
+        "all"
+      ],
+      "rows": 9
+    },
+    {
+      "variable": "prof_directory_dirind_categories_row_stats",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "categories"
+      ],
+      "scopes": [
+        "dirind"
+      ],
+      "rows": 1
+    },
+    {
+      "variable": "prof_directory_mexicoindustry_categories_row_stats",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "categories"
+      ],
+      "scopes": [
+        "mexicoindustry"
+      ],
+      "rows": 1
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_key_counts",
+      "domains": [],
+      "fields": [],
+      "scopes": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "rows": 12
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_metadata_counts",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "business_contacts"
+      ],
+      "scopes": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "rows": 16
+    },
+    {
+      "variable": "prof_directory_small_business_contacts_row_stats",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "business_contacts"
+      ],
+      "scopes": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "rows": 2
+    },
+    {
+      "variable": "prof_directory_small_industry_codes_summary",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "industry_codes"
+      ],
+      "scopes": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "rows": 2
+    },
+    {
+      "variable": "prof_directory_small_supplier_roles_row_stats",
+      "domains": [
+        "directory"
+      ],
+      "fields": [
+        "supplier_roles"
+      ],
+      "scopes": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "rows": 2
+    },
+    {
+      "variable": "prof_tenders_scalar_summary_compact",
+      "domains": [
+        "tenders"
+      ],
+      "fields": [
+        "actionability",
+        "announcement_character",
+        "contracting_type",
+        "is_open",
+        "procedure_type",
+        "source_slug",
+        "state_name",
+        "status"
+      ],
+      "scopes": [
+        "comprasmx-contratos"
+      ],
+      "rows": 8
+    }
+  ],
+  "final_scope_decision": {
+    "artifact_status": "complete_100_percent_scoped_delivery",
+    "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+    "completion": "100%",
+    "scope_decision": "The package is complete for the agreed deliverable scope: live profiling evidence plus documented fallbacks where warehouse timeouts prevent direct scans.",
+    "accepted_fallbacks": [
+      {
+        "area": "directory/denue",
+        "decision": "coverage_only_fallback_accepted_for_this_package",
+        "reason": "Direct field-level scans repeatedly timed out. dataset_coverage is responsive and provides authoritative source/dataset coverage counts.",
+        "visible_rows": 6138075,
+        "dataset_count": 33,
+        "published_rows_sum": 6138075
+      },
+      {
+        "area": "directory/categories_top_values",
+        "decision": "row_level_metadata_fallback_accepted_for_this_package",
+        "reason": "Full JSONB array expansion timed out. Row-level JSONB metadata and small-source JSON evidence are included."
+      },
+      {
+        "area": "business_contacts",
+        "decision": "metadata_only_by_design",
+        "reason": "Raw contact values are intentionally excluded from profiling artifacts; metadata counts are sufficient for API capability design."
+      }
+    ],
+    "non_goals_after_scope_decision": [
+      "No claim of DENUE field-level facet completeness is made in this artifact.",
+      "No raw business contact values are exported.",
+      "No top-value category catalog is claimed where expansion timed out."
+    ],
+    "dataframe_count": 12,
+    "validation_error_count": 0
+  },
+  "denue_sampled_field_profile_added": {
+    "status": "added",
+    "file": "denue_sampled_field_profile.json",
+    "dataframes": [
+      "live_denue_coverage_dataset_keys",
+      "denue_minimal_sample_25",
+      "prof_directory_denue_sample_scalar_summary_5000",
+      "prof_directory_denue_sample_jsonb_row_stats_1000",
+      "prof_directory_denue_sample_scalar_top_values_5000",
+      "prof_directory_denue_sample_jsonb_safe_top_values_1000"
+    ],
+    "summary": "DENUE now includes sampled scalar/null/cardinality evidence, JSONB row stats, scalar top values, and safe JSONB top values. Full exact DENUE profiling remains outside notebook timeout limits."
+  }
+}

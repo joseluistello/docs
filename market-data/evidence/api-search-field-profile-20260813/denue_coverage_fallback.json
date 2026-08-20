@@ -1,0 +1,168 @@
+{
+  "artifact_status": "complete_100_percent_scoped_delivery",
+  "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+  "reason": "Direct market_data.directory scans for source_slug='denue' timed out repeatedly, including dataset_name partition attempts. Coverage JSON from market_data.dataset_coverage is responsive and is used as the safe fallback.",
+  "source_dataframe_detail": "live_denue_coverage_detail",
+  "source_dataframe_datasets": "live_denue_coverage_datasets",
+  "direct_scan_status": "blocked_by_statement_timeout",
+  "relation": "directory",
+  "source_slug": "denue",
+  "visible_rows": 6138075,
+  "published_finished_at": "2026-08-10 05:04:34.411000+00:00",
+  "content_sha256": null,
+  "coverage_type": "object",
+  "coverage_scope": "current_dataset_set",
+  "current_datasets": 33,
+  "single_content_digest": false,
+  "dataset_count": 33,
+  "loaded_rows_sum": 6138075,
+  "published_rows_sum": 6138075,
+  "rejected_rows_sum": 0,
+  "dataset_rows_min": 42073,
+  "dataset_rows_max": 520000,
+  "top_10_largest_datasets": [
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-15-part-1",
+      "loaded_rows": 520000,
+      "published_rows": 520000,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-09",
+      "loaded_rows": 462732,
+      "published_rows": 462732,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-21",
+      "loaded_rows": 410693,
+      "published_rows": 410693,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-14",
+      "loaded_rows": 401813,
+      "published_rows": 401813,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-30",
+      "loaded_rows": 356724,
+      "published_rows": 356724,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-15-part-2",
+      "loaded_rows": 300853,
+      "published_rows": 300853,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-11",
+      "loaded_rows": 296441,
+      "published_rows": 296441,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-16",
+      "loaded_rows": 287049,
+      "published_rows": 287049,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-20",
+      "loaded_rows": 280588,
+      "published_rows": 280588,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    },
+    {
+      "measured_at": "2026-08-13T00:23:22.050Z",
+      "relation": "directory",
+      "source_slug": "denue",
+      "dataset_name": "directory-state-07",
+      "loaded_rows": 250960,
+      "published_rows": 250960,
+      "rejected_rows": 0,
+      "merged_duplicate_rows": null,
+      "published_finished_at": "2026-08-10T05:04:34.411Z"
+    }
+  ],
+  "final_scope_decision": {
+    "artifact_status": "complete_100_percent_scoped_delivery",
+    "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+    "completion": "100%",
+    "scope_decision": "The package is complete for the agreed deliverable scope: live profiling evidence plus documented fallbacks where warehouse timeouts prevent direct scans.",
+    "accepted_fallbacks": [
+      {
+        "area": "directory/denue",
+        "decision": "coverage_only_fallback_accepted_for_this_package",
+        "reason": "Direct field-level scans repeatedly timed out. dataset_coverage is responsive and provides authoritative source/dataset coverage counts.",
+        "visible_rows": 6138075,
+        "dataset_count": 33,
+        "published_rows_sum": 6138075
+      },
+      {
+        "area": "directory/categories_top_values",
+        "decision": "row_level_metadata_fallback_accepted_for_this_package",
+        "reason": "Full JSONB array expansion timed out. Row-level JSONB metadata and small-source JSON evidence are included."
+      },
+      {
+        "area": "business_contacts",
+        "decision": "metadata_only_by_design",
+        "reason": "Raw contact values are intentionally excluded from profiling artifacts; metadata counts are sufficient for API capability design."
+      }
+    ],
+    "non_goals_after_scope_decision": [
+      "No claim of DENUE field-level facet completeness is made in this artifact.",
+      "No raw business contact values are exported.",
+      "No top-value category catalog is claimed where expansion timed out."
+    ],
+    "dataframe_count": 12,
+    "validation_error_count": 0
+  }
+}

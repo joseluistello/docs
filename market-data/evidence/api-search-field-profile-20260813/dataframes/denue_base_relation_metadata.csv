@@ -1,0 +1,4 @@
+schema,relname,relkind,reltuples_estimate,relpages
+market_data,directory_rows,v,-1.0,0
+public,gtm_source_packs,r,-1.0,0
+market_data,sources,r,-1.0,0

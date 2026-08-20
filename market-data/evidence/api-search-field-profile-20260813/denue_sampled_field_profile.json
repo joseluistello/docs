@@ -1,0 +1,353 @@
+{
+  "artifact_status": "complete_denue_sampled_field_level_profile_added",
+  "created_at_utc": "2026-08-13T00:43:00.253917+00:00",
+  "scope": "DENUE field-level sample profiling through market_data.directory view, using small LIMIT-based samples to avoid warehouse timeouts.",
+  "important_caveat": "This is sampled field-level evidence, not a full-table exact DENUE profile. Full exact scans still time out in the notebook connection.",
+  "successful_sample_methods": [
+    {
+      "name": "minimal scalar row sample",
+      "dataframe": "denue_minimal_sample_25",
+      "rows": 25,
+      "notes": "Proved the DENUE view can return scalar records when using a small LIMIT and avoiding JSON-heavy columns."
+    },
+    {
+      "name": "scalar summary sample",
+      "dataframe": "prof_directory_denue_sample_scalar_summary_5000",
+      "sample_rows": 5000,
+      "fields": [
+        "activity_text",
+        "country_code",
+        "dataset_name",
+        "domain",
+        "legal_name",
+        "municipality",
+        "observed_kind",
+        "postal_code",
+        "source_record_id",
+        "source_slug",
+        "state_code",
+        "state_name",
+        "trade_name",
+        "website"
+      ]
+    },
+    {
+      "name": "JSONB row stats sample",
+      "dataframe": "prof_directory_denue_sample_jsonb_row_stats_1000",
+      "sample_rows": 1000,
+      "fields": [
+        "business_contacts",
+        "categories",
+        "industry_codes",
+        "products_services",
+        "source_fields",
+        "supplier_roles"
+      ]
+    },
+    {
+      "name": "scalar top values sample",
+      "dataframe": "prof_directory_denue_sample_scalar_top_values_5000",
+      "rows": 152,
+      "notes": "Top values for non-sensitive scalar fields only; excludes legal/trade names and raw IDs."
+    },
+    {
+      "name": "JSONB safe top values sample",
+      "dataframe": "prof_directory_denue_sample_jsonb_safe_top_values_1000",
+      "rows": 99,
+      "notes": "Products/services, industry codes, safe business_contacts metadata only, and source_fields keys. No raw contact values exported."
+    }
+  ],
+  "failed_or_blocked_methods": [
+    {
+      "method": "direct full/partition DENUE scans on market_data.directory",
+      "status": "statement_timeout"
+    },
+    {
+      "method": "TABLESAMPLE on market_data.directory view",
+      "status": "not_supported_on_view"
+    },
+    {
+      "method": "TABLESAMPLE on market_data.directory_entries base table",
+      "status": "permission_denied"
+    },
+    {
+      "method": "state-prefix DENUE sample with JSON/function-heavy columns",
+      "status": "statement_timeout"
+    }
+  ],
+  "sensitive_data_policy": "Raw business contact values remain excluded. Business contact profiling only includes metadata keys/values such as kind, classification, source_field.",
+  "scalar_summary_5000": [
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "activity_text",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 129,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "country_code",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 1,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "dataset_name",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 32,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "domain",
+      "sampled_rows_examined": 5000,
+      "null_count": 5000,
+      "null_rate_pct": 100.0,
+      "cardinality": 0,
+      "non_null_count": 0
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "legal_name",
+      "sampled_rows_examined": 5000,
+      "null_count": 4561,
+      "null_rate_pct": 91.22,
+      "cardinality": 404,
+      "non_null_count": 439
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "municipality",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 357,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "observed_kind",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 1,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "postal_code",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 797,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "source_record_id",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 5000,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "source_slug",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 1,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "state_code",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 31,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "state_name",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 31,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "trade_name",
+      "sampled_rows_examined": 5000,
+      "null_count": 0,
+      "null_rate_pct": 0.0,
+      "cardinality": 4139,
+      "non_null_count": 5000
+    },
+    {
+      "measured_at": "2026-08-13T00:41:04.722Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_5000_no_order_scalar_only",
+      "field_name": "website",
+      "sampled_rows_examined": 5000,
+      "null_count": 5000,
+      "null_rate_pct": 100.0,
+      "cardinality": 0,
+      "non_null_count": 0
+    }
+  ],
+  "jsonb_row_stats_1000": [
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "business_contacts",
+      "sampled_rows_examined": 1000,
+      "null_count": 0,
+      "array_count": 1000,
+      "object_count": 0,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 500,
+      "non_empty_array_count": 500,
+      "avg_array_length": 0.65,
+      "max_array_length": 3.0
+    },
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "categories",
+      "sampled_rows_examined": 1000,
+      "null_count": 0,
+      "array_count": 1000,
+      "object_count": 0,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 1000,
+      "non_empty_array_count": 0,
+      "avg_array_length": 0.0,
+      "max_array_length": 0.0
+    },
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "industry_codes",
+      "sampled_rows_examined": 1000,
+      "null_count": 0,
+      "array_count": 1000,
+      "object_count": 0,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 0,
+      "non_empty_array_count": 1000,
+      "avg_array_length": 1.0,
+      "max_array_length": 1.0
+    },
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "products_services",
+      "sampled_rows_examined": 1000,
+      "null_count": 0,
+      "array_count": 1000,
+      "object_count": 0,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 0,
+      "non_empty_array_count": 1000,
+      "avg_array_length": 1.0,
+      "max_array_length": 1.0
+    },
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "source_fields",
+      "sampled_rows_examined": 1000,
+      "null_count": 0,
+      "array_count": 0,
+      "object_count": 1000,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 0,
+      "non_empty_array_count": 0,
+      "avg_array_length": null,
+      "max_array_length": null
+    },
+    {
+      "measured_at": "2026-08-13T00:41:30.405Z",
+      "domain": "directory",
+      "source_scope": "denue",
+      "sample_method": "view_limit_1000_no_order_jsonb_fields",
+      "field_name": "supplier_roles",
+      "sampled_rows_examined": 1000,
+      "null_count": 1000,
+      "array_count": 0,
+      "object_count": 0,
+      "string_count": 0,
+      "other_count": 0,
+      "empty_array_count": 0,
+      "non_empty_array_count": 0,
+      "avg_array_length": null,
+      "max_array_length": null
+    }
+  ]
+}

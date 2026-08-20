@@ -1,0 +1,2 @@
+measured_at,domain,source_scope,field_name,rows_examined,null_count,empty_array_count,rows_with_categories,categories_type_distribution
+2026-08-12 23:59:21.471494+00:00,directory,mexicoindustry,categories,4149,0,238,3911,{'array': 4149}

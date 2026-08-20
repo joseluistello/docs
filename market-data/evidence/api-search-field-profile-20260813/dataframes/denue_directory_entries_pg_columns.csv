@@ -1,0 +1,33 @@
+ordinal_position,column_name,type_name,attnotnull
+1,id,uuid,True
+2,source_slug,text,True
+3,source_record_id,text,True
+4,observed_kind,text,True
+5,legal_name,text,False
+6,trade_name,text,False
+7,activity_text,text,False
+8,products_services,jsonb,True
+9,industry_codes,jsonb,True
+10,categories,jsonb,True
+11,country_code,text,False
+12,state_code,text,False
+13,state_name,text,False
+14,municipality,text,False
+15,postal_code,text,False
+16,website,text,False
+17,domain,text,False
+18,business_contacts,jsonb,True
+19,source_url,text,True
+20,source_span,text,True
+21,artifact_sha256,text,False
+22,storage_uri,text,False
+23,raw_record,jsonb,True
+24,source_retrieved_at,timestamp with time zone,False
+25,loaded_at,timestamp with time zone,True
+26,updated_at,timestamp with time zone,True
+27,source_file_id,uuid,False
+28,row_hash,text,False
+29,provenance,jsonb,True
+30,supplier_roles,jsonb,False
+31,role_classifier_version,integer,False
+32,role_classified_at,timestamp with time zone,False

@@ -1,0 +1,23 @@
+[
+  {
+    "schema":"market_data",
+    "relname":"directory_rows",
+    "relkind":"v",
+    "reltuples_estimate":-1.0,
+    "relpages":0
+  },
+  {
+    "schema":"public",
+    "relname":"gtm_source_packs",
+    "relkind":"r",
+    "reltuples_estimate":-1.0,
+    "relpages":0
+  },
+  {
+    "schema":"market_data",
+    "relname":"sources",
+    "relkind":"r",
+    "reltuples_estimate":-1.0,
+    "relpages":0
+  }
+]

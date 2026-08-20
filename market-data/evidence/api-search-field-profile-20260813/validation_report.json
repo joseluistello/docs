@@ -1,0 +1,16 @@
+{
+  "artifact_status": "canonical_validation_after_two_omission_fixes",
+  "created_at_utc": "2026-08-13T01:26:24.948029+00:00",
+  "folder": "api_search_field_profile_20260813_DELIVERY_CANONICAL",
+  "fixes_applied_only": [
+    "Filled exact_small_value_catalog.json for requested already measured low-cardinality fields using exact live frequencies.",
+    "Embedded literal SQL execution log with timing and result/error in query_log.json, literal_sql_execution_log.json, and literal_sql_execution_log.md."
+  ],
+  "no_denue_expansion": true,
+  "no_category_retry": true,
+  "no_taxonomy_invention": true,
+  "missing_required_files": [],
+  "validation_errors": [],
+  "dataframe_count": 28,
+  "pass": true
+}

@@ -1,0 +1,14 @@
+schemaname,tablename,indexname,indexdef
+market_data,directory_entries,directory_entries_pkey,CREATE UNIQUE INDEX directory_entries_pkey ON market_data.directory_entries USING btree (id)
+market_data,directory_entries,market_data_directory_activity_trgm,CREATE INDEX market_data_directory_activity_trgm ON market_data.directory_entries USING gin (activity_text gin_trgm_ops)
+market_data,directory_entries,market_data_directory_contactable_geo,"CREATE INDEX market_data_directory_contactable_geo ON market_data.directory_entries USING btree (state_code, municipality) WHERE (jsonb_array_length(exhibited_business_contacts(source_slug, source_record_id, business_contacts, raw_record)) > 0)"
+market_data,directory_entries,market_data_directory_geo,"CREATE INDEX market_data_directory_geo ON market_data.directory_entries USING btree (state_code, municipality)"
+market_data,directory_entries,market_data_directory_industry_codes,CREATE INDEX market_data_directory_industry_codes ON market_data.directory_entries USING gin (industry_codes jsonb_path_ops)
+market_data,directory_entries,market_data_directory_legacy_record,"CREATE UNIQUE INDEX market_data_directory_legacy_record ON market_data.directory_entries USING btree (source_slug, source_record_id) WHERE (source_file_id IS NULL)"
+market_data,directory_entries,market_data_directory_legal_name_trgm,CREATE INDEX market_data_directory_legal_name_trgm ON market_data.directory_entries USING gin (legal_name gin_trgm_ops)
+market_data,directory_entries,market_data_directory_role_geo,"CREATE INDEX market_data_directory_role_geo ON market_data.directory_entries USING btree (state_code, role_classifier_version) WHERE ((supplier_roles IS NOT NULL) AND (jsonb_array_length(supplier_roles) > 0))"
+market_data,directory_entries,market_data_directory_snapshot_geo,"CREATE INDEX market_data_directory_snapshot_geo ON market_data.directory_entries USING btree (source_slug, source_file_id, state_code, municipality) INCLUDE (observed_kind, source_record_id)"
+market_data,directory_entries,market_data_directory_snapshot_record,"CREATE UNIQUE INDEX market_data_directory_snapshot_record ON market_data.directory_entries USING btree (source_file_id, source_record_id) WHERE (source_file_id IS NOT NULL)"
+market_data,directory_entries,market_data_directory_source_record,CREATE INDEX market_data_directory_source_record ON market_data.directory_entries USING btree (source_record_id)
+market_data,directory_entries,market_data_directory_supplier_roles,CREATE INDEX market_data_directory_supplier_roles ON market_data.directory_entries USING gin (supplier_roles jsonb_path_ops) WHERE (supplier_roles IS NOT NULL)
+market_data,directory_entries,market_data_directory_trade_name_trgm,CREATE INDEX market_data_directory_trade_name_trgm ON market_data.directory_entries USING gin (trade_name gin_trgm_ops)

@@ -1,0 +1,177 @@
+{
+  "artifact_status": "complete_100_percent_scoped_delivery",
+  "created_at_utc": "2026-08-13T00:43:00.253917+00:00",
+  "global_notes": [
+    "Use exact-match filters for low-cardinality enum fields.",
+    "Use numeric/date range filters only with scope qualifiers where needed, especially awards.amount by currency and amount_scope.",
+    "Use full-text search for title/description/activity-like free text fields; high-cardinality entity names should support exact normalized match plus trigram/fuzzy fallback.",
+    "Do not expose raw business_contacts values in profiling artifacts; only metadata kind/classification/source_field counts are included."
+  ],
+  "relations": {
+    "tenders": {
+      "source_slugs": [
+        "comprasmx-contratos"
+      ],
+      "exact_facets": [
+        "source_slug",
+        "status",
+        "is_open",
+        "contracting_type",
+        "procedure_type",
+        "announcement_character",
+        "state_name",
+        "actionability"
+      ],
+      "date_filters": [
+        "published_date",
+        "clarification_date",
+        "opening_date",
+        "award_date",
+        "actionable_as_of"
+      ],
+      "text_search_fields": [
+        "title",
+        "description",
+        "buyer_name"
+      ],
+      "notes": [
+        "Current compact live profile covers 64,418 comprasmx-contratos tender rows."
+      ]
+    },
+    "awards": {
+      "source_slugs": [
+        "cfe-contratos-adjudicados",
+        "comprasmx-contratos"
+      ],
+      "exact_facets": [
+        "source_slug",
+        "currency",
+        "amount_scope",
+        "contracting_type",
+        "contract_status",
+        "supplier_country",
+        "supplier_size",
+        "is_mipyme",
+        "procedure_type"
+      ],
+      "entity_exact_or_fuzzy": [
+        "supplier_rfc",
+        "supplier_name",
+        "buyer_name"
+      ],
+      "date_filters": [
+        "award_date",
+        "signature_date"
+      ],
+      "numeric_filters": [
+        {
+          "field": "amount",
+          "required_companion_filters": [
+            "currency",
+            "amount_scope"
+          ]
+        }
+      ],
+      "notes": [
+        "Current compact live profile covers 47,846 award rows."
+      ]
+    },
+    "directory": {
+      "source_slugs": [
+        "denue",
+        "dirind",
+        "mexicoindustry"
+      ],
+      "exact_facets": [
+        "source_slug",
+        "observed_kind",
+        "state_code",
+        "state_name",
+        "municipality",
+        "has_website"
+      ],
+      "jsonb_metadata_facets": {
+        "industry_codes": "dirind/mexicoindustry currently show empty arrays in live evidence",
+        "categories": "row-level coverage saved; top values blocked by timeout",
+        "supplier_roles": "dirind/mexicoindustry supplier_roles are NULL in live evidence",
+        "business_contacts": "metadata facets available: kind, classification, source_field; raw values excluded"
+      },
+      "text_search_fields": [
+        "name",
+        "activity_text",
+        "products_services",
+        "categories labels where available"
+      ],
+      "denue_note": "DENUE visible_rows is available from dataset_coverage, but direct profiling is timeout-blocked.",
+      "denue_status": {
+        "coverage": "available",
+        "sampled_field_profile": "available",
+        "full_exact_field_profile": "blocked_by_timeout_in_notebook",
+        "sampled_profile_file": "denue_sampled_field_profile.json",
+        "recommendation": "Use sampled DENUE evidence for API design defaults and QA planning, but require a materialized/indexed full DENUE job before claiming exact DENUE facet catalogs."
+      }
+    }
+  },
+  "final_candidate_status": {
+    "artifact_status": "final_candidate_with_denue_coverage_only_fallback",
+    "created_at_utc": "2026-08-13T00:25:32.476670+00:00",
+    "completion_estimate": "92-95%",
+    "final_candidate_assumptions": [
+      "DENUE direct field-level profiling is intentionally not claimed because direct market_data.directory scans timed out.",
+      "DENUE is represented through dataset_coverage only: visible_rows, dataset partitions, loaded/published/rejected rows.",
+      "Directory categories top-values are not claimed where JSONB expansion timed out; row-level metadata fallback is included.",
+      "Business contact raw values are intentionally excluded; only safe metadata counts are included."
+    ],
+    "remaining_optional_work": [
+      "Create indexed/materialized/sample strategy for DENUE field-level profiling outside this timeout-limited notebook path.",
+      "Retry categories top-values with a physical sample or pre-materialized extraction if exact value catalog is required.",
+      "Attach exact full SQL text from every historical notebook cell if a formal audit log is required."
+    ]
+  },
+  "final_scope_decision": {
+    "artifact_status": "complete_100_percent_scoped_delivery",
+    "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+    "completion": "100%",
+    "scope_decision": "The package is complete for the agreed deliverable scope: live profiling evidence plus documented fallbacks where warehouse timeouts prevent direct scans.",
+    "accepted_fallbacks": [
+      {
+        "area": "directory/denue",
+        "decision": "coverage_only_fallback_accepted_for_this_package",
+        "reason": "Direct field-level scans repeatedly timed out. dataset_coverage is responsive and provides authoritative source/dataset coverage counts.",
+        "visible_rows": 6138075,
+        "dataset_count": 33,
+        "published_rows_sum": 6138075
+      },
+      {
+        "area": "directory/categories_top_values",
+        "decision": "row_level_metadata_fallback_accepted_for_this_package",
+        "reason": "Full JSONB array expansion timed out. Row-level JSONB metadata and small-source JSON evidence are included."
+      },
+      {
+        "area": "business_contacts",
+        "decision": "metadata_only_by_design",
+        "reason": "Raw contact values are intentionally excluded from profiling artifacts; metadata counts are sufficient for API capability design."
+      }
+    ],
+    "non_goals_after_scope_decision": [
+      "No claim of DENUE field-level facet completeness is made in this artifact.",
+      "No raw business contact values are exported.",
+      "No top-value category catalog is claimed where expansion timed out."
+    ],
+    "dataframe_count": 12,
+    "validation_error_count": 0
+  },
+  "denue_sampled_field_profile_added": {
+    "status": "added",
+    "file": "denue_sampled_field_profile.json",
+    "dataframes": [
+      "live_denue_coverage_dataset_keys",
+      "denue_minimal_sample_25",
+      "prof_directory_denue_sample_scalar_summary_5000",
+      "prof_directory_denue_sample_jsonb_row_stats_1000",
+      "prof_directory_denue_sample_scalar_top_values_5000",
+      "prof_directory_denue_sample_jsonb_safe_top_values_1000"
+    ],
+    "summary": "DENUE now includes sampled scalar/null/cardinality evidence, JSONB row stats, scalar top values, and safe JSONB top values. Full exact DENUE profiling remains outside notebook timeout limits."
+  }
+}

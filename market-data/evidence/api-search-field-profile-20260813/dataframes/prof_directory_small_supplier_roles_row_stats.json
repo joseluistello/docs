@@ -1,0 +1,28 @@
+[
+  {
+    "measured_at":"2026-08-13T00:03:42.186Z",
+    "domain":"directory",
+    "field_name":"supplier_roles",
+    "source_scope":"dirind",
+    "rows_examined":12799,
+    "null_count":12799,
+    "empty_array_count":0,
+    "rows_with_supplier_roles":0,
+    "supplier_roles_type_distribution":{
+      "null":12799
+    }
+  },
+  {
+    "measured_at":"2026-08-13T00:03:42.186Z",
+    "domain":"directory",
+    "field_name":"supplier_roles",
+    "source_scope":"mexicoindustry",
+    "rows_examined":4149,
+    "null_count":4149,
+    "empty_array_count":0,
+    "rows_with_supplier_roles":0,
+    "supplier_roles_type_distribution":{
+      "null":4149
+    }
+  }
+]

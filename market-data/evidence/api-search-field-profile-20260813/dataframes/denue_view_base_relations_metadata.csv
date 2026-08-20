@@ -1,0 +1,5 @@
+schema,relname,relkind,reltuples_estimate,relpages
+market_data,directory_entries,r,6242211.0,1648718
+market_data,ingest_runs,r,99.0,6
+market_data,taxonomy_entries,r,90000.0,6621
+market_data,taxonomy_publications,r,-1.0,0

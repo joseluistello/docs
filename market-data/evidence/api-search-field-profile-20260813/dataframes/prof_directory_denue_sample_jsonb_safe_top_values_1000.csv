@@ -1,0 +1,100 @@
+measured_at,domain,source_scope,sample_method,field_name,value_type_or_key,value_text,frequency
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,classification,published_establishment_contact,847
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,kind,phone,663
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,kind,email,160
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,kind,website,24
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,source_field,denue.telefono,663
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,source_field,denue.correoelec,160
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,business_contacts,source_field,denue.www,24
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,812110,299
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,812210,231
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811192,136
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811191,115
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,813210,51
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811111,25
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811499,24
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811219,22
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811410,15
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811199,12
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811121,10
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811119,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811312,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,812990,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,813230,7
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811211,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811430,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,812310,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,812910,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811116,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811491,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811492,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,813110,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,813120,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,industry_codes,object,811113,1
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Salones y clínicas de belleza y peluquerías,299
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Lavanderías y tintorerías,231
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Lavado y lubricado de automóviles y camiones,136
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación menor de llantas,115
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Asociaciones y organizaciones religiosas,51
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación mecánica en general de automóviles y camiones,25
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de otros artículos para el hogar y personales,24
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de otro equipo electrónico y de equipo de precisión,22
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de aparatos eléctricos para el hogar y personales,15
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Otros servicios de reparación y mantenimiento de automóviles y camiones,12
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Hojalatería y pintura de automóviles y camiones,10
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Otras reparaciones mecánicas de automóviles y camiones,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Otros servicios personales,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de maquinaria y equipo industrial,8
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Asociaciones y organizaciones civiles,7
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación de calzado y otros artículos de piel y cuero,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de equipo electrónico de uso doméstico,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Servicios de revelado e impresión de fotografías,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Servicios funerarios,3
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Alineación y balanceo de automóviles y camiones,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,"Asociaciones, organizaciones y cámaras de productores, comerciantes y prestadores de servicios",2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Asociaciones y organizaciones laborales y sindicales,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Cerrajerías,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Reparación y mantenimiento de motocicletas,2
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,products_services,object,Estacionamientos y pensiones para vehículos automotores,1
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,ageb,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,clee,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,codigo_act,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,cod_postal,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,correoelec,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,cve_ent,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,cve_loc,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,cve_mun,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,edificio,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,edificio_e,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,entidad,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,fecha_alta,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,id,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,latitud,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,letra_ext,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,letra_int,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,localidad,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,longitud,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,manzana,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,municipio,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nomb_asent,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nombre_act,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_cencom,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_estab,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_v_e_1,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_v_e_2,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_v_e_3,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,nom_vial,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,numero_ext,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,numero_int,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,num_local,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,per_ocu,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,raz_social,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,telefono,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipo_asent,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipocencom,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipounieco,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipo_v_e_1,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipo_v_e_2,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipo_v_e_3,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,tipo_vial,1000
+2026-08-13 00:42:06.379141+00:00,directory,denue,view_limit_1000_jsonb_safe_top_values_no_raw_contacts,source_fields,object_key,www,1000

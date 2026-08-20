@@ -38,7 +38,7 @@ En los eventos `pull_request.opened`, `synchronize`, `reopened` y `ready_for_rev
 2. Hace match de cada archivo contra todos los patrones de topics del workspace usando intersección de globs
 3. **Registra** cada match PR↔topic (alimenta la actividad de PRs del dashboard) y **encola al Auditor**
 
-El único comentario que Driftless publica es el del **Auditor**, y solo cuando tiene un hallazgo. Cuando lo tiene, el contexto registrado de los topics afectados (gotchas, decisiones, invariantes, flags de stale) viaja junto con él. Un PR limpio, o un workspace sin el Auditor configurado (sin key de modelo), no recibe comentario. Ver [Comentarios de PR](/es/concepts/pr-bot).
+El único comentario que Driftless publica es el del **Auditor**, y solo cuando tiene un hallazgo. Cuando lo tiene, el contexto registrado de los topics afectados (gotchas, decisiones, invariantes, flags de stale) viaja junto con él. Un PR limpio, o un workspace con el Auditor apagado, no recibe comentario. Ver [Comentarios de PR](/es/concepts/pr-bot).
 
 El comentario **informa; nunca bloquea**. Los hallazgos aterrizan como propuestas que un humano aprueba. Se actualiza en el lugar con cada commit nuevo, nunca se vuelve a publicar.
 

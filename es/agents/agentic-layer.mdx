@@ -29,9 +29,9 @@ El Librarian cuida el propio grafo de knowledge. En un barrido semanal recorre e
 
 La única excepción es opt-in. Con `librarian_autovouch` activado (experimental, apagado por defecto), un promote de alta confianza de un draft **escrito por un humano** puede auto-aplicarse. Todo lo demás queda como sugerencia.
 
-## Cómo corren: BYOM
+## Cómo corren
 
-Los agentes corren **del lado del servidor en Driftless** usando **tu API key de OpenCode** (bring-your-own-model). OpenCode cobra la inferencia; Driftless nunca sirve tu key de vuelta hacia afuera. Se queda solo del lado del servidor.
+Los agentes corren **del lado del servidor en Driftless**, sobre inferencia que Driftless opera y paga. No hay cuenta de proveedor que abrir ni API key que pegar. Si un proveedor se degrada a media corrida, la corrida sigue en otro.
 
 - **Solo lectura.** Los agentes leen y razonan; nunca ejecutan, editan ni escriben código.
 - **Solo proponen.** Todo lo que producen estos agentes autónomos aterriza como una **Nota** o una **Edición sugerida** en tu cola de revisión. Nunca mergean. Mergear a Knowledge es un acto de owner/admin, y estos agentes autónomos nunca mergean su propio trabajo (la separación de poderes se mantiene). Eso es distinto de *tu propio* agente (CLI/MCP, actuando bajo tu identidad), al que sí le puedes pedir de forma explícita que corra un merge en tu nombre.
@@ -40,12 +40,11 @@ Los agentes corren **del lado del servidor en Driftless** usando **tu API key de
 
 En el dashboard: **Settings → Agents**.
 
-1. Pega tu **API key de OpenCode**.
-2. Elige un **modelo**, o una lista de prioridad separada por comas (por ejemplo `opencode/claude-sonnet-4-6, opencode/big-pickle`); el runner rota al siguiente ante un error de rate-limit o de crédito.
-3. Activa el **Auditor**, el **Architect** y el **Librarian**. `librarian_autovouch` es un interruptor aparte, experimental y apagado por defecto.
+1. Activa el **Auditor**, el **Architect** y el **Librarian**. `librarian_autovouch` es un interruptor aparte, experimental y apagado por defecto.
+2. Opcionalmente define **topes de presupuesto** — topes de tokens y de tiempo por corrida (duros: la corrida se detiene al alcanzarlos) y topes de gasto diario / a 30 días (un perímetro suave: bloquean la *siguiente* corrida una vez que el gasto observado cruza el tope).
 
-Cada agente está apagado hasta que lo habilitas: una corrida ocurre solo cuando el workspace tiene una key de modelo configurada y el toggle de ese agente está encendido. Si no, la corrida registra un `no_op` y no hace nada.
+Cada agente está apagado hasta que lo habilitas: una corrida ocurre solo cuando el toggle de ese agente está encendido. Si no, la corrida registra un `no_op` y no hace nada.
 
 ## Mira lo que hicieron
 
-La pantalla **Agent Activity** es el registro de transparencia: cada corrida, el trigger (PR / nocturno), el modelo, los tokens usados, las propuestas creadas, y un resumen sin código de lo que el agente concluyó, incluyendo las corridas `no-op` (una señal sana: el agente miró y no encontró nada que cambiar).
+La pantalla **Agent Activity** es el registro de transparencia: cada corrida, el trigger (PR / nocturno), los tokens usados, las propuestas creadas, y un resumen sin código de lo que el agente concluyó, incluyendo las corridas `no-op` (una señal sana: el agente miró y no encontró nada que cambiar).

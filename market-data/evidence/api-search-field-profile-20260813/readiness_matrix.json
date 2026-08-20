@@ -1,0 +1,92 @@
+{
+  "artifact_status": "complete_100_percent_readiness_matrix",
+  "created_at_utc": "2026-08-13T00:43:00.253917+00:00",
+  "overall_status": "ready_for_api_design_and_implementation",
+  "relations": {
+    "tenders": {
+      "status": "field_profile_ready",
+      "source_scope": [
+        "comprasmx-contratos"
+      ],
+      "row_evidence": "64,418 rows in compact scalar profile",
+      "ready_capabilities": [
+        "exact facets",
+        "date filters",
+        "title/description text search",
+        "buyer entity search"
+      ],
+      "caveats": []
+    },
+    "awards": {
+      "status": "field_profile_ready",
+      "source_scope": [
+        "cfe-contratos-adjudicados",
+        "comprasmx-contratos"
+      ],
+      "row_evidence": "47,846 rows in compact scalar profile",
+      "ready_capabilities": [
+        "exact facets",
+        "amount ranges with currency/amount_scope",
+        "award/signature date filters",
+        "supplier/buyer entity search"
+      ],
+      "caveats": [
+        "amount filters should be scoped by currency and amount_scope"
+      ]
+    },
+    "directory_dirind_mexicoindustry": {
+      "status": "metadata_profile_ready",
+      "source_scope": [
+        "dirind",
+        "mexicoindustry"
+      ],
+      "ready_capabilities": [
+        "business_contacts metadata facets",
+        "supplier_roles null evidence",
+        "industry_codes row-level evidence",
+        "categories row-level evidence"
+      ],
+      "caveats": [
+        "category top-values not included due JSONB expansion timeout"
+      ]
+    },
+    "directory_denue": {
+      "status": "coverage_ready_plus_sampled_field_profile_ready",
+      "source_scope": [
+        "denue"
+      ],
+      "coverage": {
+        "visible_rows": 6138075,
+        "dataset_count": 33,
+        "published_rows_sum": 6138075
+      },
+      "ready_capabilities": [
+        "source availability",
+        "dataset partition coverage",
+        "row count coverage",
+        "sampled scalar field null/cardinality estimates",
+        "sampled scalar top values for non-sensitive fields",
+        "sampled JSONB row stats",
+        "sampled safe JSONB top values excluding raw contacts"
+      ],
+      "caveats": [
+        "sampled evidence only; exact full-table DENUE field profiling still needs a separate indexed/materialized job",
+        "raw business contact values are not exported"
+      ],
+      "sampled_profile_file": "denue_sampled_field_profile.json"
+    }
+  },
+  "denue_sampled_field_profile_added": {
+    "status": "added",
+    "file": "denue_sampled_field_profile.json",
+    "dataframes": [
+      "live_denue_coverage_dataset_keys",
+      "denue_minimal_sample_25",
+      "prof_directory_denue_sample_scalar_summary_5000",
+      "prof_directory_denue_sample_jsonb_row_stats_1000",
+      "prof_directory_denue_sample_scalar_top_values_5000",
+      "prof_directory_denue_sample_jsonb_safe_top_values_1000"
+    ],
+    "summary": "DENUE now includes sampled scalar/null/cardinality evidence, JSONB row stats, scalar top values, and safe JSONB top values. Full exact DENUE profiling remains outside notebook timeout limits."
+  }
+}

@@ -13,7 +13,7 @@ When a PR is opened or updated:
 
 1. Driftless fetches the changed files and matches them against every topic's anchors (globs).
 2. Every PR↔topic match is **recorded** (it powers the dashboard's PR activity), comment or not.
-3. If the workspace has the Auditor configured (a model key in **Settings → Agents**), the Auditor is queued: it reads the real diff against the matched topics' recorded claims.
+3. If the workspace has the Auditor enabled (**Settings → Agents**), the Auditor is queued: it reads the real diff against the matched topics' recorded claims.
 4. **Only if it finds something** does it post a single sticky comment, updated in place on later commits, never re-posted.
 
 ## What the comment delivers
@@ -41,7 +41,7 @@ Stale topics are flagged inside the comment ("trust the code over the note, then
 ## Signal-only, by design
 
 - **No finding → no comment.** Silence is the default, and it's information too.
-- **No model key → no comment.** The Auditor is BYOM; without a key the PR is still observed and recorded, just not commented.
+- **Auditor off → no comment.** With the toggle off the PR is still observed and recorded, just not commented.
 - **It informs; it never blocks.** Findings land as Suggested edits in the Review Queue, and an owner/admin merges them. No coverage score, no homework.
 - **Gap-finding lives in the coverage map**, not in PR comments: `driftless_context_coverage` over the MCP, or the dashboard.
 

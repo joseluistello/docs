@@ -1,0 +1,15 @@
+measured_at,domain,source_scope,sample_method,field_name,sampled_rows_examined,null_count,null_rate_pct,cardinality,non_null_count
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,activity_text,5000,0,0.0,129,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,country_code,5000,0,0.0,1,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,dataset_name,5000,0,0.0,32,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,domain,5000,5000,100.0,0,0
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,legal_name,5000,4561,91.22,404,439
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,municipality,5000,0,0.0,357,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,observed_kind,5000,0,0.0,1,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,postal_code,5000,0,0.0,797,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,source_record_id,5000,0,0.0,5000,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,source_slug,5000,0,0.0,1,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,state_code,5000,0,0.0,31,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,state_name,5000,0,0.0,31,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,trade_name,5000,0,0.0,4139,5000
+2026-08-13 00:41:04.722297+00:00,directory,denue,view_limit_5000_no_order_scalar_only,website,5000,5000,100.0,0,0

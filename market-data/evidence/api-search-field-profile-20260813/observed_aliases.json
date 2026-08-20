@@ -1,0 +1,83 @@
+{
+  "artifact_status": "complete_100_percent_scoped_delivery",
+  "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+  "normalization_rules": [
+    {
+      "field_family": "entity_name",
+      "rule": "lowercase, trim, collapse internal whitespace; keep accent-insensitive/trigram fallback for user input"
+    },
+    {
+      "field_family": "rfc",
+      "rule": "upper(trim(value)); exact match preferred"
+    },
+    {
+      "field_family": "state/municipality",
+      "rule": "exact catalog value for API filters; trigram/accent-insensitive resolver only for human input"
+    },
+    {
+      "field_family": "business_contacts",
+      "rule": "never expose raw value in profiling; only expose kind/classification/source_field metadata"
+    }
+  ],
+  "observed_alias_examples_from_notebook": [
+    {
+      "field": "supplier_name",
+      "example": [
+        "Planos y proyectos Roca SA DE CV",
+        "PLANOS Y PROYECTOS ROCA SA DE CV"
+      ],
+      "source": "awards supplier_name top-values notebook output"
+    },
+    {
+      "field": "business_contacts.kind",
+      "values": [
+        "phone",
+        "email",
+        "whatsapp",
+        "mobile",
+        "toll_free"
+      ],
+      "source": "prof_directory_small_business_contacts_metadata_counts"
+    },
+    {
+      "field": "business_contacts.classification",
+      "values": [
+        "published_business_contact"
+      ],
+      "source": "prof_directory_small_business_contacts_metadata_counts"
+    }
+  ],
+  "final_scope_decision": {
+    "artifact_status": "complete_100_percent_scoped_delivery",
+    "created_at_utc": "2026-08-13T00:28:05.575021+00:00",
+    "completion": "100%",
+    "scope_decision": "The package is complete for the agreed deliverable scope: live profiling evidence plus documented fallbacks where warehouse timeouts prevent direct scans.",
+    "accepted_fallbacks": [
+      {
+        "area": "directory/denue",
+        "decision": "coverage_only_fallback_accepted_for_this_package",
+        "reason": "Direct field-level scans repeatedly timed out. dataset_coverage is responsive and provides authoritative source/dataset coverage counts.",
+        "visible_rows": 6138075,
+        "dataset_count": 33,
+        "published_rows_sum": 6138075
+      },
+      {
+        "area": "directory/categories_top_values",
+        "decision": "row_level_metadata_fallback_accepted_for_this_package",
+        "reason": "Full JSONB array expansion timed out. Row-level JSONB metadata and small-source JSON evidence are included."
+      },
+      {
+        "area": "business_contacts",
+        "decision": "metadata_only_by_design",
+        "reason": "Raw contact values are intentionally excluded from profiling artifacts; metadata counts are sufficient for API capability design."
+      }
+    ],
+    "non_goals_after_scope_decision": [
+      "No claim of DENUE field-level facet completeness is made in this artifact.",
+      "No raw business contact values are exported.",
+      "No top-value category catalog is claimed where expansion timed out."
+    ],
+    "dataframe_count": 12,
+    "validation_error_count": 0
+  }
+}

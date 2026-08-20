@@ -1,0 +1,1426 @@
+{
+  "artifact_status": "corrected_exact_small_value_catalog_live_frequencies",
+  "created_at_utc": "2026-08-13T01:26:24.948029+00:00",
+  "scope": "Only the requested already measured low-cardinality fields were filled. No DENUE expansion, category profiling, taxonomy invention, or redesign was performed.",
+  "catalog_grain": "relation_name + source_slug + field_name + field_value, with exact live frequency and percentage within that relation/source.",
+  "requested_fields": [
+    "actionability",
+    "status",
+    "contracting_type",
+    "procedure_type",
+    "announcement_character",
+    "currency",
+    "amount_scope",
+    "contract_status",
+    "supplier_country",
+    "supplier_size",
+    "is_mipyme",
+    "source_slug"
+  ],
+  "relation_field_map": {
+    "tenders": [
+      "actionability",
+      "status",
+      "contracting_type",
+      "procedure_type",
+      "announcement_character",
+      "source_slug"
+    ],
+    "awards": [
+      "currency",
+      "amount_scope",
+      "contract_status",
+      "supplier_country",
+      "supplier_size",
+      "is_mipyme",
+      "contracting_type",
+      "procedure_type",
+      "source_slug"
+    ]
+  },
+  "dataframe_exports": {
+    "exact_low_cardinality_live_value_counts_csv": "dataframes/exact_low_cardinality_live_value_counts.csv",
+    "exact_low_cardinality_live_value_counts_json": "dataframes/exact_low_cardinality_live_value_counts.json",
+    "canonical_low_card_relation_columns_csv": "dataframes/canonical_low_card_relation_columns.csv",
+    "canonical_low_card_relation_columns_json": "dataframes/canonical_low_card_relation_columns.json"
+  },
+  "completeness": [
+    {
+      "field_name": "actionability",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 4,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "actionability",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "status",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 16,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "status",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "contracting_type",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 6,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "contracting_type",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 7,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "procedure_type",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 8,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "procedure_type",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 51,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "announcement_character",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 3,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "announcement_character",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "currency",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "currency",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 5,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "amount_scope",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "amount_scope",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 2,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "contract_status",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "contract_status",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 5,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "supplier_country",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "supplier_country",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 3,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "supplier_size",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "supplier_size",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 8,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "is_mipyme",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "is_mipyme",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 3,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "source_slug",
+      "relation_name": "tenders",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 1,
+      "status": "complete_exact_live"
+    },
+    {
+      "field_name": "source_slug",
+      "relation_name": "awards",
+      "column_exists": true,
+      "expected_in_catalog": true,
+      "returned_value_rows": 2,
+      "status": "complete_exact_live"
+    }
+  ],
+  "incomplete_catalogs": [],
+  "not_applicable_catalogs": [
+    {
+      "field_name": "actionability",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "status",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "announcement_character",
+      "relation_name": "awards",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "currency",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "amount_scope",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "contract_status",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "supplier_country",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "supplier_size",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    },
+    {
+      "field_name": "is_mipyme",
+      "relation_name": "tenders",
+      "column_exists": false,
+      "expected_in_catalog": false,
+      "returned_value_rows": 0,
+      "status": "not_applicable_column_absent_in_relation"
+    }
+  ],
+  "catalogs": [
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "actionability",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 4,
+      "values": [
+        {
+          "value": "closed_at_load",
+          "is_null": false,
+          "frequency": 63189,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 98.092148
+        },
+        {
+          "value": "open_but_apertura_passed",
+          "is_null": false,
+          "frequency": 638,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.990406
+        },
+        {
+          "value": "open_with_apertura_ahead",
+          "is_null": false,
+          "frequency": 558,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.866218
+        },
+        {
+          "value": "open_without_published_apertura",
+          "is_null": false,
+          "frequency": 33,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.051228
+        }
+      ]
+    },
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "status",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 16,
+      "values": [
+        {
+          "value": "ADJUDICADO",
+          "is_null": false,
+          "frequency": 58174,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 90.307057
+        },
+        {
+          "value": "DESIERTO",
+          "is_null": false,
+          "frequency": 2103,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 3.264615
+        },
+        {
+          "value": "ADJUDICADO PARCIAL",
+          "is_null": false,
+          "frequency": 1152,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 1.78832
+        },
+        {
+          "value": "FINALIZADO",
+          "is_null": false,
+          "frequency": 1117,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 1.733987
+        },
+        {
+          "value": "VIGENTE",
+          "is_null": false,
+          "frequency": 601,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.932969
+        },
+        {
+          "value": "CANCELADO",
+          "is_null": false,
+          "frequency": 430,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.667515
+        },
+        {
+          "value": "EN APERTURA",
+          "is_null": false,
+          "frequency": 424,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.658201
+        },
+        {
+          "value": "EXPIRADO",
+          "is_null": false,
+          "frequency": 157,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.243721
+        },
+        {
+          "value": "EN DECISIÓN DE FALLO",
+          "is_null": false,
+          "frequency": 80,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.124189
+        },
+        {
+          "value": "EN EVALUACIÓN",
+          "is_null": false,
+          "frequency": 67,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.104008
+        },
+        {
+          "value": "EN ACLARACIONES",
+          "is_null": false,
+          "frequency": 57,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.088485
+        },
+        {
+          "value": "SUSPENDIDO",
+          "is_null": false,
+          "frequency": 25,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.038809
+        },
+        {
+          "value": "PENDIENTE DE APERTURA",
+          "is_null": false,
+          "frequency": 20,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.031047
+        },
+        {
+          "value": "EN REPREGUNTAS",
+          "is_null": false,
+          "frequency": 9,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.013971
+        },
+        {
+          "value": "EN ATENCIÓN DE PREGUNTAS",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.001552
+        },
+        {
+          "value": "EN OSD",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.001552
+        }
+      ]
+    },
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "contracting_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 6,
+      "values": [
+        {
+          "value": "SERVICIOS",
+          "is_null": false,
+          "frequency": 34826,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 54.062529
+        },
+        {
+          "value": "ADQUISICIONES",
+          "is_null": false,
+          "frequency": 22357,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 34.706138
+        },
+        {
+          "value": "OBRA PÚBLICA",
+          "is_null": false,
+          "frequency": 4889,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 7.589494
+        },
+        {
+          "value": "SERVICIOS RELACIONADOS CON LA OBRA",
+          "is_null": false,
+          "frequency": 1493,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 2.317675
+        },
+        {
+          "value": "ARRENDAMIENTOS",
+          "is_null": false,
+          "frequency": 852,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 1.322612
+        },
+        {
+          "value": "PRESTACIÓN DE SERVICIOS",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.001552
+        }
+      ]
+    },
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "procedure_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 8,
+      "values": [
+        {
+          "value": "ADJUDICACIÓN DIRECTA SIN SOLICITUD DE COTIZACIÓN",
+          "is_null": false,
+          "frequency": 30513,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 47.367196
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA",
+          "is_null": false,
+          "frequency": 16973,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 26.348226
+        },
+        {
+          "value": "LICITACIÓN PÚBLICA",
+          "is_null": false,
+          "frequency": 10046,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 15.59502
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS TRES PERSONAS",
+          "is_null": false,
+          "frequency": 4866,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 7.553789
+        },
+        {
+          "value": "CONTRATO ESPECÍFICO DERIVADO DE ACUERDO MARCO",
+          "is_null": false,
+          "frequency": 1246,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 1.934242
+        },
+        {
+          "value": "CONTRATACIONES ENTRE ENTES PÚBLICOS",
+          "is_null": false,
+          "frequency": 771,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 1.19687
+        },
+        {
+          "value": "ASIGNACIÓN DIRECTA DE CONTRATO ESPECÍFICO DERIVADO DE ACUERDO MARCO",
+          "is_null": false,
+          "frequency": 2,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.003105
+        },
+        {
+          "value": "LICITACIÓN PÚBLICA (CONCURSO)",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 0.001552
+        }
+      ]
+    },
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "announcement_character",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 3,
+      "values": [
+        {
+          "value": "NACIONAL",
+          "is_null": false,
+          "frequency": 60016,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 93.166506
+        },
+        {
+          "value": "INTERNACIONAL BAJO LA COBERTURA DE TRATADOS",
+          "is_null": false,
+          "frequency": 2226,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 3.455556
+        },
+        {
+          "value": "INTERNACIONAL ABIERTO",
+          "is_null": false,
+          "frequency": 2176,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 3.377938
+        }
+      ]
+    },
+    {
+      "relation_name": "tenders",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "source_slug",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 64418,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "comprasmx-contratos",
+          "is_null": false,
+          "frequency": 64418,
+          "rows_in_relation_source": 64418,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "currency",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "amount_scope",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "award_group_published_total",
+          "is_null": false,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "contract_status",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "Adjudicado",
+          "is_null": false,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "supplier_country",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "supplier_size",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "is_mipyme",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "contracting_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 2,
+      "values": [
+        {
+          "value": "Servicio por Abastecimiento",
+          "is_null": false,
+          "frequency": 47,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 81.034483
+        },
+        {
+          "value": "Adquisición por Abastecimientos",
+          "is_null": false,
+          "frequency": 11,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 18.965517
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "procedure_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 3,
+      "values": [
+        {
+          "value": "Concurso abierto",
+          "is_null": false,
+          "frequency": 42,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 72.413793
+        },
+        {
+          "value": "Adjudicación directa",
+          "is_null": false,
+          "frequency": 12,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 20.689655
+        },
+        {
+          "value": "Concurso simplificado",
+          "is_null": false,
+          "frequency": 4,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 6.896552
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "cfe-contratos-adjudicados",
+      "field_name": "source_slug",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 58,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "cfe-contratos-adjudicados",
+          "is_null": false,
+          "frequency": 58,
+          "rows_in_relation_source": 58,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "currency",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 4,
+      "values": [
+        {
+          "value": "MXN",
+          "is_null": false,
+          "frequency": 47388,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 99.16297
+        },
+        {
+          "value": "USD",
+          "is_null": false,
+          "frequency": 394,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.824475
+        },
+        {
+          "value": "EUR",
+          "is_null": false,
+          "frequency": 5,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.010463
+        },
+        {
+          "value": "CAD",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "amount_scope",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "supplier_contract",
+          "is_null": false,
+          "frequency": 47788,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "contract_status",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 4,
+      "values": [
+        {
+          "value": "FORMALIZADO",
+          "is_null": false,
+          "frequency": 31336,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 65.572947
+        },
+        {
+          "value": "NO FORMALIZADO",
+          "is_null": false,
+          "frequency": 30,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.062777
+        },
+        {
+          "value": "RESCINDIDO",
+          "is_null": false,
+          "frequency": 22,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.046037
+        },
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 16400,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 34.318239
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "supplier_country",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 2,
+      "values": [
+        {
+          "value": "MX",
+          "is_null": false,
+          "frequency": 47787,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 99.997907
+        },
+        {
+          "value": "CN",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "supplier_size",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 7,
+      "values": [
+        {
+          "value": "PEQUEÑA",
+          "is_null": false,
+          "frequency": 13002,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 27.207667
+        },
+        {
+          "value": "GRANDE",
+          "is_null": false,
+          "frequency": 10067,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 21.065958
+        },
+        {
+          "value": "MICRO",
+          "is_null": false,
+          "frequency": 9511,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 19.902486
+        },
+        {
+          "value": "MEDIANA",
+          "is_null": false,
+          "frequency": 8712,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 18.230518
+        },
+        {
+          "value": "NO MIPYME",
+          "is_null": false,
+          "frequency": 6057,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 12.67473
+        },
+        {
+          "value": "NO ASIGNADO",
+          "is_null": false,
+          "frequency": 402,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.841215
+        },
+        {
+          "value": "COOPERATIVAS",
+          "is_null": false,
+          "frequency": 37,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.077425
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "is_mipyme",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 2,
+      "values": [
+        {
+          "value": "true",
+          "is_null": false,
+          "frequency": 31225,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 65.340671
+        },
+        {
+          "value": "false",
+          "is_null": false,
+          "frequency": 16563,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 34.659329
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "contracting_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 5,
+      "values": [
+        {
+          "value": "ADQUISICIONES",
+          "is_null": false,
+          "frequency": 23396,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 48.957897
+        },
+        {
+          "value": "SERVICIOS",
+          "is_null": false,
+          "frequency": 19685,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 41.19235
+        },
+        {
+          "value": "OBRA PÚBLICA",
+          "is_null": false,
+          "frequency": 3081,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 6.447225
+        },
+        {
+          "value": "SERVICIOS RELACIONADOS CON LA OBRA",
+          "is_null": false,
+          "frequency": 841,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 1.759856
+        },
+        {
+          "value": "ARRENDAMIENTOS",
+          "is_null": false,
+          "frequency": 785,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 1.642672
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "procedure_type",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 48,
+      "values": [
+        {
+          "value": "LICITACIÓN PÚBLICA",
+          "is_null": false,
+          "frequency": 12718,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 26.613376
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR MONTOS MÁXIMOS POR EXCEPCIÓN",
+          "is_null": false,
+          "frequency": 11175,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 23.384532
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR COMERCIALIZACIÓN DIRECTA",
+          "is_null": false,
+          "frequency": 6714,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 14.049552
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR PATENTES, LICENCIAS, OFERENTE ÚNICO U OBRAS DE ARTE",
+          "is_null": false,
+          "frequency": 2824,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 5.909433
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CASO FORTUITO O FUERZA MAYOR",
+          "is_null": false,
+          "frequency": 2489,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 5.208421
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR MONTOS MÁXIMOS POR EXCEPCIÓN",
+          "is_null": false,
+          "frequency": 2368,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 4.955219
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR URGENCIA Y EVENTUALIDAD",
+          "is_null": false,
+          "frequency": 1777,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 3.718507
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR LICITACIONES PÚBLICAS DESIERTAS",
+          "is_null": false,
+          "frequency": 1089,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 2.278815
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR ADJUDICACIÓN A PROVEEDOR CON CONTRATO VIGENTE, BAJO LAS MISMAS CONDICIONES",
+          "is_null": false,
+          "frequency": 824,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 1.724282
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR INEXISTENCIA DE MARCAS ALTERNATIVAS",
+          "is_null": false,
+          "frequency": 754,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 1.577802
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR MONTOS MÁXIMOS PARA EXCEPCIÓN",
+          "is_null": false,
+          "frequency": 754,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 1.577802
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR AUTORIZACIÓN DEL TUAF O EQUIVALENTE",
+          "is_null": false,
+          "frequency": 327,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.684272
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR MATERIALES DE USO EN ACTIVIDADES EXPERIMENTALES",
+          "is_null": false,
+          "frequency": 296,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.619402
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR LICITACIONES PÚBLICAS DESIERTAS",
+          "is_null": false,
+          "frequency": 143,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.299238
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA PARA FINES MILITARES O PARA LA ARMADA",
+          "is_null": false,
+          "frequency": 134,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.280405
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR ADJUDICACIÓN A PROVEEDOR CON CONTRATO VIGENTE, BAJO LAS MISMAS CONDICIONES",
+          "is_null": false,
+          "frequency": 123,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.257387
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR MANTENIMIENTO SIN PRECISIÓN DEL ALCANCE",
+          "is_null": false,
+          "frequency": 101,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.21135
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR BIENES PERECEDEROS O USADOS",
+          "is_null": false,
+          "frequency": 72,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.150665
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA QUE DERIVA DE DOS INVITACIONES A CUANDO MENOS TRES PERSONAS DESIERTAS",
+          "is_null": false,
+          "frequency": 71,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.148573
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR INVITACIONES A 3 PERSONAS DESIERTAS",
+          "is_null": false,
+          "frequency": 60,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.125555
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR CASO FORTUITO O FUERZA MAYOR",
+          "is_null": false,
+          "frequency": 55,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.115092
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR URGENCIA Y EVENTUALIDAD",
+          "is_null": false,
+          "frequency": 46,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.096258
+        },
+        {
+          "value": "PROCEDIMIENTO DE ASIGNACIÓN DERIVADO DE UN ACUERDO MARCO",
+          "is_null": false,
+          "frequency": 35,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.07324
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CONTRATACIÓN CON CAMPESINOS O GRUPOS URBANOS",
+          "is_null": false,
+          "frequency": 32,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.066962
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR INEXISTENCIA DE MARCAS ALTERNATIVAS",
+          "is_null": false,
+          "frequency": 26,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.054407
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA PARA ADQUISICIONES A FABRICANTES, EN AQUELLOS CASOS EN QUE ESTOS OFREZCAN MEJORES CONDICIONES DE MERCADO.",
+          "is_null": false,
+          "frequency": 20,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.041852
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR PERDIDAS ADICIONALES JUSTIFICADAS",
+          "is_null": false,
+          "frequency": 19,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.039759
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CONSULTORÍA",
+          "is_null": false,
+          "frequency": 15,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.031389
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR COMERCIALIZACIÓN DIRECTA",
+          "is_null": false,
+          "frequency": 14,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.029296
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR BIENES EN LIQUIDACIÓN",
+          "is_null": false,
+          "frequency": 12,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.025111
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR MATERIALES DE USO EN ACTIVIDADES EXPERIMENTALES",
+          "is_null": false,
+          "frequency": 12,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.025111
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CONTRATOS RESCINDIDOS",
+          "is_null": false,
+          "frequency": 11,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.023018
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR SERVICIOS PRESTADOS POR PERSONA FÍSICA, QUE NO REQUIERA DE OTRO ESPECIALISTA O TÉCNICO",
+          "is_null": false,
+          "frequency": 8,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.016741
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR CONSULTORÍA",
+          "is_null": false,
+          "frequency": 8,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.016741
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR PERDIDAS ADICIONALES JUSTIFICADAS",
+          "is_null": false,
+          "frequency": 8,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.016741
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA PARA LA ADQUISICIÓN DE BIENES Y SERVICIOS RELATIVOS A LA OPERACIÓN DE INSTALACIONES NUCLEARES",
+          "is_null": false,
+          "frequency": 3,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.006278
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA PARA MATERIALES DE USO EN ACTIVIDADES EXPERIMENTALES",
+          "is_null": false,
+          "frequency": 3,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.006278
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA RECONOCIMIENTO DE TRABAJOS EXTRAORDINARIOS NO CONSIDERADOS EN LOS ALCANCES DEL CONTRATO",
+          "is_null": false,
+          "frequency": 3,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.006278
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CONTRATO MARCO",
+          "is_null": false,
+          "frequency": 2,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.004185
+        },
+        {
+          "value": "ENTRE ENTES PÚBLICOS",
+          "is_null": false,
+          "frequency": 2,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.004185
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR BIENES PERECEDEROS O USADOS",
+          "is_null": false,
+          "frequency": 2,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.004185
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR MANTENIMIENTO SIN PRECISIÓN DEL ALCANCE",
+          "is_null": false,
+          "frequency": 2,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.004185
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR CRÉDITO EXTERNO",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        },
+        {
+          "value": "ADJUDICACIÓN DIRECTA POR MANTENIMIENTO SIN PRECISIÓN DEL ALCANCE EN LOS TRABAJOS",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS PARA ADQUISICIONES A FABRICANTES, EN AQUELLOS CASOS EN QUE ESTOS OFREZCAN MEJORES CONDICIONES DE MERCADO.",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR ESTUDIOS PREVIOS A LA LICITACIÓN",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        },
+        {
+          "value": "INVITACIÓN A CUANDO MENOS 3 PERSONAS POR PATENTES, LICENCIAS, OFERENTE ÚNICO U OBRAS DE ARTE",
+          "is_null": false,
+          "frequency": 1,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 0.002093
+        },
+        {
+          "value": null,
+          "is_null": true,
+          "frequency": 2632,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 5.507659
+        }
+      ]
+    },
+    {
+      "relation_name": "awards",
+      "source_slug": "comprasmx-contratos",
+      "field_name": "source_slug",
+      "catalog_status": "complete_exact_live",
+      "rows_in_relation_source": 47788,
+      "distinct_value_count_including_null": 1,
+      "values": [
+        {
+          "value": "comprasmx-contratos",
+          "is_null": false,
+          "frequency": 47788,
+          "rows_in_relation_source": 47788,
+          "frequency_pct_within_relation_source": 100.0
+        }
+      ]
+    }
+  ]
+}

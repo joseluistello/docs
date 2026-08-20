@@ -1,0 +1,3 @@
+measured_at,domain,field_name,source_scope,rows_examined,null_count,empty_array_count,rows_with_business_contacts,business_contacts_type_distribution,min_array_length,avg_array_length,max_array_length
+2026-08-13 00:03:58.842168+00:00,directory,business_contacts,dirind,12799,0,121,12678,{'array': 12799},0,1.8282678334244864,6
+2026-08-13 00:03:58.842168+00:00,directory,business_contacts,mexicoindustry,4149,0,3638,511,{'array': 4149},0,0.14533622559652928,2

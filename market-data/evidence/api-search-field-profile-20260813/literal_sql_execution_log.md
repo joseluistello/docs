@@ -1,0 +1,373 @@
+# Literal SQL execution log
+
+Created at UTC: 2026-08-13T01:26:24.948029+00:00
+
+This file is self-contained; it does not refer to external notebook cells.
+
+## canonical_low_card_relation_columns
+Status: success
+
+Purpose: Inspect column availability for requested low-cardinality fields in tenders/awards
+
+SQL literal:
+
+```sql
+-- Use information_schema.columns to inspect PostgreSQL column metadata.
+-- Keep the query read-only by using SELECT only.
+-- Filter to the qualified schema market_data and the requested public API relations tenders and awards.
+-- Order deterministically by table_name and ordinal_position.
+SELECT
+  table_schema,
+  table_name,
+  ordinal_position,
+  column_name,
+  data_type,
+  udt_name
+FROM information_schema.columns
+WHERE table_schema = 'market_data'
+  AND table_name IN ('tenders', 'awards')
+ORDER BY table_name, ordinal_position;
+```
+
+Timing / result or error:
+
+```json
+{
+  "status": "success",
+  "timing": {
+    "client_recorded_at_utc": "2026-08-13T01:26:24.948029+00:00",
+    "server_timing_columns_in_result": false
+  },
+  "result": {
+    "row_count": 66,
+    "columns": [
+      "table_schema",
+      "table_name",
+      "ordinal_position",
+      "column_name",
+      "data_type",
+      "udt_name"
+    ],
+    "sample_rows": [
+      {
+        "table_schema": "market_data",
+        "table_name": "awards",
+        "ordinal_position": 1,
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid"
+      },
+      {
+        "table_schema": "market_data",
+        "table_name": "awards",
+        "ordinal_position": 2,
+        "column_name": "source_slug",
+        "data_type": "text",
+        "udt_name": "text"
+      },
+      {
+        "table_schema": "market_data",
+        "table_name": "awards",
+        "ordinal_position": 3,
+        "column_name": "dataset_name",
+        "data_type": "text",
+        "udt_name": "text"
+      },
+      {
+        "table_schema": "market_data",
+        "table_name": "awards",
+        "ordinal_position": 4,
+        "column_name": "source_record_id",
+        "data_type": "text",
+        "udt_name": "text"
+      },
+      {
+        "table_schema": "market_data",
+        "table_name": "awards",
+        "ordinal_position": 5,
+        "column_name": "source_year",
+        "data_type": "integer",
+        "udt_name": "int4"
+      }
+    ]
+  }
+}
+```
+
+## exact_low_cardinality_live_value_counts_combined_attempt
+Status: error
+
+Purpose: Initial combined exact value-count query for tenders and awards
+
+SQL literal:
+
+```sql
+WITH query_timer AS (SELECT clock_timestamp() AS query_started_at), relation_source_counts AS (SELECT 'tenders'::text AS relation_name, t.source_slug, COUNT(*)::bigint AS rows_in_relation_source FROM market_data.tenders AS t GROUP BY t.source_slug UNION ALL SELECT 'awards'::text AS relation_name, a.source_slug, COUNT(*)::bigint AS rows_in_relation_source FROM market_data.awards AS a GROUP BY a.source_slug), field_values AS (SELECT 'tenders'::text AS relation_name, t.source_slug, 'actionability'::text AS field_name, t.actionability::text AS field_value FROM market_data.tenders AS t UNION ALL SELECT 'tenders'::text, t.source_slug, 'status'::text, t.status::text FROM market_data.tenders AS t UNION ALL SELECT 'tenders'::text, t.source_slug, 'contracting_type'::text, t.contracting_type::text FROM market_data.tenders AS t UNION ALL SELECT 'tenders'::text, t.source_slug, 'procedure_type'::text, t.procedure_type::text FROM market_data.tenders AS t UNION ALL SELECT 'tenders'::text, t.source_slug, 'announcement_character'::text, t.announcement_character::text FROM market_data.tenders AS t UNION ALL SELECT 'tenders'::text, t.source_slug, 'source_slug'::text, t.source_slug::text FROM market_data.tenders AS t UNION ALL SELECT 'awards'::text, a.source_slug, 'currency'::text, a.currency::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'amount_scope'::text, a.amount_scope::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'contract_status'::text, a.contract_status::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'supplier_country'::text, a.supplier_country::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'supplier_size'::text, a.supplier_size::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'is_mipyme'::text, a.is_mipyme::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'contracting_type'::text, a.contracting_type::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'procedure_type'::text, a.procedure_type::text FROM market_data.awards AS a UNION ALL SELECT 'awards'::text, a.source_slug, 'source_slug'::text, a.source_slug::text FROM market_data.awards AS a), value_counts AS (SELECT fv.relation_name, fv.source_slug, fv.field_name, fv.field_value, (fv.field_value IS NULL)::boolean AS field_value_is_null, COUNT(*)::bigint AS frequency FROM field_values AS fv GROUP BY fv.relation_name, fv.source_slug, fv.field_name, fv.field_value), final_rows AS (SELECT vc.relation_name, vc.source_slug, vc.field_name, vc.field_value, vc.field_value_is_null, vc.frequency, rsc.rows_in_relation_source, ROUND((vc.frequency::numeric / NULLIF(rsc.rows_in_relation_source, 0)) * 100, 6) AS frequency_pct_within_relation_source FROM value_counts AS vc JOIN relation_source_counts AS rsc ON rsc.relation_name = vc.relation_name AND rsc.source_slug = vc.source_slug) SELECT qt.query_started_at, clock_timestamp() AS query_finished_at, clock_timestamp() - qt.query_started_at AS server_elapsed, fr.relation_name, fr.source_slug, fr.field_name, fr.field_value, fr.field_value_is_null, fr.frequency, fr.rows_in_relation_source, fr.frequency_pct_within_relation_source FROM final_rows AS fr CROSS JOIN query_timer AS qt ORDER BY fr.relation_name, fr.source_slug, fr.field_name, fr.field_value_is_null, fr.frequency DESC, fr.field_value;
+```
+
+Timing / result or error:
+
+```json
+{
+  "status": "error",
+  "timing": {
+    "client_recorded_at_utc": "2026-08-13T01:26:24.948029+00:00"
+  },
+  "error": {
+    "type": "OperationalError / psycopg2.errors.QueryCanceled",
+    "message": "canceling statement due to statement timeout"
+  }
+}
+```
+
+## exact_tenders_low_cardinality_live_value_counts
+Status: success
+
+Purpose: Exact live value counts for requested tender fields, by source_slug
+
+SQL literal:
+
+```sql
+-- Use the fully qualified market_data.tenders table name.
+-- Keep the query read-only by using WITH/SELECT only.
+-- Use one base scan and CROSS JOIN LATERAL VALUES to unpivot already measured low-cardinality tender fields.
+-- Include server-side timing with clock_timestamp() and order deterministically.
+WITH query_timer AS (SELECT clock_timestamp() AS query_started_at), base AS (SELECT t.source_slug, t.actionability::text AS actionability, t.status::text AS status, t.contracting_type::text AS contracting_type, t.procedure_type::text AS procedure_type, t.announcement_character::text AS announcement_character FROM market_data.tenders AS t), relation_source_counts AS (SELECT b.source_slug, COUNT(*)::bigint AS rows_in_relation_source FROM base AS b GROUP BY b.source_slug), field_values AS (SELECT b.source_slug, v.field_name, v.field_value FROM base AS b CROSS JOIN LATERAL (VALUES ('actionability'::text, b.actionability), ('status'::text, b.status), ('contracting_type'::text, b.contracting_type), ('procedure_type'::text, b.procedure_type), ('announcement_character'::text, b.announcement_character), ('source_slug'::text, b.source_slug)) AS v(field_name, field_value)), value_counts AS (SELECT 'tenders'::text AS relation_name, fv.source_slug, fv.field_name, fv.field_value, (fv.field_value IS NULL)::boolean AS field_value_is_null, COUNT(*)::bigint AS frequency FROM field_values AS fv GROUP BY fv.source_slug, fv.field_name, fv.field_value), final_rows AS (SELECT vc.relation_name, vc.source_slug, vc.field_name, vc.field_value, vc.field_value_is_null, vc.frequency, rsc.rows_in_relation_source, ROUND((vc.frequency::numeric / NULLIF(rsc.rows_in_relation_source, 0)) * 100, 6) AS frequency_pct_within_relation_source FROM value_counts AS vc JOIN relation_source_counts AS rsc ON rsc.source_slug = vc.source_slug) SELECT qt.query_started_at, clock_timestamp() AS query_finished_at, clock_timestamp() - qt.query_started_at AS server_elapsed, fr.relation_name, fr.source_slug, fr.field_name, fr.field_value, fr.field_value_is_null, fr.frequency, fr.rows_in_relation_source, fr.frequency_pct_within_relation_source FROM final_rows AS fr CROSS JOIN query_timer AS qt ORDER BY fr.relation_name, fr.source_slug, fr.field_name, fr.field_value_is_null, fr.frequency DESC, fr.field_value;
+```
+
+Timing / result or error:
+
+```json
+{
+  "status": "success",
+  "timing": {
+    "query_started_at": "2026-08-13 01:22:39.636437+00:00",
+    "query_finished_at_max": "2026-08-13 01:22:39.680262+00:00",
+    "server_elapsed_max": "0 days 00:00:00.043825"
+  },
+  "result": {
+    "row_count": 38,
+    "columns": [
+      "query_started_at",
+      "query_finished_at",
+      "server_elapsed",
+      "relation_name",
+      "source_slug",
+      "field_name",
+      "field_value",
+      "field_value_is_null",
+      "frequency",
+      "rows_in_relation_source",
+      "frequency_pct_within_relation_source"
+    ],
+    "sample_rows": [
+      {
+        "query_started_at": "2026-08-13T01:22:39.636Z",
+        "query_finished_at": "2026-08-13T01:22:39.680Z",
+        "server_elapsed": "P0DT0H0M0.043752S",
+        "relation_name": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "field_name": "actionability",
+        "field_value": "closed_at_load",
+        "field_value_is_null": false,
+        "frequency": 63189,
+        "rows_in_relation_source": 64418,
+        "frequency_pct_within_relation_source": 98.092148
+      },
+      {
+        "query_started_at": "2026-08-13T01:22:39.636Z",
+        "query_finished_at": "2026-08-13T01:22:39.680Z",
+        "server_elapsed": "P0DT0H0M0.043772S",
+        "relation_name": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "field_name": "actionability",
+        "field_value": "open_but_apertura_passed",
+        "field_value_is_null": false,
+        "frequency": 638,
+        "rows_in_relation_source": 64418,
+        "frequency_pct_within_relation_source": 0.990406
+      },
+      {
+        "query_started_at": "2026-08-13T01:22:39.636Z",
+        "query_finished_at": "2026-08-13T01:22:39.680Z",
+        "server_elapsed": "P0DT0H0M0.043773S",
+        "relation_name": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "field_name": "actionability",
+        "field_value": "open_with_apertura_ahead",
+        "field_value_is_null": false,
+        "frequency": 558,
+        "rows_in_relation_source": 64418,
+        "frequency_pct_within_relation_source": 0.866218
+      },
+      {
+        "query_started_at": "2026-08-13T01:22:39.636Z",
+        "query_finished_at": "2026-08-13T01:22:39.680Z",
+        "server_elapsed": "P0DT0H0M0.043775S",
+        "relation_name": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "field_name": "actionability",
+        "field_value": "open_without_published_apertura",
+        "field_value_is_null": false,
+        "frequency": 33,
+        "rows_in_relation_source": 64418,
+        "frequency_pct_within_relation_source": 0.051228
+      },
+      {
+        "query_started_at": "2026-08-13T01:22:39.636Z",
+        "query_finished_at": "2026-08-13T01:22:39.680Z",
+        "server_elapsed": "P0DT0H0M0.043776S",
+        "relation_name": "tenders",
+        "source_slug": "comprasmx-contratos",
+        "field_name": "announcement_character",
+        "field_value": "NACIONAL",
+        "field_value_is_null": false,
+        "frequency": 60016,
+        "rows_in_relation_source": 64418,
+        "frequency_pct_within_relation_source": 93.166506
+      }
+    ]
+  }
+}
+```
+
+## exact_awards_low_cardinality_live_value_counts_cross_join_attempt
+Status: error
+
+Purpose: Initial awards CROSS JOIN LATERAL exact value-count query
+
+SQL literal:
+
+```sql
+-- Use the fully qualified market_data.awards table name.
+-- Keep the query read-only by using WITH/SELECT only.
+-- Use one base scan and CROSS JOIN LATERAL VALUES to unpivot already measured low-cardinality award fields.
+-- Include server-side timing with clock_timestamp() and order deterministically.
+WITH query_timer AS (SELECT clock_timestamp() AS query_started_at), base AS (SELECT a.source_slug, a.currency::text AS currency, a.amount_scope::text AS amount_scope, a.contract_status::text AS contract_status, a.supplier_country::text AS supplier_country, a.supplier_size::text AS supplier_size, a.is_mipyme::text AS is_mipyme, a.contracting_type::text AS contracting_type, a.procedure_type::text AS procedure_type FROM market_data.awards AS a), relation_source_counts AS (SELECT b.source_slug, COUNT(*)::bigint AS rows_in_relation_source FROM base AS b GROUP BY b.source_slug), field_values AS (SELECT b.source_slug, v.field_name, v.field_value FROM base AS b CROSS JOIN LATERAL (VALUES ('currency'::text, b.currency), ('amount_scope'::text, b.amount_scope), ('contract_status'::text, b.contract_status), ('supplier_country'::text, b.supplier_country), ('supplier_size'::text, b.supplier_size), ('is_mipyme'::text, b.is_mipyme), ('contracting_type'::text, b.contracting_type), ('procedure_type'::text, b.procedure_type), ('source_slug'::text, b.source_slug)) AS v(field_name, field_value)), value_counts AS (SELECT 'awards'::text AS relation_name, fv.source_slug, fv.field_name, fv.field_value, (fv.field_value IS NULL)::boolean AS field_value_is_null, COUNT(*)::bigint AS frequency FROM field_values AS fv GROUP BY fv.source_slug, fv.field_name, fv.field_value), final_rows AS (SELECT vc.relation_name, vc.source_slug, vc.field_name, vc.field_value, vc.field_value_is_null, vc.frequency, rsc.rows_in_relation_source, ROUND((vc.frequency::numeric / NULLIF(rsc.rows_in_relation_source, 0)) * 100, 6) AS frequency_pct_within_relation_source FROM value_counts AS vc JOIN relation_source_counts AS rsc ON rsc.source_slug = vc.source_slug) SELECT qt.query_started_at, clock_timestamp() AS query_finished_at, clock_timestamp() - qt.query_started_at AS server_elapsed, fr.relation_name, fr.source_slug, fr.field_name, fr.field_value, fr.field_value_is_null, fr.frequency, fr.rows_in_relation_source, fr.frequency_pct_within_relation_source FROM final_rows AS fr CROSS JOIN query_timer AS qt ORDER BY fr.relation_name, fr.source_slug, fr.field_name, fr.field_value_is_null, fr.frequency DESC, fr.field_value;
+```
+
+Timing / result or error:
+
+```json
+{
+  "status": "error",
+  "timing": {
+    "client_recorded_at_utc": "2026-08-13T01:26:24.948029+00:00"
+  },
+  "error": {
+    "type": "OperationalError / psycopg2.errors.QueryCanceled",
+    "message": "canceling statement due to statement timeout"
+  }
+}
+```
+
+## exact_awards_low_cardinality_live_value_counts_grouping_sets
+Status: success
+
+Purpose: Exact live value counts for requested award fields, by source_slug, using GROUPING SETS after timeout of unpivot approach
+
+SQL literal:
+
+```sql
+-- Use the fully qualified market_data.awards table name.
+-- Keep the query read-only by using WITH/SELECT only.
+-- Use PostgreSQL GROUPING SETS and GROUPING() to compute exact frequencies for multiple low-cardinality fields in one aggregation.
+-- Include server-side timing with clock_timestamp() and order deterministically.
+WITH query_timer AS (SELECT clock_timestamp() AS query_started_at), relation_source_counts AS (SELECT a.source_slug, COUNT(*)::bigint AS rows_in_relation_source FROM market_data.awards AS a GROUP BY a.source_slug), grouped_counts AS (SELECT a.source_slug, CASE WHEN GROUPING(a.currency) = 0 THEN 'currency'::text WHEN GROUPING(a.amount_scope) = 0 THEN 'amount_scope'::text WHEN GROUPING(a.contract_status) = 0 THEN 'contract_status'::text WHEN GROUPING(a.supplier_country) = 0 THEN 'supplier_country'::text WHEN GROUPING(a.supplier_size) = 0 THEN 'supplier_size'::text WHEN GROUPING(a.is_mipyme) = 0 THEN 'is_mipyme'::text WHEN GROUPING(a.contracting_type) = 0 THEN 'contracting_type'::text WHEN GROUPING(a.procedure_type) = 0 THEN 'procedure_type'::text WHEN GROUPING(a.source_slug) = 0 AND GROUPING(a.currency) = 1 AND GROUPING(a.amount_scope) = 1 AND GROUPING(a.contract_status) = 1 AND GROUPING(a.supplier_country) = 1 AND GROUPING(a.supplier_size) = 1 AND GROUPING(a.is_mipyme) = 1 AND GROUPING(a.contracting_type) = 1 AND GROUPING(a.procedure_type) = 1 THEN 'source_slug'::text ELSE 'unknown'::text END AS field_name, CASE WHEN GROUPING(a.currency) = 0 THEN a.currency::text WHEN GROUPING(a.amount_scope) = 0 THEN a.amount_scope::text WHEN GROUPING(a.contract_status) = 0 THEN a.contract_status::text WHEN GROUPING(a.supplier_country) = 0 THEN a.supplier_country::text WHEN GROUPING(a.supplier_size) = 0 THEN a.supplier_size::text WHEN GROUPING(a.is_mipyme) = 0 THEN a.is_mipyme::text WHEN GROUPING(a.contracting_type) = 0 THEN a.contracting_type::text WHEN GROUPING(a.procedure_type) = 0 THEN a.procedure_type::text WHEN GROUPING(a.source_slug) = 0 AND GROUPING(a.currency) = 1 AND GROUPING(a.amount_scope) = 1 AND GROUPING(a.contract_status) = 1 AND GROUPING(a.supplier_country) = 1 AND GROUPING(a.supplier_size) = 1 AND GROUPING(a.is_mipyme) = 1 AND GROUPING(a.contracting_type) = 1 AND GROUPING(a.procedure_type) = 1 THEN a.source_slug::text ELSE NULL::text END AS field_value, COUNT(*)::bigint AS frequency FROM market_data.awards AS a GROUP BY GROUPING SETS ((a.source_slug, a.currency), (a.source_slug, a.amount_scope), (a.source_slug, a.contract_status), (a.source_slug, a.supplier_country), (a.source_slug, a.supplier_size), (a.source_slug, a.is_mipyme), (a.source_slug, a.contracting_type), (a.source_slug, a.procedure_type), (a.source_slug))) SELECT qt.query_started_at, clock_timestamp() AS query_finished_at, clock_timestamp() - qt.query_started_at AS server_elapsed, 'awards'::text AS relation_name, gc.source_slug, gc.field_name, gc.field_value, (gc.field_value IS NULL)::boolean AS field_value_is_null, gc.frequency, rsc.rows_in_relation_source, ROUND((gc.frequency::numeric / NULLIF(rsc.rows_in_relation_source, 0)) * 100, 6) AS frequency_pct_within_relation_source FROM grouped_counts AS gc JOIN relation_source_counts AS rsc ON rsc.source_slug = gc.source_slug CROSS JOIN query_timer AS qt WHERE gc.field_name <> 'unknown' ORDER BY relation_name, source_slug, field_name, field_value_is_null, frequency DESC, field_value;
+```
+
+Timing / result or error:
+
+```json
+{
+  "status": "success",
+  "timing": {
+    "query_started_at": "2026-08-13 01:24:32.901415+00:00",
+    "query_finished_at_max": "2026-08-13 01:24:32.912590+00:00",
+    "server_elapsed_max": "0 days 00:00:00.011175"
+  },
+  "result": {
+    "row_count": 86,
+    "columns": [
+      "query_started_at",
+      "query_finished_at",
+      "server_elapsed",
+      "relation_name",
+      "source_slug",
+      "field_name",
+      "field_value",
+      "field_value_is_null",
+      "frequency",
+      "rows_in_relation_source",
+      "frequency_pct_within_relation_source"
+    ],
+    "sample_rows": [
+      {
+        "query_started_at": "2026-08-13T01:24:32.901Z",
+        "query_finished_at": "2026-08-13T01:24:32.912Z",
+        "server_elapsed": "P0DT0H0M0.010758S",
+        "relation_name": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "field_name": "amount_scope",
+        "field_value": "award_group_published_total",
+        "field_value_is_null": false,
+        "frequency": 58,
+        "rows_in_relation_source": 58,
+        "frequency_pct_within_relation_source": 100.0
+      },
+      {
+        "query_started_at": "2026-08-13T01:24:32.901Z",
+        "query_finished_at": "2026-08-13T01:24:32.912Z",
+        "server_elapsed": "P0DT0H0M0.010777S",
+        "relation_name": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "field_name": "contracting_type",
+        "field_value": "Servicio por Abastecimiento",
+        "field_value_is_null": false,
+        "frequency": 47,
+        "rows_in_relation_source": 58,
+        "frequency_pct_within_relation_source": 81.034483
+      },
+      {
+        "query_started_at": "2026-08-13T01:24:32.901Z",
+        "query_finished_at": "2026-08-13T01:24:32.912Z",
+        "server_elapsed": "P0DT0H0M0.010779S",
+        "relation_name": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "field_name": "contracting_type",
+        "field_value": "Adquisición por Abastecimientos",
+        "field_value_is_null": false,
+        "frequency": 11,
+        "rows_in_relation_source": 58,
+        "frequency_pct_within_relation_source": 18.965517
+      },
+      {
+        "query_started_at": "2026-08-13T01:24:32.901Z",
+        "query_finished_at": "2026-08-13T01:24:32.912Z",
+        "server_elapsed": "P0DT0H0M0.010781S",
+        "relation_name": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "field_name": "contract_status",
+        "field_value": "Adjudicado",
+        "field_value_is_null": false,
+        "frequency": 58,
+        "rows_in_relation_source": 58,
+        "frequency_pct_within_relation_source": 100.0
+      },
+      {
+        "query_started_at": "2026-08-13T01:24:32.901Z",
+        "query_finished_at": "2026-08-13T01:24:32.912Z",
+        "server_elapsed": "P0DT0H0M0.010782S",
+        "relation_name": "awards",
+        "source_slug": "cfe-contratos-adjudicados",
+        "field_name": "currency",
+        "field_value": null,
+        "field_value_is_null": true,
+        "frequency": 58,
+        "rows_in_relation_source": 58,
+        "frequency_pct_within_relation_source": 100.0
+      }
+    ]
+  }
+}
+```

@@ -1,0 +1,30 @@
+[
+  {
+    "schema":"market_data",
+    "relname":"directory_entries",
+    "relkind":"r",
+    "reltuples_estimate":6242211.0,
+    "relpages":1648718
+  },
+  {
+    "schema":"market_data",
+    "relname":"ingest_runs",
+    "relkind":"r",
+    "reltuples_estimate":99.0,
+    "relpages":6
+  },
+  {
+    "schema":"market_data",
+    "relname":"taxonomy_entries",
+    "relkind":"r",
+    "reltuples_estimate":90000.0,
+    "relpages":6621
+  },
+  {
+    "schema":"market_data",
+    "relname":"taxonomy_publications",
+    "relkind":"r",
+    "reltuples_estimate":-1.0,
+    "relpages":0
+  }
+]

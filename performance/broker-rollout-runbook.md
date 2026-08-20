@@ -29,8 +29,9 @@ It is **NOT**:
 | Grants | `broker_grants` table | none | Per-principal authorization once the lane is open (principal × provider × effect, `*` wildcards). Owner/admin-managed. |
 | Operation policy | `operation-policy.ts` REGISTRY | empty | Which operations are exposed/invokable. In `enforce` mode (prod) only allowlisted ops run; unknown ops fail closed. |
 
-Policy mode: `DRIFTLESS_BROKER_POLICY=enforce|open`, or `enforce` automatically when
-`NODE_ENV=production`. `open` (staging/dev) lets unknown ops through, flagged.
+Policy mode is derived from the environment: `enforce` when
+`NODE_ENV=production`; `open` in staging/dev so unknown operations remain visible
+but flagged. There is no override that can open the entire broker in production.
 
 ## Env matrix
 
@@ -41,7 +42,6 @@ Policy mode: `DRIFTLESS_BROKER_POLICY=enforce|open`, or `enforce` automatically 
 | `NANGO_WEBHOOK_SIGNING_KEY` | broker ON | Distinct from the secret key. When ON there is **no** silent fallback to the secret key for webhook verification — a misconfig rejects. |
 | `NANGO_HOST` | self-host only | Omit for Nango Cloud. |
 | `DRIFTLESS_BROKER_ROLLOUT` | to open the external lane | `off` default; advance `internal` → `ga`. |
-| `DRIFTLESS_BROKER_POLICY` | optional | Force `enforce`/`open`; prod defaults to `enforce`. |
 
 Staging API: `https://api-staging.driftless.icu`. Prod: `https://api.driftless.icu`.
 

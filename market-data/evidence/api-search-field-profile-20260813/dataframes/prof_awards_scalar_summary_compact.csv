@@ -1,0 +1,10 @@
+measured_at,domain,source_scope,field_name,rows_examined,null_count,null_rate_pct,cardinality
+2026-08-13 00:06:02.570392+00:00,awards,all,amount_scope,47846,0,0.0,2
+2026-08-13 00:06:02.570392+00:00,awards,all,contracting_type,47846,0,0.0,7
+2026-08-13 00:06:02.570392+00:00,awards,all,contract_status,47846,16400,34.2766,4
+2026-08-13 00:06:02.570392+00:00,awards,all,currency,47846,58,0.1212,4
+2026-08-13 00:06:02.570392+00:00,awards,all,is_mipyme,47846,58,0.1212,2
+2026-08-13 00:06:02.570392+00:00,awards,all,procedure_type,47846,2632,5.501,50
+2026-08-13 00:06:02.570392+00:00,awards,all,source_slug,47846,0,0.0,2
+2026-08-13 00:06:02.570392+00:00,awards,all,supplier_country,47846,58,0.1212,2
+2026-08-13 00:06:02.570392+00:00,awards,all,supplier_size,47846,58,0.1212,7

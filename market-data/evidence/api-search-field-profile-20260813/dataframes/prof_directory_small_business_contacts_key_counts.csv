@@ -1,0 +1,13 @@
+source_scope,element_json_type,key_name,frequency
+dirind,object,classification,23400
+dirind,object,kind,23400
+dirind,object,source_field,23400
+dirind,object,source_record_id,23400
+dirind,object,source_slug,23400
+dirind,object,value,23400
+mexicoindustry,object,classification,603
+mexicoindustry,object,kind,603
+mexicoindustry,object,source_field,603
+mexicoindustry,object,source_record_id,603
+mexicoindustry,object,source_slug,603
+mexicoindustry,object,value,603

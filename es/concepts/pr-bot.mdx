@@ -13,7 +13,7 @@ Cuando se abre o se actualiza un PR:
 
 1. Driftless trae los archivos cambiados y los matchea contra los anchors (globs) de cada topic.
 2. Cada match PR↔topic queda **registrado** (alimenta la actividad de PR del dashboard), haya comentario o no.
-3. Si el workspace tiene el Auditor configurado (una key de modelo en **Settings → Agents**), el Auditor entra a la cola: lee el diff real contra lo que los topics matcheados dejaron registrado.
+3. Si el workspace tiene el Auditor habilitado (**Settings → Agents**), el Auditor entra a la cola: lee el diff real contra lo que los topics matcheados dejaron registrado.
 4. **Solo si encuentra algo** publica un único comentario sticky, que se actualiza en su lugar en los commits siguientes, nunca se re-publica.
 
 ## Qué entrega el comentario
@@ -41,7 +41,7 @@ Los topics stale se marcan dentro del comentario ("confía en el código por enc
 ## Solo señal, por diseño
 
 - **Sin hallazgo → sin comentario.** El silencio es lo que pasa por defecto, y también es información.
-- **Sin key de modelo → sin comentario.** El Auditor es BYOM; sin una key el PR igual se observa y se registra, solo que no se comenta.
+- **Auditor apagado → sin comentario.** Con el toggle apagado el PR igual se observa y se registra, solo que no se comenta.
 - **Informa; nunca bloquea.** Los hallazgos aterrizan como Ediciones sugeridas en la cola de revisión, y un owner/admin las fusiona. Sin puntaje de cobertura, sin tarea.
 - **Encontrar los huecos vive en el mapa de cobertura**, no en los comentarios de PR: `driftless_context_coverage` por el MCP, o el dashboard.
 

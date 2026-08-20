@@ -1,0 +1,15 @@
+[
+  {
+    "measured_at":"2026-08-12T23:59:21.471Z",
+    "domain":"directory",
+    "source_scope":"mexicoindustry",
+    "field_name":"categories",
+    "rows_examined":4149,
+    "null_count":0,
+    "empty_array_count":238,
+    "rows_with_categories":3911,
+    "categories_type_distribution":{
+      "array":4149
+    }
+  }
+]

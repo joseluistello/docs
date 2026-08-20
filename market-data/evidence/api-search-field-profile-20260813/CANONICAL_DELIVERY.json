@@ -1,0 +1,41 @@
+{
+  "artifact_status": "single_canonical_delivery_only",
+  "created_at_utc": "2026-08-13T01:04:02.630971+00:00",
+  "which_one_is_true": "api_search_field_profile_20260813_DELIVERY_CANONICAL",
+  "true_zip": "api_search_field_profile_20260813_DELIVERY_CANONICAL.zip",
+  "true_sha256_file": "api_search_field_profile_20260813_DELIVERY_CANONICAL.sha256",
+  "cleanup_done": true,
+  "non_canonical_api_search_items_deleted": [
+    {
+      "item": "api_search_field_profile_20260813_100pct.sha256",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_100pct.zip",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_final",
+      "type": "dir"
+    },
+    {
+      "item": "api_search_field_profile_20260813_final_candidate.zip",
+      "type": "file"
+    },
+    {
+      "item": "api_search_field_profile_20260813_partial",
+      "type": "dir"
+    }
+  ],
+  "domain_evidence_pack_deleted": false,
+  "protected_domain_evidence_pack_items": [
+    "domain_evidence_pack"
+  ],
+  "validation": {
+    "required_files_pass": true,
+    "csv_json_pairs_pass": true,
+    "missing_required_files": [],
+    "validation_errors": [],
+    "dataframe_count": 26
+  }
+}
