@@ -1,5 +1,5 @@
 ---
-title: 'Sync & Branches'
+title: 'Sync'
 description: 'An optional team-wide digest of what drifted around your topics.'
 ---
 
@@ -13,7 +13,7 @@ It does not inspect your local diff and it does not retrieve file-specific conte
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `sync` | `--json` | Show stale topics, recent PR activity, and tracked branches | `driftless sync` |
+| `sync` | `--json` | Show persisted stale topics and suggested topics | `driftless sync` |
 
 ```bash
 driftless sync
@@ -24,8 +24,6 @@ Typical output:
 ```text
 ▌ acme/platform
   workspace: acme  (resolved via config)
-  tracking:  main, staging
-
 ⚠  2 topics drifted, the team changed code these topics cover, context may be behind:
    auth-boundaries
      src/auth/session.ts changed
@@ -36,9 +34,8 @@ Typical output:
 
 | Signal | Source | What to do |
 |---|---|---|
-| **Stale topics** | GitHub push events on tracked branches | Review the changed code and update the topic if the behavior changed |
-| **Recent PR activity** | GitHub App observations | Read the touched topics before working in the same area |
-| **Tracked branches** | Repo settings in Driftless Cloud | Use `driftless branches` to see or change drift scope |
+| **Stale topics** | Explicit local `context get --diff --mark` | Review the changed code and update the topic if the behavior changed |
+| **Suggested topics** | Pending suggestions | Review and confirm useful context |
 
 ## When to use sync
 
@@ -72,18 +69,7 @@ The JSON output includes:
 
 | Field | Meaning |
 |---|---|
-| `repo` | GitHub org/repo resolved from the current remote |
+| `repo` | Repository identity resolved from the current remote |
 | `workspace` | Driftless workspace slug |
-| `tracking` | Default branch and extra tracked branches |
 | `stale_topics` | Topics whose anchored code changed |
-| `pr_activity` | Recent PR observations and touched topics |
-
-## Branches
-
-Staleness is scoped to tracked branches. If a push happens on an untracked branch, Driftless records the activity but does not mark topics stale from that branch.
-
-| Command | Flags | Description | Example |
-|---|---|---|---|
-| `branches` | `--json` | View tracked branches | `driftless branches` |
-| `branches add` | `<branch>` | Track a branch | `driftless branches add staging` |
-| `branches rm` | `<branch>` | Stop tracking branch | `driftless branches rm staging` |
+| `suggested_pending` | Number of suggested topics awaiting review |

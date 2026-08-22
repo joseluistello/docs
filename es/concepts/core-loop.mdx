@@ -1,13 +1,13 @@
 ---
 title: 'El loop de Driftless'
-description: "Los tres tipos de estado que un workspace conecta, y el loop que convierte una señal en Knowledge revisado."
+description: "Los dos tipos de estado que un workspace conecta, y el loop que convierte una señal en Knowledge revisado."
 ---
 
 Driftless es un solo workspace para un equipo y sus agentes. El problema que resuelve es la continuidad, no solo la memoria: los modelos cambian, los chats terminan, las sesiones se reinician y los agentes pierden su estado, pero el cliente, la decisión y el proyecto siguen ahí a la mañana siguiente. Cuando ese estado vive en una docena de herramientas, una persona se pasa el día cargándolo a mano, volviendo a explicar lo que ya pasó y decidiendo qué versión sigue siendo verdad. Driftless mantiene ese estado en un solo lugar para que el trabajo recuerde, y para que la siguiente persona o agente empiece desde lo que el equipo ya sabe.
 
-## Tres tipos de estado
+## Dos tipos de estado
 
-El estado de una empresa suele estar en tres formas distintas, en tres herramientas distintas. Driftless mantiene las tres en un solo workspace, para que se alimenten entre sí en lugar de separarse.
+El estado de una empresa suele separar el contexto durable de los registros operacionales. Driftless mantiene ambos en un solo workspace, para que se alimenten entre sí en lugar de separarse.
 
 ### Knowledge: lo que el equipo decidió conservar
 
@@ -17,26 +17,22 @@ El Knowledge es el contexto revisado y durable en el que un equipo quiere que fu
 
 Las Operations son el estado recurrente que un equipo trabaja día a día: leads en un pipeline, bugs en un tracker, señales de clientes, posts en un calendario. En Driftless cada una de estas es una **Collection**, una tabla configurada con campos tipados y un ciclo de vida, y cada fila es un **Record**. Un CRM, un bug tracker y un calendario de contenido son el mismo primitivo con distinta configuración, no tres apps que construyes. Una **Entity** es una identidad compartida que une Records entre distintas Collections, así el mismo cliente en un pipeline y en una cola de soporte se entiende como uno solo. Antes de que un agente trabaje un Record, puede leer el Knowledge que el equipo asoció a esa Collection, así el trabajo ocurre con los criterios del equipo en vez de partir de cero.
 
-### Work: lo que está en marcha
-
-El Work es el esfuerzo finito y con forma de objetivo que hace avanzar algo: un lanzamiento, una migración, una renovación. Un **Project** contiene un objetivo y su definición de terminado, y una **card** es una unidad de trabajo dentro de él, que puede llevar un criterio de aceptación, un comando de validación y dependencias de otras cards. Cuando una persona o un agente toma una card, el workspace le entrega el Knowledge anclado al código que esa card toca, y cualquier aprendizaje que aparezca en el camino regresa como una Nota. El Work es donde vive la verificación: lo "generado" no es lo "terminado" hasta que un resultado se contrasta con lo que se suponía que era terminar.
-
 ## El loop
 
-Ninguno de los tres es el producto por sí solo. El producto es el loop entre ellos:
+Ninguno de los dos es el producto por sí solo. El producto es el loop entre ellos:
 
-> **Signal → Context → Work → Action → Knowledge**
+> **Signal → Context → Action → Knowledge**
 
 Llega una señal. Se interpreta contra el contexto que el equipo ya tiene. Se vuelve trabajo. El trabajo produce una acción sobre un sistema real. La acción deja atrás un aprendizaje que mejora la siguiente interpretación. Dos formas de todos los días:
 
-- Un mensaje de un cliente puede actualizar un Record en una Collection, abrir una card de trabajo con responsable, entregarle al agente los criterios que el equipo registró para ese tipo de trabajo y, una vez verificado el trabajo, dejar un aprendizaje revisado para la siguiente persona o agente.
+- Un mensaje de un cliente puede actualizar un Record en una Collection, entregarle al agente los criterios que el equipo registró para ese tipo de acción y dejar un aprendizaje revisado para la siguiente persona o agente.
 - Un cambio de producto puede marcar Knowledge relacionado como posiblemente stale, crear una tarea de revisión y mejorar lo que reciben los futuros agentes la próxima vez que toquen esa área.
 
 Esto describe el modelo, no una promesa de que cada paso ocurra solo. Algunos pasos son una persona haciendo clic en un botón, otros son un agente actuando bajo permiso, y otros son una regla que tú configuras. Lo importante es que el estado se mueve por un solo workspace en vez de cargarse entre herramientas a mano.
 
 ## Cómo llegas al workspace
 
-Los tres tipos de estado son el producto. Todo lo demás es una forma de llegar a ellos, o un participante que actúa sobre ellos.
+Los dos tipos de estado son el producto. Todo lo demás es una forma de llegar a ellos, o un participante que actúa sobre ellos.
 
 - El **dashboard** es el workspace visible para las personas: boards, el grafo de topics, la cola de revisión.
 - La **CLI**, el servidor **MCP** y la **REST API** son superficies de acceso sobre el mismo workspace, mantenidas cerca unas de otras. MCP es cómo un cliente de IA como Claude o ChatGPT llega a Driftless, la CLI es cómo lo hace una terminal o un agente de código, y la API es cómo lo hace tu propio código. Ninguna es un producto aparte, y ninguna es la arquitectura; son puertas al mismo estado.
@@ -102,7 +98,7 @@ Ver [Gobernanza](/es/concepts/governance).
 
 ## El drift mantiene honesto al Knowledge
 
-Guardar texto no basta, porque una afirmación vieja en la que un agente confía puede ser peor que ninguna. Cuando el código cambia en una rama rastreada, los Topics cuyos anchors se solapan con los archivos cambiados quedan marcados como **stale**, con una razón legible para humanos. El drift te llega como un badge cuando haces `context get` del área, así no tienes que ir a buscarlo, y en un pull request que toca un área documentada, el Auditor le entrega al reviewer el contexto que el equipo dejó registrado. Así se mantiene honesto el Knowledge: sabe cuándo dejó de ser verdad y pide que lo vuelvan a mirar.
+Guardar texto no basta, porque una afirmación vieja en la que un agente confía puede ser peor que ninguna. Cuando el código cambia en una rama rastreada, los Topics cuyos anchors se solapan con los archivos cambiados quedan marcados como **stale**, con una razón legible para humanos. El drift te llega como un badge cuando haces `context get` del área, así no tienes que ir a buscarlo. Los matches de pull requests se registran como actividad sin publicar comentarios de revisión. Así se mantiene honesto el Knowledge: sabe cuándo pudo dejar de ser verdad y pide que lo vuelvan a mirar.
 
 ```bash
 driftless context doctor          # health audit: stale, zombie, orphaned, draft

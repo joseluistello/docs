@@ -1,7 +1,7 @@
 # Unified retrieve contract (CLI · MCP · API)
 
-One mental model for **reading at scale** across all four planes — Topics,
-Projects, Collections, Broker — so an agent never has to learn per-surface rules.
+One mental model for **reading at scale** across Topics, Collections, and Broker,
+so an agent never has to learn per-surface rules.
 Every retrieval read on every surface converges on the same vocabulary, defaults,
 and output shape. The [`navigation.md`](./navigation.md) plan says *which plane to
 move to*; this contract says *how every read behaves once you're there*.
@@ -28,7 +28,7 @@ primitive is only earned once every plane passes the retrieval-scale gate.
 Every bounded read returns, in some form:
 
 - **`shown`** + **`has_more`** (and a **`nextCursor`** when more exist) — bounded, pageable.
-- **`results`/`records`/`operations`/`cards`** — the rows, at the requested `view`.
+- **`results`/`records`/`operations`** — the rows, at the requested `view`.
 - **`trust`** where governance applies (`knowledge` \| `proposed` \| `note`) — an
   agent must never confuse a hint with team truth.
 - **`stale`** / drift flag where drift applies — verify before relying.
@@ -53,7 +53,6 @@ Every bounded read returns, in some form:
 | Topics (task) | `context retrieve "<task>" [--explain]` | `driftless_context_retrieve` | `POST /topics/retrieve` |
 | Topics (files) | `context get --files`/`--diff` | `driftless_context_get_for_files` | `GET /topics/match-files` |
 | Topics (browse) | `context list`/`search` `[--limit --cursor]` | `driftless_context_list`/`_search` | `GET /topics`, `/topics/search` |
-| Projects | `project cards [--owner --cursor]` · `project card next` | `driftless_project_card` `list`/`next` | `GET /projects/:id/cards`, `/cards/next` |
 | Collections | `collection retrieve`/`records [--limit --cursor]` | `driftless_collection` `retrieve` · `driftless_collection_record` `list` | `GET /collections/:id/retrieve`, `/records` |
 | Broker | `broker operations --query` | `driftless_broker` `operations` (query) | `GET /broker/operations` |
 

@@ -34,21 +34,6 @@ y la búsqueda devuelven una fila índice **`summary`**, acotada. Pide `full` (p
 límite chico. El patrón es *brief para encontrar el topic correcto, full para el único
 cuerpo que de verdad necesitas.*
 
-### Trabajando un tablero de proyecto: el loop del agente
-
-Cuando el trabajo es un proyecto de Driftless (un tablero de cards), recórrelo en un loop
-en vez de adivinar la próxima tarea:
-
-```bash
-driftless project card next <project-id>   # próxima card lista + su context_bundle (una llamada)
-# carga el context_bundle PRIMERO (la memoria del equipo para el área de la card), haz el trabajo,
-# corre el `validate` de la card (distinto de cero = para y arregla), y después:
-driftless context update <slug> --gotcha "..."              # escribe de vuelta lo que aprendiste
-driftless project card status <project-id> <card-id> done   # y después pide la próxima card
-```
-
-Repite hasta `project_done`. Una card en `todo` con deps sin cumplir nunca aparece en `next`.
-
 ### Actuando sobre records operacionales (Collections)
 
 Una Collection (CRM, tracker, calendario de contenido) contiene **records** tipados. Antes

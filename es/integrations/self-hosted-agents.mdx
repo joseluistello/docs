@@ -12,7 +12,7 @@ description: "Conecta Driftless a agentes self-hosted como OpenClaw y Hermes Age
     El agente corre el CLI `driftless` desde su shell y sigue el skill instalado: el loop completo de contexto (traer antes de editar, persistir lo que aprende). Mejor cuando el agente ya trabaja en un repo.
   </Card>
   <Card title="MCP remoto" icon="plug">
-    El agente llama a las tools de Driftless (`driftless_context_*`, `project`, `tags`, …) sobre el endpoint MCP hosteado, sin necesidad de shell ni de un checkout del repo. Mejor para agentes de superficie de chat.
+    El agente llama a las tools de Driftless (`driftless_context_*`, `driftless_collection`, `tags`, …) sobre el endpoint MCP hosteado, sin necesidad de shell ni de un checkout del repo. Mejor para agentes de superficie de chat.
   </Card>
 </CardGroup>
 
@@ -28,7 +28,7 @@ Se componen: el skill del CLI maneja el loop de leer-antes / escribir-después e
 | API key | Dashboard → **Settings → API Keys** en [app.driftless.icu](https://app.driftless.icu) |
 
 <Note>
-Una API key autoriza al agente para un workspace y carga tu identidad. Las escrituras a la superficie de trabajo (projects, cards, tags, áreas) necesitan que el dueño de la key tenga `work:write`; **fusionar en Knowledge necesita autoridad de owner/admin**. Si el dueño de la key es owner/admin, el agente puede correr la fusión con tu pedido explícito (marcada con `approved_via: agent`); una key sin dueño o de un no-owner puede proponer pero se le rechaza la fusión.
+Una API key autoriza al agente para un workspace y carga tu identidad. Las escrituras a la superficie de trabajo (collections, records, tags, áreas) necesitan que el dueño de la key tenga `work:write`; **fusionar en Knowledge necesita autoridad de owner/admin**. Si el dueño de la key es owner/admin, el agente puede correr la fusión con tu pedido explícito (marcada con `approved_via: agent`); una key sin dueño o de un no-owner puede proponer pero se le rechaza la fusión.
 </Note>
 
 ---
@@ -146,5 +146,5 @@ Pídele al agente que haga una de estas y confirma que devuelve los topics de tu
 Un `401` en el camino MCP significa que el header `X-API-Key` no está llegando a Driftless (revisa de nuevo el valor inline y, para OpenClaw, la advertencia sobre el reenvío de headers de más arriba).
 
 <Note>
-Los clientes MCP cachean la lista de tools por sesión. Después de que Driftless publica tools nuevas o renombradas, **reconecta / recarga** el servidor MCP (OpenClaw: vuelve a correr `mcp add` o reinicia el gateway; Hermes: `/reload-mcp`) para que el agente las vea. Las tools de superficie de trabajo (`driftless_tags`, `driftless_areas`, `driftless_project`, `driftless_project_card`) son basadas en action; pasa `action` para elegir la operación. Ver [MCP overview](/es/mcp/overview) para la lista completa de tools.
+Los clientes MCP cachean la lista de tools por sesión. Después de que Driftless publica tools nuevas, renombradas o retiradas, **reconecta / recarga** el servidor MCP (OpenClaw: vuelve a correr `mcp add` o reinicia el gateway; Hermes: `/reload-mcp`) para que el agente vea la superficie actual. Las tools de superficie de trabajo (`driftless_tags`, `driftless_areas`, `driftless_collection`, `driftless_collection_record`) son basadas en action; pasa `action` para elegir la operación. Ver [MCP overview](/es/mcp/overview) para la lista completa de tools.
 </Note>

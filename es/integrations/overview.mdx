@@ -13,7 +13,7 @@ Tres palabras se usan como sinónimos y no deberían serlo:
 
 - **Proveedor** es el sistema externo en sí: Notion, HubSpot, GitHub. Un proveedor es *conectable* solo si Driftless incluye un conector para él (ver [Disponibilidad por proveedor](#disponibilidad-por-proveedor)). Aparecer en un catálogo externo no equivale a estar operativo en Driftless.
 - **Connection** es un enlace autorizado y con credenciales desde tu workspace hacia un proveedor, guardado como una integración de tipo `nango:<proveedor>`. Es lo que opera el Broker.
-- **Integración** es el enlace guardado en general. Hoy existen dos tipos: las **Connections** del Broker (`nango:<proveedor>`) y la **GitHub App** (`github`), que es otra superficie con otro propósito (ver [Disponibilidad por proveedor](#disponibilidad-por-proveedor)).
+- **Integración** es el enlace guardado en general. Las integraciones visibles al cliente son **Connections** del Broker (`nango:<proveedor>`).
 
 <Note>
 Conectar un proveedor **no** hace por sí solo que sus datos aparezcan en el retrieve de contexto. Los datos externos no son Knowledge. Solo llegan al retrieve tras un paso explícito de index y una petición de retrieve de fuente externa explícita. Ver [Broker: lecturas y materialización](/es/integrations/broker).
@@ -110,12 +110,7 @@ Basada en evidencia, del connector registry y la política de operaciones. "Impo
 | **HubSpot** | Gated | Gated | Not available | Not available | Not available | Not available | **Internal** |
 | **Google Drive** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
 | **Google Docs** | Not available | Not available | Not available | Not available | Not available | Not available | **Stub** |
-| **GitHub App** | Available | n/a | n/a | n/a | n/a | n/a | **Available (superficie aparte)** |
 | **GitHub (Broker)** | Not available | Not available | Not available | Not available | Not available | Not available | **Not available** |
-
-<Warning>
-**La GitHub App y una Connection GitHub del Broker son superficies distintas.** La GitHub App (`type: github`) observa pull requests y pushes para evitar que el contexto derive y para alimentar al Auditor; no es una Connection del Broker y no expone `invoke`. Una Connection GitHub del Broker (`type: nango:github`) para escrituras como crear un issue **no está shipped** (no hay entrada en el connector registry). Las referencias a operaciones de GitHub en descripciones de tools son solo ilustrativas.
-</Warning>
 
 ## Cómo usa Driftless a Nango
 
@@ -127,5 +122,4 @@ Una consecuencia importa al leer esta superficie: el catálogo de Nango es de Na
 
 - [Referencia del Broker](/es/integrations/broker) - los verbos de ejecución, los gates y la semántica de lectura/escritura.
 - [Conector de Notion](/es/integrations/notion) - el único conector de producción, de punta a punta.
-- [GitHub App](/es/integrations/github-app) - la superficie de observación (drift y Auditor).
 - [Collections](/es/concepts/collections) - donde aterrizan los records importados.

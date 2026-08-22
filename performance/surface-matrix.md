@@ -52,7 +52,7 @@ annotates each hit with `match_type` / `why_matched` / `confidence` /
 | Share | `context share <slug>` | `driftless_context_share` | `POST /topics/:slug/share` |
 | Delete | `context delete <slug>` | `driftless_context_delete` | `DELETE /topics/:slug` |
 | Merge duplicates | `context merge <src> --into <dst>` | `driftless_context_merge` | `POST /topics/:slug/merge` |
-| Coverage / doctor / events | `context doctor` | `driftless_context_coverage` · `driftless_context_doctor` · `driftless_context_events` | `GET …/coverage` · `…/doctor` · `…/events` |
+| Doctor / events | `context doctor` | `driftless_context_doctor` · `driftless_context_events` | `GET …/doctor` · `…/events` |
 
 ## Tags & Areas
 
@@ -60,18 +60,6 @@ annotates each hit with `match_type` / `why_matched` / `confidence` /
 |---|---|---|---|
 | Tags (list / create / delete) | `tags [add\|rename\|rm]` | `driftless_tags` (`action`) | `GET\|POST\|DELETE /tags` |
 | Areas (list / create / update / delete) | `area [list\|add\|rename\|rm]` | `driftless_areas` (`action`) | `GET\|POST\|PATCH\|DELETE /areas` |
-
-## Projects — the agent loop
-
-| Workflow | CLI | MCP tool | API endpoint | Default view | Full-view opt-in |
-|---|---|---|---|---|---|
-| Projects (list / get / set) | `project [list\|get\|add\|update]` | `driftless_project` (`action`) | `GET\|POST\|PATCH /projects` | summary | `?view=full` |
-| Card loop tick | `project card next <pid>` | `driftless_project_card` action:`next` | `GET /projects/:id/cards/next` | bundle by `refs`→summary | `summaries`→brief · `full`→full |
-| Card CRUD / status | `project card add\|get\|status\|move\|rm` | `driftless_project_card` (`action`) | `…/cards` routes | — | — |
-
-`next` returns `{ card, context_bundle, project_done }` — one call per loop
-iteration. The bundle ships the team's recorded context for the card's area so the
-agent doesn't re-derive it.
 
 ## Collections — the operational substrate
 
@@ -134,7 +122,7 @@ capability** — never author or deploy an integration script to fill the gap.
 |---|---|---|---|
 | Comment (add / list / resolve) | `context comment [add\|list\|resolve]` | `driftless_context_comment` (`action`) | `POST\|GET\|PATCH /comments` |
 
-A comment points **at** a topic / record / card — it carries no governance and
+A comment points **at** a topic / record — it carries no governance and
 resolves into an edit (`open → resolved → wont_fix`).
 
 ---

@@ -1,15 +1,15 @@
 ---
 title: 'Comentarios'
-description: "Anotaciones finas y ancladas que humanos y agentes dejan sobre un topic, un record o una card. Feedback que se resuelve en una edición, sin tocar el contenido en sí."
+description: "Anotaciones finas y ancladas que humanos y agentes dejan sobre un topic o record. Feedback que se resuelve en una edición, sin tocar el contenido en sí."
 ---
 
-Un **comentario** es una anotación fina que apunta A algo (un topic, un record o una card de proyecto) y, opcionalmente, a uno de sus campos. Es la forma liviana en que humanos y agentes coordinan sobre el contenido **sin editarlo**.
+Un **comentario** es una anotación fina que apunta a un Topic o Record y, opcionalmente, a uno de sus campos. Es la forma liviana en que humanos y agentes coordinan sobre el contenido **sin editarlo**.
 
 Un comentario, a propósito, *no* es un topic. No tiene versión, ni drift, ni gobernanza propia; su texto nunca entra al cuerpo del topic. Los topics son el *porqué* durable; los comentarios son coordinación pasajera que **se resuelve en una edición**.
 
 ## Qué es un comentario
 
-- **Apunta a un objeto de la espina o a una card.** `target_kind` es uno de `topic`, `record` o `card`; `target_id` (o, para un topic, su slug) dice cuál. Un `field_key` opcional acota el comentario a un solo campo (por ejemplo `decisions`).
+- **Apunta a un objeto de la espina.** `target_kind` es `topic` o `record`; `target_id` (o, para un topic, su slug) dice cuál. Un `field_key` opcional acota el comentario a un solo campo (por ejemplo `decisions`).
 - **Escrito por un humano o un agente.** Los comentarios escritos por agentes son lo que marca la diferencia: un agente puede señalar una contradicción en un campo y un humano la ve en el siguiente refresh, o al revés. Eso es lo que hace que el workspace sea de verdad colaborativo *entre* humanos y agentes.
 - **Tiene una pequeña máquina de estados.** `open → resolved → wont_fix`. Cuando una edición atiende un comentario, su autor (humano o agente) lo marca como resuelto. No hay auto-regeneración. Los comentarios se resuelven, no reescriben el documento.
 - **Asíncrono, no en tiempo real.** Los comentarios aparecen al hacer pull o refresh. Sin cursores en vivo.
@@ -26,8 +26,7 @@ Desde el CLI (la interfaz también existe en MCP como `driftless_context_comment
 # Deja feedback en un topic, acotado a un campo
 driftless context comment add billing-flow --body "Esta decisión contradice el invariante de reembolsos" --field decisions
 
-# En una card o un record (por uuid)
-driftless context comment add --card <card-uuid>   --body "Bloqueado por el arreglo del webhook"
+# En un record (por uuid)
 driftless context comment add --record <record-uuid> --body "Duplicado del lead de Globex"
 
 # La vista del reviewer, y luego resolver

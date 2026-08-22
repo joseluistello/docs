@@ -1,6 +1,6 @@
 ---
-title: 'Integrations & PR Activity'
-description: 'Manage GitHub App integration and observed pull request activity.'
+title: 'Integrations'
+description: 'Manage workspace integrations.'
 ---
 
 ## Integrations
@@ -10,11 +10,3 @@ description: 'Manage GitHub App integration and observed pull request activity.'
 | `GET` | `/workspaces/:slug/integrations` | List integrations |
 | `POST` | `/workspaces/:slug/integrations` | Create or connect an integration |
 | `DELETE` | `/workspaces/:slug/integrations/:id` | Remove an integration |
-
-## PR Activity
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/workspaces/:slug/pr-activity` | Observed pull request activity |
-
-PR observations are matched by topic pattern intersection with PR file lists. Each PR observation records which topics matched and which files were touched: the recorded context delivered to the reviewer.

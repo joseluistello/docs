@@ -18,9 +18,9 @@ drifteado primero y acotado. Compone search + match-files + list filters para qu
 los encadenes a mano. Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no
 el `content` completo); llama a `driftless_context_get` para el único topic cuyo cuerpo
 completo necesites, o pasa `view: "full"`. El mismo contrato **active-only, acotado,
-brief por defecto** aplica a la superficie de trabajo: `driftless_project` /
-`driftless_collection` `list` es active-only (opta a archived con `include_archived:true`),
-y `get` es brief salvo que pases `view:'full'`. Ver [Payload views](#payload-views-keep-reads-fast)
+brief por defecto** aplica a Collections: `driftless_collection` `list` es active-only
+(opta a archived con `include_archived:true`), y `get` es brief salvo que pases
+`view:'full'`. Ver [Payload views](#payload-views-keep-reads-fast)
 más abajo.
 
 ## Familias de herramientas
@@ -30,12 +30,12 @@ La superficie de MCP está documentada por familia en la **Referencia MCP**. Usa
 | Familia | Qué cubre | Referencia |
 | --- | --- | --- |
 | Knowledge y gobernanza | Retrieve, lectura, escritura, grafo, salud, tags, areas y el ciclo de vida Nota a Knowledge | [MCP: Knowledge y gobernanza](/es/mcp/knowledge) |
-| Projects y operaciones | El loop de cards del project, collections, records y entities | [MCP: Projects y operaciones](/es/mcp/work) |
+| Collections y operaciones | Collections, records y entities | [MCP: Collections y operaciones](/es/mcp/work) |
 | Integraciones y Broker | Operar un provider conectado (gated) | [MCP: Integraciones y Broker](/es/mcp/integrations) |
 | Workspace y colaboración | Comments, members, workspaces y estadísticas de propuestas | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
-| Market data | `driftless_market_data`: suppliers, opportunities, awards, marcas de riesgo y permits — once actions semánticas, sin modelo ni SQL detrás | [Market Data](/es/api/market-data) |
+| Market data | Catorce tools tipadas `driftless_market_*`: suppliers, detalle por lote acotado y comparación de segmentos, opportunities, awards, marcas de riesgo y permits, sin modelo ni SQL detrás. `driftless_market_data` es un shim de compatibilidad deprecado. Reconecta los clientes después de cambios de schema porque los conectores pueden guardar definiciones de tools en caché. | [Market Data](/es/api/market-data) |
 
-La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (proyectos, cards, tags, areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
+La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (tags y areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
 
 Cada resultado (search, list, get) lleva un campo plano **`trust`** (`reviewed` | `proposed` | `draft`), para que un agente pueda basarse en `trust === "reviewed"` directamente en vez de inferirlo desde `classification.status` + `governance.authoritative`. `reviewed` es Knowledge, la fuente de verdad del equipo; `proposed`/`draft` son Notas (pistas).
 
@@ -53,14 +53,14 @@ inunde tu contexto. El vocabulario es el mismo en todos lados (`summary` / `brie
 - **`full`**: todo, incluyendo el pesado cuerpo `content`. **Nunca es default en otro
   lado**; entras a él con `view: "full"`. `driftless_context_get` es la excepción: usa
   `full` por defecto porque nombraste el único topic que querías. El mismo opt-in
-  `view: "full"` aplica a `driftless_project` / `driftless_collection`
+  `view: "full"` aplica a `driftless_collection`
   `action:'get'` (brief por defecto, full a pedido).
 
 El patrón: `retrieve` / `get_for_files` en `brief` para ver *cuál* topic gobierna el
 trabajo, y después `driftless_context_get` (full) para el único cuerpo que de verdad
 necesitas, en vez de traer todos los cuerpos completos de entrada. La superficie de
-trabajo lo refleja — `driftless_project` / `driftless_collection` `action:'get'` en
-brief, `view:'full'` para el único project/collection cuya config completa necesitas.
+trabajo lo refleja — `driftless_collection` `action:'get'` en brief,
+`view:'full'` para la única collection cuya config completa necesitas.
 
 ### Broker (ejecución) vs setup de integración
 
@@ -103,7 +103,7 @@ Tipos: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 Los agentes remotos no tienen un checkout local, así que las respuestas de escritura llevan `anchor_validation`, conteos de coincidencias por patrón contra la **rama default** del repo: `ok`, `overbroad` (>100 archivos), o `zero`. Las advertencias nunca bloquean la escritura (un glob que ancla código de una rama sin mergear muestra 0 de forma legítima); léelas en el resultado de la herramienta y aprieta los globs marcados.
 
 <Note>
-Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Después de que Driftless publica un cambio de schema, reconecta el conector (o arranca una sesión nueva) para tomarlo. Si no, los parámetros o herramientas nuevos no van a estar disponibles. Las herramientas de la superficie de trabajo (`tags`, `areas`, `project`, `project_card`) son **basadas en `action`**: pasa `action` para elegir la operación; si tu cliente todavía muestra los nombres viejos de herramienta por operación (por ejemplo `driftless_tags_create`), reconecta para refrescar.
+Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Después de que Driftless publica un cambio de schema, reconecta el conector (o arranca una sesión nueva) para tomarlo. Si no, herramientas retiradas pueden seguir apareciendo. Las herramientas de la superficie de trabajo (`tags`, `areas`, `driftless_collection`, `driftless_collection_record`) son **basadas en `action`**: pasa `action` para elegir la operación.
 </Note>
 
 ### Governance desde el MCP
@@ -171,7 +171,7 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `context:read` | Lee topics y contexto |
 | `topics:create` | Crea topics nuevos |
 | `topics:write` | Actualiza topics existentes |
-| `work:write` | Escribe la superficie de trabajo: proyectos, cards, collections, records, entities, comentarios, tags, areas, más las acciones de merge y share |
+| `work:write` | Escribe la superficie de trabajo: collections, records, entities, comentarios, tags, areas, más las acciones de merge y share |
 | `context:diff` | Lee el diff de topics para cambios locales |
 | `broker:read` | Lee connections, capabilities y records del broker |
 | `broker:invoke` | Invoca una operación del broker |

@@ -36,7 +36,6 @@ Necesitas la CLI instalada y con login. Por MCP u OAuth, escribir collections, r
 | **Record** | Una fila tipada; su `status` se valida contra los stages de la collection. |
 | **Entity** | Una identidad cross-collection a la que los records apuntan, deduplicada sobre `(kind, dedup_key)`. |
 | **Criterion** | Los Topics de Knowledge que el trabajo lee antes de actuar (`criterion_rel_slugs`). |
-| **Card** | Donde pertenece el seguimiento finito, una [primitiva separada](/es/concepts/projects). |
 
 ## Antes de empezar
 
@@ -122,15 +121,6 @@ driftless collection record update <collection-id> <record-id> --status engaged
 El status se valida contra los stages propios de la collection; un valor fuera de ellos se rechaza.
 </Step>
 
-<Step title="Escala el seguimiento finito a una Card">
-Si el record necesita trabajo acotado (reconciliar un duplicado, correr un análisis, redactar una respuesta), eso pertenece a [Work](/es/concepts/projects), no al record. Referencia el record por id; no hay un link formal record-a-card que inventar.
-
-```bash
-driftless project card add <project-id> \
-  --title "Reconcile Globex duplicate records" \
-  --description "Record <record-id> in <collection-id> may duplicate an existing entity"
-```
-</Step>
 
 <Step title="Borra un record, o retira la collection">
 El safe delete de un record previsualiza el impacto antes de tocar nada: el Entity link que se removería y las distilled Notes que se preservan (no se borran).
@@ -174,7 +164,7 @@ Misma superficie por MCP: `driftless_collection action:'search' \| 'retrieve' \|
 La mayor parte de lo que tocas aquí es estado operacional, y debería quedarse así. Escala deliberadamente:
 
 - **Los valores propios del record** se quedan en el Record. Eso es estado operacional, no Knowledge.
-- **El seguimiento finito** se vuelve una Card. Es Work, no un porqué durable.
+- **El seguimiento finito** se queda explícito en el Record y su siguiente acción.
 - **Una observación reusable** (un patrón en cómo se comportan estos records, una regla que se repite) se vuelve una Nota. Captúrala, no la inlines en el record.
 - **Un porqué durable** que valga la pena que todo el equipo confíe (cómo debería trabajarse esta collection) puede volverse Knowledge, pero solo tras revisión humana.
 
@@ -191,7 +181,6 @@ El resultado de un solo record no es Knowledge. El patrón recurrente detrás de
 - **No trates una Collection como una tabla aislada.** Lee primero el criterion; ese es todo el sentido del sustrato.
 - **No confundas Entity y Record.** Un Record es una fila en una collection; una Entity es una identidad entre collections. Deduplica identidades en la Entity, no editando filas.
 - **No promuevas el resultado de un solo record a Knowledge.** Los resultados operacionales viven en el record; solo un patrón durable y revisado se vuelve un Topic.
-- **No inventes una relación record-a-card.** Referencia por id; no hay link tipado shipped entre ambos.
 
 ## Troubleshooting
 
@@ -213,12 +202,10 @@ driftless collection doctor    # records fuera de ciclo, violaciones de schema, 
 | Dedup de Entity sobre `(kind, dedup_key)` | Available |
 | `distill_policy` como campo de configuración | Available (declara intención) |
 | Ejecución automática de `distill_policy` al cerrar un record | Not available (no es un runtime automático) |
-| Una relación tipada entre un Record y una Card o Project | Not available |
 
 ## Referencia relacionada
 
 - [Colecciones](/es/concepts/collections) - archetypes, tipos de campo y la costura de criterion.
 - [CLI: Collections, Records, and Entities](/es/cli/collections) - cada comando y flag.
 - [API: Collections, Records, and Entities](/es/api/collections) - la superficie REST.
-- [Operar entre agentes](/es/guides/project-across-agents) - escalar el seguimiento de un record a Work.
 - [External context with Broker](/es/guides/external-context-with-broker) - importar records externos a una collection.

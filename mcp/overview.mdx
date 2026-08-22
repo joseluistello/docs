@@ -18,8 +18,8 @@ bounded. It composes search + match-files + list filters so you don't hand-chain
 them. Bodies come back **brief** by default (the durable *why*, not the full
 `content`); call `driftless_context_get` for the one topic whose full body you
 need, or pass `view: "full"`. The same **active-only, bounded, brief-by-default**
-contract applies to the work surface: `driftless_project` / `driftless_collection`
-`list` is active-only (opt into archived with `include_archived:true`), and `get`
+contract applies to the operational surface: `driftless_collection` `list` is
+active-only (opt into archived with `include_archived:true`), and `get`
 is brief unless you pass `view:'full'`. See [Payload views](#payload-views-keep-reads-fast)
 below.
 
@@ -30,12 +30,12 @@ The MCP surface is documented by family in the **MCP reference**. Use this page 
 | Family | What it covers | Reference |
 | --- | --- | --- |
 | Knowledge and governance | Retrieve, read, write, graph, health, tags, areas, and the Note to Knowledge lifecycle | [MCP: Knowledge and governance](/mcp/knowledge) |
-| Projects and operations | The project card loop, collections, records, and entities | [MCP: Projects and operations](/mcp/work) |
+| Collections and operations | Collections, records, and entities | [MCP: Collections and operations](/mcp/work) |
 | Integrations and Broker | Operating a connected provider (gated) | [MCP: Integrations and Broker](/mcp/integrations) |
 | Workspace and collaboration | Comments, members, workspaces, and proposal stats | [MCP: Workspace and collaboration](/mcp/collaboration) |
-| Market data | `driftless_market_data`: suppliers, opportunities, awards, risk marks, and permits — eleven semantic actions, no model or SQL behind them | [Market Data](/api/market-data) |
+| Market data | Fourteen typed `driftless_market_*` tools: suppliers, bounded batch detail and segment comparison, opportunities, awards, risk marks, and permits — no model or SQL behind them. `driftless_market_data` is a deprecated compatibility shim. Reconnect clients after schema changes because connectors may cache tool definitions. | [Market Data](/api/market-data) |
 
-The surface covers **context** (topics, governance, the graph), the **work surface** (projects, cards, tags, areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Work-surface writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
+The surface covers **context** (topics, governance, the graph), **workspace organization** (tags and areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Operational writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
 
 Every result (search, list, get) carries a flat **`trust`** field (`reviewed` | `proposed` | `draft`), so an agent can key on `trust === "reviewed"` directly instead of inferring it from `classification.status` + `governance.authoritative`. `reviewed` is Knowledge, the team's source of truth; `proposed`/`draft` are Notes (hints).
 
@@ -53,14 +53,14 @@ vocabulary is the same everywhere (`summary` / `brief` / `full`):
 - **`full`**: everything, including the heavy `content` body. **Never a default
   elsewhere**; you opt in with `view: "full"`. `driftless_context_get` is the
   exception: it defaults to `full` because you named the one topic you want.
-  The same `view: "full"` opt-in applies to `driftless_project` / `driftless_collection`
+  The same `view: "full"` opt-in applies to `driftless_collection`
   `action:'get'` (brief by default, full on request).
 
 The pattern: `retrieve` / `get_for_files` in `brief` to see *which* topic governs
 the work, then `driftless_context_get` (full) for the single body you actually
-need, instead of pulling every full body up front. The work surface mirrors this —
-`driftless_project` / `driftless_collection` `action:'get'` in brief, `view:'full'`
-for the one project/collection whose full config you need.
+need, instead of pulling every full body up front. Collections mirror this:
+`driftless_collection action:'get'` is brief, with `view:'full'` for the one
+Collection whose full config you need.
 
 ### Broker (execution) vs integration setup
 
@@ -102,7 +102,7 @@ Types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 Remote agents have no local checkout, so write responses carry `anchor_validation`, per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs.
 
 <Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up. Otherwise new parameters or tools won't be available. The work-surface tools (`tags`, `areas`, `project`, `project_card`) are **action-based**: pass `action` to pick the operation; if your client still shows the old per-operation tool names (e.g. `driftless_tags_create`), reconnect to refresh.
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up. Otherwise new parameters or tools won't be available. Tools such as `tags`, `areas`, and `driftless_collection` are **action-based**: pass `action` to pick the operation; if your client still shows removed Project tools or old per-operation tool names, reconnect to refresh.
 </Note>
 
 ### Governance from the MCP
@@ -170,7 +170,7 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `context:read` | Read topics and context |
 | `topics:create` | Create new topics |
 | `topics:write` | Update existing topics |
-| `work:write` | Write the work surface: projects, cards, collections, records, entities, comments, tags, areas, plus merge and share actions |
+| `work:write` | Write collections, records, entities, comments, tags, areas, plus merge and share actions |
 | `context:diff` | Read topic diff for local changes |
 | `broker:read` | Read broker connections, capabilities, and records |
 | `broker:invoke` | Invoke a broker operation |

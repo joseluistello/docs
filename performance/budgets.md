@@ -14,7 +14,6 @@ which is why payload ceilings and connection reuse (F4.2) matter as much as quer
 | Unified retrieve | API/MCP/CLI | `context retrieve` (F1.5) | 150 ms | 400 ms |
 | Topics for files | API/MCP/CLI | `driftless_context_get_for_files`, `GET /topics/match-files` | 120 ms | 350 ms |
 | Topic get | API/MCP/CLI | `driftless_context_get`, `GET /topics/:slug` | 60 ms | 180 ms |
-| Project card next | API/MCP/CLI | `driftless_project_card` action:`next` | 100 ms | 300 ms |
 | Collection records | API/MCP/CLI | `driftless_collection_record` list | 120 ms | 350 ms |
 | Broker operations | API/CLI | `GET …/broker/connections/:provider/operations` | 250 ms* | 800 ms* |
 | Broker invoke | API/CLI | `POST …/broker/connections/:provider/invoke` | bound by provider | bound by provider |
@@ -28,10 +27,9 @@ round-trip on every invoke.
 
 | Read | Default ceiling | Notes |
 |---|---|---|
-| `tools/list` | 60 KB | compact schemas (F3.1); paginate beyond (F3.2) |
+| `tools/list` | 80 KiB | Internal latency/context budget, not an external provider limit; compact schemas (F3.1) and paginate beyond (F3.2). |
 | list/search results page | 40 KB | enforce `limit`, default `view=brief` |
 | single topic (`full`) | 50 KB | `brief` view drops `content`/`components` |
-| project card `next` bundle | 40 KB | bundle resolved by view (F5.5) |
 | collection records page | 40 KB | paginate (F6.2) |
 | broker records page | 40 KB | hard-cap output size (F7.4) |
 | market-data envelope (`driftless_market_data`) | 50 KB | pass-whole-or-refuse, never trimmed — see below |
@@ -72,7 +70,7 @@ Measured by the ranking eval harness (F1.6) on a labeled query set:
 
 ## Scope (workflows in this program)
 
-Topics (search / retrieve / get-files / get), Projects (card next / list / get),
-Collections (records / context / retrieve), Integrations/Broker (operations / invoke / records),
+Topics (search / retrieve / get-files / get), Collections (records / context /
+retrieve), Integrations/Broker (operations / invoke / records),
 sync, and context retrieval. Dashboard/web read paths are **out of scope** except where they
 reuse the same API endpoints being optimized.

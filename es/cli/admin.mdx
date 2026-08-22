@@ -1,6 +1,6 @@
 ---
 title: 'CLI: Administración del workspace'
-description: 'Gestiona members, areas, repositorios, ramas rastreadas, notas y el audit log desde la CLI.'
+description: 'Gestiona members, areas, repositorios, notas y el audit log desde la CLI.'
 ---
 
 Estas familias administran el workspace en sí. Varias son solo owner/admin, aplicado del lado del servidor. Agrega `--json` a cualquier comando para salida de máquina. Para login, `doctor`, `install-skill` y `sync`, ver [CLI Setup](/es/cli/setup); para cambiar de workspace, ver [Comandos de context](/es/cli/context).
@@ -33,22 +33,16 @@ driftless member role mem_123 admin
 
 Los tags se cubren en [Comandos de context](/es/cli/context): `tags`, `tags add`, `tags rename`, `tags rm`. Renombrar y borrar un area o un tag son actos de curación owner/admin.
 
-## Repositorios y ramas
+## Repositorios
 
 | Comando | Descripción |
 |---|---|
 | `repo list` | Repositorios enlazados. |
 | `repo link <org/repo>` | Enlaza un repositorio de GitHub (debe tener forma `org/repo`). |
 | `repo unlink <id>` | Desenlaza un repositorio. |
-| `branches` | Lista las ramas rastreadas. |
-| `branches add <branch>` | Rastrea una rama (requiere un repo git y un repo enlazado). |
-| `branches rm <branch>` | Deja de rastrear una rama. |
-
-La rama por defecto siempre se rastrea; `branches add`/`rm` cambian las ramas extra usadas para el drift por push.
 
 ```bash
 driftless repo link acme/api
-driftless branches add staging
 ```
 
 ## Notas
@@ -57,7 +51,7 @@ driftless branches add staging
 |---|---|
 | `note add --content "..."` | Captura una nota privada. `--content` acepta `@file`. |
 
-`--project <id>` adjunta la nota a un project; `--card <id>` (que requiere `--project`) la adjunta a una card en medio del loop. `--allow-secrets` y `--json` están disponibles. Una nota siempre es privada para ti.
+`--allow-secrets` y `--json` están disponibles. Una nota siempre es privada para ti.
 
 ## Audit y export
 

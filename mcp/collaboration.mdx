@@ -7,7 +7,7 @@ These tools let a human and an agent coordinate over the same workspace: annotat
 
 ## Comments
 
-A **comment** points AT a spine object (a topic, record, or card) and optionally at one field. It carries no governance and resolves into an edit; its text never enters the topic body. Agent-authored comments are what make the workspace collaborative between humans and agents.
+A **comment** points AT a spine object (a topic or record) and optionally at one field. It carries no governance and resolves into an edit; its text never enters the topic body. Agent-authored comments are what make the workspace collaborative between humans and agents.
 
 | Tool | Actions | Main params | Notes |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ The killer placement is the Note to Knowledge gate: pin a precise, field-level o
 
 ## Members and workspaces
 
-Use these to resolve the identifiers the write tools expect: an `owner_clerk_id` for assigning a card or record, or the workspace slug a credential can target.
+Use these to resolve the identifiers the write tools expect: an `owner_clerk_id` for assigning a record, or the workspace slug a credential can target.
 
 | Tool | Purpose | Returns |
 | --- | --- | --- |
@@ -36,22 +36,12 @@ Permissions: member-level reads. Availability: Available. Every tool accepts an 
 driftless_members   → [ { id, role, email } ]   (the valid owner_clerk_id values)
 ```
 
-## Agent stats
-
-`driftless_agent_stats` reports proposal outcomes: how many agent proposals (the Auditor's Suggested edits) merged versus were rejected, so you can read the approval rate.
-
-| Tool | Purpose | Returns |
-| --- | --- | --- |
-| `driftless_agent_stats` | Proposal outcome stats | merged vs rejected counts, approval rate |
-
-Permission: member-level read. Availability: Available. This is the only agent-runs signal on the MCP surface; the agent-runs config and trigger surface is not reachable over OAuth/MCP.
-
 ## Permissions
 
 | Scope | Covers |
 | --- | --- |
 | `work:write` | `comment` add and resolve |
-| member (read) | `comment` list, `members`, `workspaces`, `agent_stats` |
+| member (read) | `comment` list, `members`, `workspaces` |
 
 ## Availability
 

@@ -17,7 +17,7 @@ Every route is workspace-scoped and requires authentication like the rest of the
 /workspaces/:slug/market-data
 ```
 
-## The eleven operations
+## The fourteen operations
 
 Every path below is relative to the base path above. `example` is a minimal, valid request body straight from the route table the API itself serves at `GET capabilities` — every operation's `method`/`path`/`example` is discoverable at runtime, not just documented here.
 
@@ -26,7 +26,9 @@ Every path below is relative to the base path above. `example` is a minimal, val
 | `market_capabilities` | `GET capabilities` | no | — |
 | `search_suppliers` | `POST suppliers/search` | yes | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
 | `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
+| `get_supplier_batch` | `POST suppliers/batch` | no (bounded batch) | Use 1–50 opaque `record_ref` values returned by supplier search |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
+| `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | `{ "segments": [{ "id": "dental", "query": "clínica dental" }], "geographies": [{ "id": "nl", "state": "Nuevo León" }], "observed_kind": "establishment" }` |
 | `search_opportunities` | `POST opportunities/search` | yes | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
 | `get_opportunity` | `GET opportunities/:id` | no | — |
 | `search_awards` | `POST awards/search` | yes | `{ "supplier_rfc": "XAXX010101000", "limit": 5 }` |
@@ -43,6 +45,10 @@ Every path below is relative to the base path above. `example` is a minimal, val
 `search_suppliers` needs at least one narrowing dimension (`query`, `state`, `scian_codes`, `source_slugs`, or `rfc`) — an unbounded scan of the whole directory is refused with `query_too_broad` rather than served. Each result is **one published observation**, never a consolidated company or a demonstration of capability; it carries contact *presence* and counts, not contact values. `get_supplier` is the only operation that returns contact coordinates — and only what the publisher printed on a public card, subject to the live licence gate.
 
 `count_suppliers` shares the same narrowing rule and returns one exact `{ "count": number }`, computed with `SELECT count(*)`, never sampled or estimated. If the count itself can't finish inside the statement timeout, it fails with `market_data_timeout` rather than substituting an approximation.
+
+`get_supplier_batch` opens up to 50 already-selected observations in one call, preserves first-seen order, deduplicates repeated identities, and applies the same contact and licensing boundary as `get_supplier`. Invalid, unavailable, and unlicensed references intentionally share one `invalid_or_unavailable` status.
+
+`compare_segments` compares up to five text-defined segments across up to ten Mexican states, with a hard ceiling of 50 cells and one required `observed_kind`. Its counts are published observations, never unique companies, TAM, or evidence of demand. `contact_breakdown: true` adds a like-for-like count of observations carrying a published contact channel.
 
 ```bash
 curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/market-data/suppliers/count \
@@ -98,7 +104,7 @@ These two dimensions group by the SHCP object-of-expense code(s) a mixed contrac
 { "rfcs": ["XAXX010101000", "AAA010101AAA"] }
 ```
 
-`results` carries one entry per requested RFC, **in the order requested**, including an RFC with zero marks — that is a valid, coverage-backed answer for that RFC alone, never evidence about any other RFC in the same batch. More than 50 RFCs is refused with `batch_too_large` rather than silently truncated.
+`results` carries one entry per requested RFC, **in the order requested**, including an RFC with zero marks. It is coverage-backed only when the envelope declares an effective risks source (`licensedForDisplay: true` and `visibleRows > 0`), never evidence about any other RFC in the same batch. In that case the entry carries `warnings: ["zero_results_with_coverage"]`; the envelope repeats it only when the entire batch has zero marks. With no effective coverage, neither level carries that warning and the `coverage` declaration is the limitation. More than 50 RFCs is refused with `batch_too_large` rather than silently truncated.
 
 ### Permits
 
@@ -106,7 +112,7 @@ These two dimensions group by the SHCP object-of-expense code(s) a mixed contrac
 
 ## The envelope
 
-Every success response — search, get, aggregate, count, screen alike — is one envelope, and every key in it is **camelCase**, deliberately distinct from the snake_case the rest of the platform (Knowledge, Collections, Projects) uses. This is not an inconsistency to fix: it's the dialect the shipped market-data contract, the MCP tool result, and the ChatGPT plugin already speak.
+Every success response — search, get, aggregate, count, screen alike — is one envelope, and every key in it is **camelCase**, deliberately distinct from the snake_case the rest of the platform (Knowledge and Collections) uses. This is not an inconsistency to fix: it's the dialect the shipped market-data contract, the MCP tool result, and the ChatGPT plugin already speak.
 
 ```ts
 interface MarketDataEnvelope<T> {
@@ -126,10 +132,63 @@ interface MarketDataEnvelope<T> {
 
 - **`interpretedRequest`** is what the layer actually ran after normalizing the caller's input (a state name resolved to its code, a fuzzy municipality resolved to its canonical spelling) — `normalizations` says what changed and why.
 - **`results`** is the operation's own payload: a row array for a search, one object for a `get_*`/`count_*` read, a group array for an aggregate.
-- **`page`** is `null` whenever the operation doesn't paginate (`get_supplier`, `get_opportunity`, `market_capabilities`, `count_suppliers`).
+- **`page`** is `null` whenever the operation doesn't paginate (`get_supplier`, `get_supplier_batch`, `get_opportunity`, `market_capabilities`, `count_suppliers`, `compare_segments`).
 - **`coverage`** and **`corpusBasis`** are what makes an answer honest: which published sources contributed, and which snapshot of the corpus this read saw. Neither can be authored by a model or a caller.
 - **`semanticWarnings`** names a misreading this domain actively invites (an award is not a payment, a risk mark is not a conviction, a name is approximate identity) — always attached by the layer, never decoration.
 - **`provenance`** says where each row was read, explicitly not that it is current or verified.
+
+## What a model sees: evidence categories, not publishers
+
+The canonical API above is the **full** projection: `source_slug`,
+`source_record_id`, `publisher`, `source_url`, retrieval timestamps and
+`licensedForDisplay` all travel with it. An integrator, the dashboard, support
+and the audit record read that.
+
+A surface a **model** reads — Chat, Research, and every MCP tool — reads the
+same envelope through an *abstracted* projection. Publisher identity is replaced
+by the kind of evidence the operation returned, derived from the warehouse
+relation rather than from any table of publishers:
+
+| Category | Operations | What it is |
+| --- | --- | --- |
+| `supplier_or_organization_evidence` | supplier search, detail, count | A published observation of an organization or establishment — never a consolidated legal identity |
+| `government_contracting` | opportunities, awards, history, aggregates | A published procedure, or a contract recorded as awarded under one |
+| `administrative_risk` | risk search and screening | A published administrative mark — never a judicial conviction |
+| `authorization_or_permit` | permit search | A permit or concession recorded when granted — never proof of current operation |
+| `other_public_record` | — | The most general stable answer, when no relation is known |
+
+Under that projection each row carries `evidence_category`,
+`evidence_category_label`, an opaque **`record_ref`** and a
+**`record_fingerprint`**; `coverage` groups by category and counts only rows
+licensed for display; and the page cursor is sealed. Every semantic warning,
+coverage count, freshness value, identity strength and amount scope is unchanged.
+
+`record_ref` is what `get_supplier` takes: copy it verbatim from the search row
+you want the detail for. It is a fresh ciphertext each time, so it is a handle to
+follow and never a value to compare. A reference the layer did not issue is
+refused with `invalid_record_ref`.
+
+`record_fingerprint` is the value two observations of the same row share — 128
+bits, keyed and one-way. It deliberately reveals **equality**: a holder can link
+the same published record across pages, calls and runs, which is what
+deduplication needs. It reveals no **identity**: there is no operation that turns
+it back into a `source_slug`, a `source_record_id` or anything else about the
+row, and it is refused wherever a `record_ref` is expected. It survives a
+primary-key rotation for as long as a reference minted before that rotation still
+resolves, so a row already seen stays recognizable as one.
+
+**There is no source filter on model-facing surfaces.** `source_slugs` is
+accepted on the canonical route and advertised nowhere else. It has no abstract
+replacement, deliberately: a "kind of record" filter would need per-source
+metadata this layer does not have, and deriving it from a list of slugs frozen
+inside the API would invent a corpus-dependent value outside the corpus. A
+membership question ("is X in that specific register?") is therefore answered by
+searching, and an answer says what the search found rather than which register it
+came from. See `docs/market-data/tool-contract.md` for the warehouse metadata
+that would bring the filter back.
+
+The projection is chosen by the **entrypoint**, never by a request payload: it is
+not a parameter, and there is no value a caller can send that widens what it sees.
 
 ## Pagination — keyset, never offset
 
@@ -225,9 +284,9 @@ Market-data routes require the same authentication as the rest of the API (API k
 | `market_data:read` | The documented, canonical scope for market-data reads. Dedicated so a client that should only consume commercial intelligence (an external plugin, say) isn't handed read access to the whole Topics/Knowledge vault via `context:read`. |
 | `context:read` | Still satisfies every market-data route transitionally: today's default OAuth issuance (the ChatGPT plugin, the MCP connector, CLI OAuth) does not yet grant `market_data:read`, so retiring `context:read` from this OR-list is a later, deliberate step, not automatic. |
 
-## MCP: `driftless_market_data`
+## MCP: typed market-data tools
 
-One compact MCP tool, eleven semantic `action` values (the same operation names as the table above). See [MCP reference](/mcp/overview) for connecting a client.
+MCP exposes fourteen typed `driftless_market_*` tools, one per semantic operation, with external schemas for required fields, enums, arrays and limits. `driftless_market_data` remains a **deprecated compatibility shim** for existing `action`-based clients; new clients should use the typed tools. Reconnect a client after a schema update because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
 
 ```json
 { "action": "search_suppliers", "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
@@ -265,7 +324,7 @@ Every command supports `--json` for the complete semantic envelope; without it, 
 
 The dashboard's market-research chat plans and calls these same operations directly (no separate model-facing API) and can run a **due-diligence screening** method that composes `search_risks` and `search_permits`:
 
-1. Resolve identity by RFC first — from a prior `search_suppliers`/`search_awards` result or given directly — and call `search_risks { rfc }` / `search_permits { holder_rfc }` with it. Name-approximate resolution (`entity_name` / `holder_name`) is the fallback, with the match caveat stated.
+1. Resolve identity by RFC first — from a prior `search_suppliers`/`search_awards` result or given directly — and call `search_risks { rfc }` with it. Do not use that award RFC as a permit bridge: the current permit sources publish no holder RFCs. Call `search_permits { holder_name }` only after a verified published name exists; name resolution is approximate and its match caveat must be stated. `holder_rfc` remains a strong filter where a future source publishes it.
 2. Never conclude "no risk marks" or "not authorized" from an empty page alone — `coverage` is read first and the search is stated against it.
 3. A permit and a risk mark answer different questions and are reported separately — never merged into one verdict of "clean" or "authorized". A risk mark is a published listing, not a conviction; a permit is a granted right recorded at load time, not current operational status.
 

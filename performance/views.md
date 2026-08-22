@@ -26,12 +26,6 @@ documents exactly what each tier carries. Source of truth:
   `GET /topics/:slug`). `view=full` returns the complete canonical context per
   row. `GET /topics/:slug` is the full read; `POST /topics/retrieve` takes
   `brief` (default) / `full`.
-- **Projects** — `GET /projects/:id?view=summary|brief|full` (F5.2): `summary`
-  = counts only, `brief` = a bounded page of card summaries, `full` = a bounded
-  page of full card details. No `view` preserves the legacy all-summaries shape.
-- **Project card `next`** — the context bundle resolves by `refs` / `summaries`
-  / `full` (F5.5). These map onto the canonical tiers (`refs`→summary,
-  `summaries`→brief, `full`→full) and keep their original spellings.
 - **Collections** — `GET /collections/:id/records?view=…` selects a *named
   collection view* (board/table) — a different concept from a payload tier; it
   is unchanged. Record payloads are already bounded (default page size +
@@ -56,8 +50,8 @@ full` — the same coded error contract every endpoint uses.
 Two paging shapes coexist and both stay valid (additive):
 
 - **Offset paging** — `limit` / `offset`, with an envelope
-  `{ limit, offset, total, returned, has_more }` (projects' card page; topics
-  list). Build it with `buildPageInfo`.
+  `{ limit, offset, total, returned, has_more }` (topics list). Build it with
+  `buildPageInfo`.
 - **Keyset paging** — `{ records, nextCursor }` over a stable `(created_at, id)`
   ordering (collections; broker records). An opaque cursor, ignored if malformed.
 

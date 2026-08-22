@@ -1,13 +1,13 @@
 ---
 title: 'The Driftless loop'
-description: "The three kinds of state a workspace connects, and the loop that turns a signal into reviewed Knowledge."
+description: "The two kinds of state a workspace connects, and the loop that turns a signal into reviewed Knowledge."
 ---
 
 Driftless is one workspace for a team and its agents. The problem it solves is continuity, not just memory: models change, chats end, sessions reset, and agents lose their state, but the customer, the decision, and the project are still there in the morning. When that state lives in a dozen tools, a person spends the day carrying it by hand, re-explaining what already happened and deciding which version is still true. Driftless keeps that state in one place so the work remembers, and so the next person or agent starts from what the team already knows.
 
-## Three kinds of state
+## Two kinds of state
 
-A company's state usually sits in three different shapes, in three different tools. Driftless holds all three in one workspace, so they can feed each other instead of drifting apart.
+A company's state usually separates durable context from operational records. Driftless holds both in one workspace, so they can feed each other instead of drifting apart.
 
 ### Knowledge: what the team decided to keep
 
@@ -17,31 +17,26 @@ Knowledge is the reviewed, durable context a team wants future people and agents
 
 Operations is the recurring state a team works day to day: leads in a pipeline, bugs in a tracker, signals from customers, posts in a calendar. In Driftless each of these is a **Collection**, a configured table with typed fields and a lifecycle, and each row is a **Record**. A CRM, a bug tracker, and a content calendar are the same primitive with different configuration, not three apps you build. An **Entity** is a shared identity that ties Records together across Collections, so the same customer in a pipeline and in a support queue is understood as one. Before an agent works a Record, it can read the Knowledge the team attached to that Collection, so the work happens with the team's criteria rather than from scratch.
 
-### Work: what is in flight
-
-Work is the finite, goal-shaped effort that moves something forward: a launch, a migration, a revamp. A **Project** holds a goal and its definition of done, and a **Card** is one unit of work inside it, which can carry an acceptance criterion, a validation command, and dependencies on other cards. When a person or agent picks up a card, the workspace hands over the Knowledge anchored to the code that card touches, and any learning discovered along the way flows back as a Note. Work is where verification lives: "generated" is not "done" until a result is checked against what done was supposed to mean.
-
 ## The loop
 
-None of these three is the product on its own. The product is the loop between them:
+Neither plane is the product on its own. The product is the loop between them:
 
-> **Signal → Context → Work → Action → Knowledge**
+> **Signal → Context → Action → Knowledge**
 
 A signal arrives. It is interpreted against the context the team already has. It becomes work. The work produces an action on a real system. The action leaves behind a learning that improves the next interpretation. Two everyday shapes:
 
-- A message from a customer can update a Record in a Collection, open a Card of accountable work, hand the agent the criteria the team recorded for that kind of work, and, once the work is verified, leave a reviewed learning for the next person or agent.
+- A message from a customer can update a Record in a Collection, hand the agent the criteria the team recorded for that kind of action, and leave a reviewed learning for the next person or agent.
 - A product change can mark related Knowledge as possibly stale, create a review task, and improve what future agents receive the next time they touch that area.
 
 These describe the model, not a promise that every step fires on its own. Some steps are a person clicking a button, some are an agent acting under permission, and some are a rule you configure. The point is that the state moves through one workspace instead of being carried between tools by hand.
 
 ## How you reach the workspace
 
-The three kinds of state are the product. Everything else is a way to reach them, or a participant acting on them.
+These two kinds of state are the product. Everything else is a way to reach them, or a participant acting on them.
 
 - The **dashboard** is the visible workspace for people: boards, the topic graph, the review queue.
 - The **CLI**, the **MCP** server, and the **REST API** are access surfaces over the same workspace, kept close to one another. MCP is how an AI client like Claude or ChatGPT reaches Driftless, the CLI is how a terminal or a coding agent reaches it, and the API is how your own code does. None of them is a separate product, and none is the architecture; they are doors into the same state.
 - **Agents** are participants, not magic. An agent reads within the permissions you grant, takes bounded actions, records observations as Notes, and proposes changes, while a person stays responsible for anything the company commits to as true.
-- **Automations** run a step on a schedule or a trigger, for the parts of the loop a team chooses to make automatic. They assist the loop; they do not replace the model underneath it.
 - **Integrations** are governed access to systems Driftless does not own, like GitHub or Notion. An integration is not a subfeature of MCP: MCP is one door for agents, while an integration is a bounded, audited connection to an external tool that can stay the system of record while Driftless coordinates the work around it.
 
 ## Who decides what becomes Knowledge
@@ -102,7 +97,7 @@ See [Governance](/concepts/governance).
 
 ## Drift keeps Knowledge honest
 
-Stored text is not enough, because an old claim an agent trusts can be worse than none. When code changes on a tracked branch, Topics whose anchors overlap the changed files get marked **stale**, with a human-readable reason. Drift reaches you as a badge when you `context get` the area, so you don't have to go looking for it, and on a pull request that touches a documented area, the Auditor delivers the team's recorded context to the reviewer. That is how Knowledge stays honest: it knows when it stopped being true and asks to be looked at again.
+Stored text is not enough, because an old claim an agent trusts can be worse than none. When code changes on a tracked branch, Topics whose anchors overlap the changed files get marked **stale**, with a human-readable reason. Drift reaches you as a badge when you `context get` the area, so you don't have to go looking for it. Pull-request matches are recorded as activity without posting a review comment. That is how Knowledge stays honest: it knows when it may have stopped being true and asks to be looked at again.
 
 ```bash
 driftless context doctor          # health audit: stale, zombie, orphaned, draft

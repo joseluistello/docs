@@ -10,7 +10,7 @@ La gracia del sustrato es que no construyes apps. Un CRM, un bug tracker, una me
 Las lecturas son **active-only, acotadas y brief por defecto** en toda la superficie. Un `collection list` devuelve collections activas en una página acotada; las archived solo aparecen cuando optas explícitamente con `--include-archived` (CLI), `include_archived: true` (MCP) o `?include_archived=true` (REST). Un `collection get` vuelve **brief** salvo que pidas `full`. Archive, restore y purge son **operaciones separadas y explícitas** — el ciclo de vida nunca se colapsa en `update --status`.
 
 <Note>
-Las Collections son un **primitivo separado de los [Proyectos](/es/concepts/projects)**. Un Project es un loop de ejecución donde un agente recorre un board; una Collection es data operacional que un humano opera, aumentada por IA. Coexisten, y ninguno se construye sobre el otro.
+Las Collections son el primitivo operacional de Driftless: un sistema de registro operado por humanos y aumentado por IA. No se construyen sobre Topics; una Collection puede referenciar Knowledge de criterio que guía cómo deben manejarse sus Records.
 </Note>
 
 ## Los tres arquetipos

@@ -22,7 +22,7 @@
   mechanical citations. Consumed live by Chat; parity-locked to the legacy tool
   literals everywhere else.
 - **Chat v0** — grounded, cited, READ-ONLY workspace chat: threads/messages, the
-  assistant turn as an `agent_run`, Topics+Projects+Collections grounding, citation
+  assistant turn as an `agent_run`, Topics+Collections grounding, citation
   chips, stop button, hardening limits, eval harness.
 
 **Does NOT ship (ruled):**
@@ -54,7 +54,7 @@
 Each step is independently reversible; do them in order, verify, then advance.
 
 **Step 0 — merge + deploy.** Zero behavior change expected. Smoke: existing agents
-(Auditor/Architect/Librarian) run exactly as before; dashboard loads; `/models` and
+(Librarian/Steward/Workers) run exactly as before; dashboard loads; `/models` and
 `/config` respond.
 
 **Step 1 — Chat availability (no flag; needs a model).** Chat endpoints exist for all

@@ -1,50 +1,22 @@
 ---
-title: 'Audit, Architect, and Librarian agents'
-description: "Server-side agents that keep your team context honest, grow it, and tend the graph. They propose; an owner/admin adds the result to knowledge."
+title: 'Librarian and source monitoring'
+description: 'The two narrow background jobs that remain in Driftless.'
 ---
 
-Driftless can run three specialized agents on your codebase and knowledge graph. They don't replace a reviewer. They review and grow your team's **recorded context**: the `gotchas`, `decisions`, and `invariants` your team wrote down. Each **proposes**; an owner/admin **adds the result to knowledge**.
+Driftless keeps two narrow background jobs around governed context and commercial operations: **Librarian** and platform-owned source monitoring.
 
-- **The Auditor** keeps existing context honest when code changes.
-- **The Architect** grows context where it's missing.
-- **The Librarian** tends the knowledge graph itself, as an advisor.
+## Librarian
 
-## The Auditor
+The Librarian tends the knowledge graph. On a weekly sweep it produces a suggestion report: topics to promote, duplicates to merge, dead anchors to prune, and disconnected areas to link. It is an advisor by default.
 
-When a pull request (or drift) touches files that a **reviewed** topic anchors, the Auditor reads the change and the current code, and compares it claim-by-claim against what the team recorded.
+With `librarian_autovouch` enabled, high-confidence, human-authored Notes can be promoted automatically. The action is attributed and reversible, and appears in Applied for review.
 
-- **Contradicts a claim** → it opens a Suggested edit, citing the file/line and *why* the claim is now wrong (e.g. *"this diff removes the idempotency check the `billing-flow` invariant requires"*).
-- **Unsure** → it flags a question (no patch) for a human to look at. It never fabricates a confident edit.
-- **No impact** → it does nothing. Silence is the common, correct outcome.
+## Steward
 
-It only ever audits against **Knowledge** (`reviewed`). A Note is an unmerged idea, never something to enforce.
-
-## The Architect
-
-On new areas of a PR and on a nightly sweep, the Architect looks for **source areas no topic covers** and suggests new topics: clustered by concept, with a narrow anchor (5-40 files), grounded in the code it read, and linked to existing decisions where relevant. It biases to under-suggest: a missed gap is cheap, a spam topic erodes trust.
-
-## The Librarian
-
-The Librarian tends the knowledge graph itself. On a weekly sweep it surveys the vault and produces a suggestion **report**: topics to promote, duplicates to merge, gaps worth filling. In v1 it is an **advisor**: it never executes a promote or archive on its own. A human acts on the report.
-
-The one exception is opt-in. With `librarian_autovouch` on (experimental, off by default), a high-confidence promotion of a **human-authored** draft can auto-apply. Everything else stays a suggestion.
+The Steward monitors collection records whose source material can change. It recomputes source fingerprints on its configured cadence and opens bounded review work when a source has drifted. It does not replace the collection's criterion or make an external write on its own.
 
 ## How they run
 
-The agents run **server-side on Driftless**, on inference Driftless operates and pays for. There is no provider account to open and no API key to paste. If a provider degrades mid-run, the run continues on another one.
+These jobs run server-side on inference Driftless operates. Shared runtime and historical run records remain internal operational data; Driftless does not expose a customer-facing run console or roster.
 
-- **Read-only.** The agents read and reason; they never execute, edit, or write code.
-- **Propose-only.** Everything these autonomous agents produce lands as a **Note** or **Suggested edit** in your Review Queue. They never merge. Merging into Knowledge is an owner/admin act, and these autonomous agents never merge their own work in (separation of powers stays). That's distinct from *your own* agent (CLI/MCP, acting under your identity), which you can explicitly ask to run a merge on your behalf.
-
-## Configure them
-
-In the dashboard: **Settings → Agents**.
-
-1. Toggle the **Auditor**, **Architect**, and **Librarian** on. `librarian_autovouch` is a separate, experimental, off-by-default switch.
-2. Optionally set **budget guardrails** — per-run token and time caps (hard: a run stops when it hits them) and daily / 30-day spend caps (a soft perimeter: they block the *next* run once observed spend crosses the cap).
-
-Each agent is off until you enable it: a run happens only when that agent's toggle is on. Otherwise the run records a `no_op` and does nothing.
-
-## See what they did
-
-The **Agent Activity** screen is the transparency log: every run, the trigger (PR / nightly), tokens used, proposals created, and a code-free summary of what the agent concluded, including `no-op` runs (a healthy signal: the agent looked and found nothing to change).
+In the dashboard, open **Settings → Models & Agents** to enable the Librarian and configure Auto-merge.

@@ -16,13 +16,6 @@ driftless note add --content @notes/today.md --json
 
 Una nota es un topic en su estado **draft**: privada para ti, fuera de la búsqueda, y auto-archivada después de ~14 días si nadie la toca (recuperable). Piensa aquí, y después decide a dónde va.
 
-Adjunta una nota al trabajo mientras la capturas. `--project <id>` la archiva en un [proyecto](/es/concepts/projects), y `--project <id> --card <id>` la adjunta a una card específica en pleno loop, donde viaja en el context bundle del `next` de esa card y se sintetiza en un topic draft cuando el proyecto cierra.
-
-```bash
-driftless note add --content "Las entregas de webhooks llegan en desorden, se requiere idempotency key" \
-  --project prj_abc --card card_xyz
-```
-
 ## De lado: compartir con un compañero
 
 Comparte una nota directo con uno o más miembros del workspace. Aterriza en su **bandeja de entrada** ("compartido conmigo") sin volverse Knowledge de todo el equipo. Es el movimiento correcto para el "esto lo tienes que ver tú en particular".

@@ -7,7 +7,7 @@ All paths are under the base URL (`/api/v1`) and require authentication. Reads a
 
 ## Comments
 
-A comment points at a topic, record, card, or page and resolves into an edit. See [Comments](/concepts/comments).
+A comment points at a topic, record, or page and resolves into an edit. See [Comments](/concepts/comments).
 
 | Method | Path | Perm | Purpose |
 |---|---|---|---|
@@ -16,7 +16,7 @@ A comment points at a topic, record, card, or page and resolves into an edit. Se
 | `GET` | `/workspaces/:slug/comments/:id` | member | Comment detail |
 | `PATCH` | `/workspaces/:slug/comments/:id` | member (`work:write`) | Update body or status |
 
-Create body (`CreateCommentDto`): `target_kind` (required, one of `topic`, `page`, `record`, `card`), `target_id` (uuid) or `target_ref` (topic slug), `field_key`, `body` (required, up to 10000 chars), `author_id`. Status is `open`, `resolved`, or `wont_fix`.
+Create body (`CreateCommentDto`): `target_kind` (required, one of `topic`, `page`, `record`), `target_id` (uuid) or `target_ref` (topic slug), `field_key`, `body` (required, up to 10000 chars), `author_id`. Status is `open`, `resolved`, or `wont_fix`.
 
 ## Areas
 

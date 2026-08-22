@@ -79,7 +79,7 @@ interface AgentManifestV2 {
 
   // ── cuándo corre ───────────────────────────────────────────────────────────
   triggers: Trigger[]               // evolución de TriggerKind v1:
-  // { kind:'schedule', cadence_setting?: string }        // cron con cadencia configurable (Steward)
+  // { kind:'schedule' }                                  // calendario propiedad de la plataforma
   // { kind:'pull_request' | 'push' }                     // fuente github (Auditor)
   // { kind:'integration_event', source?: string }        // sync de Nango, etc. (Steward adelanta)
   // { kind:'drift_event' }                               // cola de drift tipada (WS4.2)

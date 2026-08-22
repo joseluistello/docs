@@ -382,10 +382,12 @@ The semantic HTTP API is the implementation. CLI and MCP are protocol skins:
 they preserve the same envelopes and never invoke `MarketResearchRunner`, a
 model gateway, SQL, web search or enrichment. ChatGPT, Claude, Codex or a human
 at the CLI supplies the planning and synthesis. The internal runner remains a
-separate consumer for Driftless chat and automations.
+separate consumer for Driftless chat and scheduled agent runs.
 
-MCP exposes one compact `driftless_market_data` tool because `tools/list` has a
-60 KB session budget. Its `action` maps to the granular CLI and HTTP surfaces:
+MCP exposes focused typed market tools alongside `driftless_market_data` as a
+compatibility shim. The `tools/list` budget is an internal 80 KiB
+latency/context budget, not an external provider limit. The shim's `action`
+maps to the granular CLI and HTTP surfaces:
 
 | MCP action | CLI | HTTP |
 |---|---|---|

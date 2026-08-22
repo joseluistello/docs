@@ -11,7 +11,7 @@ description: 'Create, read, update, and delete context topics from the CLI.'
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics for current changes | `driftless context get --diff` |
-| `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** (local-git drift source, no GitHub App needed) | `driftless context get --diff --mark` |
+| `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** from local git | `driftless context get --diff --mark` |
 | `context search` | query, `--tag <name>`, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation`. Narrow with more terms rather than paging. `--tag` (repeatable, OR) scopes the search to a category. Knowledge + topics up for review; Notes excluded unless `--include-notes`. | `driftless context search "refunds" --tag billing` |
 
 ## Tags: the category registry
@@ -97,7 +97,7 @@ The whole workspace is headless, not just topics. The same CLI drives the work s
 
 | Family | Commands | Docs |
 |---|---|---|
-| **Projects & cards** | `project add\|list\|get\|update`, `project card add\|status\|move\|rm` | [Projects](/concepts/projects) |
+| **Collections & records** | `collection list\|get\|records`, `collection record add\|update` | [Collections](/concepts/collections) |
 | **Areas** | `area list\|add\|rename\|rm`, plus `context add/update --area` | [Areas](/concepts/areas) |
 | **Notes & sharing** | `note add`, share via the API / dashboard inbox | [Notes & Sharing](/concepts/notes-sharing) |
 | **Members** | `member list\|invite\|role\|rm\|invites` | [Workspaces](/concepts/workspaces#invitations) |

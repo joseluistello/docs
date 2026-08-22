@@ -1,23 +1,23 @@
 ---
 title: 'Usar contexto externo en el trabajo operacional'
-description: "Tira evidencia de una herramienta conectada hacia un Project o Collection mediante el Broker, sin confundirla con Knowledge ni con el retrieve normal. Read-only hoy; el camino de escritura se describe pero está gated."
+description: "Tira evidencia de una herramienta conectada hacia una Collection mediante el Broker, sin confundirla con Knowledge ni con el retrieve normal. Read-only hoy; el camino de escritura se describe pero está gated."
 ---
 
-A veces la evidencia que necesita un trabajo vive en una herramienta que Driftless no posee: una página de Notion, un record en otro sistema. El [Broker](/es/integrations/broker) es cómo un Project o Collection alcanza esa evidencia mediante una [Connection](/es/integrations/overview) gobernada y auditada, la lee y la aterriza en la primitiva correcta, sin nunca tratarla como Knowledge ni como un retrieve normal de contexto.
+A veces la evidencia que necesita un record vive en una herramienta que Driftless no posee: una página de Notion, un record en otro sistema. El [Broker](/es/integrations/broker) es cómo una Collection alcanza esa evidencia mediante una [Connection](/es/integrations/overview) gobernada y auditada, la lee y la aterriza en la primitiva correcta, sin nunca tratarla como Knowledge ni como un retrieve normal de contexto.
 
 Esta guía te da un camino read-only ejecutable y un camino de escritura conceptual claramente marcado, porque las escrituras no están disponibles de forma general hoy.
 
 <Warning>
-**El Broker está gated.** Está apagado por defecto en producción (`DRIFTLESS_BROKER_ENABLED`), la lane externa OAuth/MCP es un interruptor aparte (`DRIFTLESS_BROKER_ROLLOUT`), y los callers externos además necesitan un **grant** por principal. El único conector de producción es **Notion**, **Beta y read-only**. **Ninguna operación de escritura es invocable en producción** (el registry de política de operaciones va vacío). Y el **GitHub App no es una GitHub Broker Connection**: observa pull requests y pushes para drift y el Auditor, y no expone `invoke`.
+**El Broker está gated.** Está apagado por defecto en producción (`DRIFTLESS_BROKER_ENABLED`), la lane externa OAuth/MCP es un interruptor aparte (`DRIFTLESS_BROKER_ROLLOUT`), y los callers externos además necesitan un **grant** por principal. El único conector de producción es **Notion**, **Beta y read-only**. **Ninguna operación de escritura es invocable en producción** (el registry de política de operaciones va vacío).
 </Warning>
 
 ## Resultado
 
-Un hecho externo específico tirado hacia el objeto que lo necesita: el contenido de una página de Notion leído en vivo y escrito en un Record, una Card o una Nota, con su procedencia preservada y su estatus como evidencia externa (no Knowledge) mantenido explícito.
+Un hecho externo específico tirado hacia el objeto que lo necesita: el contenido de una página de Notion leído en vivo y escrito en un Record o una Nota, con su procedencia preservada y su estatus como evidencia externa (no Knowledge) mantenido explícito.
 
 ## Cuándo usarlo
 
-- Un Record o una Card tiene una brecha de información concreta, y la respuesta vive en una herramienta externa conectada.
+- Un Record tiene una brecha de información concreta, y la respuesta vive en una herramienta externa conectada.
 - Ya confirmaste que el hecho no está en Driftless (ningún Topic, ningún Record existente, ningún connector document lo cubre).
 - Quieres la evidencia en estado operacional, citada, no promovida en silencio al Knowledge del equipo.
 
@@ -40,7 +40,7 @@ El setup (conectar un proveedor) ocurre en el dashboard o la CLI, nunca por MCP,
 | **Capability** | Una cosa que una Connection puede hacer; solo una `ready` es utilizable. |
 | **Operation** | Una lectura o escritura con nombre que el Broker puede `invoke` o `inspect`. |
 | **Connector document** | Contenido de página materializado en un objeto propio de Driftless con una cita. |
-| **Record / Card / Nota** | Donde aterriza la evidencia externa. |
+| **Record / Nota** | Donde aterriza la evidencia externa. |
 
 ## Antes de empezar
 
@@ -57,7 +57,6 @@ Si esto no devuelve nada, detente y resuelve el gate (rollout o grant) antes de 
 El trabajo externo igual empieza con el contexto del equipo. Lee el Knowledge del objeto de trabajo antes de salir a buscar más:
 
 ```bash
-driftless project card next <project-id>       # una Card lleva su context bundle
 driftless collection context <collection-id>   # una Collection lleva su criterion de Knowledge
 ```
 
@@ -106,7 +105,7 @@ driftless broker page <pageId>
 </Step>
 
 <Step title="Aterriza la evidencia en la primitiva correcta">
-Escribe lo que encontraste en estado operacional, no en Knowledge. Un field del Record, una nota en la Card o una Nota independiente, citada a su fuente.
+Escribe lo que encontraste en estado operacional, no en Knowledge: un field del Record o una Nota independiente citada a su fuente.
 
 ```bash
 driftless collection record update <collection-id> <record-id> --fields '{"summary":"per Notion page <pageId>"}'
@@ -138,7 +137,7 @@ La forma completa: **inspect** de la operación, lee su **criterion**, confirma 
 
 La evidencia externa actualiza el estado operacional; no se vuelve Knowledge al entrar:
 
-- **Un valor actual** va en el Record o la Card, citado a la fuente.
+- **Un valor actual** va en el Record, citado a la fuente.
 - **Una identidad compartida** descubierta afuera se vuelve o actualiza una Entity.
 - **Una observación que vale conservar** se vuelve una Nota, no un Topic, salvo que una persona la revise después.
 - **La procedencia** se preserva solo hasta donde la superficie lo soporta: un connector document lleva una cita, procedencia y frescura y se lee como `trust: "external"`; para una lectura cruda, cita tú el page id o record id en la Nota.
@@ -151,7 +150,6 @@ Un snapshot de proveedor es evidencia externa, nunca verdad institucional. Se qu
 - **No trates la data externa como Knowledge.** Los connector documents son opt-in en el retrieve, llevan `trust: "external"` y nunca son Knowledge.
 - **No esperes que `retrieve` traiga data externa en vivo.** Lee solo tablas propias de Driftless (Topics y connector documents), nunca un proveedor.
 - **No escribas ni despliegues una operación que el Broker no lista.** Reporta la capability faltante; nunca escribas un script para llenar la brecha.
-- **No asumas que el GitHub App puede `invoke`.** Observa; una GitHub Broker Connection para escrituras no está shipped.
 
 ## Troubleshooting
 
@@ -171,7 +169,6 @@ driftless broker capabilities notion
 | Escrituras del Broker (`invoke` de una op de escritura) en producción | Not available |
 | Connection y lecturas de HubSpot | Internal (gated) |
 | Google Drive, Google Docs | Stub (not available) |
-| GitHub App (observación de PR y push) | Available (superficie aparte) |
 | GitHub Broker Connection (escrituras) | Not available |
 
 ## Referencia relacionada

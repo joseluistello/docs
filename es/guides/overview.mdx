@@ -25,9 +25,9 @@ Las guías deliberadamente no repiten la referencia. Cada paso muestra el único
 
 Cada guía es una variación del mismo loop de seis pasos. Apréndelo una vez y cada workflow se lee como una especialización suya:
 
-1. **Resolve.** Encuentra o crea el objeto que estás trabajando: un Project, una Card, una Collection, un Record, una Entity o una Connection.
+1. **Resolve.** Encuentra o crea el objeto que estás trabajando: una Collection, un Record, una Entity o una Connection.
 2. **Read governed context.** Tira del Knowledge durable que debe guiar la acción, entregado con el trabajo, no buscado a ciegas.
-3. **Inspect live state.** Lee el estado operacional o de trabajo actual: status de la card, fields del record, salud de la connection.
+3. **Inspect live state.** Lee el estado operacional actual: fields del record o salud de la connection.
 4. **Act.** Haz el único cambio que el paso pide.
 5. **Write back.** Registra el nuevo estado en la primitiva correcta.
 6. **Preserve learning.** Deja una Nota limpia cuando aprendiste algo durable, para que el próximo agente empiece adelantado.
@@ -36,18 +36,17 @@ Cada guía es una variación del mismo loop de seis pasos. Apréndelo una vez y 
 
 Cada workflow está informado por los Topics relevantes, pero no todo empieza con una búsqueda global, y no todo lo que aprendes se convierte en Topic. La regla que lo mantiene en orden:
 
-> Los Topics contienen el **contexto durable** que debe guiar acciones futuras. Projects, Cards, Collections, Records, Entities y Connections contienen **estado y ejecución**. Skills y Guías enseñan cómo combinarlos.
+> Los Topics contienen el **contexto durable** que debe guiar acciones futuras. Collections, Records, Entities y Connections contienen **estado operacional**. Skills y Guías enseñan cómo combinarlos.
 
 Por eso cada guía lleva dos secciones obligatorias que aplican la regla:
 
-**Context preflight** explica qué contexto durable leer antes de actuar, y cómo llega hasta ti: mediante el contexto de un Project, el context bundle de una Card, el criterion de una Collection, el criterion de una Connection o una búsqueda dirigida. El contexto se entrega *con el trabajo* siempre que se puede, así rara vez necesitas cargar el workspace entero. Cuando el contexto entregado tiene una brecha, el preflight te dice cómo detectarla y cuándo buscar un Topic adicional.
+**Context preflight** explica qué contexto durable leer antes de actuar, y cómo llega hasta ti: mediante el criterion de una Collection, el criterion de una Connection o una búsqueda dirigida. El contexto se entrega con el objeto operacional siempre que se puede, así rara vez necesitas cargar el workspace entero.
 
 **Knowledge write-back** explica dónde pertenece cada tipo de aprendizaje, para que la actividad transitoria nunca se haga pasar por verdad institucional:
 
 | Qué aprendiste | Dónde va |
 | --- | --- |
 | Estado operacional actual | un Record |
-| Trabajo que sigue | una Card |
 | Una identidad compartida | una Entity |
 | Una observación o aprendizaje sin revisar | una Nota |
 | Un cambio a Knowledge existente | una Edición sugerida |
@@ -62,16 +61,12 @@ Elige por intención:
 
 | Quiero... | Guía |
 | --- | --- |
-| Continuar un objetivo con otro agente | [Project across agents](/es/guides/project-across-agents) |
 | Operar clientes, leads, contenido o señales | [Operate a Collection](/es/guides/operate-a-collection) |
 | Preservar lo que un agente aprendió | [Govern agent learning](/es/guides/govern-agent-learning) |
 | Auditar y limpiar contexto de forma segura | [Clean workspace context](/es/guides/clean-workspace-context) |
 | Usar evidencia que vive en una herramienta externa | [External context with Broker](/es/guides/external-context-with-broker) |
 
 <CardGroup cols={2}>
-  <Card title="Project across agents" icon="git-branch" href="/es/guides/project-across-agents">
-    Continúa un objetivo aunque cambie el modelo, la sesión o el agente. El Project es dueño del estado, no el modelo.
-  </Card>
   <Card title="Operate a Collection" icon="table" href="/es/guides/operate-a-collection">
     Trabaja un lead, cliente, ítem de contenido o señal de producto con los criterios del equipo cargados, no como una tabla aislada.
   </Card>
@@ -88,8 +83,8 @@ Elige por intención:
 
 ## Referencia relacionada
 
-- [El loop de Driftless](/es/concepts/core-loop) - los tres tipos de estado y el loop entre ellos.
-- [Proyectos](/es/concepts/projects) y [Colecciones](/es/concepts/collections) - las primitivas de Work y Operations.
+- [El loop de Driftless](/es/concepts/core-loop) - Knowledge, Operations y el loop entre ambos.
+- [Colecciones](/es/concepts/collections) - el primitivo operacional.
 - [Gobernanza](/es/concepts/governance) - Nota, Edición sugerida y Knowledge.
 - [Integraciones](/es/integrations/overview) y [Broker](/es/integrations/broker) - acceso gobernado a sistemas externos.
 - [CLI](/es/cli/context), [API](/es/api/overview) y [MCP](/es/mcp/overview) - las superficies completas de comandos, endpoints y tools.

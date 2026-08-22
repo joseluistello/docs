@@ -5,28 +5,15 @@ description: 'How Driftless detects when code has changed relative to team conte
 
 ## How drift works
 
-When a push arrives on a tracked branch, the API matches changed files against all workspace topics using glob pattern intersection. Any topic whose anchored patterns overlap with the changed files gets marked **drifted** with a human-readable reason.
+From a local checkout, `driftless context get --diff` matches changed files against workspace topics using their explicit paths and glob anchors. With `--mark`, matching reviewed topics are marked **drifted** with a human-readable reason.
 
-For example, if a push to `main` changes `src/auth/guard.ts` and `src/auth/service.ts`, the `auth-flow` topic anchored to `src/auth/**` becomes:
+For example, if local work changes `src/auth/guard.ts` and `src/auth/service.ts`, the `auth-flow` topic anchored to `src/auth/**` can become:
 
-> Drifted: 3 files changed in commit `abc1234`: `src/auth/guard.ts`, `src/auth/service.ts`, `src/auth/dto/login.dto.ts`
+> Drifted: local changes touch `src/auth/guard.ts` and `src/auth/service.ts`.
 
-## Tracked branches
+## Explicit local drift
 
-The **default branch** is always tracked. Additional branches can be added:
-
-```bash
-driftless branches add staging
-driftless branches add release/*
-driftless branches
-driftless branches rm staging
-```
-
-Feature branches are **not tracked by default**. This prevents noise because most feature work is in progress and does not represent settled architecture. Drift is reserved for branches where changes signal durable context shifts.
-
-## Second drift source: local git (no GitHub App)
-
-Drift normally comes from push webhooks, so a team without the GitHub App installed gets no signal. To close that gap, the CLI can report drift from your **local** checkout:
+The CLI reports drift from your **local** checkout:
 
 ```bash
 driftless context get --diff          # show topics matching local changes (display only)
@@ -47,7 +34,7 @@ drifted → no repo claims it → orphaned
 ```
 
 When a topic goes drifted:
-1. `driftless sync` surfaces it to every team member
+1. `driftless sync` surfaces persisted drift to every team member
 2. An agent or human reviews the change
 3. If the context still holds, add it to knowledge (`--status reviewed`) to make it fresh again
 4. If no repo claims the topic anymore, it becomes orphaned
@@ -66,12 +53,12 @@ driftless context get --diff            # drift for current local (uncommitted) 
 
 <AccordionGroup>
   <Accordion title="What triggers drift?">
-    Only pushes to tracked branches. PRs do **not** trigger drift; they trigger PR observation instead (the match is recorded, and the Auditor, if configured, reviews and comments only when it has a finding). This distinction keeps drift meaningful: a push to `main` or `staging` means the code has actually changed, while a PR is still under review and may not merge.
+    Only an explicit local `context get --diff --mark` call. Plain `--diff` retrieves matching context without changing workspace state.
   </Accordion>
   <Accordion title="Can I manually mark a topic as drifted?">
-    Yes. Run `driftless context update <slug> --status draft` to mark it for review, or update the content and set `--status reviewed` to clear drift. You can also let the next push naturally trigger a drift check.
+    Yes. Run `driftless context get --diff --mark` from the relevant checkout. Update the topic when its durable explanation changed; otherwise confirm that it is still current.
   </Accordion>
   <Accordion title="What happens if a topic's anchored files are deleted?">
-    The topic becomes drifted on the next push. If the glob patterns no longer match any file in the repo, `context doctor` flags it as a **zombie**, an anchor pointing at nothing. Fix the patterns or archive the topic.
+    Local pattern validation catches missing anchors when you write from the CLI. `context doctor` also flags a **zombie**, an anchor pointing at nothing. Fix the patterns or archive the topic.
   </Accordion>
 </AccordionGroup>

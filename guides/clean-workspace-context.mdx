@@ -37,7 +37,6 @@ You need the CLI installed and logged in. Auditing and proposing are member-leve
 | **Area** | The home an unassigned Topic needs. |
 | **Suggested edit** | The safe, reviewed way to correct Knowledge. |
 | **Comment** | Where you park an uncertainty for a human. |
-| **Project and Cards** | Where a large cleanup becomes tracked Work. |
 
 ## Before you begin
 
@@ -114,14 +113,6 @@ driftless context update <topic-slug> --area <area-name>
 ```
 </Step>
 
-<Step title="Escalate a large cleanup to a hygiene Project">
-When the backlog is more than a few fixes, make it tracked Work. A Project with hygiene cards turns "the vault is messy" into an ordered, verifiable board.
-
-```bash
-driftless project add "Vault hygiene" --goal "No stale reviewed topics on core paths"
-driftless project card add <project-id> --title "Re-anchor drifted topic-query topics"
-```
-</Step>
 </Steps>
 
 <Warning>
@@ -144,7 +135,7 @@ Cleanup itself produces learning worth keeping, routed the same way as any other
 
 - **A correction to an existing claim** is a Suggested edit, not a rewrite in place.
 - **An uncertainty** is a Comment on the field, so the ambiguity reaches a human instead of being guessed.
-- **A cleanup you could not finish** is a Card on the hygiene Project, so it is not lost.
+- **A cleanup you could not finish** stays visible in the doctor report or becomes a precise Comment when a human decision is required.
 - **A recurring hygiene rule** you discover (a naming convention, an anchor pattern the team keeps getting wrong) may become a Note, and later Knowledge after review. Do not write the audit's findings themselves into Knowledge; they are transient state, not a durable why.
 
 ## What not to do

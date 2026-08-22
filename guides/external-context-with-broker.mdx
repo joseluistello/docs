@@ -1,23 +1,23 @@
 ---
 title: 'Use external context in operational work'
-description: "Pull evidence from a connected tool into a Project or Collection through the Broker, without confusing it with Knowledge or with normal retrieve. Read-only today; the write path is described but gated."
+description: "Pull evidence from a connected tool into a Collection through the Broker, without confusing it with Knowledge or with normal retrieve. Read-only today; the write path is described but gated."
 ---
 
-Sometimes the evidence a piece of work needs lives in a tool Driftless does not own: a Notion page, a record in another system. The [Broker](/integrations/broker) is how a Project or Collection reaches that evidence through a governed, audited [Connection](/integrations/overview), reads it, and lands it in the right primitive, without ever treating it as Knowledge or as a normal context retrieve.
+Sometimes the evidence an operational record needs lives in a tool Driftless does not own: a Notion page, a record in another system. The [Broker](/integrations/broker) is how a Collection reaches that evidence through a governed, audited [Connection](/integrations/overview), reads it, and lands it in the right primitive, without ever treating it as Knowledge or as a normal context retrieve.
 
 This guide gives you an executable read-only path and a clearly-marked conceptual write path, because writes are not generally available today.
 
 <Warning>
-**The Broker is gated.** It is off by default in production (`DRIFTLESS_BROKER_ENABLED`), the external OAuth/MCP lane is a separate switch (`DRIFTLESS_BROKER_ROLLOUT`), and external callers additionally need a per-principal **grant**. The one production connector is **Notion**, **Beta and read-only**. **No write operation is invokable in production** (the operation-policy registry ships empty). And the **GitHub App is not a GitHub Broker Connection**: it observes pull requests and pushes for drift and the Auditor, and exposes no `invoke`.
+**The Broker is gated.** It is off by default in production (`DRIFTLESS_BROKER_ENABLED`), the external OAuth/MCP lane is a separate switch (`DRIFTLESS_BROKER_ROLLOUT`), and external callers additionally need a per-principal **grant**. The one production connector is **Notion**, **Beta and read-only**. **No write operation is invokable in production** (the operation-policy registry ships empty).
 </Warning>
 
 ## Outcome
 
-A specific external fact pulled into the object that needs it: a Notion page's content read live and written into a Record, a Card, or a Note, with its provenance preserved and its status as external evidence (not Knowledge) kept explicit.
+A specific external fact pulled into the object that needs it: a Notion page's content read live and written into a Record or a Note, with its provenance preserved and its status as external evidence (not Knowledge) kept explicit.
 
 ## When to use it
 
-- A Record or a Card has a concrete information gap, and the answer lives in a connected external tool.
+- A Record has a concrete information gap, and the answer lives in a connected external tool.
 - You have already confirmed the fact is not in Driftless (no Topic, no existing Record, no connector document covers it).
 - You want the evidence in operational state, cited, not silently promoted into the team's Knowledge.
 
@@ -40,7 +40,7 @@ Setup (connect a provider) happens in the dashboard or CLI, never over MCP, and 
 | **Capability** | One thing a Connection can do; only a `ready` one is usable. |
 | **Operation** | A named read or write the Broker can `invoke` or `inspect`. |
 | **Connector document** | Page content materialized into a Driftless-owned object with a citation. |
-| **Record / Card / Note** | Where the external evidence lands. |
+| **Record / Note** | Where the external evidence lands. |
 
 ## Before you begin
 
@@ -57,7 +57,6 @@ If this returns nothing, stop and resolve the gate (rollout or grant) before ass
 External work still starts with the team's context. Read the work object's Knowledge before you reach outside for more:
 
 ```bash
-driftless project card next <project-id>       # a Card carries its context bundle
 driftless collection context <collection-id>   # a Collection carries its criterion Knowledge
 ```
 
@@ -106,7 +105,7 @@ driftless broker page <pageId>
 </Step>
 
 <Step title="Land the evidence in the right primitive">
-Write what you found into operational state, not into Knowledge. A field on the Record, a note on the Card, or a standalone Note, cited to its source.
+Write what you found into operational state, not into Knowledge: a field on the Record or a standalone Note cited to its source.
 
 ```bash
 driftless collection record update <collection-id> <record-id> --fields '{"summary":"per Notion page <pageId>"}'
@@ -138,7 +137,7 @@ The full shape: **inspect** the operation, read its **criterion**, confirm the *
 
 External evidence updates operational state; it does not become Knowledge on the way in:
 
-- **A current value** goes on the Record or the Card, cited to the source.
+- **A current value** goes on the Record, cited to the source.
 - **A shared identity** discovered externally becomes or updates an Entity.
 - **An observation worth keeping** becomes a Note, not a Topic, unless a person later reviews it.
 - **Provenance** is preserved only as far as the surface supports it: a connector document carries a citation, provenance, and freshness and reads as `trust: "external"`; for a raw read, cite the page id or record id in the Note yourself.
@@ -151,7 +150,6 @@ A provider snapshot is external evidence, never institutional truth. It stays op
 - **Do not treat external data as Knowledge.** Connector documents are opt-in in retrieve, carry `trust: "external"`, and are never Knowledge.
 - **Do not expect `retrieve` to fetch live external data.** It reads only Driftless-owned tables (Topics and connector documents), never a provider.
 - **Do not author or deploy an operation the Broker does not list.** Report the missing capability; never write a script to fill the gap.
-- **Do not assume the GitHub App can `invoke`.** It observes; a GitHub Broker Connection for writes is not shipped.
 
 ## Troubleshooting
 
@@ -171,7 +169,6 @@ driftless broker capabilities notion
 | Broker writes (`invoke` a write op) in production | Not available |
 | HubSpot connection and reads | Internal (gated) |
 | Google Drive, Google Docs | Stub (not available) |
-| GitHub App (PR and push observation) | Available (separate surface) |
 | GitHub Broker Connection (writes) | Not available |
 
 ## Related reference

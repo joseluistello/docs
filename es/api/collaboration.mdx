@@ -7,7 +7,7 @@ Todas las rutas están bajo la base URL (`/api/v1`) y requieren autenticación. 
 
 ## Comments
 
-Un comentario apunta a un topic, record, card o página y se resuelve en una edición. Ver [Comments](/es/concepts/comments).
+Un comentario apunta a un topic, record o página y se resuelve en una edición. Ver [Comments](/es/concepts/comments).
 
 | Método | Ruta | Perm | Propósito |
 |---|---|---|---|
@@ -16,7 +16,7 @@ Un comentario apunta a un topic, record, card o página y se resuelve en una edi
 | `GET` | `/workspaces/:slug/comments/:id` | member | Detalle del comentario |
 | `PATCH` | `/workspaces/:slug/comments/:id` | member (`work:write`) | Actualiza body o status |
 
-Cuerpo de creación (`CreateCommentDto`): `target_kind` (obligatorio, uno de `topic`, `page`, `record`, `card`), `target_id` (uuid) o `target_ref` (slug de topic), `field_key`, `body` (obligatorio, hasta 10000 caracteres), `author_id`. El status es `open`, `resolved` o `wont_fix`.
+Cuerpo de creación (`CreateCommentDto`): `target_kind` (obligatorio, uno de `topic`, `page`, `record`), `target_id` (uuid) o `target_ref` (slug de topic), `field_key`, `body` (obligatorio, hasta 10000 caracteres), `author_id`. El status es `open`, `resolved` o `wont_fix`.
 
 ## Areas
 

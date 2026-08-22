@@ -9,7 +9,6 @@ All secrets stored in Driftless are encrypted with **AES-256-GCM** before they r
 
 - API keys
 - Webhook secrets
-- GitHub App credentials
 - OAuth tokens and authorization codes
 
 The encryption key is derived from environment variables and never stored in the database.
@@ -67,30 +66,16 @@ Driftless supports OAuth 2.0 authorization for MCP (Model Context Protocol) clie
 |---|---|---|
 | Topic content | Postgres | At rest (Supabase) |
 | API keys | Postgres (hashed) | Hashed + encrypted |
-| GitHub tokens | Postgres | AES-256-GCM |
 | OAuth tokens | Postgres (hashed) | Hashed + encrypted |
 | Source code | Never stored | N/A |
 
-Driftless **never stores** your source code. Only structural metadata from topics anchors (file patterns) and PR file lists are stored.
-
-## GitHub App permissions
-
-The GitHub App requests the minimum permissions required:
-
-| Permission | Why |
-|---|---|
-| **Contents (read)** | Fetch list of changed files per commit |
-| **Pull requests (read & write)** | Post and update context comments |
-| **Issues (read & write)** | PR comments use the Issues API |
-| **Metadata (read)** | Required by GitHub for all apps |
-
-The app never clones repositories and never reads source file contents.
+Driftless **never stores** your source code. Topics keep only the explicit paths and glob anchors that your team records.
 
 ## Network
 
 - All traffic between CLI, dashboard, and API is HTTPS
 - API keys are sent in `x-api-key` headers, never in URL parameters
-- Webhook payloads are verified with HMAC signatures
+- Signed provider webhook payloads are verified before processing
 - The API runs on Render with encrypted environment variables
 
 ## Reporting

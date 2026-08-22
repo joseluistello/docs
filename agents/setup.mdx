@@ -33,21 +33,6 @@ row, bounded. Ask for `full` (e.g. `--full` / `view: "full"`) only when you need
 the whole body, and pair it with a small limit. The pattern is *brief to find the
 right topic, full for the one body you actually need.*
 
-### Working a project board: the agent loop
-
-When the work is a Driftless project (a board of cards), walk it in a loop instead
-of guessing the next task:
-
-```bash
-driftless project card next <project-id>   # next ready card + its context_bundle (one call)
-# load the context_bundle FIRST (the team's memory for the card's area), do the work,
-# run the card's `validate` (non-zero = stop-and-fix), then:
-driftless context update <slug> --gotcha "..."              # write back what you learned
-driftless project card status <project-id> <card-id> done   # then ask for the next card
-```
-
-Repeat until `project_done`. A `todo` card with unmet deps never appears in `next`.
-
 ### Acting on operational records (Collections)
 
 A Collection (CRM, tracker, content calendar) holds typed **records**. Before

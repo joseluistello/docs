@@ -37,7 +37,6 @@ Necesitas la CLI instalada y con login. Auditar y proponer son de nivel member; 
 | **Área** | El hogar que necesita un Topic sin archivar. |
 | **Edición sugerida** | La forma segura y revisada de corregir Knowledge. |
 | **Comment** | Donde aparcas una incertidumbre para un humano. |
-| **Project y Cards** | Donde una limpieza grande se vuelve Work rastreado. |
 
 ## Antes de empezar
 
@@ -114,14 +113,6 @@ driftless context update <topic-slug> --area <area-name>
 ```
 </Step>
 
-<Step title="Escala una limpieza grande a un Project de higiene">
-Cuando el backlog es más que unos pocos arreglos, vuélvelo Work rastreado. Un Project con cards de higiene convierte "el vault está desordenado" en un board ordenado y verificable.
-
-```bash
-driftless project add "Vault hygiene" --goal "No stale reviewed topics on core paths"
-driftless project card add <project-id> --title "Re-anchor drifted topic-query topics"
-```
-</Step>
 </Steps>
 
 <Warning>
@@ -144,7 +135,6 @@ La limpieza misma produce aprendizaje que vale conservar, enrutado igual que cua
 
 - **Una corrección a un claim existente** es una Edición sugerida, no una reescritura en el lugar.
 - **Una incertidumbre** es un Comment en el field, para que la ambigüedad llegue a un humano en vez de adivinarse.
-- **Una limpieza que no pudiste terminar** es una Card en el Project de higiene, para que no se pierda.
 - **Una regla de higiene recurrente** que descubres (una convención de nombres, un pattern de anchor que el equipo sigue equivocando) puede volverse una Nota, y después Knowledge tras revisión. No escribas los hallazgos de la auditoría en sí en Knowledge; son estado transitorio, no un porqué durable.
 
 ## Qué no hacer

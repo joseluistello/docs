@@ -36,7 +36,6 @@ You need the CLI installed and logged in. Over MCP or OAuth, collection, record,
 | **Record** | One typed row; its `status` is validated against the collection's stages. |
 | **Entity** | A cross-collection identity records point at, deduped on `(kind, dedup_key)`. |
 | **Criterion** | The Knowledge Topics the work reads before acting (`criterion_rel_slugs`). |
-| **Card** | Where finite follow-up work belongs, a [separate primitive](/concepts/projects). |
 
 ## Before you begin
 
@@ -122,16 +121,6 @@ driftless collection record update <collection-id> <record-id> --status engaged
 The status is validated against the collection's own stages; a value outside them is rejected.
 </Step>
 
-<Step title="Escalate finite follow-up to a Card">
-If the record needs bounded work (reconcile a duplicate, run an analysis, draft a reply), that belongs in [Work](/concepts/projects), not in the record. Reference the record by id; there is no formal record-to-card link to invent.
-
-```bash
-driftless project card add <project-id> \
-  --title "Reconcile Globex duplicate records" \
-  --description "Record <record-id> in <collection-id> may duplicate an existing entity"
-```
-</Step>
-
 <Step title="Delete a record, or retire the collection">
 Safe record delete previews impact before it touches anything: the Entity link that would be removed and the distilled Notes that are preserved (not deleted).
 
@@ -174,7 +163,7 @@ Same surface over MCP: `driftless_collection action:'search' \| 'retrieve' \| 'c
 Most of what you touch here is operational state, and it should stay that way. Escalate deliberately:
 
 - **The record's own values** stay in the Record. That is operational state, not Knowledge.
-- **Finite follow-up** becomes a Card. It is Work, not a durable why.
+- **Finite follow-up** stays in the Record's fields or status until it is complete. It is operational state, not a durable why.
 - **A reusable observation** (a pattern in how these records behave, a rule that keeps recurring) becomes a Note. Capture it, do not inline it into the record.
 - **A durable why** worth the whole team trusting (how this collection should be worked) may become Knowledge, but only after a person reviews it.
 
@@ -191,7 +180,6 @@ A single record's outcome is not Knowledge. The recurring pattern behind many re
 - **Do not treat a Collection as an isolated table.** Read the criterion first; that is the whole point of the substrate.
 - **Do not confuse Entity and Record.** A Record is a row in one collection; an Entity is an identity across collections. Deduplicate identities on the Entity, not by editing rows.
 - **Do not promote a single record's result into Knowledge.** Operational outcomes live in the record; only a reviewed, durable pattern becomes a Topic.
-- **Do not invent a record-to-card relation.** Reference by id; no typed link between them is shipped.
 
 ## Troubleshooting
 
@@ -213,12 +201,10 @@ driftless collection doctor    # records off-lifecycle, schema violations, drift
 | Entity dedup on `(kind, dedup_key)` | Available |
 | `distill_policy` as a configuration field | Available (declares intent) |
 | Automatic execution of `distill_policy` at record close | Not available (not an automatic runtime) |
-| A typed relation between a Record and a Card or Project | Not available |
 
 ## Related reference
 
 - [Collections](/concepts/collections) - archetypes, field types, and the criterion seam.
 - [CLI: Collections, Records, and Entities](/cli/collections) - every command and flag.
 - [API: Collections, Records, and Entities](/api/collections) - the REST surface.
-- [Operate across agents](/guides/project-across-agents) - escalating record follow-up into Work.
 - [External context with Broker](/guides/external-context-with-broker) - importing external records into a collection.

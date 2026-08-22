@@ -12,7 +12,7 @@ description: "Connect Driftless to self-hosted agents like OpenClaw and Hermes A
     The agent runs the `driftless` CLI from its shell and follows the installed skill: the full context loop (pull before editing, persist what it learns). Best when the agent already works in a repo.
   </Card>
   <Card title="Remote MCP" icon="plug">
-    The agent calls Driftless tools (`driftless_context_*`, `project`, `tags`, …) over the hosted MCP endpoint, no shell or repo checkout required. Best for chat-surface agents.
+    The agent calls Driftless tools (`driftless_context_*`, `driftless_collection`, `tags`, …) over the hosted MCP endpoint, no shell or repo checkout required. Best for chat-surface agents.
   </Card>
 </CardGroup>
 
@@ -28,7 +28,7 @@ They compose: the CLI skill drives the read-before / write-after loop in a repo,
 | API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.driftless.icu) |
 
 <Note>
-An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (projects, cards, tags, areas) need the key's owner to have `work:write`; **merging into Knowledge needs owner/admin authority**. If the key's owner is an owner/admin, the agent can run the merge on your explicit request (stamped `approved_via: agent`); an ownerless or non-owner key can propose but is refused the merge.
+An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (collections, records, tags, areas) need the key's owner to have `work:write`; **merging into Knowledge needs owner/admin authority**. If the key's owner is an owner/admin, the agent can run the merge on your explicit request (stamped `approved_via: agent`); an ownerless or non-owner key can propose but is refused the merge.
 </Note>
 
 ---
@@ -146,5 +146,5 @@ Ask the agent to do one of these and confirm it returns your workspace's topics:
 A `401` on the MCP path means the `X-API-Key` header isn't reaching Driftless (re-check the inline value and, for OpenClaw, the header-forwarding caveat above).
 
 <Note>
-MCP clients cache the tool list per session. After Driftless ships new or renamed tools, **reconnect / reload** the MCP server (OpenClaw: re-run `mcp add` or restart the gateway; Hermes: `/reload-mcp`) so the agent sees them. The work-surface tools (`driftless_tags`, `driftless_areas`, `driftless_project`, `driftless_project_card`) are action-based; pass `action` to select the operation. See [MCP overview](/mcp/overview) for the full tool list.
+MCP clients cache the tool list per session. After Driftless ships new, renamed, or removed tools, **reconnect / reload** the MCP server (OpenClaw: re-run `mcp add` or restart the gateway; Hermes: `/reload-mcp`) so the agent sees the current surface. The work-surface tools (`driftless_tags`, `driftless_areas`, `driftless_collection`, `driftless_collection_record`) are action-based; pass `action` to select the operation. See [MCP overview](/mcp/overview) for the full tool list.
 </Note>

@@ -80,7 +80,6 @@
               "agents/setup",
               "mcp/overview",
               "integrations/overview",
-              "integrations/github-app",
               "integrations/notion",
               "integrations/broker",
               "integrations/self-hosted-agents"
@@ -101,7 +100,6 @@
             "group": "Work & collaborate",
             "icon": "layers",
             "pages": [
-              "concepts/projects",
               "concepts/collections",
               "concepts/notes-sharing",
               "concepts/comments"
@@ -112,7 +110,6 @@
             "icon": "book-open",
             "pages": [
               "guides/overview",
-              "guides/project-across-agents",
               "guides/operate-a-collection",
               "guides/govern-agent-learning",
               "guides/clean-workspace-context",
@@ -120,12 +117,10 @@
             ]
           },
           {
-            "group": "Agents & automation",
+            "group": "Agents",
             "icon": "bot",
             "pages": [
-              "concepts/pr-bot",
-              "agents/agentic-layer",
-              "concepts/automations"
+              "agents/agentic-layer"
             ]
           },
           {
@@ -143,7 +138,6 @@
             "icon": "terminal",
             "pages": [
               "cli/context",
-              "cli/projects",
               "cli/collections",
               "cli/integrations",
               "cli/agents",
@@ -159,7 +153,6 @@
               "api/errors",
               "api/workspaces",
               "api/topics",
-              "api/projects",
               "api/collections",
               "api/collaboration",
               "api/integrations",
@@ -197,7 +190,6 @@
               "es/agents/setup",
               "es/mcp/overview",
               "es/integrations/overview",
-              "es/integrations/github-app",
               "es/integrations/notion",
               "es/integrations/broker",
               "es/integrations/self-hosted-agents"
@@ -218,7 +210,6 @@
             "group": "Trabajar y colaborar",
             "icon": "layers",
             "pages": [
-              "es/concepts/projects",
               "es/concepts/collections",
               "es/concepts/notes-sharing",
               "es/concepts/comments"
@@ -229,7 +220,6 @@
             "icon": "book-open",
             "pages": [
               "es/guides/overview",
-              "es/guides/project-across-agents",
               "es/guides/operate-a-collection",
               "es/guides/govern-agent-learning",
               "es/guides/clean-workspace-context",
@@ -237,12 +227,10 @@
             ]
           },
           {
-            "group": "Agentes y automatización",
+            "group": "Agentes",
             "icon": "bot",
             "pages": [
-              "es/concepts/pr-bot",
-              "es/agents/agentic-layer",
-              "es/concepts/automations"
+              "es/agents/agentic-layer"
             ]
           },
           {
@@ -260,7 +248,6 @@
             "icon": "terminal",
             "pages": [
               "es/cli/context",
-              "es/cli/projects",
               "es/cli/collections",
               "es/cli/integrations",
               "es/cli/agents",
@@ -276,7 +263,6 @@
               "es/api/errors",
               "es/api/workspaces",
               "es/api/topics",
-              "es/api/projects",
               "es/api/collections",
               "es/api/collaboration",
               "es/api/integrations",
@@ -339,10 +325,6 @@
     {
       "source": "/cli/graph",
       "destination": "/cli/context"
-    },
-    {
-      "source": "/concepts/coverage",
-      "destination": "/concepts/pr-bot"
     },
     {
       "source": "/dashboard/overview",

@@ -2,7 +2,7 @@
 
 This directory is the source of truth for the **Performance program: MCP and CLI** —
 making Driftless fast, searchable, well-explained, and production-ready across Topics,
-Projects, Collections, Integrations/Broker, and retrieval.
+Collections, Integrations/Broker, and retrieval.
 
 It is written *before* implementation so every optimization card has a contract to meet
 and a measurable way to prove it met it.
@@ -15,7 +15,7 @@ and a measurable way to prove it met it.
 | [`gates.md`](./gates.md) | F0.7 | How a performance claim is *accepted* — the evidence (query plan, query count, payload size, timing) each optimization card must produce. |
 | [`views.md`](./views.md) | F2.1 | The summary/brief/full payload-view vocabulary and the pagination/error contract shared across the API. |
 | [`surface-matrix.md`](./surface-matrix.md) | F8.1 | How every hot workflow maps across CLI / MCP / API, each read's default view + full-view opt-in, and what is fast by default. |
-| [`navigation.md`](./navigation.md) | — | The cross-surface bounded path (Knowledge→Projects→Collections→Broker) — retrieve, don't enumerate. |
+| [`navigation.md`](./navigation.md) | — | The cross-surface bounded path (Knowledge→Collections→Broker) — retrieve, don't enumerate. |
 | [`retrieve-contract.md`](./retrieve-contract.md) | — | One retrieve vocabulary + output shape + invariants shared by every read on every surface. |
 | [`explain-audit.md`](./explain-audit.md) | — | EXPLAIN evidence for the large read paths: filters + privacy before LIMIT, index usage, no Seq Scan. |
 
@@ -30,7 +30,7 @@ and a measurable way to prove it met it.
 ## Surface under measurement
 
 - **MCP** — 28 tools in `apps/mcp/src/tools/tool-registry.ts` (e.g. `driftless_context_search`,
-  `driftless_context_get_for_files`, `driftless_project_card`, `driftless_collection`,
+  `driftless_context_get_for_files`, `driftless_collection`,
   `driftless_broker`).
-- **CLI** — `apps/cli/src/commands/*` (e.g. `context`, `project`, `collection`, `broker`).
-- **API** — `apps/api/src/*` (e.g. `topics`, `projects`, `collections`, `broker`, `integrations`).
+- **CLI** — `apps/cli/src/commands/*` (e.g. `context`, `collection`, `broker`).
+- **API** — `apps/api/src/*` (e.g. `topics`, `collections`, `broker`, `integrations`).

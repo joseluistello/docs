@@ -11,7 +11,7 @@ description: "Crea, lee, actualiza y elimina topics de contexto desde la CLI."
 | `context get <topic>` | `--json` | Detalle completo del topic | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Empareja topics con archivos | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics para los cambios actuales | `driftless context get --diff` |
-| `context get --diff --mark` | `--mark` | …y marca como **drifted** los topics que coinciden (fuente de drift por git local, sin necesidad de la GitHub App) | `driftless context get --diff --mark` |
+| `context get --diff --mark` | `--mark` | …y marca como **drifted** los topics que coinciden desde git local | `driftless context get --diff --mark` |
 | `context search` | consulta, `--tag <name>`, `--json`, `--include-notes` | Búsqueda de texto completo **ordenada por relevancia** (top 50; las coincidencias de nombre/título quedan más arriba). Admite `"frases entre comillas"`, `OR`, `-negación`. Acota con más términos en vez de paginar. `--tag` (repetible, OR) limita la búsqueda a una categoría. Knowledge + topics en revisión; las Notas quedan fuera salvo que uses `--include-notes`. | `driftless context search "refunds" --tag billing` |
 
 ## Tags: el registro de categorías
@@ -97,7 +97,7 @@ Todo el workspace es headless, no solo los topics. La misma CLI maneja las super
 
 | Familia | Comandos | Docs |
 |---|---|---|
-| **Proyectos y cards** | `project add\|list\|get\|update`, `project card add\|status\|move\|rm` | [Proyectos](/es/concepts/projects) |
+| **Collections y records** | `collection list\|get\|records`, `collection record add\|update` | [Collections](/es/concepts/collections) |
 | **Áreas** | `area list\|add\|rename\|rm`, más `context add/update --area` | [Áreas](/es/concepts/areas) |
 | **Notas y compartir** | `note add`, comparte por la API o la bandeja del dashboard | [Notas y compartir](/es/concepts/notes-sharing) |
 | **Miembros** | `member list\|invite\|role\|rm\|invites` | [Workspaces](/es/concepts/workspaces#invitaciones) |

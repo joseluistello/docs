@@ -1,5 +1,5 @@
 ---
-title: 'Sync y ramas'
+title: 'Sync'
 description: "Un resumen opcional, para todo el equipo, de lo que drifteó alrededor de tus topics."
 ---
 
@@ -13,7 +13,7 @@ No inspecciona tu diff local y no recupera contexto específico de archivos. Tra
 
 | Comando | Flags | Descripción | Ejemplo |
 |---|---|---|---|
-| `sync` | `--json` | Muestra topics stale, actividad reciente de PR y ramas rastreadas | `driftless sync` |
+| `sync` | `--json` | Muestra topics stale persistidos y topics sugeridos | `driftless sync` |
 
 ```bash
 driftless sync
@@ -24,8 +24,6 @@ Salida típica:
 ```text
 ▌ acme/platform
   workspace: acme  (resolved via config)
-  tracking:  main, staging
-
 ⚠  2 topics drifted, the team changed code these topics cover, context may be behind:
    auth-boundaries
      src/auth/session.ts changed
@@ -36,9 +34,8 @@ Salida típica:
 
 | Señal | Fuente | Qué hacer |
 |---|---|---|
-| **Topics stale** | Eventos de push de GitHub en ramas rastreadas | Revisa el código que cambió y actualiza el topic si cambió el comportamiento |
-| **Actividad reciente de PR** | Observaciones de la GitHub App | Lee los topics tocados antes de trabajar en la misma área |
-| **Ramas rastreadas** | Configuración del repo en Driftless Cloud | Usa `driftless branches` para ver o cambiar el alcance del drift |
+| **Topics stale** | `context get --diff --mark` local y explícito | Revisa el código que cambió y actualiza el topic si cambió el comportamiento |
+| **Topics sugeridos** | Sugerencias pendientes | Revisa y confirma el contexto útil |
 
 ## Cuándo usar sync
 
@@ -72,18 +69,7 @@ La salida JSON incluye:
 
 | Campo | Significado |
 |---|---|
-| `repo` | org/repo de GitHub resuelto desde el remote actual |
+| `repo` | Identidad del repositorio resuelta desde el remote actual |
 | `workspace` | Slug del workspace de Driftless |
-| `tracking` | Rama por defecto y ramas rastreadas adicionales |
 | `stale_topics` | Topics cuyo código anclado cambió |
-| `pr_activity` | Observaciones recientes de PR y topics tocados |
-
-## Ramas
-
-El estado stale está acotado a las ramas rastreadas. Si un push ocurre en una rama no rastreada, Driftless registra la actividad pero no marca topics como stale desde esa rama.
-
-| Comando | Flags | Descripción | Ejemplo |
-|---|---|---|---|
-| `branches` | `--json` | Ver las ramas rastreadas | `driftless branches` |
-| `branches add` | `<branch>` | Rastrea una rama | `driftless branches add staging` |
-| `branches rm` | `<branch>` | Deja de rastrear una rama | `driftless branches rm staging` |
+| `suggested_pending` | Número de topics sugeridos pendientes de revisión |

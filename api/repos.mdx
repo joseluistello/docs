@@ -1,6 +1,6 @@
 ---
 title: 'Repositories'
-description: 'Register repositories and manage GitHub App integration.'
+description: 'Register repository identity for local topic and checkout workflows.'
 ---
 
 ## Repositories
@@ -10,7 +10,6 @@ description: 'Register repositories and manage GitHub App integration.'
 | `GET` | `/workspaces/:slug/repos` | List repositories |
 | `POST` | `/workspaces/:slug/repos` | Register a repository |
 | `GET` | `/workspaces/:slug/repos/:id` | Get repository details |
-| `PATCH` | `/workspaces/:slug/repos/:id` | Update repository metadata |
 | `DELETE` | `/workspaces/:slug/repos/:id` | Delete a repository |
 
-Repositories are registered via the CLI (`driftless login`) or the GitHub App installation flow. Once registered, the GitHub App observes push and PR events for staleness tracking and PR comments.
+Repositories are registered by the CLI from the current checkout. The stored organization and repository name let local commands resolve the workspace and link topics without uploading source code.

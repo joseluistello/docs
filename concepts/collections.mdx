@@ -10,7 +10,7 @@ The point of the substrate is that you don't build apps. A CRM, a bug tracker, a
 Reads are **active-only, bounded and brief by default** across every surface. A `collection list` returns active collections in a bounded page; archived ones only surface when you explicitly opt in with `--include-archived` (CLI), `include_archived: true` (MCP), or `?include_archived=true` (REST). A `collection get` comes back **brief** unless you ask for `full`. Archive, restore and purge are **separate, explicit** operations — lifecycle is never collapsed into `update --status`.
 
 <Note>
-Collections are a **separate primitive from [Projects](/concepts/projects)**. A Project is an execution loop where an agent walks a board; a Collection is operational data a human runs, augmented by AI. They coexist, and neither is built on the other.
+Collections are Driftless's operational primitive: a human-run system of record augmented by AI. They are not built on Topics; instead, a Collection can reference criterion Knowledge that guides how its Records should be handled.
 </Note>
 
 ## The three archetypes

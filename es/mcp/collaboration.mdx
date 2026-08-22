@@ -7,7 +7,7 @@ Estas tools dejan que un humano y un agente coordinen sobre el mismo workspace: 
 
 ## Comments
 
-Un **comment** apunta A un objeto de la spine (un topic, record o card) y opcionalmente a un field. No lleva governance y se resuelve en una edición; su texto nunca entra al cuerpo del topic. Los comments escritos por agentes son lo que hace al workspace colaborativo entre humanos y agentes.
+Un **comment** apunta A un objeto de la spine (un topic o record) y opcionalmente a un field. No lleva governance y se resuelve en una edición; su texto nunca entra al cuerpo del topic. Los comments escritos por agentes son lo que hace al workspace colaborativo entre humanos y agentes.
 
 | Tool | Actions | Params principales | Notas |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ La ubicación clave es el gate de Nota a Knowledge: fija una objeción precisa a
 
 ## Members y workspaces
 
-Úsalas para resolver los identificadores que esperan las tools de escritura: un `owner_clerk_id` para asignar una card o record, o el slug de workspace al que una credencial puede apuntar.
+Úsalas para resolver los identificadores que esperan las tools de escritura: un `owner_clerk_id` para asignar un record, o el slug de workspace al que una credencial puede apuntar.
 
 | Tool | Propósito | Devuelve |
 | --- | --- | --- |
@@ -36,22 +36,12 @@ Permisos: lecturas de nivel member. Disponibilidad: Available. Cada tool acepta 
 driftless_members   → [ { id, role, email } ]   (los valores válidos de owner_clerk_id)
 ```
 
-## Agent stats
-
-`driftless_agent_stats` reporta los resultados de propuestas: cuántas propuestas de agentes (las Ediciones sugeridas del Auditor) se integraron frente a las rechazadas, para que puedas leer la tasa de aprobación.
-
-| Tool | Propósito | Devuelve |
-| --- | --- | --- |
-| `driftless_agent_stats` | Estadísticas de resultado de propuestas | conteos integradas vs rechazadas, tasa de aprobación |
-
-Permiso: lectura de nivel member. Disponibilidad: Available. Esta es la única señal de agent-runs en la superficie de MCP; la config y el trigger de agent-runs no son alcanzables por OAuth/MCP.
-
 ## Permisos
 
 | Scope | Cubre |
 | --- | --- |
 | `work:write` | `comment` add y resolve |
-| member (lectura) | `comment` list, `members`, `workspaces`, `agent_stats` |
+| member (lectura) | `comment` list, `members`, `workspaces` |
 
 ## Disponibilidad
 

@@ -1,58 +1,28 @@
 ---
-title: 'CLI: Agentes y hooks'
-description: 'Configura e inspecciona los agentes del lado del servidor, y gestiona el hook local de auto-pull.'
+title: 'CLI: Agentes'
+description: 'Configura Librarian.'
 ---
 
-Aquí viven dos cosas: la familia `agent` configura e inspecciona los agentes del lado del servidor ([Auditor, Architect, Librarian](/es/agents/agentic-layer)), y los comandos `hook` / `hooks` gestionan el hook local de [auto-pull](/es/concepts/automations). No están relacionados: `agent` habla con el servidor, `hooks` edita un archivo local. Agrega `--json` a cualquier comando `agent` para salida de máquina.
-
-## Agent runs y config
-
-Los agentes corren de forma automática del lado del servidor; la CLI los inspecciona y configura. No hay un comando para disparar una corrida a mano (fue retirado).
-
-| Comando | Descripción |
-|---|---|
-| `agent runs [--limit <n>]` | Corridas recientes (id, agente, status, hora). |
-| `agent run <id>` | Una corrida con su trace completo. |
-| `agent config [--show]` | Imprime la config actual. |
-| `agent config --set <key>=<value>` | Setea una key de config (repetible). |
-| `agent usage [--days <n>]` | Resumen de tokens y costo. |
-| `agent stats` | Estadísticas de aceptación de propuestas. |
+La familia `agent` configura Librarian. Agrega `--json` para salida de máquina.
 
 ## Configuración
 
-Keys seteables en `agent config --set`: los toggles `auditor`, `architect`, `librarian` y `librarian_autovouch`.
+| Comando | Descripción |
+|---|---|
+| `agent config [--show]` | Imprime la config actual. |
+| `agent config --set <key>=<value>` | Setea una key de config (repetible). |
+
+Keys seteables en `agent config --set`: `librarian` y `librarian_autovouch`.
 
 No hay ajuste de proveedor, de modelo ni de API key. Driftless opera y paga la inferencia sobre la que corren los agentes, y elige el modelo en cada turno; `agent config --set model=…` y `--set opencode_key=…` se rechazan en lugar de ignorarse, para que un script viejo falle de forma visible en vez de aparentar que funcionó.
 
 ```bash
-driftless agent config --set auditor=true --set architect=true
+driftless agent config --set librarian=true
 driftless agent config --show
 ```
 
-Cada agente está apagado hasta que su toggle está encendido; si no, una corrida registra un `no_op`.
-
-## Hooks (auto-pull)
-
-El hook de auto-pull es una función local de Claude Code, apagada por defecto. Dos comandos lo gestionan, y son distintos:
-
-| Comando | Descripción |
-|---|---|
-| `hook <pre-edit\|post-edit\|stop\|sync>` | El pegamento en runtime que Claude Code invoca. Nunca lo corres a mano. |
-| `hooks enable` | Instala las entradas del hook en `.claude/settings.json` (PreToolUse, PostToolUse, Stop). |
-| `hooks disable` | Quita esas entradas de esta máquina. |
-
-Instalar el hook queda inerte hasta que un admin del workspace enciende el toggle `auto_pull_context` en el dashboard. Solo los topics de Knowledge (`reviewed`) se inyectan.
-
-```bash
-driftless install-skill    # instala el hook, inerte
-driftless hooks disable    # quítalo de esta máquina
-```
+Librarian está apagado hasta que su toggle está encendido.
 
 ## Permisos
 
-Leer las corridas de agentes y setear la config de agentes son acciones de miembro del workspace desde la CLI. La superficie de agent-runs no es alcanzable por OAuth/MCP (las corridas de agentes gastan inferencia de modelo); la superficie MCP solo expone `driftless_agent_stats`.
-
-## Relacionado
-
-- [Agentes Audit, Architect y Librarian](/es/agents/agentic-layer) - qué hacen los agentes.
-- [Auto-pull](/es/concepts/automations) - el hook local, en detalle.
+Configurar Librarian es una acción de miembro del workspace desde la CLI.

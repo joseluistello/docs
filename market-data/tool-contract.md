@@ -10,6 +10,59 @@ carries, what a refusal carries, and how pagination works — so a caller
 learns the contract once and every operation follows it, rather than
 re-discovering the same shape eleven times.
 
+## Two projections of one envelope
+
+Everything below describes the **full** projection — the canonical envelope with
+provenance intact, which is what the HTTP API, the audit record, licence
+enforcement and support read.
+
+A surface a **model** reads (Chat, Research, every MCP tool) reads the same
+envelope through the *abstracted* projection instead
+(`apps/api/src/market-data/services/model-exposure.ts`). Publisher identity —
+`sourceSlug`, `sourceRecordId`, `publisher`, `sourceUrl`, the per-publisher
+`membershipMeaning` — is replaced by an evidence CATEGORY derived from the
+warehouse relation, an opaque `record_ref` for the detail follow-up, a
+`record_fingerprint` that recognizes a repeated row (keyed, one-way, 128 bits;
+it reveals equality by design and never identity, and it survives a primary-key
+rotation for as long as references minted before it still resolve), and a
+per-category
+membership meaning that keeps every caveat the publisher-specific wording
+carried. Coverage regroups by category and counts only licensed rows; the page
+cursor is sealed, because a base64url cursor whose sort key carries the
+publisher row key is opacity by convention only.
+
+Everything else in this document is IDENTICAL under both: the same operations,
+the same refusals, the same pagination contract, the same semantic warnings and
+the same coverage semantics. The projection changes who a row says published
+it, never what the row means.
+
+### The source filter, and what would bring it back
+
+`source_slugs` is accepted on the canonical route and is absent from every
+model-facing surface. There is deliberately no abstract replacement for it.
+
+A "kind of record" filter is the natural one — screening for membership in an
+export register, a licence register or an R&D register is a real commercial
+question — but the distinction that makes it useful is a property of each
+SOURCE, and this layer has no per-source metadata to read it from. Deriving it
+from a list of slugs frozen inside Driftless would be a source-dependent value
+invented outside the corpus (R3b), which is why the filter is absent here rather
+than simulated.
+
+**The requirement:** a column on `market_data.sources` classifying each source
+into a small, stable set of record kinds — the same table `dataset_coverage`
+already references, and the same place the per-source membership meanings in
+`services/source-registry.ts` want to live. With that column, coverage carries
+the kind per source and the filter becomes an ordinary exact filter over corpus
+values. Until then, membership screening is a search rather than a filter, and
+the runtime skill says so.
+
+Which projection a response uses is decided by the ENTRYPOINT and is not a
+request parameter. Over HTTP an entrypoint opts into the abstracted form with
+`X-Driftless-Model-Exposure: abstracted`; every other value, including its
+absence and including `full`, is the full projection — the header can only ever
+make a response say less.
+
 ## The envelope
 
 Every success response — search, get, aggregate, count, screen alike — is one
@@ -33,7 +86,7 @@ interface MarketDataEnvelope<T> {
 ```
 
 Every key in this envelope is **camelCase** — deliberately distinct from the
-snake_case the rest of the platform (Knowledge, Collections, Projects) uses.
+snake_case the rest of the platform (Knowledge and Collections) uses.
 This is not an inconsistency to fix: it is the dialect the shipped market-data
 contract already speaks (HTTP body, MCP tool result, the ChatGPT plugin), and
 unifying it would break every existing consumer for no benefit to any of
@@ -136,14 +189,16 @@ without a cursor.
 never inferred from `returned === limit` — a corpus that holds exactly a
 multiple of the page size would otherwise produce a phantom empty last page.
 
-## The eleven operations
+## The fourteen operations
 
 | Operation | Route | Paginates | Notes |
 |---|---|---|---|
 | `market_capabilities` | `GET capabilities` | no | corpus-observed values, read fresh every call |
 | `search_suppliers` | `POST suppliers/search` | yes | needs ≥1 narrowing dimension |
 | `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | strong key, no search |
+| `get_supplier_batch` | `POST suppliers/batch` | no (bounded batch) | 1–50 opaque references; one canonical detail read |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | same narrowing rule as `search_suppliers`; returns one exact integer, never an approximation |
+| `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | at most 5 segments × 10 states and 50 cells; one observed kind |
 | `search_opportunities` | `POST opportunities/search` | yes | hybrid or lexical strategy |
 | `get_opportunity` | `GET opportunities/:id` | no | |
 | `search_awards` | `POST awards/search` | yes | one currency + one amount scope; `cog_partidas` filters by SHCP object-of-expense code overlap |
@@ -156,13 +211,31 @@ multiple of the page size would otherwise produce a phantom empty last page.
 ### `count_suppliers`
 
 Same bounding rule as `search_suppliers`: at least one of `query`, `state`,
-`scian_codes`, `source_slugs` or `rfc` is required, or the call is refused
+`scian_codes` or `rfc` is required (the canonical route also accepts
+`source_slugs`), or the call is refused
 with `query_too_broad` — an exact count of the whole 6.1M-row directory is not
 a narrower question than a search for it. `results` is `{ count: number }`,
 computed with `SELECT count(*)`, never sampled or estimated. If the count
 itself cannot finish inside the statement timeout, the existing
 `market_data_timeout` refusal answers — this operation never substitutes an
 approximation for a count it could not finish computing.
+
+### `get_supplier_batch`
+
+Accepts 1–50 opaque references returned by supplier search, resolves and
+deduplicates them server-side, and reads canonical detail in one set-based
+statement. Output preserves first-seen order. Missing, forged and unavailable
+references deliberately share `invalid_or_unavailable`; the operation never
+reveals which condition applied. Contact values remain subject to the same live
+licence boundary as `get_supplier`.
+
+### `compare_segments`
+
+Accepts 1–5 text-defined segments, 1–10 Mexican states, one required
+`observed_kind`, and at most 50 cells. One parameterized statement returns the
+ordered matrix, optionally including observations with a published contact
+channel. Every number is an observation count, never unique-company count, TAM
+or purchase intent.
 
 ### `screen_risks`
 
@@ -175,6 +248,50 @@ above 50 is refused with `batch_too_large` (`recovery.action: fix_arguments`)
 rather than silently truncated at the tail; a truncated batch that drops RFCs
 without saying so is exactly the confident-wrong-answer failure this contract
 exists to avoid.
+
+Each RFC result carries its own `warnings` code array. A zero-mark RFC has
+`warnings: ["zero_results_with_coverage"]` only when the envelope declares
+effective risks coverage (at least one source with `licensedForDisplay: true`
+and `visibleRows > 0`); an RFC with marks has `warnings: []`. With no declared
+effective coverage, the RFC warning stays empty and the `coverage` declaration
+is the explicit limitation. The envelope repeats `zero_results_with_coverage`
+only when **every** requested RFC had zero marks **and** coverage is effective.
+
+### RFC dossier protocol (composition, not an operation)
+
+There is no `get_party_dossier` route or tool. An RFC dossier is a reproducible
+caller-side composition over existing operations:
+
+```text
+RFC
+→ get_supplier_history(supplier_rfc: rfc, currency, amount_scope) when a comparison basis is known
+→ search_awards(supplier_rfc) when contract rows are needed
+→ screen_risks(rfcs: [rfc])
+→ search_suppliers(rfc) as a directory observation probe
+→ do not call search_permits from this RFC alone: the current covered permit
+  sources publish no holder RFCs
+→ search_permits(holder_name) only after a verified published name exists
+```
+
+`holder_rfc` remains an accepted strong-identity filter for a future permit
+source that publishes it; it is not a current award-RFC-to-permit bridge.
+
+The caller keeps results separate and reports identity coverage explicitly:
+
+```json
+{
+  "identityCoverage": {
+    "awards": "strong_rfc",
+    "risks": "strong_rfc",
+    "directory": "not_observed",
+    "permits": "not_attempted_without_verified_name"
+  }
+}
+```
+
+`not_observed` and `not_attempted` are coverage states, not negative claims
+about the party. Directory rows remain observations; permits found by name are
+candidates, not silently consolidated identities.
 
 ### `aggregate_awards` with `compare_period`
 

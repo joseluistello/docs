@@ -1,50 +1,22 @@
 ---
-title: 'Agentes Audit, Architect y Librarian'
-description: "Agentes del lado del servidor que mantienen honesto el contexto de tu equipo, lo hacen crecer y cuidan el grafo. Ellos proponen; un owner/admin agrega el resultado a la knowledge."
+title: 'Librarian y monitoreo de fuentes'
+description: 'Los dos procesos acotados que permanecen en Driftless.'
 ---
 
-Driftless puede correr tres agentes especializados sobre tu codebase y tu grafo de knowledge. No reemplazan a un revisor. Revisan y hacen crecer el **contexto registrado** de tu equipo: los `gotchas`, `decisions` e `invariants` que tu equipo escribió. Cada uno **propone**; un owner/admin **agrega el resultado a la knowledge**.
+Driftless mantiene dos procesos acotados alrededor del contexto gobernado y las operaciones comerciales: **Librarian** y el monitoreo de fuentes operado por la plataforma.
 
-- **El Auditor** mantiene honesto el contexto existente cuando el código cambia.
-- **El Architect** hace crecer el contexto donde falta.
-- **El Librarian** cuida el propio grafo de knowledge, como asesor.
+## Librarian
 
-## El Auditor
+El Librarian cuida el grafo de knowledge. En un barrido semanal produce un reporte de sugerencias: topics para promover, duplicados para unir, anchors muertos para retirar y áreas desconectadas para enlazar. Por defecto es un asesor.
 
-Cuando un pull request (o el drift) toca archivos que ancla un topic **reviewed**, el Auditor lee el cambio y el código actual, y lo compara afirmación por afirmación contra lo que el equipo registró.
+Con `librarian_autovouch` habilitado, Notes de alta confianza escritas por humanos pueden promoverse automáticamente. La acción queda atribuida, es reversible y aparece en Applied para revisión.
 
-- **Contradice una afirmación** → abre una Edición sugerida, citando el archivo/línea y el *porqué* de que la afirmación ahora esté mal (por ejemplo *"este diff elimina el chequeo de idempotencia que exige el invariant de `billing-flow`"*).
-- **No está seguro** → marca una pregunta (sin patch) para que un humano la mire. Nunca fabrica una edición con falsa seguridad.
-- **Sin impacto** → no hace nada. El silencio es el resultado común y correcto.
+## Steward
 
-Solo audita contra **Knowledge** (`reviewed`). Una Nota es una idea sin mergear, nunca algo que se deba hacer cumplir.
-
-## El Architect
-
-En las áreas nuevas de un PR y en un barrido nocturno, el Architect busca **áreas de código que ningún topic cubre** y sugiere topics nuevos: agrupados por concepto, con un anchor angosto (5-40 archivos), sostenidos en el código que leyó, y enlazados a decisiones existentes donde tenga sentido. Se inclina a sugerir de menos: un hueco que se escapa sale barato, un topic spam erosiona la confianza.
-
-## El Librarian
-
-El Librarian cuida el propio grafo de knowledge. En un barrido semanal recorre el vault y produce un **reporte** de sugerencias: topics para promover, duplicados para fusionar, huecos que vale la pena llenar. En v1 es un **asesor**: nunca ejecuta un promote o un archive por su cuenta. Un humano actúa sobre el reporte.
-
-La única excepción es opt-in. Con `librarian_autovouch` activado (experimental, apagado por defecto), un promote de alta confianza de un draft **escrito por un humano** puede auto-aplicarse. Todo lo demás queda como sugerencia.
+El Steward monitorea records de Collections cuyas fuentes pueden cambiar. Recalcula fingerprints según su cadencia y abre trabajo acotado de revisión cuando una fuente entra en drift. No reemplaza el criterio de la Collection ni hace escrituras externas por su cuenta.
 
 ## Cómo corren
 
-Los agentes corren **del lado del servidor en Driftless**, sobre inferencia que Driftless opera y paga. No hay cuenta de proveedor que abrir ni API key que pegar. Si un proveedor se degrada a media corrida, la corrida sigue en otro.
+Estos procesos corren del lado del servidor sobre inferencia operada por Driftless. El runtime compartido y los registros históricos permanecen como datos operativos internos; Driftless no expone una consola de corridas ni un roster al cliente.
 
-- **Solo lectura.** Los agentes leen y razonan; nunca ejecutan, editan ni escriben código.
-- **Solo proponen.** Todo lo que producen estos agentes autónomos aterriza como una **Nota** o una **Edición sugerida** en tu cola de revisión. Nunca mergean. Mergear a Knowledge es un acto de owner/admin, y estos agentes autónomos nunca mergean su propio trabajo (la separación de poderes se mantiene). Eso es distinto de *tu propio* agente (CLI/MCP, actuando bajo tu identidad), al que sí le puedes pedir de forma explícita que corra un merge en tu nombre.
-
-## Configúralos
-
-En el dashboard: **Settings → Agents**.
-
-1. Activa el **Auditor**, el **Architect** y el **Librarian**. `librarian_autovouch` es un interruptor aparte, experimental y apagado por defecto.
-2. Opcionalmente define **topes de presupuesto** — topes de tokens y de tiempo por corrida (duros: la corrida se detiene al alcanzarlos) y topes de gasto diario / a 30 días (un perímetro suave: bloquean la *siguiente* corrida una vez que el gasto observado cruza el tope).
-
-Cada agente está apagado hasta que lo habilitas: una corrida ocurre solo cuando el toggle de ese agente está encendido. Si no, la corrida registra un `no_op` y no hace nada.
-
-## Mira lo que hicieron
-
-La pantalla **Agent Activity** es el registro de transparencia: cada corrida, el trigger (PR / nocturno), los tokens usados, las propuestas creadas, y un resumen sin código de lo que el agente concluyó, incluyendo las corridas `no-op` (una señal sana: el agente miró y no encontró nada que cambiar).
+En el dashboard abre **Settings → Models & Agents** para habilitar Librarian y configurar Auto-merge.

@@ -22,9 +22,6 @@ client experiences on a no-param call.
 | `GET /broker/connections/:provider/operations` | `refresh` | served from materialized metadata; `refresh` re-pulls live | OK — additive; default reads the cache |
 | `GET /broker/connections/:provider/records` | `cursor`, `modifiedAfter`, `limit` | born as `{ records, nextCursor }` in F2 — never a bare array | OK — shape predates the program |
 | `GET /broker/events` | `limit` | additive | OK |
-| `GET /projects/:id` | `view`, `card_limit`, `card_offset`, `card_status` | **no `view` ⇒ the legacy `get()` (metadata + every card summary)** | OK — `if (!view) return this.projects.get(...)` short-circuits to the old shape |
-| `GET /projects/:id/cards` | `limit` | unbounded list (array) | OK — array shape unchanged |
-| `GET /projects/:id/cards/next` | `context` (`refs`/`summaries`/`full`) | `refs` (the lightest bundle) | OK — additive, default is the original tier |
 
 ## New endpoints (purely additive)
 

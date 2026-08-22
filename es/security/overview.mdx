@@ -9,7 +9,6 @@ Todos los secretos almacenados en Driftless se cifran con **AES-256-GCM** antes 
 
 - API keys
 - Secretos de webhooks
-- Credenciales de la GitHub App
 - Tokens OAuth y códigos de autorización
 
 La clave de cifrado se deriva de variables de entorno y nunca se almacena en la base de datos.
@@ -67,30 +66,16 @@ Driftless admite autorización OAuth 2.0 para aplicaciones cliente de MCP (Model
 |---|---|---|
 | Contenido de topics | Postgres | En reposo (Supabase) |
 | API keys | Postgres (hasheado) | Hasheado + cifrado |
-| Tokens de GitHub | Postgres | AES-256-GCM |
 | Tokens OAuth | Postgres (hasheado) | Hasheado + cifrado |
 | Código fuente | Nunca se almacena | N/A |
 
-Driftless **nunca almacena** tu código fuente. Solo se almacenan metadatos estructurales de los anclajes de topics (patrones de archivos) y las listas de archivos de los PRs.
-
-## Permisos de la GitHub App
-
-La GitHub App solicita los permisos mínimos requeridos:
-
-| Permiso | Por qué |
-|---|---|
-| **Contents (read)** | Obtiene la lista de archivos cambiados por commit |
-| **Pull requests (read & write)** | Publica y actualiza comentarios de contexto |
-| **Issues (read & write)** | Los comentarios de PR usan la API de Issues |
-| **Metadata (read)** | Requerido por GitHub para todas las apps |
-
-La app nunca clona repositorios y nunca lee el contenido de los archivos fuente.
+Driftless **nunca almacena** tu código fuente. Los Topics conservan solo los paths y patrones glob explícitos que registra tu equipo.
 
 ## Red
 
 - Todo el tráfico entre la CLI, el dashboard y la API es HTTPS
 - Las API keys se envían en cabeceras `x-api-key`, nunca en parámetros de URL
-- Las cargas de webhooks se verifican con firmas HMAC
+- Las cargas firmadas de webhooks de proveedores se verifican antes de procesarse
 - La API corre en Render con variables de entorno cifradas
 
 ## Reportes
