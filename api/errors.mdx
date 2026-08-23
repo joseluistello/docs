@@ -73,6 +73,16 @@ After those two, a `500` means what it should: a real bug or an outage. That's a
 | `PROTECTED_RESOURCE` | 403 | A protected/default resource can't be modified or deleted. |
 | `RATE_LIMITED` | 429 | Too many requests. Back off. |
 
+### Commercial allowance
+| `code` | Status | When |
+|---|---|---|
+| `COMMERCIAL_CALL_LIMIT_REACHED` | 402 | The workspace used its included top-level commercial requests for the month. |
+| `COMMERCIAL_CREDITS_EXHAUSTED` | 402 | No commercial-intelligence credits remain in the current month. |
+| `COMMERCIAL_CREDITS_INSUFFICIENT` | 402 | The requested result count is larger than the per-request or remaining-credit allowance. |
+
+These errors include the current `usage` snapshot and an actionable
+`next_action` for contacting sales. They are definitive (`retryable: false`).
+
 ### Server
 | `code` | Status | When |
 |---|---|---|

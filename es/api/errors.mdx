@@ -73,6 +73,16 @@ Después de esas dos, un `500` significa lo que debe: un bug real o una caída. 
 | `PROTECTED_RESOURCE` | 403 | Un recurso protegido/por defecto no puede modificarse ni eliminarse. |
 | `RATE_LIMITED` | 429 | Demasiadas peticiones. Reduce el ritmo. |
 
+### Saldo comercial
+| `code` | Estado | Cuándo |
+|---|---|---|
+| `COMMERCIAL_CALL_LIMIT_REACHED` | 402 | El workspace agotó sus solicitudes comerciales de primer nivel del mes. |
+| `COMMERCIAL_CREDITS_EXHAUSTED` | 402 | No quedan créditos de inteligencia comercial en el mes actual. |
+| `COMMERCIAL_CREDITS_INSUFFICIENT` | 402 | La cantidad de resultados solicitada supera el máximo por solicitud o el saldo restante. |
+
+Estos errores incluyen el estado actual en `usage` y una `next_action`
+accionable para hablar con ventas. Son definitivos (`retryable: false`).
+
 ### Servidor
 | `code` | Estado | Cuándo |
 |---|---|---|

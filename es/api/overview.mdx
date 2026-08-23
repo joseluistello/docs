@@ -44,6 +44,23 @@ Estos endpoints no requieren autenticación:
 | `GET` | `/workspaces/:slug/api-keys` | Lista las API keys de un workspace |
 | `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoca una API key |
 
+## Uso comercial
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/commercial-usage` | Consulta plan, solicitudes, créditos, renovación, investigación promocional y la acción para hablar con ventas |
+
+Explorar incluye 10 solicitudes de inteligencia comercial y 25 créditos por mes
+calendario, con hasta 5 resultados entregados por solicitud. Founder cuesta USD
+29 al mes e incluye 50 solicitudes, 250 créditos y hasta 10 resultados por
+solicitud. Cada espacio puede canjear una investigación profunda sin consumir
+ninguno de los dos saldos. Una solicitud de
+primer nivel cuenta una sola vez; las llamadas internas no. Cerebro, CRM, la
+navegación y la consulta de capacidades son gratuitas. Las respuestas exitosas
+de market data incluyen `commercial_usage`. Cuando se agota el saldo, la API
+devuelve HTTP `402` con un código `COMMERCIAL_*` estable, `retryable: false`, el
+estado actual en `usage` y `next_action.kind: "contact_sales"`.
+
 ## OAuth
 
 Endpoints OAuth 2.0 para aplicaciones cliente de MCP:

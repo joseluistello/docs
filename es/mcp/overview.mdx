@@ -33,6 +33,7 @@ La superficie de MCP está documentada por familia en la **Referencia MCP**. Usa
 | Collections y operaciones | Collections, records y entities | [MCP: Collections y operaciones](/es/mcp/work) |
 | Integraciones y Broker | Operar un provider conectado (gated) | [MCP: Integraciones y Broker](/es/mcp/integrations) |
 | Workspace y colaboración | Comments, members, workspaces y estadísticas de propuestas | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
+| Uso comercial | `driftless_usage` consulta el plan, solicitudes, créditos, renovación, investigación promocional y la acción para hablar con ventas. La consulta no consume saldo. | [Resumen de la API](/es/api/overview#uso-comercial) |
 | Market data | Catorce tools tipadas `driftless_market_*`: suppliers, detalle por lote acotado y comparación de segmentos, opportunities, awards, marcas de riesgo y permits, sin modelo ni SQL detrás. `driftless_market_data` es un shim de compatibilidad deprecado. Reconecta los clientes después de cambios de schema porque los conectores pueden guardar definiciones de tools en caché. | [Market Data](/es/api/market-data) |
 
 La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (tags y areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
@@ -77,8 +78,8 @@ que falta**. Nunca escribas ni despliegues un script para tapar el hueco.
 
 Más allá de las tools estáticas de arriba, el servidor MCP puede **sintetizar** tools de solo
 lectura por workspace a partir de las capabilities ready de un provider:
-`driftless_<provider>_records` y `driftless_<provider>_page_content` (por ejemplo,
-`driftless_notion_page_content`). Aparecen solo cuando la síntesis de tools del broker está
+`driftless_<provider>_records` y `driftless_<provider>_document_content` (por ejemplo,
+`driftless_notion_document_content`). Aparecen solo cuando la síntesis de tools del broker está
 habilitada y el provider expone una capability `ready`, de efecto lectura y de un kind
 sintetizable, con un tope por workspace. De ahí dos reglas: **una tool listada no es una tool
 utilizable** (una tool sintetizada o la estática del broker igual se resuelve por la API del

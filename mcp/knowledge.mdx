@@ -31,7 +31,7 @@ driftless_context_retrieve task:'harden the webhook handler' files:['src/webhook
 | Tool | Purpose | Main params | Notes |
 | --- | --- | --- | --- |
 | `driftless_context_create` | Create a topic (defaults to Up for review) | `title`, `content`, `pattern`, `rels` | returns `anchor_validation` |
-| `driftless_note_add` | Capture a private Note (stays a draft) | `content`, `project_id`, `card_id` | never auto-submitted |
+| `driftless_note_add` | Capture a private Note (stays a draft) | `content`, `title` | never auto-submitted |
 | `driftless_context_update` | Append-safe update | `topic`, fields, `rels` | returns `anchor_validation` |
 | `driftless_context_delete` | Delete a topic (destructive) | `topic` | irreversible |
 | `driftless_context_merge` | Fold a duplicate into a survivor | `source`, `into` | archives the source |

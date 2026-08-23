@@ -33,6 +33,7 @@ The MCP surface is documented by family in the **MCP reference**. Use this page 
 | Collections and operations | Collections, records, and entities | [MCP: Collections and operations](/mcp/work) |
 | Integrations and Broker | Operating a connected provider (gated) | [MCP: Integrations and Broker](/mcp/integrations) |
 | Workspace and collaboration | Comments, members, workspaces, and proposal stats | [MCP: Workspace and collaboration](/mcp/collaboration) |
+| Commercial usage | `driftless_usage` reads the plan, monthly requests and credits, renewal date, promotional research availability, and contact-sales action. The read itself is free. | [API overview](/api/overview#commercial-usage) |
 | Market data | Fourteen typed `driftless_market_*` tools: suppliers, bounded batch detail and segment comparison, opportunities, awards, risk marks, and permits — no model or SQL behind them. `driftless_market_data` is a deprecated compatibility shim. Reconnect clients after schema changes because connectors may cache tool definitions. | [Market Data](/api/market-data) |
 
 The surface covers **context** (topics, governance, the graph), **workspace organization** (tags and areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Operational writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
@@ -77,7 +78,7 @@ deploy a script to fill the gap.
 
 Beyond the static tools above, the MCP server can **synthesize** extra read-only tools per
 workspace from a provider's ready capabilities: `driftless_<provider>_records` and
-`driftless_<provider>_page_content` (for example, `driftless_notion_page_content`). They
+`driftless_<provider>_document_content` (for example, `driftless_notion_document_content`). They
 appear only when broker tool synthesis is enabled and the provider exposes a `ready`,
 read-effect capability of a synthesizable kind, capped per workspace. Two rules follow: **a
 listed tool is not a usable one** (a synthesized or static broker tool still resolves through

@@ -13,6 +13,11 @@ npm install -g @driftless-sh/cli
 The agent-first contract for [Collections](/concepts/collections) — intent `search`, bounded active-only reads, `--view full`, and `archive`/`restore`/`purge` as separate lifecycle operations — needs **`@driftless-sh/cli` ≥ 0.27.9**. Run `driftless --version` to verify; reinstall with the command above to upgrade.
 </Note>
 
+<Note>
+The `usage` command and commercial-intelligence allowance contract require
+**`@driftless-sh/cli` ≥ 0.28.0**.
+</Note>
+
 ## Authenticate
 
 Run `driftless login` to open your browser to the Driftless dashboard, where you can copy your API key:
@@ -100,6 +105,7 @@ The CLI stores its state in `~/.driftless/config.json`:
 | `login` | `--key <key>` | Authenticate with API key | `driftless login --key drift_xxx` |
 | `doctor` | `--json` | 8 health checks | `driftless doctor` |
 | `install-skill` | none | Install AGENTS.md + CLAUDE.md | `driftless install-skill` |
+| `usage` | `--json` | Show monthly commercial requests, credits, and renewal | `driftless usage` |
 
 ## Global flags
 
