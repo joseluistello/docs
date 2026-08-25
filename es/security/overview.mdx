@@ -26,6 +26,7 @@ Las API keys son el mecanismo de autenticación principal para la CLI y CI.
 - Las keys se almacenan como hashes con salt; el valor en crudo no se puede recuperar
 - Las keys se pueden revocar en cualquier momento desde el dashboard
 - Se admiten múltiples keys por workspace
+- Una key deja de funcionar cuando su creador es removido de ese workspace
 
 Crea keys desde el dashboard en **Settings > API Keys** o mediante la CLI:
 
@@ -77,6 +78,22 @@ Driftless **nunca almacena** tu código fuente. Los Topics conservan solo los pa
 - Las API keys se envían en cabeceras `x-api-key`, nunca en parámetros de URL
 - Las cargas firmadas de webhooks de proveedores se verifican antes de procesarse
 - La API corre en Render con variables de entorno cifradas
+
+## Protección contra extracción masiva
+
+Todo lo que una persona autorizada puede ver en un navegador puede copiarse.
+Por eso Driftless protege el límite que sí puede hacerse cumplir, en vez de
+afirmar que los endpoints del navegador son secretos:
+
+- las consultas de inteligencia se limitan por persona verificada y workspace,
+  en conjunto entre todos los endpoints y sin multiplicarse al cambiar de IP;
+- las entregas exitosas tienen además un techo horario compartido en la base de
+  datos, que sobrevive despliegues y múltiples instancias;
+- el plan y los tamaños de página definidos por el servidor limitan lo entregado;
+- los enlaces de registros y cursores son referencias opacas autenticadas, y
+  los identificadores internos no se exponen;
+- las respuestas autenticadas no se almacenan en caché y el dashboard no
+  conserva sus cuerpos en el almacenamiento del navegador.
 
 ## Reportes
 

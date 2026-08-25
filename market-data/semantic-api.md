@@ -276,8 +276,27 @@ visibility · coverage · items · caveats
 Item projections are per-operation; everything above is shared. The projection
 is an **allowlist**, so a field the contract does not name cannot ride through —
 which is how a search response stays incapable of exhibiting a contact
-coordinate even if an upstream row carried one. `get_supplier` remains the one
-operation that exhibits licensed contacts.
+coordinate even if an upstream row carried one. The HTTP surface always applies
+the abstracted projection. Supplier and opportunity detail are reachable there
+only through a server-issued `record_ref`; raw warehouse UUIDs and publisher
+keys are internal service arguments and are refused over HTTP. Contact coordinates cross the public
+boundary only through the separately quoted and confirmed Contact Path flow.
+
+### Bulk-extraction boundary
+
+Browser endpoints are visible in developer tools by definition, so endpoint
+obscurity is not a security control. Driftless instead makes the server enforce
+the boundary: workspace membership is mandatory and removing the creator
+revokes their API keys; all market-data routes share one 20-request-per-minute
+actor bucket with a five-minute block; Clerk and OAuth token rotation keeps the
+same verified human-and-workspace bucket; and the successful-delivery ledger
+adds a Postgres-backed ceiling of 120 results per rolling hour per actor. Plan
+allowances still bound calls, credits and page size. A spent idempotency key is
+refused rather than replaying a newly executed result for free. Cursors and
+record references are authenticated opaque values; HTTP responses are private,
+non-cacheable and non-indexable; and the dashboard keeps response data only in
+memory. Changing IPs, restarting an API instance, replaying raw record ids or
+asking the browser for a wider projection does not widen access.
 
 Which derivation a surface reads is one option on the tool belt:
 `observationProfile: 'full' | 'agent_observation'`. Chat SELECTS a derivation;

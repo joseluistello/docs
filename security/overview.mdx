@@ -26,6 +26,7 @@ API keys are the primary authentication mechanism for the CLI and CI.
 - Keys are stored as salted hashes; the raw value cannot be recovered
 - Keys can be revoked at any time from the dashboard
 - Multiple keys per workspace are supported
+- A key stops working when its creator is removed from that workspace
 
 Create keys from the dashboard under **Settings > API Keys** or via the CLI:
 
@@ -77,6 +78,22 @@ Driftless **never stores** your source code. Topics keep only the explicit paths
 - API keys are sent in `x-api-key` headers, never in URL parameters
 - Signed provider webhook payloads are verified before processing
 - The API runs on Render with encrypted environment variables
+
+## Protection against bulk extraction
+
+Anything an authorized person can see in a browser can ultimately be copied.
+Driftless therefore protects the enforceable boundary instead of claiming that
+browser endpoints are secret:
+
+- market-intelligence requests are limited per verified person and workspace,
+  across all endpoints and source IPs;
+- successful deliveries also have a database-backed hourly ceiling that
+  survives deploys and multiple API instances;
+- plan allowances and server-owned page sizes limit the amount delivered;
+- record links and cursors are authenticated opaque values, while internal
+  record ids are not exposed;
+- authenticated responses are non-cacheable and the dashboard does not persist
+  response bodies in browser storage.
 
 ## Reporting
 
