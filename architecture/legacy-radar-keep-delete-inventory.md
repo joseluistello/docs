@@ -63,7 +63,7 @@ as of branch `staging` at the time of writing.
 | `radar/radar.controller.ts` | 126–145 | KEEP-INFRA | `runs/:runId/price` — the quote/approval engine. |
 | `radar/radar.controller.ts` | 148–218 | KEEP-INFRA | `credits`, `credits/history`, `credits/packs`, `credits/checkout`, `credits/grant` — credits/ledger. |
 | `radar/radar.controller.ts` | 220–224, 228–232 | KEEP-INFRA | `runs/:runId/start` (approval-gated execution) and `runs/:runId/reconcile` — cancel/reconcile. |
-| `radar/radar.controller.ts` | 234–238, 271–286 | OUT-OF-SCOPE/UNCHANGED | `runs/:runId/enrich`, `enrich/companies`, `collections/:id/enrich/contacts` — enrichment/contactos, explicitly out of this project. |
+| `radar/radar.controller.ts` | Contact activation routes | REPLACED | The legacy `collections/:id/enrich/contacts` route was removed. Contact activation now uses explicit `contact-paths/quote` then `contact-paths/unlock` with a confirmed spend cap and idempotency key. |
 | `radar/radar.controller.ts` | 292–306 | OUT-OF-SCOPE/UNCHANGED | `runs/:runId/monitor` (+ pause/resume) — legacy radar monitor; not in the enumerated KEEP-INFRA categories. |
 | `radar/radar.controller.ts` | 316–323 | OUT-OF-SCOPE/UNCHANGED | `runs/:runId/stream` (SSE) — legacy run-table projection; the new artifact carries its own stream. |
 | `radar/radar-run.service.ts`, `radar/credits.service.ts`, `radar/radar-pricing.ts` | whole files | KEEP-INFRA | Ledger, credits, quote/approval, cancel/reconcile. |

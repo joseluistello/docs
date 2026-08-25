@@ -90,4 +90,4 @@ accionable para hablar con ventas. Son definitivos (`retryable: false`).
 
 ## Observabilidad
 
-Cada error capturado también se emite a PostHog (`api_error` del lado del servidor, `cli_command_error` desde la CLI) con `code`, `status_code` y `endpoint` como propiedades, de modo que la superficie de errores es un único mapa consultable, segmentable por tipo y endpoint en vez de texto libre.
+Cada error capturado también se emite a PostHog (`request_failed` del lado del servidor, `command_failed` desde la CLI) con `code`, `status_code` y `endpoint` como propiedades, de modo que la superficie de errores es un único mapa consultable, segmentable por tipo y endpoint en vez de texto libre. El texto de la excepción nunca sale del log — se une por `request_id`.

@@ -34,7 +34,7 @@ The MCP surface is documented by family in the **MCP reference**. Use this page 
 | Integrations and Broker | Operating a connected provider (gated) | [MCP: Integrations and Broker](/mcp/integrations) |
 | Workspace and collaboration | Comments, members, workspaces, and proposal stats | [MCP: Workspace and collaboration](/mcp/collaboration) |
 | Commercial usage | `driftless_usage` reads the plan, monthly requests and credits, renewal date, promotional research availability, and contact-sales action. The read itself is free. | [API overview](/api/overview#commercial-usage) |
-| Market data | Fourteen typed `driftless_market_*` tools: suppliers, bounded batch detail and segment comparison, opportunities, awards, risk marks, and permits — no model or SQL behind them. `driftless_market_data` is a deprecated compatibility shim. Reconnect clients after schema changes because connectors may cache tool definitions. | [Market Data](/api/market-data) |
+| Commercial intelligence | Thirteen typed analysis tools for suppliers, segment comparisons, opportunities, awards, risk marks, and permits. Analysis never returns contact coordinates. `driftless_contact_quote` prices selected CRM accounts for free; `driftless_contact_unlock` runs only after explicit confirmation with a credit cap. There is no generic action router or bulk supplier-detail tool. Reconnect after schema changes because clients may cache tool definitions. | [Market Data](/api/market-data) |
 
 The surface covers **context** (topics, governance, the graph), **workspace organization** (tags and areas), the **operational substrate** (collections, records, entities), and **broker execution** (operating connected providers). It never covers workspace admin, repo registration, key management, **integration setup** (connecting a provider), authoring/deploying integration scripts, or manual agent-run triggering. Topics live in the workspace and are visible to its members; another's private drafts stay hidden. Operational writes require the `work:write` scope; merging into Knowledge needs owner/admin authority, and the MCP client runs it only when the authorizing owner/admin explicitly asks.
 
@@ -140,14 +140,18 @@ For local development, use `http://localhost:3020/mcp` and your local API key.
 
 ### Connecting with OAuth (Claude.ai, ChatGPT)
 
-Published clients use OAuth 2.0 with PKCE. The flow is fully automatic for Claude.ai:
+The published ChatGPT app is named **Brein**. It connects to the same authenticated
+Driftless workspace and uses the same workspace permissions and MCP tool contracts;
+the name does not create a second account or data boundary.
 
-1. Enter `https://api.driftless.icu/mcp` as the MCP endpoint in Claude.ai
-2. Claude.ai discovers the OAuth endpoints automatically via `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`
+Published clients use OAuth 2.0 with PKCE. The flow is fully automatic:
+
+1. Install Brein in ChatGPT, or enter `https://api.driftless.icu/mcp` as the MCP endpoint in Claude.ai
+2. The client discovers the OAuth endpoints automatically via `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`
 3. You authorize in the Driftless consent screen
-4. Claude.ai receives a bearer token and uses it for all MCP tool calls
+4. The client receives a bearer token and uses it for MCP tool calls within the authorized workspace
 
-No manual configuration needed. Claude.ai handles registration, PKCE, and token refresh.
+No manual OAuth configuration is needed. The client handles registration, PKCE, and token refresh.
 
 ## OAuth 2.0 reference
 
@@ -177,6 +181,7 @@ curl -X POST https://api.driftless.icu/api/v1/oauth/register \
 | `broker:invoke` | Invoke a broker operation |
 | `broker:admin` | Manage broker grants and criterion |
 | `market_data:read` | Read commercial intelligence (suppliers, opportunities, awards, risk marks, permits) — see [Market Data](/api/market-data) |
+| `commercial:read` | Read an exact Contact Path quote for selected CRM records; no contact coordinates are returned. |
 | `offline_access` | Refresh access without reconnecting |
 
 The `broker:*` scopes are enforced only when the Broker is enabled, and they gate its lane on top of rollout and grants. Discovery metadata advertises a subset of scopes; the enforced set is the authority.

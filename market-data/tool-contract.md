@@ -1,7 +1,7 @@
 # Market data — the tool contract
 
 This is the contract every market-data operation follows, across all four
-surfaces that expose it (HTTP, MCP `driftless_market_data`, the CLI `market`
+surfaces that expose it (HTTP, typed MCP tools, the CLI `market`
 command, and the agent tool belt). It does not restate what each operation
 searches for — that lives in [`semantic-api.md`](./semantic-api.md) and
 [`commercial-intelligence-v1.md`](./commercial-intelligence-v1.md). This
@@ -12,9 +12,9 @@ re-discovering the same shape eleven times.
 
 ## Two projections of one envelope
 
-Everything below describes the **full** projection — the canonical envelope with
-provenance intact, which is what the HTTP API, the audit record, licence
-enforcement and support read.
+Everything below describes the canonical envelope used by the internal belt,
+audit record, licence enforcement and support. HTTP, OAuth, MCP and CLI always
+receive the abstracted projection; they never opt into canonical provenance.
 
 A surface a **model** reads (Chat, Research, every MCP tool) reads the same
 envelope through the *abstracted* projection instead
@@ -57,11 +57,10 @@ the kind per source and the filter becomes an ordinary exact filter over corpus
 values. Until then, membership screening is a search rather than a filter, and
 the runtime skill says so.
 
-Which projection a response uses is decided by the ENTRYPOINT and is not a
-request parameter. Over HTTP an entrypoint opts into the abstracted form with
-`X-Driftless-Model-Exposure: abstracted`; every other value, including its
-absence and including `full`, is the full projection — the header can only ever
-make a response say less.
+Which projection a response uses is decided by the server boundary and is not a
+request parameter. HTTP always applies the abstracted projection. The
+`X-Driftless-Model-Exposure: abstracted` header remains a harmless compatibility
+marker for MCP and CLI clients; no header value can request canonical provenance.
 
 ## The envelope
 
@@ -196,7 +195,6 @@ multiple of the page size would otherwise produce a phantom empty last page.
 | `market_capabilities` | `GET capabilities` | no | corpus-observed values, read fresh every call |
 | `search_suppliers` | `POST suppliers/search` | yes | needs ≥1 narrowing dimension |
 | `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | strong key, no search |
-| `get_supplier_batch` | `POST suppliers/batch` | no (bounded batch) | 1–50 opaque references; one canonical detail read |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | same narrowing rule as `search_suppliers`; returns one exact integer, never an approximation |
 | `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | at most 5 segments × 10 states and 50 cells; one observed kind |
 | `search_opportunities` | `POST opportunities/search` | yes | hybrid or lexical strategy |
@@ -220,9 +218,9 @@ itself cannot finish inside the statement timeout, the existing
 `market_data_timeout` refusal answers — this operation never substitutes an
 approximation for a count it could not finish computing.
 
-### `get_supplier_batch`
+### Internal supplier synthesis
 
-Accepts 1–50 opaque references returned by supplier search, resolves and
+The internal belt accepts 1–50 opaque references returned by supplier search, resolves and
 deduplicates them server-side, and reads canonical detail in one set-based
 statement. Output preserves first-seen order. Missing, forged and unavailable
 references deliberately share `invalid_or_unavailable`; the operation never

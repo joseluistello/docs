@@ -90,4 +90,4 @@ These errors include the current `usage` snapshot and an actionable
 
 ## Observability
 
-Every captured error is also emitted to PostHog (`api_error` server-side, `cli_command_error` from the CLI) with `code`, `status_code`, and `endpoint` as properties, so the error surface is one queryable map, sliceable by type and endpoint rather than free-text.
+Every captured error is also emitted to PostHog (`request_failed` server-side, `command_failed` from the CLI) with `code`, `status_code`, and `endpoint` as properties, so the error surface is one queryable map, sliceable by type and endpoint rather than free-text. The exception text itself never leaves the log — join on `request_id`.

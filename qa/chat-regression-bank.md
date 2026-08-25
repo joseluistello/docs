@@ -120,10 +120,10 @@ rule lives in code, for whoever investigates a failure).
 
 **reg-01 — the exact reported bug**
 > "¿Puedes ver el padrón de exportadores?"
-- must_use: `search_suppliers`, either with `source_slugs` set to a plausible registry slug or with a plain `query` (e.g. "exportador", "padrón de exportadores") — an actual tool call, not a workspace/topic search
-- must_say: if rows come back, names them and states they come from the exporter/importer registry; if the first attempt is empty, tries the other approach (slug vs. query) before concluding anything
+- must_use: `search_suppliers` with a bounded textual `query` (e.g. "exportador" or "padrón de exportadores") — an actual tool call, not a workspace/topic search
+- must_say: if rows come back, names the matching published observations without claiming a physical registry the model-facing surface does not expose; if the first attempt is empty, tries a clearer bounded query before concluding anything
 - must_not_say: "no tengo acceso al padrón de exportadores" or "no está en ninguno de los mundos a los que llego" without ever having called a market-data search tool with that registry in mind — this is the exact failure this bank exists to catch
-- anchors: `market-data.tool-defs.ts` — `SOURCE_SLUGS_TEACHES`; MARKET_PLAYBOOK — "membership question... filter by source_slugs before saying one is unavailable"
+- anchors: typed `search_suppliers` tool description; MARKET_PLAYBOOK visibility and coverage rules
 
 **reg-02 — a license/authorization framed as a registry question**
 > "¿Esta farmacia tiene licencia sanitaria vigente ante COFEPRIS?"
@@ -134,10 +134,10 @@ rule lives in code, for whoever investigates a failure).
 
 **reg-03 — a registry named in words the model has never seen**
 > "¿Esta empresa aparece en el RENIECYT?"
-- must_use: `search_suppliers` (query or source_slugs) as the first attempt, even though "RENIECYT" is not a slug the model was given verbatim
+- must_use: `search_suppliers` with a bounded textual query as the first attempt, even when the registry name is unfamiliar
 - must_say: attempts a search before answering; if nothing matches, states what was searched and its coverage, and invites the teammate to confirm the registry's exact name if unsure
 - must_not_say: declares the registry "not supported" or "not something I can check" purely because the exact slug was not recognized ahead of time
-- anchors: `registry-membership-screening.md` — "Never answer from memory alone"; `SOURCE_SLUGS_TEACHES` — "or run a plain query and read the source_slug each matching row already carries"
+- anchors: `registry-membership-screening.md` — "Never answer from memory alone"; typed `search_suppliers` tool description
 
 ---
 

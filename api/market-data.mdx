@@ -5,7 +5,7 @@ description: 'Commercial intelligence over Mexican public-sector suppliers, oppo
 
 Market data is a separate, read-only warehouse of Mexican commercial intelligence — suppliers, public opportunities, awards, adverse risk marks, and permits — layered under a **semantic contract**, not a SQL surface. It answers governed questions ("who could supply this?", "what has this RFC won?", "does this party carry a published risk mark?"); it does not expose a query language, and every response states what it actually saw so an empty page is never confused with a market that doesn't exist.
 
-The same eleven operations are reachable from four surfaces that all call the same services in-process: this HTTP API, the MCP tool `driftless_market_data`, the CLI's `driftless market` command, and the agent tool belt used by [chat and Investigations](#chat-and-due-diligence-screening). None of them run a model or SQL behind the scenes — the caller plans the sequence and synthesizes the answer.
+The semantic operations share one service layer across HTTP, the typed MCP tools, `driftless market`, and the internal agent tool belt used by [chat and Investigations](#chat-and-due-diligence-screening). The internal belt may batch already-selected detail for synthesis efficiency; public MCP deliberately does not. None of these surfaces exposes SQL or warehouse schema.
 
 <Note>
 Every route is workspace-scoped and requires authentication like the rest of the API — there is no public/unauthenticated market-data route. A market-data read is a paid, attributable operation on a shared warehouse.
@@ -26,7 +26,6 @@ Every path below is relative to the base path above. `example` is a minimal, val
 | `market_capabilities` | `GET capabilities` | no | — |
 | `search_suppliers` | `POST suppliers/search` | yes | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
 | `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
-| `get_supplier_batch` | `POST suppliers/batch` | no (bounded batch) | Use 1–50 opaque `record_ref` values returned by supplier search |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
 | `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | `{ "segments": [{ "id": "dental", "query": "clínica dental" }], "geographies": [{ "id": "nl", "state": "Nuevo León" }], "observed_kind": "establishment" }` |
 | `search_opportunities` | `POST opportunities/search` | yes | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
@@ -42,11 +41,15 @@ Every path below is relative to the base path above. `example` is a minimal, val
 
 ### Suppliers
 
-`search_suppliers` needs at least one narrowing dimension (`query`, `state`, `scian_codes`, `source_slugs`, or `rfc`) — an unbounded scan of the whole directory is refused with `query_too_broad` rather than served. Each result is **one published observation**, never a consolidated company or a demonstration of capability; it carries contact *presence* and counts, not contact values. `get_supplier` is the only operation that returns contact coordinates — and only what the publisher printed on a public card, subject to the live licence gate.
+`search_suppliers` needs at least one narrowing dimension (`query`, `state`, `scian_codes`, `source_slugs`, or `rfc`) — an unbounded scan of the whole directory is refused with `query_too_broad` rather than served. Each result is **one published observation**, never a consolidated company or a demonstration of capability; it carries contact *presence* and counts, not contact values. HTTP, OAuth, MCP and CLI responses are always abstracted and expose only contact availability; canonical coordinates remain inside the service/audit boundary.
 
 `count_suppliers` shares the same narrowing rule and returns one exact `{ "count": number }`, computed with `SELECT count(*)`, never sampled or estimated. If the count itself can't finish inside the statement timeout, it fails with `market_data_timeout` rather than substituting an approximation.
 
-`get_supplier_batch` opens up to 50 already-selected observations in one call, preserves first-seen order, deduplicates repeated identities, and applies the same contact and licensing boundary as `get_supplier`. Invalid, unavailable, and unlicensed references intentionally share one `invalid_or_unavailable` status.
+The internal research belt may open up to 50 already-selected observations in one
+in-process call for synthesis efficiency. That batch primitive is not an HTTP,
+OAuth, MCP or CLI operation; it returns only the same redacted observations used
+by the research runtime. Invalid, unavailable, and unlicensed references share
+one `invalid_or_unavailable` status.
 
 `compare_segments` compares up to five text-defined segments across up to ten Mexican states, with a hard ceiling of 50 cells and one required `observed_kind`. Its counts are published observations, never unique companies, TAM, or evidence of demand. `contact_breakdown: true` adds a like-for-like count of observations carrying a published contact channel.
 
@@ -132,17 +135,17 @@ interface MarketDataEnvelope<T> {
 
 - **`interpretedRequest`** is what the layer actually ran after normalizing the caller's input (a state name resolved to its code, a fuzzy municipality resolved to its canonical spelling) — `normalizations` says what changed and why.
 - **`results`** is the operation's own payload: a row array for a search, one object for a `get_*`/`count_*` read, a group array for an aggregate.
-- **`page`** is `null` whenever the operation doesn't paginate (`get_supplier`, `get_supplier_batch`, `get_opportunity`, `market_capabilities`, `count_suppliers`, `compare_segments`).
+- **`page`** is `null` whenever the operation doesn't paginate (`get_supplier`, `get_opportunity`, `market_capabilities`, `count_suppliers`, `compare_segments`).
 - **`coverage`** and **`corpusBasis`** are what makes an answer honest: which published sources contributed, and which snapshot of the corpus this read saw. Neither can be authored by a model or a caller.
 - **`semanticWarnings`** names a misreading this domain actively invites (an award is not a payment, a risk mark is not a conviction, a name is approximate identity) — always attached by the layer, never decoration.
 - **`provenance`** says where each row was read, explicitly not that it is current or verified.
 
 ## What a model sees: evidence categories, not publishers
 
-The canonical API above is the **full** projection: `source_slug`,
-`source_record_id`, `publisher`, `source_url`, retrieval timestamps and
-`licensedForDisplay` all travel with it. An integrator, the dashboard, support
-and the audit record read that.
+The service keeps a canonical projection for internal audit and support, but
+the HTTP API above always returns the abstracted projection: `source_slug`,
+`source_record_id`, publisher identity, retrieval internals and contact
+coordinates never travel to an authenticated HTTP caller.
 
 A surface a **model** reads — Chat, Research, and every MCP tool — reads the
 same envelope through an *abstracted* projection. Publisher identity is replaced
@@ -275,21 +278,43 @@ Two things a blind client (an agent with only `curl` and this API's own descript
 
 `GET coverage` returns the same `coverage` block attached to every other response, standalone: which published sources contributed to each relation, how fresh, and whether it's licensed for display. It is what separates "no results" from "no such market".
 
+## Analysis versus contact activation
+
+Large-scale questions use server-side counts, comparisons, histories and award
+aggregates. One aggregate response is one insight credit even when it contains
+many groups; the underlying company/contact rows are not exported.
+
+Contact research is separate and operates only on CRM records the user selected:
+
+1. `driftless_contact_quote` reads the exact selection and balance. It is free,
+   calls no external provider and returns no contact coordinates.
+2. After the user explicitly accepts that quote,
+   `driftless_contact_unlock` sends the same ids, `confirm: true`, the approved
+   `max_credits`, the opaque server-minted `quote_token` (valid for 10 minutes),
+   and the server-minted `idempotency_key` returned by that same quote. The server recomputes the price
+   and refuses before spend if it increased or the balance/permission changed.
+
+Already unlocked accounts cost zero. Partial failures are reported per account;
+failed work is refunded. Reusing the same idempotency key cannot call the
+provider or debit the workspace twice.
+
 ## Authentication and scopes
 
-Market-data routes require the same authentication as the rest of the API (API key or OAuth bearer token) — there is no public route. Over OAuth, they map to a dedicated `market_data:read` scope, OR-listed with `context:read` for back-compat:
+Market-data routes require the same authentication as the rest of the API (API key or OAuth bearer token) — there is no public route. Over OAuth, market analysis maps to a dedicated `market_data:read` scope, OR-listed with `context:read` for back-compat. A free Contact Path quote over selected CRM records uses the separate `commercial:read` scope; paid unlock uses `commercial:activate`:
 
 | Scope | Status |
 |---|---|
 | `market_data:read` | The documented, canonical scope for market-data reads. Dedicated so a client that should only consume commercial intelligence (an external plugin, say) isn't handed read access to the whole Topics/Knowledge vault via `context:read`. |
-| `context:read` | Still satisfies every market-data route transitionally: today's default OAuth issuance (the ChatGPT plugin, the MCP connector, CLI OAuth) does not yet grant `market_data:read`, so retiring `context:read` from this OR-list is a later, deliberate step, not automatic. |
+| `context:read` | Still satisfies existing market-data routes transitionally for already-issued connectors. New default grants include `market_data:read`. |
+| `commercial:read` | Reads an exact Contact Path quote for CRM records the caller selected. It returns price, balance and availability only — never contact coordinates. |
+| `commercial:activate` | Optional and never implicit. Required only for the paid Contact Path unlock; the consent screen explains the quote-and-confirm boundary. |
 
 ## MCP: typed market-data tools
 
-MCP exposes fourteen typed `driftless_market_*` tools, one per semantic operation, with external schemas for required fields, enums, arrays and limits. `driftless_market_data` remains a **deprecated compatibility shim** for existing `action`-based clients; new clients should use the typed tools. Reconnect a client after a schema update because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
+MCP exposes thirteen typed `driftless_market_*` analysis tools plus the two-step Contact Path tools. It does not expose `driftless_market_data`, `driftless_market_get_supplier_batch`, physical source selectors, or contact coordinates. Reconnect a client after this schema change because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
 
 ```json
-{ "action": "search_suppliers", "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
+{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
 ```
 
 The tool result adds house-standard top-level pagination (`shown`, `has_more`) alongside the envelope's own `page.returned`/`page.hasMore` — additive, never a replacement — plus a `next_action` hint telling the caller what to do next (continue with a cursor, inspect a candidate with `get_supplier`, read `coverage` before concluding "no marks", and so on).
@@ -297,7 +322,7 @@ The tool result adds house-standard top-level pagination (`shown`, `has_more`) a
 For textual supplier, opportunity, and award operations (including `aggregate_awards`), `query_mode` is optional: `auto` preserves existing behavior, while `exact_phrase`, `all_terms`, and `any_terms` are bounded interpretations of tokenized text. An explicit opportunity mode uses lexical retrieval and cannot be combined with `strategy=hybrid`. The platform-authored `interpretedRequest.query_interpretation` reports requested and applied modes, normalized terms, recognized state aliases and filters, and any warning. It never includes SQL, schema, or a compiled query.
 
 <Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. When `driftless_market_data`'s parameters change, reconnect the connector (or start a fresh session) to see the new fields — see [MCP & OAuth](/mcp/overview) for the general caching note.
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. Reconnect the connector (or start a fresh session) to remove retired tools and receive the Contact Path schemas and scopes — see [MCP & OAuth](/mcp/overview) for the general caching note.
 </Note>
 
 ## CLI: `driftless market`
@@ -305,7 +330,7 @@ MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. W
 ```bash
 driftless market capabilities
 driftless market suppliers search --query "tornillos industriales" --state "Nuevo León" --limit 5
-driftless market suppliers get <source-slug> <source-record-id>
+driftless market suppliers get <record-ref>
 driftless market suppliers count --state "Nuevo León"
 driftless market opportunities search --query "mantenimiento de bombas"
 driftless market opportunities get <id> --include-awards true

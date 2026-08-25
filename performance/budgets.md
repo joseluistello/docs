@@ -32,7 +32,7 @@ round-trip on every invoke.
 | single topic (`full`) | 50 KB | `brief` view drops `content`/`components` |
 | collection records page | 40 KB | paginate (F6.2) |
 | broker records page | 40 KB | hard-cap output size (F7.4) |
-| market-data envelope (`driftless_market_data`) | 50 KB | pass-whole-or-refuse, never trimmed — see below |
+| typed market-data envelope (`driftless_market_*`) | 50 KB | pass-whole-or-refuse, never trimmed — see below |
 
 Ceilings are enforced by regression tests (F2.2) and the gates in `gates.md`.
 
@@ -47,7 +47,7 @@ operations list) can never flood an agent's context. Enforced by
 `apps/mcp/src/tools/response-budget.spec.ts` with worst-case fixtures.
 
 **Market-data is the one envelope this backstop never trims.** Every
-`driftless_market_data` response (`schemaVersion: 'market-data/domain/1'`)
+typed market-data response (`schemaVersion: 'market-data/domain/1'`)
 carries an opaque page cursor bound to its exact filter set and corpus
 snapshot; the governor's usual last-resort shrinking (halving the largest
 array/string) would desynchronize that cursor from the page actually

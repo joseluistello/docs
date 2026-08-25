@@ -384,16 +384,16 @@ model gateway, SQL, web search or enrichment. ChatGPT, Claude, Codex or a human
 at the CLI supplies the planning and synthesis. The internal runner remains a
 separate consumer for Driftless chat and scheduled agent runs.
 
-MCP exposes focused typed market tools alongside `driftless_market_data` as a
-compatibility shim. The `tools/list` budget is an internal 80 KiB
-latency/context budget, not an external provider limit. The shim's `action`
-maps to the granular CLI and HTTP surfaces:
+MCP exposes only focused typed market tools. The generic action router and bulk
+supplier-detail tool are retired; the `tools/list` budget is an internal 80 KiB
+latency/context budget, not an external provider limit. Typed operations map to
+the granular CLI and HTTP surfaces:
 
 | MCP action | CLI | HTTP |
 |---|---|---|
 | `market_capabilities` | `driftless market capabilities` | `GET /market-data/capabilities` |
 | `search_suppliers` | `driftless market suppliers search` | `POST /market-data/suppliers/search` |
-| `get_supplier` | `driftless market suppliers get` | `GET /market-data/suppliers/:sourceSlug/:sourceRecordId` |
+| `get_supplier` | `driftless market suppliers get` | `GET /market-data/suppliers/~ref/:recordRef` |
 | `search_opportunities` | `driftless market opportunities search` | `POST /market-data/opportunities/search` |
 | `get_opportunity` | `driftless market opportunities get` | `GET /market-data/opportunities/:id` |
 | `search_awards` | `driftless market awards search` | `POST /market-data/awards/search` |

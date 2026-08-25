@@ -5,7 +5,7 @@ description: 'Inteligencia comercial sobre suppliers, opportunities, awards, mar
 
 Market data es un warehouse separado y de solo lectura de inteligencia comercial mexicana — suppliers, opportunities públicas, awards, marcas de riesgo adversas y permits — construido sobre un **contrato semántico**, no una superficie SQL. Responde preguntas gobernadas ("¿quién podría suministrar esto?", "¿qué se ha adjudicado a este RFC?", "¿esta parte lleva una marca de riesgo publicada?"); no expone un lenguaje de consulta, y cada respuesta declara qué vio realmente, para que una página vacía nunca se confunda con un mercado que no existe.
 
-Las mismas once operaciones se alcanzan desde cuatro superficies que llaman a los mismos servicios in-process: esta HTTP API, la tool de MCP `driftless_market_data`, el comando `driftless market` de la CLI, y el tool belt del agente que usan [el chat e Investigations](#chat-y-el-método-de-due-diligence). Ninguna corre un modelo o SQL detrás de escena — quien llama planea la secuencia y sintetiza la respuesta.
+HTTP, MCP y `driftless market` comparten los mismos servicios in-process y siempre devuelven la proyección pública abstracta: operaciones semánticas tipadas, sin SQL, detalle masivo de proveedores ni coordenadas de contacto. El tool belt interno puede componer lecturas acotadas y redactadas para síntesis, sin convertirse en una superficie de extracción. Quien llama planea la secuencia y sintetiza la respuesta.
 
 <Note>
 Cada ruta está acotada al workspace y requiere autenticación como el resto de la API — no hay ninguna ruta pública/sin autenticar en market-data. Una lectura de market-data es una operación paga y atribuible sobre un warehouse compartido.
@@ -26,7 +26,6 @@ Cada ruta de abajo es relativa a la ruta base de arriba. `example` es un cuerpo 
 | `market_capabilities` | `GET capabilities` | no | — |
 | `search_suppliers` | `POST suppliers/search` | sí | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
 | `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
-| `get_supplier_batch` | `POST suppliers/batch` | no (batch acotado) | Usa de 1 a 50 valores opacos `record_ref` devueltos por supplier search |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
 | `compare_segments` | `POST suppliers/compare-segments` | no (matriz acotada) | `{ "segments": [{ "id": "dental", "query": "clínica dental" }], "geographies": [{ "id": "nl", "state": "Nuevo León" }], "observed_kind": "establishment" }` |
 | `search_opportunities` | `POST opportunities/search` | sí | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
@@ -42,11 +41,11 @@ Cada ruta de abajo es relativa a la ruta base de arriba. `example` es un cuerpo 
 
 ### Suppliers
 
-`search_suppliers` necesita al menos una dimensión de acotamiento (`query`, `state`, `scian_codes`, `source_slugs`, o `rfc`) — un escaneo sin límite de todo el directorio se rechaza con `query_too_broad` en vez de servirse. Cada resultado es **una observación publicada**, nunca una empresa consolidada ni una demostración de capacidad; lleva la *presencia* de contacto y sus conteos, no los valores de contacto. `get_supplier` es la única operación que devuelve coordenadas de contacto — y solo lo que el publisher imprimió en una ficha pública, sujeto al gate de licencia vigente.
+`search_suppliers` necesita al menos una dimensión de acotamiento (`query`, `state`, `scian_codes`, `source_slugs`, o `rfc`) — un escaneo sin límite de todo el directorio se rechaza con `query_too_broad` en vez de servirse. Cada resultado es **una observación publicada**, nunca una empresa consolidada ni una demostración de capacidad; lleva la *presencia* de contacto y sus conteos, no los valores de contacto. Las respuestas HTTP, OAuth, MCP y CLI siempre usan la proyección abstracta y sólo exponen disponibilidad; las coordenadas canónicas permanecen dentro del servicio/auditoría.
 
 `count_suppliers` comparte la misma regla de acotamiento y devuelve un entero exacto `{ "count": number }`, calculado con `SELECT count(*)`, nunca muestreado ni estimado. Si el conteo mismo no puede terminar dentro del statement timeout, falla con `market_data_timeout` en vez de sustituir una aproximación.
 
-`get_supplier_batch` abre hasta 50 observaciones ya seleccionadas en una llamada, conserva el orden de primera aparición, deduplica identidades repetidas y aplica el mismo límite de contactos y licencias que `get_supplier`. Las referencias inválidas, no disponibles y no licenciadas comparten intencionalmente un solo estado `invalid_or_unavailable`.
+El belt interno de investigación puede abrir hasta 50 observaciones ya seleccionadas en una llamada in-process para síntesis acotada. Ese batch no es una operación HTTP, OAuth, MCP ni CLI y devuelve sólo observaciones ya redactadas. Las referencias inválidas, no disponibles y no licenciadas comparten intencionalmente un solo estado `invalid_or_unavailable`.
 
 `compare_segments` compara hasta cinco segmentos definidos por texto en hasta diez estados mexicanos, con un límite duro de 50 celdas y un solo `observed_kind` obligatorio. Sus conteos son observaciones publicadas, nunca empresas únicas, TAM ni evidencia de demanda. `contact_breakdown: true` añade un conteo comparable de observaciones con un canal de contacto publicado.
 
@@ -132,17 +131,17 @@ interface MarketDataEnvelope<T> {
 
 - **`interpretedRequest`** es lo que la capa realmente corrió después de normalizar la entrada de quien llama (un nombre de state resuelto a su código, un municipio impreciso resuelto a su ortografía canónica) — `normalizations` dice qué cambió y por qué.
 - **`results`** es el payload propio de la operación: un array de filas para un search, un objeto para una lectura `get_*`/`count_*`, un array de grupos para un aggregate.
-- **`page`** es `null` cuando la operación no pagina (`get_supplier`, `get_supplier_batch`, `get_opportunity`, `market_capabilities`, `count_suppliers`, `compare_segments`).
+- **`page`** es `null` cuando la operación no pagina (`get_supplier`, `get_opportunity`, `market_capabilities`, `count_suppliers`, `compare_segments`).
 - **`coverage`** y **`corpusBasis`** son lo que hace honesta una respuesta: qué fuentes publicadas contribuyeron, y qué snapshot del corpus vio esta lectura. Ninguno de los dos puede ser autorado por un modelo o por quien llama.
 - **`semanticWarnings`** nombra una mala lectura que este dominio invita activamente (un award no es un pago, una marca de riesgo no es una condena, un nombre es identidad aproximada) — siempre adjuntado por la capa, nunca decoración.
 - **`provenance`** dice dónde se leyó cada fila, explícitamente no que esté vigente o verificada.
 
 ## Lo que ve un modelo: categorías de evidencia, no publicadores
 
-La API canónica de arriba es la proyección **completa**: `source_slug`,
-`source_record_id`, `publisher`, `source_url`, las marcas de tiempo de
-recuperación y `licensedForDisplay` viajan con ella. Eso es lo que leen un
-integrador, el dashboard, soporte y el registro de auditoría.
+El servicio conserva una proyección canónica para auditoría y soporte, pero la
+API HTTP de arriba siempre devuelve la proyección abstracta: `source_slug`,
+`source_record_id`, identidad del publicador, internals de recuperación y
+coordenadas de contacto nunca llegan a un caller HTTP autenticado.
 
 Una superficie que lee un **modelo** — Chat, Research y cada tool de MCP — lee el
 mismo envelope a través de una proyección *abstracta*. La identidad del publicador
@@ -277,22 +276,50 @@ Hay dos cosas que un cliente ciego (un agente que solo tiene `curl` y las descri
 
 `GET coverage` devuelve el mismo bloque `coverage` que se adjunta a cada otra respuesta, de forma independiente: qué fuentes publicadas contribuyeron a cada relación, qué tan fresca está, y si está licenciada para mostrarse. Es lo que separa "sin resultados" de "no existe ese mercado".
 
+## Análisis frente a activación de contactos
+
+Las preguntas a gran escala usan conteos, comparaciones, historiales y agregados
+de adjudicaciones calculados en el servidor. Una respuesta agregada cuesta un
+crédito de insight aunque contenga muchos grupos; las filas subyacentes de
+empresas o contactos no se exportan.
+
+La investigación de contactos es una capacidad separada y opera únicamente
+sobre registros CRM seleccionados por el usuario:
+
+1. `driftless_contact_quote` lee la selección exacta y el saldo. Es gratuita,
+   no llama a proveedores externos y no devuelve coordenadas de contacto.
+2. Después de aceptar explícitamente la cotización,
+   `driftless_contact_unlock` envía los mismos ids, `confirm: true`, el
+   `max_credits` aprobado, el `quote_token` opaco emitido por el servidor
+   (válido durante 10 minutos) y el `idempotency_key` emitido por esa misma
+   cotización. El servidor recalcula el precio y se niega antes de gastar si
+   aumentó o si cambió el saldo o el permiso.
+
+Las cuentas ya desbloqueadas cuestan cero. Los fallos parciales se reportan por
+cuenta y el trabajo fallido se reembolsa. Reutilizar la misma clave de
+idempotencia no puede llamar dos veces al proveedor ni debitar dos veces al
+workspace.
+
 ## Autenticación y scopes
 
-Las rutas de market-data requieren la misma autenticación que el resto de la API (API key o token bearer de OAuth) — no hay ninguna ruta pública. Sobre OAuth, se mapean a un scope dedicado `market_data:read`, en OR-list con `context:read` por compatibilidad hacia atrás:
+Las rutas de market-data requieren la misma autenticación que el resto de la API (API key o token bearer de OAuth) — no hay ninguna ruta pública. Sobre OAuth, el análisis usa el scope dedicado `market_data:read`, en OR-list con `context:read` por compatibilidad hacia atrás. La cotización gratuita de Contact Path sobre registros CRM seleccionados usa `commercial:read`; el desbloqueo pagado usa `commercial:activate`:
 
 | Scope | Estado |
 |---|---|
 | `market_data:read` | El scope documentado y canónico para las lecturas de market-data. Dedicado para que un cliente que solo debería consumir inteligencia comercial (un plugin externo, digamos) no reciba acceso de lectura a todo el vault de Topics/Knowledge vía `context:read`. |
-| `context:read` | Todavía satisface cada ruta de market-data de forma transicional: la emisión OAuth por defecto de hoy (el plugin de ChatGPT, el conector MCP, el OAuth de la CLI) todavía no otorga `market_data:read`, así que retirar `context:read` de este OR-list es un paso posterior y deliberado, no automático. |
+| `context:read` | Todavía satisface cada ruta de market-data de forma transicional para clientes existentes. Las autorizaciones nuevas solicitan `market_data:read` por defecto. |
+| `commercial:read` | Lee una cotización exacta de Contact Path para registros CRM seleccionados. Devuelve precio, saldo y disponibilidad, nunca coordenadas de contacto. |
+| `commercial:activate` | Scope separado y opcional para desbloquear Contact Paths después de una cotización exacta y confirmación explícita. No se concede por defecto. |
 
 ## MCP: tools tipadas de market data
 
-MCP expone catorce tools tipadas `driftless_market_*`, una por operación semántica, con schemas externos para campos requeridos, enums, arrays y límites. `driftless_market_data` permanece como **shim de compatibilidad deprecado** para clientes existentes basados en `action`; los clientes nuevos deben usar las tools tipadas. Reconecta el cliente después de un cambio de schema porque los conectores pueden guardar definiciones en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
+MCP expone trece tools tipadas `driftless_market_*` para análisis más `driftless_contact_quote` y `driftless_contact_unlock`. No existe un router genérico por `action`, detalle masivo de proveedores ni selectores de fuente física. Reconecta el cliente después de un cambio de schema porque los conectores pueden guardar definiciones en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
 
 ```json
-{ "action": "search_suppliers", "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
+{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
 ```
+
+Un análisis amplio puede devolver conteos, segmentos, patrones y evidencia sin entregar coordenadas de contacto. Para activar contactos sobre registros CRM seleccionados, llama primero a `driftless_contact_quote`; sólo después de mostrar el costo exacto se permite `driftless_contact_unlock` con `confirm: true`, `max_credits`, el `quote_token` opaco emitido por el servidor (válido 10 minutos) y el `idempotency_key` emitido por esa misma cotización. Registros ya desbloqueados cuestan cero y los resultados parciales se reportan por registro.
 
 El resultado de la tool agrega la paginación estándar de la casa al nivel superior (`shown`, `has_more`) junto al propio `page.returned`/`page.hasMore` del envelope — aditivo, nunca un reemplazo — más una pista `next_action` que le dice a quien llama qué hacer después (continuar con un cursor, inspeccionar un candidato con `get_supplier`, leer `coverage` antes de concluir "sin marcas", etcétera).
 
@@ -307,7 +334,7 @@ Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por 
 ```bash
 driftless market capabilities
 driftless market suppliers search --query "tornillos industriales" --state "Nuevo León" --limit 5
-driftless market suppliers get <source-slug> <source-record-id>
+driftless market suppliers get <record-ref>
 driftless market suppliers count --state "Nuevo León"
 driftless market opportunities search --query "mantenimiento de bombas"
 driftless market opportunities get <id> --include-awards true
@@ -318,6 +345,9 @@ driftless market awards aggregate --currency MXN --amount-scope supplier_contrac
 driftless market risks search --rfc XAXX010101000
 driftless market risks screen --rfcs XAXX010101000,AAA010101AAA
 driftless market permits search --holder-name "Constructora Ejemplo"
+driftless market contacts quote <collection-id> --record-ids rec_1,rec_2
+driftless market contacts unlock <collection-id> --record-ids rec_1,rec_2 \
+  --confirm true --max-credits 4 --quote-token TOKEN --idempotency-key unlock-2026-08-24-1
 ```
 
 Todo comando soporta `--json` para el envelope semántico completo; sin él, la CLI imprime un resumen humano compacto (cantidad de filas, etiqueta por fila, warnings, coverage, próximo cursor). Repite un flag de array o pasa valores separados por coma. `--compare-from-date`/`--compare-to-date` son flags planos de la CLI que se anidan en un solo objeto `compare_period` sobre el wire — pasa ambos juntos o ninguno.
