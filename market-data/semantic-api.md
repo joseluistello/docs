@@ -76,10 +76,10 @@ All workspace-scoped. None is `@Public()`.
 
 ```
 POST /api/v1/workspaces/:slug/market-data/suppliers/search
-GET  /api/v1/workspaces/:slug/market-data/suppliers/:sourceSlug/:sourceRecordId
+GET  /api/v1/workspaces/:slug/market-data/suppliers/~ref/:recordRef
 
 POST /api/v1/workspaces/:slug/market-data/opportunities/search
-GET  /api/v1/workspaces/:slug/market-data/opportunities/:id
+GET  /api/v1/workspaces/:slug/market-data/opportunities/~ref/:recordRef
 
 POST /api/v1/workspaces/:slug/market-data/awards/search
 POST /api/v1/workspaces/:slug/market-data/awards/history
@@ -110,9 +110,12 @@ without the full observed-value catalogue.
 
 ## Agent tools
 
-`search_suppliers`, `get_supplier`, `search_opportunities`, `get_opportunity`,
-`search_awards`, `get_supplier_history`, `aggregate_awards`, `search_risks`,
-`search_permits` — nine warehouse operations, up from seven.
+The market surface contains thirteen typed tools: free discovery through
+`market_capabilities`, plus twelve metered warehouse operations:
+`search_suppliers`, `get_supplier`, `count_suppliers`, `compare_segments`,
+`search_opportunities`, `get_opportunity`, `search_awards`,
+`get_supplier_history`, `aggregate_awards`, `search_risks`, `screen_risks`, and
+`search_permits`.
 
 `search_risks` answers "is this party carrying a published adverse mark?" —
 an EFOS barred-supplier listing or a sanción/inhabilitación
@@ -120,9 +123,11 @@ an EFOS barred-supplier listing or a sanción/inhabilitación
 of a party's regulatory history: a party can carry several marks, including
 published exonerations. `rfc` is the only strong identity in this relation and
 is structurally validated before it reaches the corpus; `entity_name` is
-always approximate, resolved exact-first and then by trigram similarity, and
-never has a free-text search document behind it the way opportunities and
-awards do.
+always approximate and is resolved EXACT-ONLY — a name with no exact published
+spelling (once accents and case are folded) is refused with
+`entity_name_not_exact` and the similar names as candidates, never searched by
+similarity on the caller's behalf. It also has no free-text search document
+behind it the way opportunities and awards do.
 
 `search_permits` answers "does this party hold a published permit, concession
 or capex commitment?" — a granted right recorded at load time, never a live
@@ -130,8 +135,9 @@ operational verification that a plant is generating or a concession is being
 worked today. Identity runs the other way from every other relation here:
 `holder_rfc` is strong where published, but the two live sources
 (`energia-cne`, `concesiones-mineras`) publish no RFC on almost any row, so
-`holder_name` — resolved exact-first, then by similarity, exactly like
-`supplier_name` — is the join this relation was actually built around.
+`holder_name` — resolved to an exact published spelling, and refused with
+candidates when none matches, exactly like `supplier_name` — is the join this
+relation was actually built around.
 
 `aggregate_awards` accepts `order_by: total_amount | award_count` (default:
 `total_amount`). A group keyed by `supplier_rfc` also returns
@@ -139,8 +145,9 @@ worked today. Identity runs the other way from every other relation here:
 group. The label is for display only: grouping, counting and identity remain
 RFC-based, and rows without an RFC are excluded from an RFC ranking.
 
-Coverage and capabilities are **not** tools. Coverage rides on every response;
-capabilities are injected by the runtime.
+Coverage is not a separate tool: it rides on every response.
+`market_capabilities` is the free discovery tool and is also injected by the
+runtime where the platform already has it.
 
 Capabilities are now TWO layers. The semantic contract — operations, identity,
 amounts, dates, contacts, matching — is code-owned and versioned with the schema.
@@ -159,11 +166,13 @@ The model never receives: a SQL schema, table names, `describe_schema`,
 `query_sql_readonly`, the ability to submit SQL, join rules, private fields, a
 DSN, or a database credential.
 
-### The tenth operation: `search_web_evidence`
+### Separate research capability: `search_web_evidence`
 
-The nine above read the governed warehouse. One more closes what the warehouse
-structurally cannot hold — recency, an announced expansion, a private project, a
-corporate publication, external confirmation that something is still active.
+The thirteen market tools above read the governed warehouse contract.
+`search_web_evidence` is not a fourteenth market tool; it is a separate research
+capability for what the warehouse structurally cannot hold — recency, an
+announced expansion, a private project, a corporate publication, or external
+confirmation that something is still active.
 
 It is a **capability, never a provider**. The domain never names an executor,
 and nothing about one may reach a prompt, a `ResearchReport`, a citation label or
@@ -233,6 +242,16 @@ precisely the fields a model would shade if it could reach them, and coverage in
 particular is the only thing that separates "this query returned nothing" from
 "this market does not exist".
 
+Every monetary value — a row's `amount`, a history or aggregate total, a
+min/max, a period total or delta, a risk mark's fine — is a **decimal STRING at
+two places**, computed and rounded in `numeric` and serialized with `::text`. No
+amount is ever parsed into a JS number on the way out, and a caller should not
+parse one on the way in beyond the precision it needs: two decimals is the money
+the publisher wrote, and the digits past them that the warehouse carries are a
+loader artifact, not a published fact. Counts, ranks, scores, percentages and
+physical magnitudes (`capacity_mw`, `investment_mdd`, `surface_hectares`) are
+not currency amounts and are served exactly as published.
+
 ## Agent Observation — one truth, three derivations
 
 The envelope is the right shape for an API client and the wrong shape for a
@@ -247,7 +266,8 @@ canonical envelope
 ```
 
 An `AgentObservation` is never persisted, computes no fact, and duplicates no
-query logic. Its shared half is identical across all nine warehouse operations:
+query logic. Its shared half is identical across all twelve metered warehouse
+operations:
 
 ```
 schema_version · operation · identity · filters · facts
@@ -326,6 +346,15 @@ version, the corpus basis, the normalized filters and the query, which
 produces two refusals with different recoveries: `invalid_cursor` when the
 caller changed a filter, `cursor_stale` when the corpus moved underneath them.
 
+A page is bounded in ROWS by `limit` and, on `suppliers/search`, optionally in
+BYTES by `max_bytes` — a transport bound a caller may set to keep a response
+inside its own budget, clamped server-side into [1 KiB, 256 KiB] so it can only
+ever shrink a page. Under it the response carries FEWER rows than `limit`, with
+`hasMore` and the `nextCursor` that continues exactly where it cut: never a
+truncated row, never a dropped one. It is not part of what the cursor is bound
+to, so continuing the same page under a different budget is not a filter change.
+A limit above the ceiling is still a 400, never a silently smaller page.
+
 ## Semantic refusals
 
 Every refusal is a `DomainException` carrying an `ErrorCode` from
@@ -342,6 +371,7 @@ and the useful answer is the correction.
 `unsupported_aggregation` · `unknown_filter_value` · `unknown_facet` ·
 `amount_scope_not_published` · `group_by_identity_not_published` ·
 `text_query_not_searchable` · `literal_query_too_short` ·
+`entity_name_not_exact` · `record_not_available` ·
 `market_data_timeout` · `market_data_unavailable` ·
 `serving_projection_unavailable`
 
@@ -370,26 +400,39 @@ No refusal ever contains SQL, a DSN, a token, an internal hostname or a stack.
 
 ## Matching
 
-Four mechanisms, ordered by strength, and every result says which one produced
-it in `match.matchMethod`:
+Three mechanisms produce a row, ordered by strength, and every result says which
+one produced it in `match.matchMethod`:
 
 | Method | Mechanism | What a hit means |
 |---|---|---|
 | `exact` | structured equality, or a name matched exactly after accent/case folding | the strongest available — identity only where the field IS identity |
 | `full_text` | GIN-indexed `tsvector` over published prose, Spanish-stemmed and accent-insensitive | the words appear |
-| `trigram` | word-similarity over a folded name | a candidate organization |
 | `literal_fallback` | bounded substring probe against an indexed `title \|\| description` | those characters appear somewhere |
+
+`trigram` remains in the `MatchMethod` union for compatibility, but no result
+carries it: similarity is an INPUT RESOLVER and never a match method. Nothing is
+retrieved by similarity.
 
 The layer chooses, from the query's shape, and declares the choice. A single
 token carrying punctuation or digits is a code and takes the literal path; prose
 takes full text. Entity names never take either: `buyer`, `supplier_name`,
-`entity_name` and `holder_name` are RESOLVED — normalized-exact first,
-similarity only if exact finds nothing — and what reaches the database is an
-equality over the publisher spellings the resolver chose. The resolution is
-reported in `interpretedRequest.normalizations`, so a caller can always see
-which organizations were searched. Risks has no free-text search document at
-all: a party's name is either given exactly, resolved to publisher spellings,
-or not searched — there is no `full_text` or `literal_fallback` path into it.
+`entity_name` and `holder_name` are RESOLVED to the spellings a publisher used,
+by normalized-exact match only, and what reaches the database is an equality
+over those spellings. When no published spelling matches exactly, the layer
+does NOT fall back to the closest one — it refuses with `entity_name_not_exact`,
+hands back the similar names as candidates, and points at the strong identity
+field where the relation has one. A similar name is frequently a different
+institution, and its rows are an answer to a question nobody asked. The
+resolution that did happen is reported in `interpretedRequest.normalizations`,
+so a caller can always see which organizations were searched. Risks has no
+free-text search document at all: a party's name is either given exactly,
+resolved to publisher spellings, or not searched — there is no `full_text` or
+`literal_fallback` path into it.
+
+Municipality is the one place similarity still resolves silently, and it is
+narrowly scoped: within an already-exact state, the closest published spelling
+is chosen, the choice is reported in `normalizations`, and the filter that
+reaches the database is an equality against that single value.
 
 Municipality follows the same rule and for the same reason: fuzzy geography
 answers about several towns at once and says so nowhere. Human input resolves to
@@ -408,17 +451,25 @@ supplier-detail tool are retired; the `tools/list` budget is an internal 80 KiB
 latency/context budget, not an external provider limit. Typed operations map to
 the granular CLI and HTTP surfaces:
 
+There are thirteen market tools total. `market_capabilities` is free discovery;
+the other twelve are metered. All thirteen carry `readOnlyHint: true` because
+they do not modify business data or produce external side effects; the hint does
+not mean free or exempt from usage accounting.
+
 | MCP action | CLI | HTTP |
 |---|---|---|
-| `market_capabilities` | `driftless market capabilities` | `GET /market-data/capabilities` |
+| `market_capabilities` | `driftless market capabilities` | `GET /market-data/capabilities/compact` |
 | `search_suppliers` | `driftless market suppliers search` | `POST /market-data/suppliers/search` |
 | `get_supplier` | `driftless market suppliers get` | `GET /market-data/suppliers/~ref/:recordRef` |
+| `count_suppliers` | `driftless market suppliers count` | `POST /market-data/suppliers/count` |
+| `compare_segments` | `driftless market suppliers compare-segments` | `POST /market-data/suppliers/compare-segments` |
 | `search_opportunities` | `driftless market opportunities search` | `POST /market-data/opportunities/search` |
-| `get_opportunity` | `driftless market opportunities get` | `GET /market-data/opportunities/:id` |
+| `get_opportunity` | `driftless market opportunities get` | `GET /market-data/opportunities/~ref/:recordRef` |
 | `search_awards` | `driftless market awards search` | `POST /market-data/awards/search` |
 | `get_supplier_history` | `driftless market awards history` | `POST /market-data/awards/history` |
 | `aggregate_awards` | `driftless market awards aggregate` | `POST /market-data/awards/aggregate` |
 | `search_risks` | `driftless market risks search` | `POST /market-data/risks/search` |
+| `screen_risks` | `driftless market risks screen` | `POST /market-data/risks/screen` |
 | `search_permits` | `driftless market permits search` | `POST /market-data/permits/search` |
 
 Coverage is not a separate atomic action: every operation envelope already

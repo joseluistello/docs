@@ -1,5 +1,5 @@
 ---
-title: 'Welcome to Driftless'
+title: 'Welcome to Brein'
 description: "One workspace where your team and its agents share what you know and what you operate, so context survives the next session, model, or tool."
 ---
 
@@ -7,7 +7,9 @@ Your agent can write the code. What it can't do is know why your team ruled out 
 
 It is rarely just the code. The customer you spoke to last week, the decision that ended a long debate, and the pipeline you are halfway through live in different tools, and you become the connective tissue between them. You re-explain the same state to the next teammate, the next agent, and the next session. The work gets done, and the context that made it possible quietly disappears.
 
-Driftless is one workspace for a team and its agents. Instead of letting that state scatter, it keeps the **Knowledge** you have reviewed and want to rely on later together with the **Operations** you run day to day, like customers, signals, and pipelines. Agents read and act on that shared state through permissions you set, and people stay responsible for what the company treats as true.
+Brein is one workspace for a team and its agents. Instead of letting that state scatter, it keeps the **Knowledge** you have reviewed and want to rely on later together with the **Operations** you run day to day, like customers, signals, and pipelines. Agents read and act on that shared state through permissions you set, and people stay responsible for what the company treats as true.
+
+The CLI, package names, API keys, and MCP tool identifiers keep the `driftless` namespace during the compatibility window. Existing integrations continue to work; new links use the Brein domains shown in these docs.
 
 The value is the loop between them: a signal is interpreted with context, becomes an action on operational state, and leaves behind reviewed Knowledge for whoever comes next. [The Driftless loop](/concepts/core-loop) walks through the whole model, and coding agents are the most concrete place to start.
 
@@ -23,7 +25,7 @@ Same workspace whether a human or an agent reaches it. Install the CLI, point yo
     ```
 
     <Tip>
-      Running this in CI? Pass a key directly instead: `driftless login --key drift_your_api_key_here`. You can create one at [driftless.icu](https://driftless.icu) under Settings, then API Keys.
+      Running this in CI? Pass a key directly instead: `driftless login --key drift_your_api_key_here`. You can create one at [driftless.icu](https://trybrein.com) under Settings, then API Keys.
     </Tip>
   </Step>
 
@@ -36,10 +38,10 @@ Same workspace whether a human or an agent reaches it. Install the CLI, point yo
   </Step>
 
   <Step title="Connect an AI client over MCP">
-    Point ChatGPT, Claude, or Cursor at the Driftless MCP endpoint:
+    Point ChatGPT, Claude, or Cursor at the Brein MCP endpoint:
 
     ```
-    https://api.driftless.icu/mcp
+    https://api.trybrein.com/mcp
     ```
 
     Claude and ChatGPT handle the OAuth handshake themselves, so you just paste the URL. For the CLI, agents, and CI, send your key in the `X-API-Key` header instead. The full setup lives in [MCP & OAuth](/mcp/overview).

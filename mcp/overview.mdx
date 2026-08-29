@@ -1,9 +1,9 @@
 ---
 title: 'MCP & OAuth'
-description: 'Connect ChatGPT, Claude, and other AI clients to your Driftless workspace via the Model Context Protocol.'
+description: 'Connect ChatGPT, Claude, and other AI clients to your Brein workspace via the Model Context Protocol.'
 ---
 
-Driftless ships an MCP (Model Context Protocol) server that exposes your workspace context to AI clients. ChatGPT, Claude, Copilot, and any MCP-compatible client can read and write topics through it.
+Brein ships an MCP (Model Context Protocol) server that exposes your workspace context to AI clients. ChatGPT, Claude, Copilot, and any MCP-compatible client can read and write topics through it. The `driftless_*` tool names remain stable compatibility contracts.
 
 ## How it works
 
@@ -100,7 +100,7 @@ Types: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 
 ### Server-side anchor validation
 
-Remote agents have no local checkout, so write responses carry `anchor_validation`, per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs.
+Remote agents have no local checkout, so write responses carry `anchor_validation`, per-pattern match counts against the repo's **default branch**: `ok`, `overbroad` (>100 files), or `zero`. Warnings never block the write (a glob anchoring unmerged branch code legitimately shows 0); read them in the tool result and tighten flagged globs. Where the deployment holds no file index for the linked repo, the field arrives as `{ skipped }` with the reason instead of counts — an honest "not measured", never a silent pass.
 
 <Note>
 MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Driftless ships a schema change, reconnect the connector (or start a fresh session) to pick it up. Otherwise new parameters or tools won't be available. Tools such as `tags`, `areas`, and `driftless_collection` are **action-based**: pass `action` to pick the operation; if your client still shows removed Project tools or old per-operation tool names, reconnect to refresh.
@@ -127,7 +127,7 @@ Add this to your `claude_desktop_config.json` or equivalent:
 {
   "mcpServers": {
     "driftless": {
-      "url": "https://api.driftless.icu/mcp",
+      "url": "https://api.trybrein.com/mcp",
       "headers": {
         "X-API-Key": "drift_your_api_key_here"
       }
@@ -146,9 +146,9 @@ the name does not create a second account or data boundary.
 
 Published clients use OAuth 2.0 with PKCE. The flow is fully automatic:
 
-1. Install Brein in ChatGPT, or enter `https://api.driftless.icu/mcp` as the MCP endpoint in Claude.ai
+1. Install Brein in ChatGPT, or enter `https://api.trybrein.com/mcp` as the MCP endpoint in Claude.ai
 2. The client discovers the OAuth endpoints automatically via `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`
-3. You authorize in the Driftless consent screen
+3. You authorize in the Brein consent screen
 4. The client receives a bearer token and uses it for MCP tool calls within the authorized workspace
 
 No manual OAuth configuration is needed. The client handles registration, PKCE, and token refresh.
@@ -160,7 +160,7 @@ No manual OAuth configuration is needed. The client handles registration, PKCE, 
 Any client can register without authentication:
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/oauth/register \
+curl -X POST https://api.trybrein.com/api/v1/oauth/register \
   -H "Content-Type: application/json" \
   -d '{
     "client_name": "My AI Client",

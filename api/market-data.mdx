@@ -8,7 +8,7 @@ Market data is a separate, read-only warehouse of Mexican commercial intelligenc
 The semantic operations share one service layer across HTTP, the typed MCP tools, `driftless market`, and the internal agent tool belt used by [chat and Investigations](#chat-and-due-diligence-screening). The internal belt may batch already-selected detail for synthesis efficiency; public MCP deliberately does not. None of these surfaces exposes SQL or warehouse schema.
 
 <Note>
-Every route is workspace-scoped and requires authentication like the rest of the API — there is no public/unauthenticated market-data route. A market-data read is a paid, attributable operation on a shared warehouse.
+Every route is workspace-scoped and requires authentication like the rest of the API — there is no public/unauthenticated market-data route. `market_capabilities` is free discovery; the other twelve market operations are metered, attributable analysis on a shared warehouse.
 </Note>
 
 ## Base path
@@ -17,7 +17,7 @@ Every route is workspace-scoped and requires authentication like the rest of the
 /workspaces/:slug/market-data
 ```
 
-## The fourteen operations
+## The thirteen market operations
 
 Every path below is relative to the base path above. `example` is a minimal, valid request body straight from the route table the API itself serves at `GET capabilities` — every operation's `method`/`path`/`example` is discoverable at runtime, not just documented here.
 
@@ -25,11 +25,11 @@ Every path below is relative to the base path above. `example` is a minimal, val
 |---|---|---|---|
 | `market_capabilities` | `GET capabilities` | no | — |
 | `search_suppliers` | `POST suppliers/search` | yes | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
-| `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
+| `get_supplier` | `GET suppliers/~ref/:recordRef` | no | opaque `record_ref` from search |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
 | `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | `{ "segments": [{ "id": "dental", "query": "clínica dental" }], "geographies": [{ "id": "nl", "state": "Nuevo León" }], "observed_kind": "establishment" }` |
 | `search_opportunities` | `POST opportunities/search` | yes | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
-| `get_opportunity` | `GET opportunities/:id` | no | — |
+| `get_opportunity` | `GET opportunities/~ref/:recordRef` | no | opaque `record_ref` from search |
 | `search_awards` | `POST awards/search` | yes | `{ "supplier_rfc": "XAXX010101000", "limit": 5 }` |
 | `get_supplier_history` | `POST awards/history` | yes | `{ "supplier_rfc": "XAXX010101000", "currency": "MXN", "amount_scope": "supplier_contract" }` |
 | `aggregate_awards` | `POST awards/aggregate` | yes (groups) | `{ "currency": "MXN", "amount_scope": "supplier_contract", "group_by": ["buyer_name"] }` |
@@ -54,7 +54,7 @@ one `invalid_or_unavailable` status.
 `compare_segments` compares up to five text-defined segments across up to ten Mexican states, with a hard ceiling of 50 cells and one required `observed_kind`. Its counts are published observations, never unique companies, TAM, or evidence of demand. `contact_breakdown: true` adds a like-for-like count of observations carrying a published contact channel.
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/market-data/suppliers/count \
+curl -X POST https://api.trybrein.com/api/v1/workspaces/acme/market-data/suppliers/count \
   -H "x-api-key: drift_your_api_key_here" -H "Content-Type: application/json" \
   -d '{ "state": "Nuevo León", "scian_codes": ["811111"] }'
 ```
@@ -167,9 +167,13 @@ licensed for display; and the page cursor is sealed. Every semantic warning,
 coverage count, freshness value, identity strength and amount scope is unchanged.
 
 `record_ref` is what `get_supplier` takes: copy it verbatim from the search row
-you want the detail for. It is a fresh ciphertext each time, so it is a handle to
-follow and never a value to compare. A reference the layer did not issue is
-refused with `invalid_record_ref`.
+you want the detail for. It is a fresh ciphertext per response, so it is a handle
+to follow and never a value to compare across calls: within ONE envelope a row
+carries the same `record_ref` everywhere it appears (a `results[]` row and its
+`provenance[]` entry match), and the next response mints a different one for the
+same row. To recognize a row across responses, join on `record_fingerprint` —
+never on `record_ref`. A reference the layer did not issue is refused with
+`invalid_record_ref`.
 
 `record_fingerprint` is the value two observations of the same row share — 128
 bits, keyed and one-way. It deliberately reveals **equality**: a holder can link
@@ -239,6 +243,7 @@ A refusal is never a bare 400. Every domain-specific rejection carries a `market
 | `semantic_code` | Fires when | `recovery.action` |
 |---|---|---|
 | `query_too_broad` | A search or count carries no narrowing dimension | `narrow_query` |
+| `query_not_selective` | A text query is the ONLY narrowing dimension and matches more of the corpus than the layer will read for one page — established by a bounded probe, never guessed. The same words with any structured filter are answered normally | `narrow_query` |
 | `invalid_field_value`, `unknown_state`, `invalid_observed_kind`, `invalid_mark_kind`, `deadline_not_available`, `amount_requires_currency_and_scope`, `unknown_filter_value`, `unknown_facet` | A value is structurally or semantically wrong for its field | `fix_arguments` |
 | `batch_too_large` | `screen_risks` carries more than 50 RFCs | `fix_arguments` |
 | `invalid_cursor` | A cursor's filters don't match the query it's attached to | `restart_without_cursor` |
@@ -248,7 +253,7 @@ A refusal is never a bare 400. Every domain-specific rejection carries a `market
 `suppliers/count` reuses `query_too_broad`; `risks/screen` reuses `invalid_field_value`/`batch_too_large` — no operation invents its own one-off error vocabulary.
 
 <Note>
-A structural DTO violation (a bad enum, a missing required field, `forbidNonWhitelisted` rejecting an unknown property) is a plain `VALIDATION_FAILED` from the platform's [error envelope](/api/errors) — it never carries the `market_data` block. That block is earned only by a real domain refusal: the shape was valid, but the request asked a question this layer won't answer as posed.
+A structural DTO violation (a bad enum, an out-of-range `limit`, `forbidNonWhitelisted` rejecting an unknown property) keeps the platform's [error envelope](/api/errors) exactly as it is — `VALIDATION_FAILED`, same `message`, same status. On the market-data routes it now ALSO carries a `market_data` block with `allowed_values` (the whole closed set the decorator enforces) and `recovery.action: fix_arguments`, because the server knows precisely what would have been accepted and a refusal that withholds it teaches nothing. The `semantic_code` is `invalid_field_value`. Elsewhere on the platform a DTO violation is unchanged and carries no such block.
 </Note>
 
 ## Discoverability
@@ -272,7 +277,7 @@ Two things a blind client (an agent with only `curl` and this API's own descript
 }
 ```
 
-(`operations` lists all eleven, trimmed above for space.)
+(`operations` lists all thirteen, trimmed above for space.)
 
 `GET capabilities` is the full contract for integrators: every operation's `question`, `requires`, `refuses`, `method`, `path`, and a runnable `example`, plus the corpus-observed filter value lists (state names, SCIAN codes, procedure types, …), each stamped with the `corpusBasis` it was read against — never presented as timeless constants. An optional `?facets=a,b` query param restricts both the computation and the response to named corpus dimensions. `GET capabilities/compact` is the bounded, source-aware projection the agent runtimes (chat, MCP) are injected instead of spending a tool call on the full catalogue. Both carry `openapiUrl`, which points at the machine-readable OpenAPI document — served **root-absolute** at `/openapi.json`, unlike every other market-data path, which is workspace-relative.
 
@@ -312,6 +317,8 @@ Market-data routes require the same authentication as the rest of the API (API k
 ## MCP: typed market-data tools
 
 MCP exposes thirteen typed `driftless_market_*` analysis tools plus the two-step Contact Path tools. It does not expose `driftless_market_data`, `driftless_market_get_supplier_batch`, physical source selectors, or contact coordinates. Reconnect a client after this schema change because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
+
+All thirteen market tools carry `readOnlyHint: true`: they do not modify business data or produce external side effects. That annotation does **not** mean a call is free. `driftless_market_capabilities` costs zero calls and zero credits; each of the other twelve market tools is metered according to the commercial-usage contract.
 
 ```json
 { "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }

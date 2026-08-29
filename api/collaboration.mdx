@@ -39,7 +39,7 @@ Body (`CreateAreaDto` / `UpdateAreaDto`): `name` (required, up to 64 chars), `de
 | `DELETE` | `/workspaces/:slug/tags/:name` | owner/admin | Delete and detach everywhere |
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/comments \
+curl -X POST https://api.trybrein.com/api/v1/workspaces/acme/comments \
   -H "x-api-key: drift_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"target_kind":"topic","target_ref":"billing-flow","body":"This decision is stale."}'

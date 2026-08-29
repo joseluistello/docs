@@ -57,7 +57,22 @@ it already special-cases the `bounded_live` record envelope: under the
 and semantic warnings intact; over the cap it returns an explicit
 `RESULT_TOO_LARGE` rather than a shrunk page, so the caller narrows the
 query or lowers `limit` and retries instead of trusting a `nextCursor` that
-no longer matches what it received.
+no longer matches what it received. That refusal names the two bounds the
+market surface actually takes — the limit and the page cursor — never the
+projection/select the record-read surfaces offer and this one does not.
+
+**Refusal is the fallback, not the design.** `suppliers/search` — the
+fattest market page, and the one whose advertised `limit: 50` measured over
+the cap — is bounded at the SOURCE, the same INV-011 shape the collection
+record envelope uses: the MCP adapter sends its cap minus a 2 KB reserve as
+`max_bytes` on the call body (server-owned, never a tool argument), and the
+service assembles the largest page that FITS, measuring the exact wire form
+— the model-facing projection, pretty-printed. A page cut for bytes is a
+normal page: fewer rows than `limit`, `hasMore: true`, and the cursor that
+continues at the first row it did not deliver. The safety margin lives at
+the MCP layer only; the source measures real bytes rather than estimating
+them. The other search operations are not source-bounded yet and still
+refuse an over-cap page — with the correction above.
 
 ## Retrieval quality bars
 

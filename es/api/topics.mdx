@@ -79,7 +79,7 @@ Un topic se convierte en Knowledge solo cuando un owner/admin lo fusiona. Consul
 | `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Elimina una relación |
 
 <Note>
-Las respuestas de `POST /topics` y `PATCH /topics/:topic` pueden incluir `anchor_validation`: conteos de coincidencias por patrón contra la rama por defecto del repo (`ok` / `overbroad` / `zero`, con muestras y advertencias). Solo informativo: nunca bloquea la escritura, y se omite cuando no hay un repo vinculado. `POST …/relations` es accesible para principales OAuth (MCP) con `topics:write`; eliminar relaciones sigue siendo solo para humanos.
+Las respuestas de `POST /topics` y `PATCH /topics/:topic` pueden incluir `anchor_validation`: conteos de coincidencias por patrón contra la rama por defecto del repo (`ok` / `overbroad` / `zero`, con muestras y advertencias). Solo informativo: nunca bloquea la escritura. Se omite cuando la escritura no lleva ningún patrón, o cuando no hay un repo vinculado. Cuando SÍ hay repo vinculado pero el deployment no tiene índice de archivos para él, el campo llega como `{ "skipped": "…" }` nombrando la razón — para que un campo ausente nunca se lea como «tus globs se revisaron y están bien». `POST …/relations` es accesible para principales OAuth (MCP) con `topics:write`; eliminar relaciones sigue siendo solo para humanos.
 </Note>
 
 ## Compartir

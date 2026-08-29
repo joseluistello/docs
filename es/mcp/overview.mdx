@@ -101,7 +101,7 @@ Tipos: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `docume
 
 ### Validación de anchors del lado del servidor
 
-Los agentes remotos no tienen un checkout local, así que las respuestas de escritura llevan `anchor_validation`, conteos de coincidencias por patrón contra la **rama default** del repo: `ok`, `overbroad` (>100 archivos), o `zero`. Las advertencias nunca bloquean la escritura (un glob que ancla código de una rama sin mergear muestra 0 de forma legítima); léelas en el resultado de la herramienta y aprieta los globs marcados.
+Los agentes remotos no tienen un checkout local, así que las respuestas de escritura llevan `anchor_validation`, conteos de coincidencias por patrón contra la **rama default** del repo: `ok`, `overbroad` (>100 archivos), o `zero`. Las advertencias nunca bloquean la escritura (un glob que ancla código de una rama sin mergear muestra 0 de forma legítima); léelas en el resultado de la herramienta y aprieta los globs marcados. Donde el deployment no tiene índice de archivos del repo vinculado, el campo llega como `{ skipped }` con la razón en vez de conteos — un «no se midió» honesto, nunca un pase silencioso.
 
 <Note>
 Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Después de que Driftless publica un cambio de schema, reconecta el conector (o arranca una sesión nueva) para tomarlo. Si no, herramientas retiradas pueden seguir apareciendo. Las herramientas de la superficie de trabajo (`tags`, `areas`, `driftless_collection`, `driftless_collection_record`) son **basadas en `action`**: pasa `action` para elegir la operación.
@@ -128,7 +128,7 @@ Agrega esto a tu `claude_desktop_config.json` o equivalente:
 {
   "mcpServers": {
     "driftless": {
-      "url": "https://api.driftless.icu/mcp",
+      "url": "https://api.trybrein.com/mcp",
       "headers": {
         "X-API-Key": "drift_your_api_key_here"
       }
@@ -147,7 +147,7 @@ herramientas MCP; el nombre no crea una segunda cuenta ni otra frontera de datos
 
 Los clientes publicados usan OAuth 2.0 con PKCE. El flujo es totalmente automático:
 
-1. Instala Brein en ChatGPT, o ingresa `https://api.driftless.icu/mcp` como el endpoint MCP en Claude.ai
+1. Instala Brein en ChatGPT, o ingresa `https://api.trybrein.com/mcp` como el endpoint MCP en Claude.ai
 2. El cliente descubre los endpoints de OAuth automáticamente vía `/.well-known/oauth-protected-resource` y `/.well-known/oauth-authorization-server`
 3. Autorizas en la pantalla de consentimiento de Driftless
 4. El cliente recibe un bearer token y lo usa para las llamadas MCP dentro del espacio de trabajo autorizado
@@ -161,7 +161,7 @@ No hace falta configuración OAuth manual. El cliente maneja el registro, PKCE y
 Cualquier cliente puede registrarse sin autenticación:
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/oauth/register \
+curl -X POST https://api.trybrein.com/api/v1/oauth/register \
   -H "Content-Type: application/json" \
   -d '{
     "client_name": "Mi Cliente de IA",

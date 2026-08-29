@@ -21,11 +21,14 @@ envelope through the *abstracted* projection instead
 (`apps/api/src/market-data/services/model-exposure.ts`). Publisher identity —
 `sourceSlug`, `sourceRecordId`, `publisher`, `sourceUrl`, the per-publisher
 `membershipMeaning` — is replaced by an evidence CATEGORY derived from the
-warehouse relation, an opaque `record_ref` for the detail follow-up, a
+warehouse relation, an opaque `record_ref` for the detail follow-up (one per
+row per RESPONSE — a `results[]` row and its `provenance[]` entry carry the same
+one, and the next response mints a different one, so refs are never compared
+across calls), a
 `record_fingerprint` that recognizes a repeated row (keyed, one-way, 128 bits;
-it reveals equality by design and never identity, and it survives a primary-key
-rotation for as long as references minted before it still resolve), and a
-per-category
+it reveals equality by design and never identity, it is the join key ACROSS
+responses, and it survives a primary-key rotation for as long as references
+minted before it still resolve), and a per-category
 membership meaning that keeps every caveat the publisher-specific wording
 carried. Coverage regroups by category and counts only licensed rows; the page
 cursor is sealed, because a base64url cursor whose sort key carries the
@@ -153,6 +156,7 @@ Recurring `semantic_code` values worth knowing before calling anything:
 | `semantic_code` | Fires when | `recovery.action` |
 |---|---|---|
 | `query_too_broad` | A search or count carries no narrowing dimension — an unbounded scan of the corpus | `narrow_query` |
+| `query_not_selective` | A text query is the ONLY narrowing dimension and matches more of the corpus than one page can be read from. Established by a bounded probe before the search runs, so the answer is a fast correction rather than a slow timeout; the same words with any structured filter are served normally | `narrow_query` |
 | `invalid_field_value` | A value is structurally wrong for its field (a malformed RFC, an empty batch) | `fix_arguments` |
 | `batch_too_large` | A batch operation (`screen_risks`) carries more items than it screens in one call | `fix_arguments` |
 | `invalid_cursor` | A cursor's filters don't match the query it's attached to | `restart_without_cursor` |
@@ -188,17 +192,22 @@ without a cursor.
 never inferred from `returned === limit` — a corpus that holds exactly a
 multiple of the page size would otherwise produce a phantom empty last page.
 
-## The fourteen operations
+## The thirteen market operations
+
+`market_capabilities` is free discovery. The other twelve operations are
+metered analysis. All thirteen MCP tools carry `readOnlyHint: true` because
+they do not modify business data or produce external side effects; that hint
+does not mean free or exempt from usage accounting.
 
 | Operation | Route | Paginates | Notes |
 |---|---|---|---|
 | `market_capabilities` | `GET capabilities` | no | corpus-observed values, read fresh every call |
 | `search_suppliers` | `POST suppliers/search` | yes | needs ≥1 narrowing dimension |
-| `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | strong key, no search |
+| `get_supplier` | `GET suppliers/~ref/:recordRef` | no | opaque `record_ref` from search |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | same narrowing rule as `search_suppliers`; returns one exact integer, never an approximation |
 | `compare_segments` | `POST suppliers/compare-segments` | no (bounded matrix) | at most 5 segments × 10 states and 50 cells; one observed kind |
 | `search_opportunities` | `POST opportunities/search` | yes | hybrid or lexical strategy |
-| `get_opportunity` | `GET opportunities/:id` | no | |
+| `get_opportunity` | `GET opportunities/~ref/:recordRef` | no | opaque `record_ref` from search |
 | `search_awards` | `POST awards/search` | yes | one currency + one amount scope; `cog_partidas` filters by SHCP object-of-expense code overlap |
 | `get_supplier_history` | `POST awards/history` | yes | one RFC's awards |
 | `aggregate_awards` | `POST awards/aggregate` | yes (groups) | optional `compare_period` — see below; `group_by: cog_partida`/`cog_capitulo` can overcount — see below |

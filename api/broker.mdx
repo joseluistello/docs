@@ -41,7 +41,7 @@ When the broker is disabled the whole surface returns `503`. When the external l
 The `context` read returns `{provider, connection, criterion, context: [{slug, title, what, trust, stale, missing?}], next_action}` and is audited as a read receipt (`broker.context.read`) — the call an agent makes **before** working a connection. The generic `documents/:externalId/content` read supersedes the Notion-only `connections/notion/pages/:pageId/content` route (kept as a deprecated alias). Both accept an optional `?connection=` selector — forward-compatible for multi-account; today each provider has one connection, so omit it.
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/broker/connections/notion/invoke \
+curl -X POST https://api.trybrein.com/api/v1/workspaces/acme/broker/connections/notion/invoke \
   -H "x-api-key: drift_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"operation":"notion-page-content","input":{"page_id":"..."}}'

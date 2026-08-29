@@ -8,7 +8,7 @@ Market data es un warehouse separado y de solo lectura de inteligencia comercial
 HTTP, MCP y `driftless market` comparten los mismos servicios in-process y siempre devuelven la proyección pública abstracta: operaciones semánticas tipadas, sin SQL, detalle masivo de proveedores ni coordenadas de contacto. El tool belt interno puede componer lecturas acotadas y redactadas para síntesis, sin convertirse en una superficie de extracción. Quien llama planea la secuencia y sintetiza la respuesta.
 
 <Note>
-Cada ruta está acotada al workspace y requiere autenticación como el resto de la API — no hay ninguna ruta pública/sin autenticar en market-data. Una lectura de market-data es una operación paga y atribuible sobre un warehouse compartido.
+Cada ruta está acotada al workspace y requiere autenticación como el resto de la API — no hay ninguna ruta pública/sin autenticar en market-data. `market_capabilities` es descubrimiento gratuito; las otras doce operaciones de market data son análisis medidos y atribuibles sobre un warehouse compartido.
 </Note>
 
 ## Ruta base
@@ -17,7 +17,7 @@ Cada ruta está acotada al workspace y requiere autenticación como el resto de 
 /workspaces/:slug/market-data
 ```
 
-## Las catorce operaciones
+## Las trece operaciones de market data
 
 Cada ruta de abajo es relativa a la ruta base de arriba. `example` es un cuerpo de petición mínimo y válido, tomado directamente de la tabla de rutas que la propia API sirve en `GET capabilities`: el `method`/`path`/`example` de cada operación es descubrible en tiempo de ejecución, no solo documentado acá.
 
@@ -25,11 +25,11 @@ Cada ruta de abajo es relativa a la ruta base de arriba. `example` es un cuerpo 
 |---|---|---|---|
 | `market_capabilities` | `GET capabilities` | no | — |
 | `search_suppliers` | `POST suppliers/search` | sí | `{ "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }` |
-| `get_supplier` | `GET suppliers/:sourceSlug/:sourceRecordId` | no | — |
+| `get_supplier` | `GET suppliers/~ref/:recordRef` | no | `record_ref` opaco de la búsqueda |
 | `count_suppliers` | `POST suppliers/count` | no (`page: null`) | `{ "state": "Nuevo León" }` |
 | `compare_segments` | `POST suppliers/compare-segments` | no (matriz acotada) | `{ "segments": [{ "id": "dental", "query": "clínica dental" }], "geographies": [{ "id": "nl", "state": "Nuevo León" }], "observed_kind": "establishment" }` |
 | `search_opportunities` | `POST opportunities/search` | sí | `{ "query": "mantenimiento de bombas", "limit": 5 }` |
-| `get_opportunity` | `GET opportunities/:id` | no | — |
+| `get_opportunity` | `GET opportunities/~ref/:recordRef` | no | `record_ref` opaco de la búsqueda |
 | `search_awards` | `POST awards/search` | sí | `{ "supplier_rfc": "XAXX010101000", "limit": 5 }` |
 | `get_supplier_history` | `POST awards/history` | sí | `{ "supplier_rfc": "XAXX010101000", "currency": "MXN", "amount_scope": "supplier_contract" }` |
 | `aggregate_awards` | `POST awards/aggregate` | sí (grupos) | `{ "currency": "MXN", "amount_scope": "supplier_contract", "group_by": ["buyer_name"] }` |
@@ -50,7 +50,7 @@ El belt interno de investigación puede abrir hasta 50 observaciones ya seleccio
 `compare_segments` compara hasta cinco segmentos definidos por texto en hasta diez estados mexicanos, con un límite duro de 50 celdas y un solo `observed_kind` obligatorio. Sus conteos son observaciones publicadas, nunca empresas únicas, TAM ni evidencia de demanda. `contact_breakdown: true` añade un conteo comparable de observaciones con un canal de contacto publicado.
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/market-data/suppliers/count \
+curl -X POST https://api.trybrein.com/api/v1/workspaces/acme/market-data/suppliers/count \
   -H "x-api-key: drift_your_api_key_here" -H "Content-Type: application/json" \
   -d '{ "state": "Nuevo León", "scian_codes": ["811111"] }'
 ```
@@ -164,9 +164,13 @@ semántica, conteo de cobertura, valor de frescura, fuerza de identidad y alcanc
 de monto queda intacto.
 
 `record_ref` es lo que toma `get_supplier`: cópialo textual de la fila de
-búsqueda cuyo detalle quieres. Es un ciphertext nuevo cada vez, así que es un
-handle para seguir y nunca un valor para comparar. Una referencia que esta capa
-no emitió se rehúsa con `invalid_record_ref`.
+búsqueda cuyo detalle quieres. Es un ciphertext nuevo por respuesta, así que es
+un handle para seguir y nunca un valor para comparar entre llamadas: dentro de UN
+mismo envelope una fila lleva el mismo `record_ref` en todas partes donde aparece
+(la fila de `results[]` y su entrada en `provenance[]` coinciden), y la siguiente
+respuesta acuña uno distinto para la misma fila. Para reconocer una fila entre
+respuestas, únelas por `record_fingerprint` — nunca por `record_ref`. Una
+referencia que esta capa no emitió se rehúsa con `invalid_record_ref`.
 
 `record_fingerprint` es el valor que comparten dos observaciones de la misma
 fila — 128 bits, con llave y de una sola vía. Revela deliberadamente
@@ -237,6 +241,7 @@ Un refusal nunca es un 400 desnudo. Todo rechazo específico del dominio lleva u
 | `semantic_code` | Ocurre cuando | `recovery.action` |
 |---|---|---|
 | `query_too_broad` | Un search o count no lleva ninguna dimensión de acotamiento | `narrow_query` |
+| `query_not_selective` | Una query de texto es la ÚNICA dimensión de acotamiento y coincide con más corpus del que la capa puede leer para una página — establecido con un probe acotado, nunca adivinado. Las mismas palabras con cualquier filtro estructurado se responden normal | `narrow_query` |
 | `invalid_field_value`, `unknown_state`, `invalid_observed_kind`, `invalid_mark_kind`, `deadline_not_available`, `amount_requires_currency_and_scope`, `unknown_filter_value`, `unknown_facet` | Un valor está estructural o semánticamente mal para su campo | `fix_arguments` |
 | `batch_too_large` | `screen_risks` lleva más de 50 RFCs | `fix_arguments` |
 | `invalid_cursor` | Los filtros de un cursor no coinciden con la consulta a la que está atado | `restart_without_cursor` |
@@ -246,7 +251,7 @@ Un refusal nunca es un 400 desnudo. Todo rechazo específico del dominio lleva u
 `suppliers/count` reutiliza `query_too_broad`; `risks/screen` reutiliza `invalid_field_value`/`batch_too_large` — ninguna operación inventa su propio vocabulario de error de un solo uso.
 
 <Note>
-Una violación estructural del DTO (un enum inválido, un campo requerido faltante, `forbidNonWhitelisted` rechazando una propiedad desconocida) es un `VALIDATION_FAILED` plano del [envelope de error](/es/api/errors) de la plataforma — nunca lleva el bloque `market_data`. Ese bloque solo se gana con un refusal real del dominio: la forma era válida, pero la petición hizo una pregunta que esta capa no va a responder tal como se planteó.
+Una violación estructural del DTO (un enum inválido, un `limit` fuera de rango, `forbidNonWhitelisted` rechazando una propiedad desconocida) conserva el [envelope de error](/es/api/errors) de la plataforma tal cual — `VALIDATION_FAILED`, mismo `message`, mismo status. En las rutas de market-data ahora TAMBIÉN lleva un bloque `market_data` con `allowed_values` (el conjunto cerrado completo que el decorador aplica) y `recovery.action: fix_arguments`, porque el servidor sabe exactamente qué habría aceptado y un refusal que se lo guarda no enseña nada. El `semantic_code` es `invalid_field_value`. En el resto de la plataforma una violación de DTO no cambia y no lleva ese bloque.
 </Note>
 
 ## Discoverability
@@ -270,7 +275,7 @@ Hay dos cosas que un cliente ciego (un agente que solo tiene `curl` y las descri
 }
 ```
 
-(`operations` lista las once, recortado arriba por espacio.)
+(`operations` lista las trece, recortado arriba por espacio.)
 
 `GET capabilities` es el contrato completo para integradores: el `question`, `requires`, `refuses`, `method`, `path`, y un `example` ejecutable de cada operación, más las listas de valores de filtro observadas en el corpus (nombres de state, códigos SCIAN, procedure types, …), cada una estampada con el `corpusBasis` contra el que se leyó — nunca presentada como una constante atemporal. Un query param opcional `?facets=a,b` acota tanto el cómputo como la respuesta a las dimensiones del corpus nombradas. `GET capabilities/compact` es la proyección acotada y consciente de la fuente que se inyecta a los runtimes de agente (chat, MCP) en vez de gastar una llamada a tool en el catálogo completo. Ambas llevan `openapiUrl`, que apunta al documento OpenAPI legible por máquina — servido **root-absolute** en `/openapi.json`, a diferencia de cualquier otra ruta de market-data, que es relativa al workspace.
 
@@ -313,7 +318,9 @@ Las rutas de market-data requieren la misma autenticación que el resto de la AP
 
 ## MCP: tools tipadas de market data
 
-MCP expone trece tools tipadas `driftless_market_*` para análisis más `driftless_contact_quote` y `driftless_contact_unlock`. No existe un router genérico por `action`, detalle masivo de proveedores ni selectores de fuente física. Reconecta el cliente después de un cambio de schema porque los conectores pueden guardar definiciones en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
+MCP expone trece tools tipadas `driftless_market_*` para análisis más las tools de dos pasos de Contact Path. No expone `driftless_market_data`, `driftless_market_get_supplier_batch`, selectores de fuente física ni coordenadas de contacto. Reconecta el cliente después de este cambio de schema porque los conectores pueden guardar definiciones de tools en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
+
+Las trece tools de market data llevan `readOnlyHint: true`: no modifican datos de negocio ni producen efectos externos. Esa anotación **no** significa que una llamada sea gratuita. `driftless_market_capabilities` cuesta cero llamadas y cero créditos; cada una de las otras doce tools de market data se mide conforme al contrato de uso comercial.
 
 ```json
 { "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }

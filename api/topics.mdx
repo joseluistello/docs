@@ -79,7 +79,7 @@ A topic becomes Knowledge only once an owner/admin merges it in. See [Governance
 | `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Delete a relation |
 
 <Note>
-`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation`: per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write, and it's omitted when no repo is linked. `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
+`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation`: per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write. It is omitted when the write carries no pattern, or when no repo is linked. When a repo IS linked but the deployment holds no file index for it, the field is present as `{ "skipped": "…" }` naming the reason — so an absent field never has to be read as "your globs were checked and are fine". `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
 </Note>
 
 ## Share

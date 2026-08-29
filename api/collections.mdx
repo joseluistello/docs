@@ -50,7 +50,7 @@ Record body (`CreateRecordDto` / `UpdateRecordDto`): `fields`, `status`, `field_
 Upsert body (`UpsertEntityDto`): `kind` (required), `name` (required), `dedup_key`, `attributes`. The upsert is idempotent on `(kind, dedup_key)` — re-upserting the same pair merges `name`/`attributes` instead of creating a duplicate.
 
 ```bash
-curl -X POST https://api.driftless.icu/api/v1/workspaces/acme/entities \
+curl -X POST https://api.trybrein.com/api/v1/workspaces/acme/entities \
   -H "x-api-key: drift_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"kind":"company","name":"Acme","dedup_key":"acme.com"}'

@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Driftless",
+  "name": "Brein",
   "description": "One workspace where a team and its agents share what they know, what they operate, and the work in flight, in one governed system.",
   "theme": "linden",
   "favicon": "/favicon.png",
   "logo": {
     "light": "/brand-mark.png",
     "dark": "/brand-mark.png",
-    "href": "https://driftless.icu",
+    "href": "https://trybrein.com",
     "favicon": "/favicon.png"
   },
   "colors": {
@@ -48,13 +48,13 @@
     "links": [
       {
         "label": "Blog",
-        "href": "https://driftless.icu/blog"
+        "href": "https://trybrein.com/blog"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://driftless.icu"
+      "href": "https://trybrein.com"
     }
   },
   "navigation": {
@@ -295,15 +295,15 @@
     },
     "links": [
       {
-        "header": "Driftless",
+        "header": "Brein",
         "items": [
           {
             "label": "Dashboard",
-            "href": "https://driftless.icu"
+            "href": "https://trybrein.com"
           },
           {
             "label": "Blog",
-            "href": "https://driftless.icu/blog"
+            "href": "https://trybrein.com/blog"
           }
         ]
       }
@@ -333,10 +333,11 @@
   ],
   "seo": {
     "metatags": {
-      "og:image": "https://driftless.icu/opengraph.jpg",
+      "canonical": "https://docs.trybrein.com",
+      "og:image": "https://trybrein.com/opengraph.jpg",
       "og:image:width": "1200",
       "og:image:height": "630",
-      "twitter:image": "https://driftless.icu/opengraph.jpg",
+      "twitter:image": "https://trybrein.com/opengraph.jpg",
       "twitter:card": "summary_large_image"
     },
     "indexing": "all"

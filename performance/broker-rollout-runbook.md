@@ -43,7 +43,7 @@ but flagged. There is no override that can open the entire broker in production.
 | `NANGO_HOST` | self-host only | Omit for Nango Cloud. |
 | `DRIFTLESS_BROKER_ROLLOUT` | to open the external lane | `off` default; advance `internal` → `ga`. |
 
-Staging API: `https://api-staging.driftless.icu`. Prod: `https://api.driftless.icu`.
+Staging API: `https://api-staging.driftless.icu`. Prod: `https://api.trybrein.com`.
 
 ## Rollout plan (no global ON until gates pass)
 

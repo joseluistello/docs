@@ -22,10 +22,10 @@ They compose: the CLI skill drives the read-before / write-after loop in a repo,
 
 | | Value |
 |---|---|
-| MCP endpoint | `https://api.driftless.icu/mcp` (Streamable HTTP) |
+| MCP endpoint | `https://api.trybrein.com/mcp` (Streamable HTTP) |
 | MCP auth (agents) | `X-API-Key: drift_…` header |
 | CLI package | `@driftless-sh/cli` |
-| API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.driftless.icu) |
+| API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.trybrein.com) |
 
 <Note>
 An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (collections, records, tags, areas) need the key's owner to have `work:write`; **merging into Knowledge needs owner/admin authority**. If the key's owner is an owner/admin, the agent can run the merge on your explicit request (stamped `approved_via: agent`); an ownerless or non-owner key can propose but is refused the merge.
@@ -68,7 +68,7 @@ Use the `mcp add` command (it writes the correct entry in `~/.openclaw/openclaw.
 
 ```bash
 openclaw mcp add driftless \
-  --url https://api.driftless.icu/mcp \
+  --url https://api.trybrein.com/mcp \
   --transport streamable-http \
   --header X-API-Key:drift_your_api_key_here
 ```
@@ -79,7 +79,7 @@ Then reload and confirm the `driftless_*` tools appear. The equivalent config en
 {
   "mcpServers": {
     "driftless": {
-      "url": "https://api.driftless.icu/mcp",
+      "url": "https://api.trybrein.com/mcp",
       "transport": "streamable-http",
       "headers": { "X-API-Key": "drift_your_api_key_here" }
     }
@@ -116,7 +116,7 @@ Add Driftless under `mcp_servers` in `~/.hermes/config.yaml`:
 ```yaml
 mcp_servers:
   driftless:
-    url: "https://api.driftless.icu/mcp"
+    url: "https://api.trybrein.com/mcp"
     headers:
       X-API-Key: "drift_your_api_key_here"
     tools:
