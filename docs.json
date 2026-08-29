@@ -54,7 +54,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://trybrein.com"
+      "href": "https://app.trybrein.com"
     }
   },
   "navigation": {
@@ -299,7 +299,7 @@
         "items": [
           {
             "label": "Dashboard",
-            "href": "https://trybrein.com"
+            "href": "https://app.trybrein.com"
           },
           {
             "label": "Blog",
