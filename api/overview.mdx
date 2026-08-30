@@ -48,12 +48,15 @@ These endpoints do not require authentication:
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/commercial-usage` | Read plan, monthly requests and credits, renewal date, promotional research availability, and the contact-sales action |
+| `GET` | `/workspaces/:slug/commercial-usage` | Read plan, monthly intelligence usage, separate contact-credit balance and allowance, renewal date, promotion availability, and the contact-sales action |
 
-The Explore allowance is 10 commercial-intelligence requests and 25 credits per
-calendar month, with at most 5 delivered results per request. Founder is USD 29
-per month with 50 requests, 250 credits, and at most 10 results per request.
-Every workspace may redeem one deep-research turn without using either balance.
+The Explore allowance is 10 commercial-intelligence requests, 25 intelligence
+credits, and a separate 25 contact credits per calendar month, with at most 5
+delivered results per request. Founder is USD 29 per month with 50 requests, 250
+intelligence credits, a separate 250 contact credits, and at most 10 results per
+request. Contact unlocks spend 2 contact credits per company and never reduce
+the intelligence allowance. Every workspace may redeem one deep-research turn
+without using either balance.
 One top-level
 request counts once; internal tool calls do not. Cerebro, CRM, navigation, and
 capability discovery are free. Successful market-data responses include
