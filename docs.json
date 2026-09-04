@@ -110,6 +110,7 @@
             "icon": "book-open",
             "pages": [
               "guides/overview",
+              "guides/commercial-onboarding",
               "guides/operate-a-collection",
               "guides/govern-agent-learning",
               "guides/clean-workspace-context",
@@ -220,6 +221,7 @@
             "icon": "book-open",
             "pages": [
               "es/guides/overview",
+              "es/guides/commercial-onboarding",
               "es/guides/operate-a-collection",
               "es/guides/govern-agent-learning",
               "es/guides/clean-workspace-context",

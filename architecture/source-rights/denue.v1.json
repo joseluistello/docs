@@ -1,0 +1,245 @@
+{
+  "formatVersion": 1,
+  "kind": "source_rights",
+  "recordId": "source-rights:denue:v1",
+  "sourceSlug": "denue",
+  "publisher": "Instituto Nacional de Estadística y Geografía (INEGI)",
+  "product": "Directorio Estadístico Nacional de Unidades Económicas (DENUE)",
+  "jurisdiction": "MX",
+  "retrievedAt": "2026-08-30T15:03:02Z",
+  "officialUrls": {
+    "terms": "https://www.inegi.org.mx/inegi/terminos.html",
+    "termsPdf": "https://www.inegi.org.mx/contenidos/inegi/doc/terminos_info.pdf",
+    "currentDownload": "https://www.inegi.org.mx/app/descarga/?ti=6",
+    "catalog": "https://www.inegi.org.mx/rnm/index.php/catalog/1103",
+    "dataDictionary": "https://www.inegi.org.mx/rnm/index.php/catalog/1103/download/34479",
+    "methodology": "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/889463919919.pdf",
+    "openDataNorm": "https://www.inegi.org.mx/contenidos/infraestructura/datos/doc/AcuerdoNT_DAde_la_IEyGde_IIN.pdf",
+    "geographyCatalog": "https://www.inegi.org.mx/app/ageeml/"
+  },
+  "currentRelease": {
+    "label": "DENUE 2026",
+    "catalogIdentifier": "MEX-INEGI.EEC2.05-DENUE-2026",
+    "observedDataDate": "2026-05-20",
+    "observedLastModifiedAt": "2026-07-01",
+    "bytesArchived": false,
+    "note": "The official dynamic download catalog identified the 2026 release at retrieval time. This record does not pin or redistribute the release dataset bytes."
+  },
+  "evidence": [
+    {
+      "evidenceId": "inegi-terms-html",
+      "kind": "terms_html",
+      "url": "https://www.inegi.org.mx/inegi/terminos.html",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": null,
+      "sha256": null,
+      "digestBasis": "dynamic_resource_not_archived",
+      "supports": [
+        "copy_and_distribute",
+        "publish",
+        "adapt_and_reorder",
+        "extract",
+        "commercial_derived_use",
+        "attribution_required",
+        "transformation_disclosure_required",
+        "no_endorsement"
+      ],
+      "note": "Official live terms; the separately archived official PDF pins the same operative clauses."
+    },
+    {
+      "evidenceId": "inegi-terms-pdf",
+      "kind": "terms_pdf",
+      "url": "https://www.inegi.org.mx/contenidos/inegi/doc/terminos_info.pdf",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": null,
+      "sha256": "8900206bbe4a2b8cf461e7e7ff111564cf4de2f863c7cd00b99ac19a4b925d62",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "copy_and_distribute",
+        "publish",
+        "adapt_and_reorder",
+        "extract",
+        "commercial_derived_use",
+        "attribution_required",
+        "transformation_disclosure_required",
+        "no_endorsement",
+        "terms_may_change"
+      ],
+      "note": "SHA-256 is over the exact official PDF bytes retrieved from this URL."
+    },
+    {
+      "evidenceId": "denue-current-distribution",
+      "kind": "current_distribution",
+      "url": "https://www.inegi.org.mx/app/descarga/?ti=6",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": "2026-07-01",
+      "sha256": null,
+      "digestBasis": "dynamic_resource_not_archived",
+      "supports": [
+        "official_current_download_location",
+        "release_2026_observed"
+      ],
+      "note": "Dynamic official distribution portal. The portal and catalog metadata were inspected, but the current dataset package was not copied into this repository."
+    },
+    {
+      "evidenceId": "denue-data-dictionary-2025-05",
+      "kind": "data_dictionary",
+      "url": "https://www.inegi.org.mx/rnm/index.php/catalog/1103/download/34479",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": "2025-05-22",
+      "sha256": "759d3d0da3b602b4f3290f12374462dbb51c17cb6d5936dc2c33feac6a02feeb",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "official_field_names",
+        "establishment_grain",
+        "scian_2023",
+        "contact_and_exact_location_field_identification"
+      ],
+      "note": "The latest byte-pinned dictionary found in the official DENUE catalog is dated 05/2025; it is a field reference, not proof that the 2026 package schema is unchanged."
+    },
+    {
+      "evidenceId": "denue-methodology-2024-11",
+      "kind": "methodology",
+      "url": "https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/889463919919.pdf",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": "2024-11-01",
+      "sha256": "6def5c9b2ad7098c218fbc3e53acafe92ab9d1d43084392a0040bbcaa10f3281",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "establishment_observation_semantics",
+        "coverage_limits",
+        "geography_semantics",
+        "contact_and_exact_location_field_identification",
+        "free_download"
+      ],
+      "note": "Methodology describes DENUE as active economic-unit observations and identifies phone, website, email, street and coordinate fields."
+    },
+    {
+      "evidenceId": "inegi-open-data-norm",
+      "kind": "open_data_norm",
+      "url": "https://www.inegi.org.mx/contenidos/infraestructura/datos/doc/AcuerdoNT_DAde_la_IEyGde_IIN.pdf",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": "2014-12-04",
+      "sha256": "b50b3506ae0c39f29ea9aeff14cbc928e5f75e767e598d62342c15a41085d1ea",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "open_data_free_use_with_attribution",
+        "metadata_required",
+        "publisher_confidentiality_obligation"
+      ],
+      "note": "General INEGI open-data norm; product-specific free-use terms remain the primary reuse evidence."
+    },
+    {
+      "evidenceId": "inegi-geography-catalog",
+      "kind": "geography_catalog",
+      "url": "https://www.inegi.org.mx/app/ageeml/",
+      "retrievedAt": "2026-08-30T15:03:02Z",
+      "publishedOrUpdatedAt": null,
+      "sha256": null,
+      "digestBasis": "dynamic_resource_not_archived",
+      "supports": [
+        "official_state_municipality_locality_names_and_codes"
+      ],
+      "note": "Use this official catalog to validate geography labels and keys; do not infer a municipality from free text."
+    }
+  ],
+  "rightsConclusion": {
+    "classification": "official_terms_support_public_display_and_commercial_reuse",
+    "permissions": [
+      "copy_and_distribute",
+      "publish",
+      "adapt_and_reorder",
+      "extract_total_or_partial",
+      "commercial_derived_products_and_services"
+    ],
+    "conditions": [
+      "preserve_source_metadata",
+      "credit_inegi_and_name_denue_with_update_date_when_technically_possible",
+      "disclose_brein_analysis_filters_sampling_and_transformations",
+      "do_not_present_brein_transformations_as_inegi_work",
+      "do_not_imply_inegi_endorsement_sponsorship_or_support"
+    ],
+    "caveat": "This is an evidence record, not legal advice. INEGI may change its terms; Brein's public-field policy is deliberately narrower than the official reuse permission."
+  },
+  "fieldPolicy": {
+    "allowedPublic": [
+      {
+        "sourceFields": ["nom_estab", "raz_social"],
+        "purpose": "Display a named establishment observation, never a verified company or supplier identity.",
+        "conditions": ["omit_empty_values", "pass_contact_like_text_scanner", "label_identity_as_approximate", "do_not_render_a_natural_person_name", "the_2025_dictionary_states_raz_social_is_omitted_for_natural_person_establishments"]
+      },
+      {
+        "sourceFields": ["codigo_act", "nombre_act"],
+        "purpose": "Explain the observed SCIAN 2023 classification and its limits.",
+        "conditions": ["do_not_claim_certification_capability_or_current_capacity", "state_proxy_precision_when_applicable"]
+      },
+      {
+        "sourceFields": ["per_ocu", "tipoUniEco"],
+        "purpose": "Show publisher-defined establishment size band and establishment type.",
+        "conditions": ["use_publisher_labels", "do_not_infer_revenue_or_capacity"]
+      },
+      {
+        "sourceFields": ["cve_ent", "entidad", "cve_mun", "municipio", "cve_loc", "localidad"],
+        "purpose": "Show state, municipality and locality geography validated against the official catalog.",
+        "conditions": ["do_not_expand_to_exact_address", "validate_names_and_codes_against_marco_geoestadistico"]
+      },
+      {
+        "sourceFields": ["fecha_alta"],
+        "purpose": "State when the observation entered DENUE, not when the business started or was last verified.",
+        "conditions": ["label_as_denue_incorporation_date"]
+      }
+    ],
+    "internalOnly": [
+      {
+        "sourceFields": ["id", "CLEE"],
+        "purpose": "Stable internal observation identity, deduplication and provenance binding.",
+        "conditions": ["never_render_raw_identifier", "never_treat_as_verified_cross_source_company_identity"]
+      }
+    ],
+    "forbiddenPublic": [
+      {
+        "sourceFields": ["telefono", "correoelec", "www"],
+        "purpose": "Contact coordinates are excluded from every public SEO projection by Brein privacy policy.",
+        "conditions": ["availability_boolean_or_aggregate_only", "no_raw_value_in_copy_metadata_jsonld_or_logs"]
+      },
+      {
+        "sourceFields": ["tipo_vial", "nom_vial", "tipo_v_e_1", "nom_v_e_1", "tipo_v_e_2", "nom_v_e_2", "tipo_v_e_3", "nom_v_e_3", "numero_ext", "letra_ext", "edificio", "edificio_e", "numero_int", "letra_int", "tipo_asent", "nomb_asent", "tipoCenCom", "nom_CenCom", "num_local", "cod_postal", "ageb", "manzana", "latitud", "longitud"],
+        "purpose": "Exact address, small-area and point-location data are unnecessary for public supplier SEO and increase contactability and privacy risk.",
+        "conditions": ["municipality_or_locality_is_the_finest_public_geography", "no_exact_map_points"]
+      }
+    ]
+  },
+  "allowedUses": [
+    "bounded_aggregate_counts_by_exact_scian_and_reviewed_geography",
+    "deterministic_named_establishment_samples_from_allowed_public_fields",
+    "public_provenance_and_methodology_blocks",
+    "derived_commercial_analysis_with_transformation_disclosure"
+  ],
+  "forbiddenUses": [
+    "public_contact_coordinates_or_exact_addresses",
+    "raw_denue_payload_or_bulk_directory_export",
+    "claims_that_an_establishment_observation_is_a_verified_company_or_supplier",
+    "claims_of_certification_current_capacity_availability_or_inegi_endorsement",
+    "suppression_or_alteration_of_inegi_metadata_and_provenance",
+    "publication_after_operational_expiry_or_rights_revocation"
+  ],
+  "attribution": {
+    "required": true,
+    "template": "Fuente: INEGI, Directorio Estadístico Nacional de Unidades Económicas (DENUE), actualización {sourceUpdatedAt}. Análisis, filtros y presentación por Brein.",
+    "transformationDisclosureRequired": true,
+    "metadataPreservationRequired": true,
+    "noEndorsementRequired": true
+  },
+  "review": {
+    "status": "approved",
+    "publicDisplayDecision": "allow",
+    "responsibleRole": "data-rights-owner",
+    "reviewedBy": "rights-owner-jlt-01",
+    "reviewedAt": "2026-08-31T09:14:42Z",
+    "nextReviewAt": "2026-11-28T15:03:02Z",
+    "operationalExpiresAt": "2026-11-28T15:03:02Z",
+    "blockers": [],
+    "note": "Responsible human review recorded against the byte-pinned official evidence and documented attribution, transformation-disclosure and no-endorsement conditions."
+  },
+  "recordDigest": "6054ff94b16e50e2d9480ae9d57b6cc05d2723ac858941afafa434ae72901a35"
+}

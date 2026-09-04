@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "kind": "source_rights_denial",
+  "authorizationCapability": "none",
+  "recordId": "source-rights-denial:dirind:v1",
+  "sourceSlug": "dirind",
+  "publisher": "Emilio Arreguín Guzmán",
+  "product": "DirInd.com",
+  "jurisdiction": "MX",
+  "retrievedAt": "2026-08-30T15:57:04Z",
+  "officialUrls": {
+    "terms": "https://www.dirind.com/condiciones.html",
+    "termsPdf": null,
+    "privacy": "https://www.dirind.com/privacidad.html",
+    "registration": "https://www.dirind.com/registro_empresa.php",
+    "footer": "https://www.dirind.com/"
+  },
+  "evidence": [
+    {
+      "evidenceId": "dirind-terms-2026-08-30",
+      "kind": "terms_html",
+      "url": "https://www.dirind.com/condiciones.html",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": "2013-01-20",
+      "httpStatus": 200,
+      "sha256": "e8857896dd17e26ac5eb408855d166d70db3d05affb6c165aec26a1580b61691",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "directory_service_described",
+        "users_must_accept_service_conditions",
+        "no_public_redistribution_license_found"
+      ],
+      "note": "The official conditions describe publication services and user obligations but contain no affirmative public redistribution grant located in the reviewed page. The bytes are not stored in this repository."
+    },
+    {
+      "evidenceId": "dirind-privacy-2026-08-30",
+      "kind": "privacy_html",
+      "url": "https://www.dirind.com/privacidad.html",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "714c470bcaf326447d80fe64087b705fa62292bf7d3a9be26d361f42c05521eb",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "publisher_identity",
+        "directory_content_fields_described",
+        "personal_data_reuse_not_authorized"
+      ],
+      "note": "The official privacy notice labels itself as updated in April 2026, identifies the publisher and describes the categories displayed by the directory. A privacy purpose is not treated as a redistribution license; no exact update day is inferred."
+    },
+    {
+      "evidenceId": "dirind-registration-2026-08-30",
+      "kind": "registration_surface",
+      "url": "https://www.dirind.com/registro_empresa.php",
+      "retrievedAt": "2026-08-30T15:57:04Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "425e4af9f6ce458d36651d0146a9a1c7a79146f48f3be6f543632ab841aeab12",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "company_registration_is_submission_surface",
+        "no_public_redistribution_license_found"
+      ],
+      "note": "The official registration surface is a company-submission workflow. No public redistribution grant was located in the reviewed response."
+    },
+    {
+      "evidenceId": "dirind-footer-2026-08-30",
+      "kind": "site_footer",
+      "url": "https://www.dirind.com/",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "735c47755ee717d4274c09ea4e7d9486c6d9deab30ea08d34058d448c4fb96b0",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "rights_reserved_notice_observed"
+      ],
+      "note": "The official homepage footer displays a rights-reserved notice."
+    }
+  ],
+  "rightsConclusion": {
+    "classification": "no_public_redistribution_license_found",
+    "publicRedistributionLicenseFound": false,
+    "rightsReservedNoticeObserved": true,
+    "priorAuthorizationRequirementObserved": false,
+    "caveat": "The reviewed official terms, privacy, registration and footer surfaces did not provide an affirmative public redistribution license. The rights-reserved notice and absence of a grant keep public use denied until written permission and responsible human legal review are recorded."
+  },
+  "usagePolicy": {
+    "allowedInternal": [
+      "taxonomy_vocabulary_discovery",
+      "corroboration_leads_requiring_independent_public_evidence"
+    ],
+    "forbiddenPublic": [
+      "public_row_redistribution",
+      "public_profile_or_description_republication",
+      "public_contact_or_address_republication",
+      "source_derived_public_seo_pages",
+      "source_as_public_identity_evidence"
+    ]
+  },
+  "fieldPolicy": {
+    "allowedPublic": [],
+    "internalOnly": [
+      "industry_vocabulary",
+      "category_labels",
+      "corroboration_leads"
+    ],
+    "forbiddenPublic": [
+      "source_rows",
+      "company_names",
+      "profiles",
+      "descriptions",
+      "contacts",
+      "addresses",
+      "images",
+      "logos",
+      "source_identifiers"
+    ]
+  },
+  "writtenPermission": {
+    "requiredBeforeAnyPublicUse": true,
+    "recorded": false,
+    "evidenceReference": null
+  },
+  "review": {
+    "status": "pending_human_review",
+    "publicDisplayDecision": "deny",
+    "responsibleRole": "data-rights-owner",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "nextReviewAt": "2026-11-30",
+    "blockers": [
+      "no_public_redistribution_license_found",
+      "rights_reserved_notice_observed",
+      "written_permission_not_recorded",
+      "responsible_human_legal_review_not_recorded"
+    ],
+    "note": "This denial-only record cannot authorize publication. A future permission review must create a separate source-specific affirmative rights record and must not mutate this file into an allow decision."
+  },
+  "legalDisclaimer": "Operational governance record; not legal advice.",
+  "recordDigest": "8137990434c766cd81db9a3ecc0f08e3f42b98480a73176d1a4ea4e76fa966ff"
+}

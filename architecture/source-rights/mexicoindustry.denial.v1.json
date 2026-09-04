@@ -1,0 +1,156 @@
+{
+  "formatVersion": 1,
+  "kind": "source_rights_denial",
+  "authorizationCapability": "none",
+  "recordId": "source-rights-denial:mexicoindustry:v1",
+  "sourceSlug": "mexicoindustry",
+  "publisher": "MEDIOS PUBLICITARIOS AGV S DE RL DE CV",
+  "product": "Mexico Industry",
+  "jurisdiction": "MX",
+  "retrievedAt": "2026-08-30T15:57:04Z",
+  "officialUrls": {
+    "terms": "https://mexicoindustry.com/index.php/anunciate-en-mexico-industry-el-medio-de-la-industria",
+    "termsPdf": "https://mexicoindustry.com/Privacy%20Policy%20and%20Information%20Management.pdf",
+    "privacy": "https://mexicoindustry.com/index.php/aviso-de-privacidad",
+    "registration": "https://mexicoindustry.com/login",
+    "footer": "https://mexicoindustry.com/index.php/aviso-de-privacidad"
+  },
+  "evidence": [
+    {
+      "evidenceId": "mexicoindustry-terms-html-2026-08-30",
+      "kind": "terms_html",
+      "url": "https://mexicoindustry.com/index.php/anunciate-en-mexico-industry-el-medio-de-la-industria",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "165e80ec7782145f2e2aa33771ddf86ab91b585234402362c4a46698af08e72c",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "content_reproduction_requires_prior_authorization",
+        "informational_access_only",
+        "no_public_redistribution_license_found"
+      ],
+      "note": "The official terms surface identifies the publisher as rights holder and restricts total or partial reproduction without prior authorization. The bytes are not stored in this repository."
+    },
+    {
+      "evidenceId": "mexicoindustry-terms-pdf-2026-08-30",
+      "kind": "terms_pdf",
+      "url": "https://mexicoindustry.com/Privacy%20Policy%20and%20Information%20Management.pdf",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "bd994accf5d325e4160839a1e3ba64783789c5af08e14d113314e08da5be4793",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "content_reproduction_requires_prior_authorization",
+        "informational_access_only",
+        "no_public_redistribution_license_found"
+      ],
+      "note": "The official PDF repeats the operative restriction. SHA-256 is over the exact downloaded PDF bytes; the PDF is not stored in this repository."
+    },
+    {
+      "evidenceId": "mexicoindustry-privacy-2026-08-30",
+      "kind": "privacy_html",
+      "url": "https://mexicoindustry.com/index.php/aviso-de-privacidad",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "c02f0e6af8c47a666401a74ae2c027755facf219a92d3c46d7440bffb586abc7",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "publisher_identity",
+        "registration_and_access_collect_personal_data"
+      ],
+      "note": "The official privacy notice identifies the responsible entity and describes registration and access data processing. It does not grant Brein redistribution rights."
+    },
+    {
+      "evidenceId": "mexicoindustry-registration-2026-08-30",
+      "kind": "registration_surface",
+      "url": "https://mexicoindustry.com/login",
+      "retrievedAt": "2026-08-30T15:57:04Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 403,
+      "sha256": null,
+      "digestBasis": "http_response_not_archived",
+      "supports": [
+        "registration_surface_request_blocked"
+      ],
+      "note": "The official login/registration surface returned HTTP 403 to the bounded evidence request. The response body was intentionally not retained or hashed as substantive evidence."
+    },
+    {
+      "evidenceId": "mexicoindustry-footer-2026-08-30",
+      "kind": "site_footer",
+      "url": "https://mexicoindustry.com/index.php/aviso-de-privacidad",
+      "retrievedAt": "2026-08-30T15:53:20Z",
+      "publishedOrUpdatedAt": null,
+      "httpStatus": 200,
+      "sha256": "c02f0e6af8c47a666401a74ae2c027755facf219a92d3c46d7440bffb586abc7",
+      "digestBasis": "downloaded_bytes",
+      "supports": [
+        "rights_reserved_notice_observed"
+      ],
+      "note": "The official page footer displays a rights-reserved notice. The same downloaded bytes are pinned by the privacy evidence item."
+    }
+  ],
+  "rightsConclusion": {
+    "classification": "no_public_redistribution_license_found",
+    "publicRedistributionLicenseFound": false,
+    "rightsReservedNoticeObserved": true,
+    "priorAuthorizationRequirementObserved": true,
+    "caveat": "The reviewed official surfaces did not provide a public redistribution license and the terms require prior authorization for reproduction. Keep public use denied until written permission and responsible human legal review are recorded."
+  },
+  "usagePolicy": {
+    "allowedInternal": [
+      "taxonomy_vocabulary_discovery",
+      "corroboration_leads_requiring_independent_public_evidence"
+    ],
+    "forbiddenPublic": [
+      "public_row_redistribution",
+      "public_profile_or_description_republication",
+      "public_contact_or_address_republication",
+      "source_derived_public_seo_pages",
+      "source_as_public_identity_evidence"
+    ]
+  },
+  "fieldPolicy": {
+    "allowedPublic": [],
+    "internalOnly": [
+      "industry_vocabulary",
+      "category_labels",
+      "corroboration_leads"
+    ],
+    "forbiddenPublic": [
+      "source_rows",
+      "company_names",
+      "profiles",
+      "descriptions",
+      "contacts",
+      "addresses",
+      "images",
+      "logos",
+      "source_identifiers"
+    ]
+  },
+  "writtenPermission": {
+    "requiredBeforeAnyPublicUse": true,
+    "recorded": false,
+    "evidenceReference": null
+  },
+  "review": {
+    "status": "pending_human_review",
+    "publicDisplayDecision": "deny",
+    "responsibleRole": "data-rights-owner",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "nextReviewAt": "2026-11-30",
+    "blockers": [
+      "no_public_redistribution_license_found",
+      "rights_reserved_notice_observed",
+      "written_permission_not_recorded",
+      "responsible_human_legal_review_not_recorded"
+    ],
+    "note": "This denial-only record cannot authorize publication. A future permission review must create a separate source-specific affirmative rights record and must not mutate this file into an allow decision."
+  },
+  "legalDisclaimer": "Operational governance record; not legal advice.",
+  "recordDigest": "e73bb572be3058ba338d8fcdcdbf5f6be08390cf8bc055daf59b4f953159738d"
+}

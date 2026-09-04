@@ -70,11 +70,20 @@ keeps the web budget untouched.
 
 ## Customer surface
 
-`/w/:slug/research` is the canonical integration candidate. It uses the
-existing Chat and Work Session runtime, the shared market-data contracts and
-live `/capabilities`. It renders the three domains, cursor pagination, details,
-semantic failures, reports, evidence, coverage, warnings and a collapsed audit.
-It has no fixture fallback.
+`/w/:slug/research` is the canonical product surface. Its standalone
+`POST /workspaces/:slug/research/runs` entry point calls the commercial-research
+runner directly and streams the runner's typed events as NDJSON. It owns no Chat
+thread, Chat message, Investigation entity or source-thread reference. The
+durable execution ledger is the existing AgentRun and the deliverable is the
+existing ResearchReport; provider transport, market-data services, audit and
+resource policy remain shared platform capabilities.
+
+The Workbench accepts a decision objective plus optional company, product,
+inputs/BOM, target market and decision constraints. It renders actual progress
+events, the answer, facts, inferences, candidates, actions, evidence, coverage,
+warnings and a collapsed audit. It has no fixture fallback. The former
+`/w/:slug/intelligence/investigator` URL is a compatibility redirect to this
+surface, never a second product implementation.
 
 `/w/:slug/intelligence` remains reachable and fixture-driven. It is not a
 second supported product; it is retained until live parity, accessibility and
