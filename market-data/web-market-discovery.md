@@ -114,7 +114,7 @@ accounting that nothing consumes.
 | `radar/ports/source-family.ts` | **deleted** | no importer; same spec | immediate |
 | `radar/adapters/parallel.adapter.ts` — `capabilities/estimate/health/search/fetch/extract/cancel` | **deleted** | the class no longer declares `EvidenceWebProviderPort`; guarded by `web-search-topology.spec.ts` | immediate |
 | `radar/adapters/parallel.types.ts` — `ParallelSearchResult`, `ParallelSearchResponse` | **moved** to `research-providers/adapters/parallel-search.types.ts` | the only importer was the adapter's search half | converged |
-| `radar/adapters/resilience.ts` | **shim retained** | live consumers: `coldiq.adapter.ts`, `exa.adapter.ts`, `apollo.adapter.ts` | delete once those three import `research-providers/adapters/resilience` directly — a one-line change each plus a grep |
+| `radar/adapters/resilience.ts` | **shim retained** | live consumers: `coldiq.adapter.ts`, `exa.adapter.ts` | delete once those two import `research-providers/adapters/resilience` directly — a one-line change each plus a grep |
 | `radar.module.ts` — `{ provide: WEB_RESEARCH_PROVIDER, useExisting: ParallelAdapter }` | **deleted** | the token now resolves through the imported `ResearchProvidersModule` | immediate; re-adding it recreates the second instance and fails the topology spec |
 | `WebEvidenceService` — provider execution, health probe, failure mapping | **delegated** | duplicated with the discovery service | converged into `web-search.execution.ts` |
 | `WebEvidenceToolBelt` — call counter, evidence ledger, audit array | **delegated** | duplicated per capability | converged into `ResearchWebSurface` |
@@ -164,6 +164,13 @@ discover_web_market_signals {
   target_results: number      // 1–10
 }
 ```
+
+The same bounded discovery contract has two commercial consumers. The weekly
+CRM run uses it alongside warehouse opportunity discovery. Commercial
+onboarding uses it only as a recovery branch when its bounded warehouse plan
+produces fewer than three distinct accounts. In both cases the warehouse result
+is preserved, web candidates fill only the remaining bounded slots, exact
+account names are deduplicated, and no contact or enrichment action is implied.
 
 `additionalProperties: false`. There is no provider, processor, mode, raw query
 list, host allowlist, output schema, enrichment flag, people field, warehouse row

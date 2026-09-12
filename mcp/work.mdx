@@ -1,45 +1,40 @@
 ---
-title: 'MCP: Collections and operations'
-description: 'Search and configure Collections, advance typed Records, and resolve cross-collection Entities through bounded, governed MCP tools.'
+title: 'MCP: CRM (Prospectos)'
+description: 'Read bounded record pages and advance typed Records (accounts, opportunities and follow-up) through governed MCP tools.'
 ---
 
-Collections are Driftless's operational substrate: pipelines, CRM rows, trackers, and other structured work. Their MCP tools are action-based, bounded by default, and use the same server contracts as the dashboard and CLI. Writes require `work:write`; destructive collection purge additionally requires a human owner/admin identity.
+CRM is Brein's operational system of record: Prospectos (Collections/Records) hold accounts, opportunities and follow-up. The MCP tools are action-based, bounded by default, and use the same server contracts as the dashboard and CLI. Reads are member-level; lifecycle writes require `work:write`. The generic Collection schema/config CRUD and permanent purge have no MCP tool — configuring a pipeline is human work, and no agent tool deletes.
 
-## Collections and records
+## Records
 
-Use `driftless_collection_query` for bounded reads. Before acting on a record, load the Collection's criterion with `driftless_collection action:'context'`; it returns the Knowledge that governs how the team handles those records.
+Use `collection_query` for bounded reads (status `ok` / `continue` / `incomplete`, never conclude coverage from one page). Before acting on a record, read the Collection's criterion with `context_get` on its `criterion_refs` — the criterion is what the team applies to those records.
 
 | Tool | Main actions | Purpose |
 | --- | --- | --- |
-| `driftless_collection` | `search`, `list`, `get`, `add`, `update`, `archive`, `restore`, `doctor`, `context`, `presentation` | Configure and inspect a Collection; `get` is brief unless `view:'full'` is requested |
-| `driftless_collection_query` | `query`, `get`, `aggregate` | Read bounded records with explicit projection, filtering, and continuation |
-| `driftless_collection_record` | `add`, `update`, `history` | Create or advance typed records; status must match the Collection lifecycle |
-| `driftless_collection_purge` | single guarded call | Preview with `dry_run`, then confirm with `expected_version`; owner/admin only |
-| `driftless_collection_record_delete` | single guarded call | Preview and delete one record without deleting its distilled Notes |
+| `collection_query` | `query`, `get`, `aggregate` | Read bounded records with explicit projection, filtering, and continuation |
+| `crm_record` | `add`, `update`, `history`, `bulk`, `schedule_activity` | Create or advance typed records; status must match the Collection lifecycle. Renamed from `collection_record` (MCP · 2) — reads (`list`/`get`) are no longer in its action enum, use `collection_query` |
 
 ```text
-driftless_collection action:'context' id:'<collection-id>'
-  → { criterion: [ ... ], criterion_missing: [] }
-
-driftless_collection_query action:'query' collection_id:'<collection-id>' limit:25
+collection_query op:'query' collection_id:'<collection-id>' limit:25
   → { status:'ok'|'continue'|'incomplete', data:[ ... ], page_info:{ ... } }
 ```
 
-## Entities
+## Deleted from the catalog
 
-An Entity is a cross-collection identity that records can reference. `driftless_entity action:'upsert'` is idempotent on `(kind, dedup_key)`.
-
-```text
-driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
-```
+Collection schema configuration (`collection`), permanent purge
+(`collection_purge`), record delete (`collection_record_delete`)
+and the entity registry (`entity`) have no MCP tool at all — their
+definitions and handlers were removed, not merely hidden; a legacy
+`driftless_*` call now answers "Unknown tool". Schema configuration remains
+a human dashboard/CLI surface; identity resolution happens server-side when a
+record is saved.
 
 ## Permissions
 
 | Scope or role | Covers |
 | --- | --- |
-| member read | Collection and Record reads, criterion context, history, and doctor |
-| `work:write` | Create and update Collections, Records, and Entities; archive and restore Collections |
-| owner/admin | Permanent Collection purge |
+| member read | Collection and Record reads, criterion context, history |
+| `work:write` | Create and update Records; lifecycle writes |
 
 MCP clients cache tool schemas per connector session. Reconnect the connector after an upgrade so removed or changed tools are reflected in the client.
 
@@ -49,3 +44,4 @@ MCP clients cache tool schemas per connector session. Reconnect the connector af
 - [Operate a Collection](/guides/operate-a-collection) — the workflow.
 - [CLI: Collections](/cli/collections) and [API: Collections](/api/collections) — equivalent surfaces.
 - [MCP & OAuth](/mcp/overview) — setup, authentication, and scopes.
+- [MCP: Sequences](/mcp/sequences) — draft and preflight outbound sequences over the same Collections/Records substrate.

@@ -1,28 +1,27 @@
 ---
-title: 'MCP: Knowledge and governance'
-description: 'The context tools over MCP: retrieve and read Topics, write and edit them, walk the graph, audit health, and move a Note through the Note to Knowledge lifecycle.'
+title: 'MCP: Criterion (Cerebro)'
+description: 'The commercial-criterion tools over MCP: retrieve and read the criterion, write and edit it. Technical graph, relations, governance, sharing, delete and tags/areas tools are deleted from the catalog.'
 ---
 
-This is the Knowledge plane over MCP: the tools an AI client uses to read the team's context before acting and to write a clean Note after learning. For setup, authentication, and the OAuth scopes referenced below, see [MCP & OAuth](/mcp/overview).
+This is the Cerebro plane over MCP: the tools an AI client uses to read the team's commercial criterion before acting (offer, ICP, exclusions, signals, geography, buyers, messages, playbooks) and to maintain it. For setup, authentication, and the OAuth scopes referenced below, see [MCP & OAuth](/mcp/overview).
 
-Every read carries a flat **`trust`** field (`reviewed` = Knowledge, the team's source of truth; `proposed` / `draft` = a Note, a hint), so a client can key on `trust === "reviewed"` directly.
+Public tools use neutral capability names without a product prefix. Their `brein_*` and `driftless_*` aliases resolve to the same tool but are not advertised in `tools/list`.
 
 ## Retrieval and reading
 
-Start with `driftless_context_retrieve` when you have a task but no slug. Bodies come back **brief** by default (the durable why, not the full `content`); fetch one full body with `driftless_context_get`.
+Start with `context_retrieve` when you have a task but no slug. Bodies come back **brief** by default (the durable why, not the full `content`); fetch one full body with `context_get`.
 
 | Tool | Purpose | Main params | Returns |
 | --- | --- | --- | --- |
-| `driftless_context_retrieve` | Ranked, drifted-first context for a task and/or files | `task`, `files`, `view`, `limit` | `{ shown, has_more, next_action, results[] }` |
-| `driftless_context_search` | Full-text search, relevance-ranked | `query`, `tags`, `stale`, `limit` | top 5 summaries, `has_more` |
-| `driftless_context_list` | List topics, drifted-first | `status`, `stale`, `tags`, `limit` | top 40 summaries |
-| `driftless_context_get` | One topic by slug (full body) | `topic`, `view` | the full topic |
-| `driftless_context_get_for_files` | Match topics to file paths | `files`, `view`, `limit` | top 10, brief |
+| `context_retrieve` | Ranked context for a task and/or files — absorbs full-text search, listing and file-matching (MCP · 2) | `task`, `files`, `tags`, `area`, `stale`, `status`, `view`, `limit` | `{ shown, has_more, next_action, results[] }` |
+| `context_get` | One topic by slug (full body) | `topic`, `view` | the full topic |
+
+`context_search`, `context_list` and `context_get_for_files` no longer appear in `tools/list` — `context_retrieve` already took their arguments (`query`→`task`, `status`/`stale`/`tags`, `files`). They remain resolvable for 60 days as hidden compatibility aliases (their result names the replacement in `next_action`); after that window they answer "Unknown tool".
 
 Permission: `context:read`. Availability: Available.
 
 ```text
-driftless_context_retrieve task:'harden the webhook handler' files:['src/webhooks/handler.ts']
+context_retrieve task:'harden the webhook handler' files:['src/webhooks/handler.ts']
   → { results: [ { slug, trust, why_matched, confidence } ], has_more }
 ```
 
@@ -30,71 +29,39 @@ driftless_context_retrieve task:'harden the webhook handler' files:['src/webhook
 
 | Tool | Purpose | Main params | Notes |
 | --- | --- | --- | --- |
-| `driftless_context_create` | Create a topic (defaults to Up for review) | `title`, `content`, `pattern`, `rels` | returns `anchor_validation` |
-| `driftless_note_add` | Capture a private Note (stays a draft) | `content`, `title` | never auto-submitted |
-| `driftless_context_update` | Append-safe update | `topic`, fields, `rels` | returns `anchor_validation` |
-| `driftless_context_delete` | Delete a topic (destructive) | `topic` | irreversible |
-| `driftless_context_merge` | Fold a duplicate into a survivor | `source`, `into` | archives the source |
-| `driftless_context_share` | Publish a public page and/or share with members | `topic`, `to_web`, `with_members` | sharing, not merging |
+| `context_create` | Create a criterion topic | `title`, `content`, `area` | written directly as Knowledge — no pending-review queue on this surface (MCP · 2) |
+| `context_update` | Append-safe update | `topic`, fields | returns `anchor_validation` |
 
-Permissions: `topics:create` / `topics:write`; `work:write` for merge and share. Availability: Available. Write responses carry `anchor_validation` (`ok` / `overbroad` / `zero`), which never blocks the write.
+Permissions: `topics:create` / `topics:write`. Availability: Available. Write responses carry `anchor_validation` (`ok` / `overbroad` / `zero`), which never blocks the write. No agent tool deletes a topic or publishes a public page — see below.
 
-```json
-{ "topic": "refund-flow", "rels": [ { "to": "billing-flow", "type": "depends_on" } ] }
-```
+## Deleted from the catalog
 
-## Graph and health
+The following surfaces have no MCP tool at all — their definitions and handlers
+were removed, not merely hidden; a legacy `driftless_*` call now answers
+"Unknown tool". Their curation and governance remains available to owners
+through the CLI and dashboard:
 
-| Tool | Purpose | Main params | Returns |
-| --- | --- | --- | --- |
-| `driftless_context_relations` | A topic's typed relations | `topic` | incoming + outgoing |
-| `driftless_context_graph` | Local relation graph | `topic`, `depth` | nodes + edges |
-| `driftless_context_doctor` | Audit the context layer | (none) | stale / zombie / orphaned / draft |
-| `driftless_context_events` | Recent activity for a topic | `topic` | the event stream |
-
-Permission: `context:read`. Availability: Available.
-
-## Registries: tags and areas
-
-| Tool | Actions | Purpose |
-| --- | --- | --- |
-| `driftless_tags` | `list`, `create`, `delete` | The tag registry (per-tag counts; curation) |
-| `driftless_areas` | `list`, `create`, `update`, `delete` | The area registry (the domains topics file under) |
-
-Permissions: `list` is member-level; `create` / `update` / `delete` need `work:write`. Availability: Available.
-
-## Governance
-
-A topic becomes Knowledge only once an owner or admin merges it. An MCP client always proposes; it can merge only with owner/admin authority, and only when the authorizing person explicitly asks.
-
-| Tool | Purpose | Main params | Permission |
-| --- | --- | --- | --- |
-| `driftless_context_propose` | Put a Note up for review (draft → proposed) | `topic` | `work:write` |
-| `driftless_context_approve` | Merge into Knowledge (proposed → reviewed) | `topic` | owner/admin, only when asked |
-| `driftless_context_create_proposal` | Open a Suggested edit to existing Knowledge | `topic`, `summary`, `content` | `work:write` |
-| `driftless_context_proposals` | List Notes up for review (the review queue) | (none) | member |
-
-Availability: Available. Automatic merge or auto-approval is Not available: a person always decides.
-
-```text
-driftless_context_propose topic:'token-verification'
-```
+- Notes as a standalone product (`note_add`);
+- topic graph (`context_graph`) and relations (`context_relations`);
+- comments (`context_comment`);
+- proposals and governance (`context_propose`, `_approve`,
+  `_create_proposal`, `_proposals`, `_merge`);
+- events and doctor (`context_events`, `_doctor`);
+- areas and tags (`areas`, `tags`);
+- delete (`context_delete`) — no agent tool deletes a topic;
+- publish to the web (`context_share`) — publishing is human work, not an agent action.
 
 ## Permissions
 
 | Scope | Covers |
 | --- | --- |
-| `context:read` | Read topics, retrieve, search, list, graph, doctor, coverage, events |
+| `context:read` | Read topics, retrieve, search, list |
 | `topics:create` | Create topics |
 | `topics:write` | Update existing topics |
-| `work:write` | Tag/area curation, merge, share, propose, and Suggested edits |
 | `context:diff` | Read topic diff for local changes |
-
-Merging into Knowledge additionally requires owner/admin authority, not just a scope.
 
 ## Related
 
-- [Topics](/concepts/topics), [Governance](/concepts/governance), [Drift](/concepts/drift) - the concepts.
-- [Govern agent learning](/guides/govern-agent-learning), [Clean workspace context](/guides/clean-workspace-context) - the workflows.
+- [Cerebro](/concepts/knowledge), [Topics](/concepts/topics) - the concepts.
 - [CLI: Context Commands](/cli/context) - the same surface from the terminal.
 - [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

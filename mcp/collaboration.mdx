@@ -1,58 +1,38 @@
 ---
-title: 'MCP: Workspace and collaboration'
-description: 'The collaboration tools over MCP: leave and resolve comments on any spine object, list workspace members and workspaces, and read proposal outcome stats.'
+title: 'MCP: Workspace'
+description: 'List the workspaces a credential can reach, and read commercial usage.'
 ---
 
-These tools let a human and an agent coordinate over the same workspace: annotate an object without editing it, find the members and workspaces a credential can reach, and see how agent proposals fared. Comment writes need the `work:write` scope; the list tools are member-level reads.
+These tools resolve the identifiers the write tools expect and read workspace usage.
 
-## Comments
-
-A **comment** points AT a spine object (a topic or record) and optionally at one field. It carries no governance and resolves into an edit; its text never enters the topic body. Agent-authored comments are what make the workspace collaborative between humans and agents.
-
-| Tool | Actions | Main params | Notes |
-| --- | --- | --- | --- |
-| `driftless_context_comment` | `add`, `list`, `resolve` | `target_kind`, `target_id`, `field_key`, `body` | `open → resolved → wont_fix` |
-
-Permissions: `add` / `resolve` need `work:write`; `list` is member-level. Availability: Available.
-
-```text
-driftless_context_comment action:'add' target_kind:'topic' target_id:'billing-flow' field_key:'decisions' body:'This contradicts the refund invariant'
-```
-
-The killer placement is the Note to Knowledge gate: pin a precise, field-level objection at review time instead of a coarse approve or reject.
-
-## Members and workspaces
-
-Use these to resolve the identifiers the write tools expect: an `owner_clerk_id` for assigning a record, or the workspace slug a credential can target.
+## Workspaces and usage
 
 | Tool | Purpose | Returns |
 | --- | --- | --- |
-| `driftless_members` | List the workspace's members | member id, role, email |
-| `driftless_workspaces` | List the workspaces your credential can target | workspace slugs |
+| `workspaces` | List the workspaces your credential can target | workspace slugs |
+| `usage` | Read the monthly commercial allowance (requests + credits) | plan, limits, renewal |
 
 Permissions: member-level reads. Availability: Available. Every tool accepts an optional `workspace` argument to target another workspace your credential is authorized for.
 
 ```text
-driftless_members   → [ { id, role, email } ]   (the valid owner_clerk_id values)
+workspaces → [ { slug, name, role } ]
 ```
+
+## Deleted from the catalog
+
+`members` (listing the workspace's members) and comments (`context_comment`) have
+no MCP tool at all — their definitions and handlers were removed, not merely
+hidden; a legacy `driftless_*` call now answers "Unknown tool". Both remain
+available through the CLI and dashboard — listing members is not agent work.
 
 ## Permissions
 
 | Scope | Covers |
 | --- | --- |
-| `work:write` | `comment` add and resolve |
-| member (read) | `comment` list, `members`, `workspaces` |
-
-## Availability
-
-| Capability | State |
-| --- | --- |
-| Comments (`add`, `list`, `resolve`) | Available |
-| Members and workspaces lists | Available |
+| member (read) | `workspaces`, `usage` |
 
 ## Related
 
-- [Comments](/concepts/comments), [Workspaces](/concepts/workspaces) - the concepts.
-- [Govern agent learning](/guides/govern-agent-learning) - comments at the review gate.
-- [CLI: Context Commands](/cli/context) - comments and members from the terminal.
+- [Workspaces](/concepts/workspaces) - the concept.
+- [CLI: Context Commands](/cli/context) - members from the terminal.
 - [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

@@ -1,6 +1,6 @@
 # E8 — Migración: qué se queda, qué se reescribe, qué muere, y en qué orden
 
-Base: auditoría archivo-por-archivo de `staging` (commit `46cb84b`) — API, workflows, UI, prompts, evals y el warehouse (`gtm-fabrica`). Este plan asume la regla del encargo: **primero se congela el comportamiento (E2/E3/E7); el código llega después.** Continúa el método que el equipo ya usó bien en `legacy-radar-keep-delete-inventory.md` (C1: retiro completo, candado estructural) — esa disciplina se conserva.
+Base: auditoría archivo-por-archivo de `staging` (commit `46cb84b`) — API, workflows, UI, prompts, evals y el warehouse (`gtm-fabrica`). Este plan asume la regla del encargo: **primero se congela el comportamiento (E2/E3/E7); el código llega después.** Continúa el método que el equipo ya usó bien en el retiro del Radar legado (C1: retiro completo, candado estructural) — esa disciplina se conserva.
 
 ## 1. KEEP — se conserva tal cual (y es mucho: el sustrato es bueno)
 
@@ -33,7 +33,7 @@ Ordenado por impacto:
 9. **Shell de UI (`OperateChatSurface` + `ChatThreadView` + `DecisionRunway` + `ActivityTrail`)** → un shell alimentado por el reductor (E3 §5): muere el render de `runStatus` en 4 lugares, el `reset()` que deja "Terminado"+spinner conviviendo, los dos mapas de labels divergentes, y el colapso de tools distintos a filas idénticas (narración por `semanticKey`). El apilado de artifacts del mismo tipo (RC7) se reemplaza por tablero único por búsqueda.
 10. **`customerSafeChatError` (denylist de ~10 tokens)** → catálogo allowlist versionado (E3 §5.5). El `<pre>{s.preview}</pre>` del path legacy muere con el path.
 11. **Monitores** → el `RadarMonitorService`/webhook/schedule existente se re-ancla del run legado a la Work Session (ruta `create_monitor` POR FIN con dueño): prellenado desde el criterio, checkpoint `activate_monitor`, avisos de deltas al tablero madre, handoff de fallos al chat.
-12. **Contactos** → `radar-enrichment.service.ts`/`contact-path.ts` (hoy vivos y deliberadamente sin cablear) se re-anclan detrás de `find_contacts` + `approve_external_action` + artifact `contact_selection` (todo ya congelado en A1), con la mecánica de C10.
+12. **Contactos** → `radar/contacts.service.ts` (el surface persona-primero `/radar/people/*`) se re-ancla detrás de `find_contacts` + `approve_external_action` + artifact `contact_selection` (todo ya congelado en A1), con la mecánica de C10.
 13. **Composer** → estados de E3 §6 (placeholder/chips/primario por estado; "Enviar después" muere como concepto: steering).
 14. **Copy** → catálogo central es-MX por superficie (hoy: inline en 8 mapas dispersos + mezcla EN/ES en el path legacy), barrido por el gate léxico extendido a `chat/*`.
 
@@ -46,7 +46,7 @@ Ordenado por impacto:
 | El cinturón de ~20 tools en la superficie comercial (`list_topics`, `list_connections`, `broker_recent_events`, `search_docs`…) | Pertenecen al producto de conocimiento; en esta superficie son la materia prima del bibliotecario |
 | Banner de cola "N mensajes en espera" (`queuedCount` jamás pasado — línea muerta) y el copy "Enviar después" | Inalcanzable / concepto retirado |
 | ~20 tablas `gtm_*` huérfanas en el Postgres de Driftless (migraciones 124–137) | **FUERA DE ALCANCE de F0–F3 y de esta rama — no se toca.** Cero lectores/escritores fuera de specs, pero el retiro es una migración de datos con aprobación humana propia (el AGENTS.md de `gtm-fabrica` lo exige) y no comparte riesgo, revisión ni rollback con el rediseño de experiencia. Cuando se haga: migración forward-only nueva (`up()` retira / `down()` restaura); las migraciones históricas JAMÁS se editan (regla C1) |
-| Secciones stale de `web-search-provider-evaluation.md` (referencia archivos borrados por `6bece81`) | Marcar superseded, apuntar a este doc-set |
+| Secciones stale de la evaluación de proveedores de web search (referencia archivos borrados por `6bece81`) | Marcar superseded, apuntar a este doc-set |
 | Housekeeping de topics driftless con anclas muertas (`gtm-capability-catalog`, `gtm-claim-vocabulary-allowlist`, `fabrica-de-fuentes-arquitectura` afirma "mismo monorepo") | Ya señalado por `context get --diff` en el rollout report; le toca a un humano curarlos |
 
 ## 4. Componentes nuevos estrictamente necesarios (7)

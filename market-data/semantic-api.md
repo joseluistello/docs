@@ -300,7 +300,7 @@ coordinate even if an upstream row carried one. The HTTP surface always applies
 the abstracted projection. Supplier and opportunity detail are reachable there
 only through a server-issued `record_ref`; raw warehouse UUIDs and publisher
 keys are internal service arguments and are refused over HTTP. Contact coordinates cross the public
-boundary only through the separately quoted and confirmed Contact Path flow.
+boundary only through the separately quoted and confirmed person-first reveal flow (`people_quote` → `people_reveal` over `/radar/people/*`).
 
 ### Bulk-extraction boundary
 

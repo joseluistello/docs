@@ -143,7 +143,7 @@ API HTTP de arriba siempre devuelve la proyección abstracta: `source_slug`,
 `source_record_id`, identidad del publicador, internals de recuperación y
 coordenadas de contacto nunca llegan a un caller HTTP autenticado.
 
-Una superficie que lee un **modelo** — Chat, Research y cada tool de MCP — lee el
+Una superficie que lee un **modelo** — Research y cada tool de MCP — lee el
 mismo envelope a través de una proyección *abstracta*. La identidad del publicador
 se reemplaza por el tipo de evidencia que devolvió la operación, derivado de la
 relación del warehouse y no de una tabla de publicadores:
@@ -277,7 +277,7 @@ Hay dos cosas que un cliente ciego (un agente que solo tiene `curl` y las descri
 
 (`operations` lista las trece, recortado arriba por espacio.)
 
-`GET capabilities` es el contrato completo para integradores: el `question`, `requires`, `refuses`, `method`, `path`, y un `example` ejecutable de cada operación, más las listas de valores de filtro observadas en el corpus (nombres de state, códigos SCIAN, procedure types, …), cada una estampada con el `corpusBasis` contra el que se leyó — nunca presentada como una constante atemporal. Un query param opcional `?facets=a,b` acota tanto el cómputo como la respuesta a las dimensiones del corpus nombradas. `GET capabilities/compact` es la proyección acotada y consciente de la fuente que se inyecta a los runtimes de agente (chat, MCP) en vez de gastar una llamada a tool en el catálogo completo. Ambas llevan `openapiUrl`, que apunta al documento OpenAPI legible por máquina — servido **root-absolute** en `/openapi.json`, a diferencia de cualquier otra ruta de market-data, que es relativa al workspace.
+`GET capabilities` es el contrato completo para integradores: el `question`, `requires`, `refuses`, `method`, `path`, y un `example` ejecutable de cada operación, más las listas de valores de filtro observadas en el corpus (nombres de state, códigos SCIAN, procedure types, …), cada una estampada con el `corpusBasis` contra el que se leyó — nunca presentada como una constante atemporal. Un query param opcional `?facets=a,b` acota tanto el cómputo como la respuesta a las dimensiones del corpus nombradas. `GET capabilities/compact` es la proyección acotada y consciente de la fuente que se inyecta a los runtimes de investigación (y MCP) en vez de gastar una llamada a tool en el catálogo completo. Ambas llevan `openapiUrl`, que apunta al documento OpenAPI legible por máquina — servido **root-absolute** en `/openapi.json`, a diferencia de cualquier otra ruta de market-data, que es relativa al workspace.
 
 `GET coverage` devuelve el mismo bloque `coverage` que se adjunta a cada otra respuesta, de forma independiente: qué fuentes publicadas contribuyeron a cada relación, qué tan fresca está, y si está licenciada para mostrarse. Es lo que separa "sin resultados" de "no existe ese mercado".
 
@@ -288,37 +288,41 @@ de adjudicaciones calculados en el servidor. Una respuesta agregada cuesta un
 crédito de insight aunque contenga muchos grupos; las filas subyacentes de
 empresas o contactos no se exportan.
 
-La investigación de contactos es una capacidad separada y opera únicamente
-sobre registros CRM seleccionados por el usuario:
+La investigación de contactos es una capacidad separada y persona-primero:
+opera sobre las personas enmascaradas que expone `people_search`, nunca sobre
+coordenadas exportadas.
 
-1. `driftless_contact_quote` lee la selección exacta y el saldo. Es gratuita,
-   no llama a proveedores externos y no devuelve coordenadas de contacto.
+1. `people_quote` cotiza un conjunto exacto de personas por `handle`. Es
+   gratuita, no llama a proveedores externos y no devuelve coordenadas de
+   contacto. Devuelve un `quote_id` y el `quote_token` opaco que quien llama
+   debe repetir al revelar.
 2. Después de aceptar explícitamente la cotización,
-   `driftless_contact_unlock` envía los mismos ids, `confirm: true`, el
+   `people_reveal` envía los mismos handles, `confirm: true`, el
    `max_credits` aprobado, el `quote_token` opaco emitido por el servidor
    (válido durante 10 minutos) y el `idempotency_key` emitido por esa misma
    cotización. El servidor recalcula el precio y se niega antes de gastar si
    aumentó o si cambió el saldo o el permiso.
 
-Las cuentas ya desbloqueadas cuestan cero. Los fallos parciales se reportan por
-cuenta y el trabajo fallido se reembolsa. Reutilizar la misma clave de
+Las personas ya reveladas cuestan cero. Los fallos parciales se reportan por
+persona y el trabajo fallido se reembolsa. Reutilizar la misma clave de
 idempotencia no puede llamar dos veces al proveedor ni debitar dos veces al
 workspace.
 
 ## Autenticación y scopes
 
-Las rutas de market-data requieren la misma autenticación que el resto de la API (API key o token bearer de OAuth) — no hay ninguna ruta pública. Sobre OAuth, el análisis usa el scope dedicado `market_data:read`, en OR-list con `context:read` por compatibilidad hacia atrás. La cotización gratuita de Contact Path sobre registros CRM seleccionados usa `commercial:read`; el desbloqueo pagado usa `commercial:activate`:
+Las rutas de market-data requieren la misma autenticación que el resto de la API (API key o token bearer de OAuth) — no hay ninguna ruta pública. Sobre OAuth, el análisis usa el scope dedicado `market_data:read`, en OR-list con `context:read` por compatibilidad hacia atrás. El ciclo persona-primero mapea a `commercial:discover` para búsqueda, `commercial:read` para la libreta de contactos adquiridos y la cotización, y `commercial:activate` para revelar, archivar y estado:
 
 | Scope | Estado |
 |---|---|
 | `market_data:read` | El scope documentado y canónico para las lecturas de market-data. Dedicado para que un cliente que solo debería consumir inteligencia comercial (un plugin externo, digamos) no reciba acceso de lectura a todo el vault de Topics/Knowledge vía `context:read`. |
 | `context:read` | Todavía satisface cada ruta de market-data de forma transicional para clientes existentes. Las autorizaciones nuevas solicitan `market_data:read` por defecto. |
-| `commercial:read` | Lee una cotización exacta de Contact Path para registros CRM seleccionados. Devuelve precio, saldo y disponibilidad, nunca coordenadas de contacto. |
-| `commercial:activate` | Scope separado y opcional para desbloquear Contact Paths después de una cotización exacta y confirmación explícita. No se concede por defecto. |
+| `commercial:discover` | Busca empresas y descubre personas enmascaradas. Nunca una coordenada. |
+| `commercial:read` | Lee la libreta de contactos adquiridos y cotiza un reveal. Devuelve precio, saldo y disponibilidad, nunca coordenadas de contacto. |
+| `commercial:activate` | Opcional y nunca implícito. Requerido para revelar, archivar o actualizar el estado de personas seleccionadas; la pantalla de consentimiento explica el límite de cotizar-y-confirmar. |
 
 ## MCP: tools tipadas de market data
 
-MCP expone trece tools tipadas `driftless_market_*` para análisis más las tools de dos pasos de Contact Path. No expone `driftless_market_data`, `driftless_market_get_supplier_batch`, selectores de fuente física ni coordenadas de contacto. Reconecta el cliente después de este cambio de schema porque los conectores pueden guardar definiciones de tools en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
+MCP expone trece tools tipadas `market_*` para análisis más el ciclo persona-primero `people_*` (`people_search`, `people_quote`, `people_acquired`, `people_reveal`, `people_file`, `people_status`). No expone `driftless_market_data`, `driftless_market_get_supplier_batch`, selectores de fuente física ni coordenadas de contacto. Reconecta el cliente después de este cambio de schema porque los conectores pueden guardar definiciones de tools en caché. Ver [Referencia MCP](/es/mcp/overview) para conectar un cliente.
 
 Las trece tools de market data llevan `readOnlyHint: true`: no modifican datos de negocio ni producen efectos externos. Esa anotación **no** significa que una llamada sea gratuita. `driftless_market_capabilities` cuesta cero llamadas y cero créditos; cada una de las otras doce tools de market data se mide conforme al contrato de uso comercial.
 
@@ -326,7 +330,7 @@ Las trece tools de market data llevan `readOnlyHint: true`: no modifican datos d
 { "query": "tornillos industriales", "state": "Nuevo León", "limit": 5 }
 ```
 
-Un análisis amplio puede devolver conteos, segmentos, patrones y evidencia sin entregar coordenadas de contacto. Para activar contactos sobre registros CRM seleccionados, llama primero a `driftless_contact_quote`; sólo después de mostrar el costo exacto se permite `driftless_contact_unlock` con `confirm: true`, `max_credits`, el `quote_token` opaco emitido por el servidor (válido 10 minutos) y el `idempotency_key` emitido por esa misma cotización. Registros ya desbloqueados cuestan cero y los resultados parciales se reportan por registro.
+Un análisis amplio puede devolver conteos, segmentos, patrones y evidencia sin entregar coordenadas de contacto. Para activar contactos sobre personas seleccionadas, llama primero a `people_quote`; sólo después de mostrar el costo exacto se permite `people_reveal` con `confirm: true`, `max_credits`, el `quote_token` opaco emitido por el servidor (válido 10 minutos) y el `idempotency_key` emitido por esa misma cotización. Personas ya reveladas cuestan cero y los resultados parciales se reportan por persona.
 
 El resultado de la tool agrega la paginación estándar de la casa al nivel superior (`shown`, `has_more`) junto al propio `page.returned`/`page.hasMore` del envelope — aditivo, nunca un reemplazo — más una pista `next_action` que le dice a quien llama qué hacer después (continuar con un cursor, inspeccionar un candidato con `get_supplier`, leer `coverage` antes de concluir "sin marcas", etcétera).
 
@@ -359,9 +363,9 @@ driftless market contacts unlock <collection-id> --record-ids rec_1,rec_2 \
 
 Todo comando soporta `--json` para el envelope semántico completo; sin él, la CLI imprime un resumen humano compacto (cantidad de filas, etiqueta por fila, warnings, coverage, próximo cursor). Repite un flag de array o pasa valores separados por coma. `--compare-from-date`/`--compare-to-date` son flags planos de la CLI que se anidan en un solo objeto `compare_period` sobre el wire — pasa ambos juntos o ninguno.
 
-## Chat y el método de due-diligence
+## Investigación y el método de due-diligence
 
-El chat de investigación de mercado del dashboard planea y llama estas mismas operaciones directamente (sin una API separada de cara al modelo) y puede correr un método de **due-diligence screening** que compone `search_risks` y `search_permits`:
+El runtime de investigación de mercado planea y llama estas mismas operaciones directamente (sin una API separada de cara al modelo) y puede correr un método de **due-diligence screening** que compone `search_risks` y `search_permits`:
 
 1. Resolver identidad por RFC primero — de un resultado previo de `search_suppliers`/`search_awards` o dado directamente — y llamar `search_risks { rfc }` con él. No usar ese RFC de awards como puente hacia permits: las fuentes actuales de permits no publican RFC del holder. Llamar `search_permits { holder_name }` sólo después de obtener un nombre publicado y verificado; la resolución por nombre es aproximada y debe declarar la advertencia del match. `holder_rfc` queda como filtro fuerte si una fuente futura lo publica.
 2. Nunca concluir "sin marcas de riesgo" o "no autorizado" solo a partir de una página vacía — se lee `coverage` primero y se declara la búsqueda contra él.

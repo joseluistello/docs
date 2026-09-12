@@ -7,14 +7,14 @@ Driftless gobierna el **entendimiento** igual que GitHub gobierna el código. Un
 
 ## Todo es un Topic que evoluciona
 
-Hay un solo primitivo, el **Topic**, y madura a lo largo de un único eje de confianza: **Nota → Knowledge**. Una **Nota** es un borrador (privado por defecto; compártela con el workspace y queda **En revisión**). **Knowledge** es la fuente de verdad del equipo: *una nota se vuelve knowledge cuando se integra*. Integrar es un acto de **owner/admin**. Un owner o admin puede integrarla por su cuenta, o pedirle de forma explícita a un agente que ejecute la integración en su nombre: misma autoridad en ambos casos. Para cambiar Knowledge existente abres una **Edición sugerida**, que un owner o admin integra.
+Hay un solo primitivo, el **Topic**, y madura a lo largo de un único eje de confianza: **Nota → Knowledge**. Una **Nota** es un borrador privado que su autor puede poner **En revisión**. **Knowledge** es la fuente de verdad del equipo: *una nota se vuelve knowledge cuando se integra*. Integrar es un acto de **owner/admin**. Un owner o admin puede integrarla por su cuenta, o pedirle de forma explícita a un agente que ejecute la integración en su nombre: misma autoridad en ambos casos. Para cambiar Knowledge existente abres una **Edición sugerida**, que un owner o admin integra.
 
 ```text
 Nota  →  En revisión  →  Knowledge     (+ Archived)
 (draft)  (proposed)      (reviewed)
 ```
 
-- **Nota**: un borrador u observación privada. Solo tú la ves; queda fuera de la búsqueda; las notas sin tocar se auto-archivan tras ~14 días (recuperable). Piensa aquí. Compártela con el workspace y queda **En revisión**.
+- **Nota**: un borrador u observación privada. Solo tú la ves; queda fuera de la búsqueda; las notas sin tocar se auto-archivan tras ~14 días (recuperable). Piensa aquí y ponla a revisión cuando esté lista.
 - **En revisión**: una Nota puesta a revisión humana. Espera una integración, vive en la cola de revisión y puede devolverse con un motivo.
 - **Knowledge**: la fuente de verdad del equipo, las notas ya integradas. La autoridad de un owner o admin la sumó al knowledge, así que entra al **grafo de conocimiento vivo y anclado al código** del equipo, el mapa multi-contexto de toda la base de código. Esta es la verdad durable que consume un agente.
 
@@ -31,7 +31,7 @@ driftless context archive <slug>     # retírala
 
 ## Tres superficies
 
-El dashboard refleja las tres etapas: **Knowledge** (el grafo de Knowledge, solo notas integradas), **Cola de revisión** (la cola de integrar/rechazar más la re-revisión del contexto en drift) y **Notas** (tu espacio privado, con controles para compartir y "por vencer").
+El dashboard refleja las tres etapas: **Knowledge** (el grafo de Knowledge, solo notas integradas), **Cola de revisión** (la cola de integrar/rechazar más la re-revisión del contexto en drift) y **Notas** (tu espacio privado, con el estado "por vencer"). Las notas no son un inbox de compañeros ni una superficie de notificaciones; para trabajo operativo usa una Collection o el Inbox comercial.
 
 ## Quién puede integrar: roles del workspace
 

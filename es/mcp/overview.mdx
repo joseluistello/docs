@@ -1,27 +1,27 @@
 ---
 title: 'MCP y OAuth'
-description: "Conecta ChatGPT, Claude y otros clientes de IA a tu workspace de Driftless a través del Model Context Protocol."
+description: "Conecta ChatGPT, Claude y otros clientes de IA a tu workspace de Brein mediante Model Context Protocol."
 ---
 
-Driftless incluye un servidor MCP (Model Context Protocol) que expone el contexto de tu workspace a clientes de IA. ChatGPT, Claude, Copilot y cualquier cliente compatible con MCP pueden leer y escribir topics a través de él.
+Brein incluye un servidor MCP (Model Context Protocol) que expone la inteligencia comercial de tu workspace a clientes de IA. ChatGPT, Claude, Copilot y cualquier cliente compatible con MCP pueden leer y escribir el criterio comercial, trabajar los records de CRM (Prospectos), correr análisis de mercado y operar el ciclo de personas persona-primero gobernado a través de él.
+
+Las tools públicas usan nombres de capability neutrales, sin prefijo de producto (por ejemplo `context_get`, `market_search_suppliers`, `people_reveal`). Los nombres `brein_*` y `driftless_*` resuelven a la misma tool como **aliases ocultos de compatibilidad**: no se anuncian en `tools/list`, pero siguen resolviendo del lado del servidor para que las integraciones existentes sigan funcionando. Ver la tabla alias → tool pública más abajo, en Compatibilidad. Esto aplica sólo a las tools que todavía existen — un nombre de la lista de Retirado del catálogo público (más abajo) responde "Unknown tool" bajo cualquier alias, sin ventana de compatibilidad.
 
 ## Cómo funciona
 
-El adaptador de MCP corre en `apps/mcp` y traduce las llamadas a herramientas de MCP hacia la REST API existente de Driftless. Es **solo un adaptador de protocolo**: nunca accede a Postgres, a librerías internas ni a operaciones de admin del workspace de forma directa.
+El adaptador corre en `apps/mcp` y traduce llamadas MCP al REST API existente. Es **sólo un adaptador de protocolo**: nunca accede directamente a Postgres, librerías internas ni administración del workspace.
 
 ## Empieza por acá: retrieve
 
-Cuando tienes una **tarea** pero todavía no un slug de topic, la primera llamada es
-`driftless_context_retrieve`: devuelve el contexto registrado más relevante del equipo
-para una descripción de tarea, un conjunto de archivos, o ambos, ordenado con lo
-drifteado primero y acotado. Compone search + match-files + list filters para que no
-los encadenes a mano. Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no
-el `content` completo); llama a `driftless_context_get` para el único topic cuyo cuerpo
-completo necesites, o pasa `view: "full"`. El mismo contrato **active-only, acotado,
-brief por defecto** aplica a Collections: `driftless_collection` `list` es active-only
-(opta a archived con `include_archived:true`), y `get` es brief salvo que pases
-`view:'full'`. Ver [Payload views](#payload-views-keep-reads-fast)
-más abajo.
+Cuando tienes una **tarea** pero todavía no un slug de criterio, la primera llamada es
+`context_retrieve`: devuelve el contexto comercial registrado más relevante del equipo
+para una descripción de tarea, un conjunto de archivos, o ambos, ordenado y acotado.
+Compone los filtros de search + match-files + list para que no los encadenes a mano.
+Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no el `content` completo);
+llama a `context_get` para el único topic cuyo cuerpo completo necesites, o pasa
+`view: "full"`. El mismo contrato **active-only, acotado, brief-por-defecto** también
+aplica a la superficie operativa: `collection_query` lee records (estado
+`ok`/`continue`/`incomplete`), y `collection_record` mueve un record por su ciclo de vida.
 
 ## Familias de herramientas
 
@@ -29,87 +29,102 @@ La superficie de MCP está documentada por familia en la **Referencia MCP**. Usa
 
 | Familia | Qué cubre | Referencia |
 | --- | --- | --- |
-| Knowledge y gobernanza | Retrieve, lectura, escritura, grafo, salud, tags, areas y el ciclo de vida Nota a Knowledge | [MCP: Knowledge y gobernanza](/es/mcp/knowledge) |
-| Collections y operaciones | Collections, records y entities | [MCP: Collections y operaciones](/es/mcp/work) |
-| Integraciones y Broker | Operar un provider conectado (gated) | [MCP: Integraciones y Broker](/es/mcp/integrations) |
-| Workspace y colaboración | Comments, members, workspaces y estadísticas de propuestas | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
-| Uso comercial | `driftless_usage` consulta el plan, solicitudes, créditos, renovación, investigación promocional y la acción para hablar con ventas. La consulta no consume saldo. | [Resumen de la API](/es/api/overview#uso-comercial) |
-| Market data | Trece tools tipadas `driftless_market_*` para análisis más `driftless_contact_quote` y `driftless_contact_unlock`. No hay router genérico, detalle masivo de proveedores, selectores físicos ni coordenadas de contacto en el análisis. Reconecta los clientes después de cambios de schema porque pueden guardar definiciones de tools en caché. | [Market Data](/es/api/market-data) |
+| Criterio (Cerebro) | Recuperar, leer y mantener el criterio comercial (oferta, ICP, exclusiones, señales, geografía, compradores, mensajes, playbooks) | [MCP: Criterio](/es/mcp/knowledge) |
+| CRM (Prospectos) | Leer y trabajar records de collections — el sistema operativo de registro para cuentas, oportunidades y seguimiento | [MCP: Collections y operaciones](/es/mcp/work) |
+| Secuencias | Redactar, previsualizar y hacer preflight de una secuencia de email saliente — no existe tool de envío/activación en esta superficie | [MCP: Secuencias](/es/mcp/sequences) |
+| Integraciones | Tools sintetizadas `<provider>_records` / `_document_content` a partir de providers conectados y listos | [MCP: Integraciones](/es/mcp/integrations) |
+| Workspace | Workspaces y uso | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
+| Uso comercial | `usage` lee el plan, las requests y créditos mensuales, la fecha de renovación, la disponibilidad de investigación promocional y la acción de contactar ventas. La lectura en sí es gratuita. | [Resumen de API](/es/api/overview#uso-comercial) |
+| Inteligencia comercial | Trece tools de análisis tipado para suppliers, comparación de segmentos, opportunities, awards, marcas de riesgo y permits. El análisis nunca devuelve coordenadas de contacto. `people_quote` cotiza personas seleccionadas gratis; `people_reveal` corre sólo tras confirmación explícita con un tope de créditos. No hay router genérico de acciones ni tool de detalle masivo de suppliers. Reconecta después de cambios de schema porque los clientes pueden cachear definiciones de tools. | [Market Data](/es/api/market-data) |
 
-La superficie cubre el **contexto** (topics, governance, el grafo), la **superficie de trabajo** (tags y areas), el **sustrato operacional** (collections, records, entities), y la **ejecución del broker** (operar providers conectados). Nunca cubre la administración del workspace, el registro de repos, la gestión de keys, el **setup de integración** (conectar un provider), escribir/desplegar scripts de integración, ni disparar corridas de agentes a mano. Los topics viven en el workspace y son visibles para sus miembros; los drafts privados de otra persona quedan ocultos. Las escrituras en la superficie de trabajo requieren el scope `work:write`; mergear a Knowledge requiere autoridad de owner/admin, y el cliente MCP lo corre solo cuando el owner/admin que autoriza lo pide de forma explícita.
+El catálogo público es de **22 tools core** (Criterio 4, CRM 2, Empresas y personas 8, Cuenta 2, Secuencias 6) **más 13 tools de Market Data** — 35 en total. Cubre **el criterio comercial** (Cerebro), **lecturas y ciclo de vida del CRM** (Prospectos), **redacción de secuencias salientes**, **inteligencia de mercado**, **enrichment y contactos adquiridos**, y **uso/workspace**. Nunca cubre administración del workspace, registro de repos, gestión de keys, setup de integraciones (conectar un provider), autoría o deploy de scripts de integración, ni disparo manual de agent runs. Las superficies técnicas (grafo de topics, relaciones, comentarios, propuestas, approve/merge, eventos, areas/tags, doctor, CRUD genérico de schema y el router genérico del broker), más compartir, drafting, listado de miembros y borrado de topics, están **eliminadas del catálogo**: sus definiciones y handlers ya no existen, así que un nombre legacy `driftless_*` responde "Unknown tool". Ver Retirado del catálogo público, más abajo.
 
-Cada resultado (search, list, get) lleva un campo plano **`trust`** (`reviewed` | `proposed` | `draft`), para que un agente pueda basarse en `trust === "reviewed"` directamente en vez de inferirlo desde `classification.status` + `governance.authoritative`. `reviewed` es Knowledge, la fuente de verdad del equipo; `proposed`/`draft` son Notas (pistas).
+**Criterio es 4, no 7.** `context_search`, `context_list` y `context_get_for_files` ya no aparecen en `tools/list` — `context_retrieve` los absorbió (ya tomaba `task`/`files`/`tags`/`area`/`stale`/`status` como argumentos). Siguen resolviendo durante 60 días como aliases ocultos de compatibilidad (ver Compatibilidad, más abajo) para que un cliente ya conectado no se rompa; una sesión nueva sólo descubre `context_retrieve`.
 
 ### Las vistas de payload mantienen las lecturas rápidas
 
 Las lecturas devuelven por defecto un **payload liviano** para que un resultado nunca
 inunde tu contexto. El vocabulario es el mismo en todos lados (`summary` / `brief` / `full`):
 
-- **`summary`**: una fila índice (id/slug, título, trust, badges, anchors). Las listas y
+- **`summary`**: una fila índice (id/slug, título, trust). Las listas y
   la búsqueda devuelven esto, acotado (5 primeros en search, 40 primeros en list).
-- **`brief`** (el default para `driftless_context_retrieve` y
-  `driftless_context_get_for_files`) es el **porqué** durable: what / decisions /
+- **`brief`** (el default para `context_retrieve` y
+  `context_get_for_files`) es el **porqué** durable: what / decisions /
   gotchas / invariants, **sin** el `content` completo. Aproximadamente 76% más liviano
   que un cuerpo completo.
 - **`full`**: todo, incluyendo el pesado cuerpo `content`. **Nunca es default en otro
-  lado**; entras a él con `view: "full"`. `driftless_context_get` es la excepción: usa
-  `full` por defecto porque nombraste el único topic que querías. El mismo opt-in
-  `view: "full"` aplica a `driftless_collection`
-  `action:'get'` (brief por defecto, full a pedido).
+  lado**; entras a él con `view: "full"`. `context_get` es la excepción: usa
+  `full` por defecto porque nombraste el único topic que querías.
 
 El patrón: `retrieve` / `get_for_files` en `brief` para ver *cuál* topic gobierna el
-trabajo, y después `driftless_context_get` (full) para el único cuerpo que de verdad
-necesitas, en vez de traer todos los cuerpos completos de entrada. La superficie de
-trabajo lo refleja — `driftless_collection` `action:'get'` en brief,
-`view:'full'` para la única collection cuya config completa necesitas.
-
-### Broker (ejecución) vs setup de integración
-
-`driftless_broker` solo **opera** una conexión que ya existe
-(`operations` / `invoke` / `records` / `events` / `criterion`). **Conectar** un
-provider es *setup* de integración: un flujo privilegiado y liderado por humanos que se
-hace en el dashboard (Settings → Connections) o vía los comandos `integration
-connect/confirm` del CLI; no está en la superficie de MCP. Escribir o desplegar una
-acción de Nango es un tercer carril, solo para humanos. Si un agente necesita una
-operación del broker que `operations` **no** lista, tiene que **reportar la capacidad
-que falta**. Nunca escribas ni despliegues un script para tapar el hueco.
+trabajo, y después `context_get` (full) para el único cuerpo que de verdad
+necesitas, en vez de traer todos los cuerpos completos de entrada.
 
 ### Las connector tools se sintetizan por workspace
 
-Más allá de las tools estáticas de arriba, el servidor MCP puede **sintetizar** tools de solo
-lectura por workspace a partir de las capabilities ready de un provider:
-`driftless_<provider>_records` y `driftless_<provider>_document_content` (por ejemplo,
-`driftless_notion_document_content`). Aparecen solo cuando la síntesis de tools del broker está
+Más allá de las tools estáticas de arriba, el servidor MCP puede **sintetizar** tools
+extra de sólo lectura por workspace a partir de las capabilities `ready` de un provider:
+`<provider>_records` y `<provider>_document_content` (por ejemplo,
+`notion_document_content`). Aparecen sólo cuando la síntesis de tools del broker está
 habilitada y el provider expone una capability `ready`, de efecto lectura y de un kind
-sintetizable, con un tope por workspace. De ahí dos reglas: **una tool listada no es una tool
-utilizable** (una tool sintetizada o la estática del broker igual se resuelve por la API del
-broker, donde un caller externo está gated por rollout y grants), y las **capabilities de
-escritura nunca se sintetizan**. Ver [Broker](/es/integrations/broker).
+sintetizable, con un tope por workspace. Que una tool esté listada no la vuelve usable
+— una tool sintetizada igual resuelve a través del broker API, donde un caller externo
+queda sujeto a rollout y grants — y **las capabilities de escritura nunca se sintetizan**.
+Ver [Broker](/es/integrations/broker).
 
-### Relaciones tipadas desde el MCP
+### Compatibilidad
 
-`create` y `update` aceptan `rels`, aristas tipadas del grafo, los mismos siete tipos que el `--rel` del CLI:
+Durante la ventana de migración, ambos aliases de marca de cada tool pública resuelven
+a la misma capability neutral con exactamente el mismo schema:
 
-```json
-{ "topic": "refund-flow", "rels": [
-  { "to": "billing-flow", "type": "depends_on" },
-  { "to": "stripe-webhook-ingest", "type": "relates_to" }
-] }
-```
+| Aliases ocultos | Tool pública |
+| --- | --- |
+| `brein_context_*`, `driftless_context_*` | `context_*` |
+| `brein_collection_query`, `driftless_collection_query` | `collection_query` |
+| `brein_market_*`, `driftless_market_*` | `market_*` |
+| `brein_company_*`, `driftless_company_*`; `brein_people_*`, `driftless_people_*` | `company_*`, `people_*` |
+| `brein_workspaces`, `driftless_workspaces`; `brein_usage`, `driftless_usage` | `workspaces`, `usage` |
 
-Tipos: `relates_to`, `depends_on`, `supersedes`, `blocks`, `implements`, `documents`, `risk_for`. Cada arista se crea con tolerancia por relación: una arista mala reporta `{ok: false, error}` en el resultado de la herramienta sin perder el topic ni las aristas restantes. Ambos extremos deben existir y ser visibles para ti.
+**Aliases de renombre/fusión con plazo (60 días, MCP · 2) — un segundo tipo de alias, más
+acotado.** No son aliases de prefijo de marca (los de arriba): la tool MISMA fue
+renombrada o fusionada, así que el nombre viejo queda excluido de `tools/list` pero
+sigue resolviendo, y su resultado trae un `next_action` que nombra el reemplazo.
 
-### Validación de anchors del lado del servidor
+| Alias oculto (60 días) | Reemplazo |
+| --- | --- |
+| `context_search`, `context_list`, `context_get_for_files` (con cualquier prefijo de marca) | `context_retrieve` |
+| `collection_record` (con cualquier prefijo de marca) | `crm_record` (escrituras) / `collection_query` (lecturas) |
 
-Los agentes remotos no tienen un checkout local, así que las respuestas de escritura llevan `anchor_validation`, conteos de coincidencias por patrón contra la **rama default** del repo: `ok`, `overbroad` (>100 archivos), o `zero`. Las advertencias nunca bloquean la escritura (un glob que ancla código de una rama sin mergear muestra 0 de forma legítima); léelas en el resultado de la herramienta y aprieta los globs marcados. Donde el deployment no tiene índice de archivos del repo vinculado, el campo llega como `{ skipped }` con la razón en vez de conteos — un «no se midió» honesto, nunca un pase silencioso.
+Después de ese plazo, estos dos responden "Unknown tool" como cualquier otro nombre retirado.
+
+### Retirado del catálogo público
+
+Las siguientes 27 tools **no tienen ninguna tool de MCP** — sus definiciones y handlers
+fueron eliminados, no sólo ocultos. Cualquier alias (`driftless_*`, `brein_*`, el
+nombre neutral) responde "Unknown tool":
+
+- Gobierno y salud de Cerebro: `note_add`, `context_graph`,
+  `context_relations`, `context_comment`,
+  `context_proposals`, `context_create_proposal`,
+  `context_propose`, `context_approve`,
+  `context_merge`, `context_events`,
+  `context_doctor`;
+- CRUD de schema de CRM/taxonomía: `collection`, `collection_purge`,
+  `collection_record_delete`, `entity`, `areas`, `tags`;
+- el Contact Path retirado (`contact_discover`, `contact_select`,
+  `contacts_acquired`, `contact_quote`, `contact_unlock`) — reemplazado por el
+  ciclo persona-primero `people_*`;
+- el router genérico de conectores: `broker`;
+- borrado de topics (`context_delete`) — ninguna tool de agente borra un record ni un topic;
+- publicar a la web (`context_share`) — publicar es trabajo humano;
+- preparación de drafts (`contact_prepare`) — redactar es trabajo de Campañas, no del MCP;
+- listado de miembros (`members`) — no es trabajo comercial.
+
+Su curación y gobierno sigue disponible para los owners mediante el CLI y el dashboard.
 
 <Note>
-Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de herramientas por sesión de conector**. Después de que Driftless publica un cambio de schema, reconecta el conector (o arranca una sesión nueva) para tomarlo. Si no, herramientas retiradas pueden seguir apareciendo. Las herramientas de la superficie de trabajo (`tags`, `areas`, `driftless_collection`, `driftless_collection_record`) son **basadas en `action`**: pasa `action` para elegir la operación.
+Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de tools por sesión de conector**. Después de que Brein publique un cambio de schema, reconecta el conector (o inicia una sesión nueva) para recibirlo. De lo contrario los parámetros o tools nuevos no estarán disponibles, y una sesión que cacheó un catálogo con marca lo seguirá viendo.
 </Note>
-
-### Governance desde el MCP
-
-Un topic se vuelve Knowledge solo cuando un owner/admin lo mergea. Un cliente MCP siempre **pone una Nota en revisión** (`driftless_context_propose`); también puede **mergear** (`driftless_context_approve`), pero solo con autoridad de owner/admin. El token de MCP actúa como el humano que lo autorizó, así que `approve` tiene éxito solo cuando ese humano es owner/admin, y el cliente debería correrlo **solo cuando lo piden de forma explícita** (el token de un miembro o uno sin identidad se rechaza). El merge queda estampado con `approved_via: agent`. Ver [Governance](/es/concepts/governance).
 
 ## Autenticación
 
@@ -117,7 +132,7 @@ Todas las solicitudes MCP requieren autenticación. Las solicitudes sin autentic
 
 Hay dos formas de autenticarse:
 
-- **API key**: pasa tu API key de Driftless en el header `X-API-Key`. Ideal para el CLI, agentes y CI.
+- **API key**: pasa tu API key en el header `X-API-Key`. Ideal para el CLI, agentes y CI.
 - **OAuth 2.0**: para clientes de IA publicados (ChatGPT, Claude) que necesitan consentimiento por usuario. El servidor soporta registro dinámico de clientes y PKCE.
 
 ### Conectando con una API key
@@ -127,7 +142,7 @@ Agrega esto a tu `claude_desktop_config.json` o equivalente:
 ```json
 {
   "mcpServers": {
-    "driftless": {
+    "brein": {
       "url": "https://api.trybrein.com/mcp",
       "headers": {
         "X-API-Key": "drift_your_api_key_here"
@@ -141,16 +156,15 @@ Para desarrollo local, usa `http://localhost:3020/mcp` y tu API key local.
 
 ### Conectando con OAuth (Claude.ai, ChatGPT)
 
-La aplicación publicada en ChatGPT se llama **Brein**. Se conecta al mismo espacio
-de trabajo autenticado de Driftless y usa los mismos permisos y contratos de
-herramientas MCP; el nombre no crea una segunda cuenta ni otra frontera de datos.
+La aplicación publicada en ChatGPT se llama **Brein**. Se conecta al mismo workspace
+autenticado de Brein y usa los mismos permisos y contratos de tools de MCP.
 
 Los clientes publicados usan OAuth 2.0 con PKCE. El flujo es totalmente automático:
 
 1. Instala Brein en ChatGPT, o ingresa `https://api.trybrein.com/mcp` como el endpoint MCP en Claude.ai
 2. El cliente descubre los endpoints de OAuth automáticamente vía `/.well-known/oauth-protected-resource` y `/.well-known/oauth-authorization-server`
-3. Autorizas en la pantalla de consentimiento de Driftless
-4. El cliente recibe un bearer token y lo usa para las llamadas MCP dentro del espacio de trabajo autorizado
+3. Autorizas en la pantalla de consentimiento de Brein
+4. El cliente recibe un bearer token y lo usa para las llamadas MCP dentro del workspace autorizado
 
 No hace falta configuración OAuth manual. El cliente maneja el registro, PKCE y el refresh de tokens.
 
@@ -176,13 +190,15 @@ curl -X POST https://api.trybrein.com/api/v1/oauth/register \
 | `context:read` | Lee topics y contexto |
 | `topics:create` | Crea topics nuevos |
 | `topics:write` | Actualiza topics existentes |
-| `work:write` | Escribe la superficie de trabajo: collections, records, entities, comentarios, tags, areas, más las acciones de merge y share |
+| `work:write` | Escribe collections, records, entities, comentarios, tags, areas, más las acciones de integración y publicación de enlaces públicos |
 | `context:diff` | Lee el diff de topics para cambios locales |
 | `broker:read` | Lee connections, capabilities y records del broker |
 | `broker:invoke` | Invoca una operación del broker |
 | `broker:admin` | Gestiona grants y criterion del broker |
 | `market_data:read` | Lee inteligencia comercial (suppliers, opportunities, awards, marcas de riesgo, permits) — ver [Market Data](/es/api/market-data) |
-| `commercial:read` | Lee una cotización exacta de Contact Path para registros CRM seleccionados; nunca devuelve coordenadas de contacto. |
+| `commercial:discover` | Busca empresas y descubre personas enmascaradas — nunca una coordenada |
+| `commercial:read` | Lee la libreta de contactos adquiridos y cotiza un reveal — solo precio, saldo y disponibilidad, nunca coordenadas |
+| `commercial:activate` | Revela, archiva o actualiza el estado de personas seleccionadas tras una cotización exacta y confirmación explícita. Nunca implícito |
 | `offline_access` | Refresca el acceso sin reconectar |
 
 Los scopes `broker:*` se aplican solo cuando el Broker está habilitado, y gobiernan su lane encima del rollout y los grants. La metadata de discovery anuncia un subconjunto de scopes; el conjunto aplicado es la autoridad.

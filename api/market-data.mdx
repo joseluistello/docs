@@ -5,7 +5,7 @@ description: 'Commercial intelligence over Mexican public-sector suppliers, oppo
 
 Market data is a separate, read-only warehouse of Mexican commercial intelligence — suppliers, public opportunities, awards, adverse risk marks, and permits — layered under a **semantic contract**, not a SQL surface. It answers governed questions ("who could supply this?", "what has this RFC won?", "does this party carry a published risk mark?"); it does not expose a query language, and every response states what it actually saw so an empty page is never confused with a market that doesn't exist.
 
-The semantic operations share one service layer across HTTP, the typed MCP tools, `driftless market`, and the internal agent tool belt used by [chat and Investigations](#chat-and-due-diligence-screening). The internal belt may batch already-selected detail for synthesis efficiency; public MCP deliberately does not. None of these surfaces exposes SQL or warehouse schema.
+The semantic operations share one service layer across HTTP, the typed MCP tools, `driftless market`, and the internal research runtime used by Investigations. The internal runtime may batch already-selected detail for synthesis efficiency; public MCP deliberately does not. None of these surfaces exposes SQL or warehouse schema.
 
 <Note>
 Every route is workspace-scoped and requires authentication like the rest of the API — there is no public/unauthenticated market-data route. `market_capabilities` is free discovery; the other twelve market operations are metered, attributable analysis on a shared warehouse.
@@ -147,7 +147,7 @@ the HTTP API above always returns the abstracted projection: `source_slug`,
 `source_record_id`, publisher identity, retrieval internals and contact
 coordinates never travel to an authenticated HTTP caller.
 
-A surface a **model** reads — Chat, Research, and every MCP tool — reads the
+A surface a **model** reads — Research and every MCP tool — reads the
 same envelope through an *abstracted* projection. Publisher identity is replaced
 by the kind of evidence the operation returned, derived from the warehouse
 relation rather than from any table of publishers:
@@ -279,7 +279,7 @@ Two things a blind client (an agent with only `curl` and this API's own descript
 
 (`operations` lists all thirteen, trimmed above for space.)
 
-`GET capabilities` is the full contract for integrators: every operation's `question`, `requires`, `refuses`, `method`, `path`, and a runnable `example`, plus the corpus-observed filter value lists (state names, SCIAN codes, procedure types, …), each stamped with the `corpusBasis` it was read against — never presented as timeless constants. An optional `?facets=a,b` query param restricts both the computation and the response to named corpus dimensions. `GET capabilities/compact` is the bounded, source-aware projection the agent runtimes (chat, MCP) are injected instead of spending a tool call on the full catalogue. Both carry `openapiUrl`, which points at the machine-readable OpenAPI document — served **root-absolute** at `/openapi.json`, unlike every other market-data path, which is workspace-relative.
+`GET capabilities` is the full contract for integrators: every operation's `question`, `requires`, `refuses`, `method`, `path`, and a runnable `example`, plus the corpus-observed filter value lists (state names, SCIAN codes, procedure types, …), each stamped with the `corpusBasis` it was read against — never presented as timeless constants. An optional `?facets=a,b` query param restricts both the computation and the response to named corpus dimensions. `GET capabilities/compact` is the bounded, source-aware projection injected into agent research runtimes (and MCP) instead of spending a tool call on the full catalogue. Both carry `openapiUrl`, which points at the machine-readable OpenAPI document — served **root-absolute** at `/openapi.json`, unlike every other market-data path, which is workspace-relative.
 
 `GET coverage` returns the same `coverage` block attached to every other response, standalone: which published sources contributed to each relation, how fresh, and whether it's licensed for display. It is what separates "no results" from "no such market".
 
@@ -289,34 +289,37 @@ Large-scale questions use server-side counts, comparisons, histories and award
 aggregates. One aggregate response is one insight credit even when it contains
 many groups; the underlying company/contact rows are not exported.
 
-Contact research is separate and operates only on CRM records the user selected:
+Contact research is separate and person-first: it works on the masked people a
+`people_search` exposes, never on exported coordinates.
 
-1. `driftless_contact_quote` reads the exact selection and balance. It is free,
-   calls no external provider and returns no contact coordinates.
+1. `people_quote` prices an exact set of people by `handle`. It is free, calls
+   no external provider and returns no contact coordinates. It returns a
+   `quote_id` plus the opaque `quote_token` the caller echoes on reveal.
 2. After the user explicitly accepts that quote,
-   `driftless_contact_unlock` sends the same ids, `confirm: true`, the approved
+   `people_reveal` sends the same handles, `confirm: true`, the approved
    `max_credits`, the opaque server-minted `quote_token` (valid for 10 minutes),
    and the server-minted `idempotency_key` returned by that same quote. The server recomputes the price
    and refuses before spend if it increased or the balance/permission changed.
 
-Already unlocked accounts cost zero. Partial failures are reported per account;
+Already revealed people cost zero. Partial failures are reported per person;
 failed work is refunded. Reusing the same idempotency key cannot call the
 provider or debit the workspace twice.
 
 ## Authentication and scopes
 
-Market-data routes require the same authentication as the rest of the API (API key or OAuth bearer token) — there is no public route. Over OAuth, market analysis maps to a dedicated `market_data:read` scope, OR-listed with `context:read` for back-compat. A free Contact Path quote over selected CRM records uses the separate `commercial:read` scope; paid unlock uses `commercial:activate`:
+Market-data routes require the same authentication as the rest of the API (API key or OAuth bearer token) — there is no public route. Over OAuth, market analysis maps to a dedicated `market_data:read` scope, OR-listed with `context:read` for back-compat. The person-first lifecycle maps to `commercial:discover` for search, `commercial:read` for the acquired-contacts book and quote, and `commercial:activate` for reveal, file and status:
 
 | Scope | Status |
 |---|---|
 | `market_data:read` | The documented, canonical scope for market-data reads. Dedicated so a client that should only consume commercial intelligence (an external plugin, say) isn't handed read access to the whole Topics/Knowledge vault via `context:read`. |
 | `context:read` | Still satisfies existing market-data routes transitionally for already-issued connectors. New default grants include `market_data:read`. |
-| `commercial:read` | Reads an exact Contact Path quote for CRM records the caller selected. It returns price, balance and availability only — never contact coordinates. |
-| `commercial:activate` | Optional and never implicit. Required only for the paid Contact Path unlock; the consent screen explains the quote-and-confirm boundary. |
+| `commercial:discover` | Searches companies and discovers masked people. Never a coordinate. |
+| `commercial:read` | Reads the acquired-contacts book and quotes a reveal. Returns price, balance and availability only — never contact coordinates. |
+| `commercial:activate` | Optional and never implicit. Required to reveal, file or update the status of selected people; the consent screen explains the quote-and-confirm boundary. |
 
 ## MCP: typed market-data tools
 
-MCP exposes thirteen typed `driftless_market_*` analysis tools plus the two-step Contact Path tools. It does not expose `driftless_market_data`, `driftless_market_get_supplier_batch`, physical source selectors, or contact coordinates. Reconnect a client after this schema change because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
+MCP exposes thirteen typed `market_*` analysis tools plus the person-first `people_*` lifecycle (`people_search`, `people_quote`, `people_acquired`, `people_reveal`, `people_file`, `people_status`). It does not expose `driftless_market_data`, `driftless_market_get_supplier_batch`, physical source selectors, or contact coordinates. Reconnect a client after this schema change because connectors may cache tool definitions. See [MCP reference](/mcp/overview) for connecting a client.
 
 All thirteen market tools carry `readOnlyHint: true`: they do not modify business data or produce external side effects. That annotation does **not** mean a call is free. `driftless_market_capabilities` costs zero calls and zero credits; each of the other twelve market tools is metered according to the commercial-usage contract.
 
@@ -329,7 +332,7 @@ The tool result adds house-standard top-level pagination (`shown`, `has_more`) a
 For textual supplier, opportunity, and award operations (including `aggregate_awards`), `query_mode` is optional: `auto` preserves existing behavior, while `exact_phrase`, `all_terms`, and `any_terms` are bounded interpretations of tokenized text. An explicit opportunity mode uses lexical retrieval and cannot be combined with `strategy=hybrid`. The platform-authored `interpretedRequest.query_interpretation` reports requested and applied modes, normalized terms, recognized state aliases and filters, and any warning. It never includes SQL, schema, or a compiled query.
 
 <Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. Reconnect the connector (or start a fresh session) to remove retired tools and receive the Contact Path schemas and scopes — see [MCP & OAuth](/mcp/overview) for the general caching note.
+MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. Reconnect the connector (or start a fresh session) to remove retired tools and receive the person-first `people_*` schemas and scopes — see [MCP & OAuth](/mcp/overview) for the general caching note.
 </Note>
 
 ## CLI: `driftless market`
@@ -352,9 +355,9 @@ driftless market permits search --holder-name "Constructora Ejemplo"
 
 Every command supports `--json` for the complete semantic envelope; without it, the CLI prints a compact human summary (row count, per-row label, warnings, coverage, next cursor). Repeat an array flag or pass comma-separated values. `--compare-from-date`/`--compare-to-date` are flat CLI flags that nest into one `compare_period` object on the wire — pass both together or neither.
 
-## Chat and due-diligence screening
+## Research and due-diligence screening
 
-The dashboard's market-research chat plans and calls these same operations directly (no separate model-facing API) and can run a **due-diligence screening** method that composes `search_risks` and `search_permits`:
+The market-research runtime plans and calls these same operations directly (no separate model-facing API) and can run a **due-diligence screening** method that composes `search_risks` and `search_permits`:
 
 1. Resolve identity by RFC first — from a prior `search_suppliers`/`search_awards` result or given directly — and call `search_risks { rfc }` with it. Do not use that award RFC as a permit bridge: the current permit sources publish no holder RFCs. Call `search_permits { holder_name }` only after a verified published name exists; name resolution is approximate and its match caveat must be stated. `holder_rfc` remains a strong filter where a future source publishes it.
 2. Never conclude "no risk marks" or "not authorized" from an empty page alone — `coverage` is read first and the search is stated against it.

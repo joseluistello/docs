@@ -85,6 +85,26 @@ warnings and a collapsed audit. It has no fixture fallback. The former
 `/w/:slug/intelligence/investigator` URL is a compatibility redirect to this
 surface, never a second product implementation.
 
+`export_product` is a deliberately narrower exception inside this surface. In
+managed mode it runs on the structured-output Luna lane, with no web, warehouse,
+MCP or other model tools and no technical model failover. One typed intake and
+one planning turn produce a three-to-seven-step preliminary route; one extra
+tool-less turn is allowed only to repair the JSON shape. The output labels each
+item as user input, model inference, unknown or requiring current verification.
+Exact classifications, tariffs, taxes, permits, standards, authorities, costs
+and deadlines are never treated as current merely because the model remembers
+them. The Workbench therefore renders the bounded route, assumptions, gates,
+material questions and one next action, and omits empty evidence, source and
+query-audit sections. Its customer projection is an external-ready dossier with
+an institutional map and document checklist: likely origin and destination
+authorities, customs, sector regulators, importers or responsible operators are
+named only as model inference or current-verification targets, with the question
+to ask, material to bring and an official-channel discovery instruction. The UI
+shows interpretation, route construction and dossier preparation as its three
+phases, never a search count, and lets the customer download Markdown or
+print/save PDF. Other commercial-research modes retain their governed retrieval
+and evidence contracts.
+
 `/w/:slug/intelligence` remains reachable and fixture-driven. It is not a
 second supported product; it is retained until live parity, accessibility and
 reachability checks are recorded and a human approves deletion.

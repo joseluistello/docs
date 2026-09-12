@@ -1,51 +1,47 @@
 ---
-title: 'MCP: Collections y operaciones'
-description: 'Busca y configura Collections, avanza Records tipados y resuelve Entities entre Collections mediante tools MCP acotadas y gobernadas.'
+title: 'MCP: CRM (Prospectos)'
+description: 'Lee páginas acotadas de records y avanza Records tipados (cuentas, oportunidades y seguimiento) mediante tools de MCP gobernadas.'
 ---
 
-Collections son el sustrato operativo de Driftless: pipelines, filas de CRM, trackers y trabajo estructurado. Sus tools MCP usan actions, son acotadas por defecto y comparten los mismos contratos del dashboard y la CLI. Las escrituras requieren `work:write`; purgar una Collection requiere además una identidad humana owner/admin.
+CRM es el sistema operativo de registro de Brein: Prospectos (Collections/Records) guarda cuentas, oportunidades y seguimiento. Las tools de MCP son basadas en actions, acotadas por defecto, y usan los mismos contratos de servidor que el dashboard y el CLI. Las lecturas son de nivel miembro; las escrituras de ciclo de vida requieren `work:write`. El CRUD genérico de schema/config de Collection y el purge permanente no tienen tool de MCP — configurar un pipeline es trabajo humano, y ninguna tool de agente borra.
 
-## Collections y records
+## Records
 
-Usa `driftless_collection_query` para lecturas acotadas. Antes de actuar sobre un Record, carga el criterion con `driftless_collection action:'context'`; devuelve el Knowledge que gobierna cómo trabaja el equipo esos registros.
+Usa `collection_query` para lecturas acotadas (estado `ok` / `continue` / `incomplete`, nunca concluyas cobertura por una sola página). Antes de actuar sobre un record, lee el criterio de la Collection con `context_get` sobre sus `criterion_refs` — el criterio es lo que el equipo aplica a esos records.
 
 | Tool | Actions principales | Propósito |
 | --- | --- | --- |
-| `driftless_collection` | `search`, `list`, `get`, `add`, `update`, `archive`, `restore`, `doctor`, `context`, `presentation` | Configura e inspecciona una Collection; `get` es brief salvo que pidas `view:'full'` |
-| `driftless_collection_query` | `query`, `get`, `aggregate` | Lee Records acotados con proyección, filtros y continuación explícitos |
-| `driftless_collection_record` | `add`, `update`, `history` | Crea o avanza Records tipados; el status debe existir en el lifecycle de la Collection |
-| `driftless_collection_purge` | una llamada gobernada | Previsualiza con `dry_run` y confirma con `expected_version`; solo owner/admin |
-| `driftless_collection_record_delete` | una llamada gobernada | Previsualiza y elimina un Record sin borrar sus Notes destiladas |
+| `collection_query` | `query`, `get`, `aggregate` | Leer records acotados con proyección, filtros y continuación explícitos |
+| `crm_record` | `add`, `update`, `history`, `bulk`, `schedule_activity` | Crear o avanzar records tipados; el status debe coincidir con el ciclo de vida de la Collection. Renombrada desde `collection_record` (MCP · 2) — las lecturas (`list`/`get`) ya no están en su enum de actions, usa `collection_query` |
 
 ```text
-driftless_collection action:'context' id:'<collection-id>'
-  → { criterion: [ ... ], criterion_missing: [] }
-
-driftless_collection_query action:'query' collection_id:'<collection-id>' limit:25
+collection_query op:'query' collection_id:'<collection-id>' limit:25
   → { status:'ok'|'continue'|'incomplete', data:[ ... ], page_info:{ ... } }
 ```
 
-## Entities
+## Retirado del catálogo público
 
-Una Entity es una identidad entre Collections que los Records pueden referenciar. `driftless_entity action:'upsert'` es idempotente sobre `(kind, dedup_key)`.
-
-```text
-driftless_entity action:'upsert' kind:'company' name:'Acme' dedup_key:'acme.com'
-```
+La configuración de schema de Collection (`collection`), el purge permanente
+(`collection_purge`), el borrado de records (`collection_record_delete`)
+y el registro de entidades (`entity`) no tienen ninguna tool de MCP — sus
+definiciones y handlers fueron eliminados, no sólo ocultos; una llamada legacy
+`driftless_*` ahora responde "Unknown tool". La configuración de schema sigue
+siendo una superficie humana de dashboard/CLI; la resolución de identidad
+ocurre del lado del servidor al guardar un record.
 
 ## Permisos
 
 | Scope o rol | Cubre |
 | --- | --- |
-| lectura de member | Lecturas de Collections y Records, criterion, history y doctor |
-| `work:write` | Crear y actualizar Collections, Records y Entities; archive y restore de Collections |
-| owner/admin | Purga permanente de una Collection |
+| lectura de miembro | Lecturas de Collection y Record, contexto de criterio, historial |
+| `work:write` | Crear y actualizar Records; escrituras de ciclo de vida |
 
-Los clientes MCP guardan los schemas de tools por sesión. Reconecta el connector después de actualizar para reflejar tools eliminadas o modificadas.
+Los clientes MCP cachean schemas de tools por sesión de conector. Reconecta el conector después de una actualización para que los tools eliminados o cambiados se reflejen en el cliente.
 
 ## Relacionado
 
 - [Collections](/es/concepts/collections) — el modelo operativo.
-- [Operar una Collection](/es/guides/operate-a-collection) — el workflow.
+- [Operar una Collection](/es/guides/operate-a-collection) — el flujo de trabajo.
 - [CLI: Collections](/es/cli/collections) y [API: Collections](/es/api/collections) — superficies equivalentes.
 - [MCP y OAuth](/es/mcp/overview) — setup, autenticación y scopes.
+- [MCP: Secuencias](/es/mcp/sequences) — redacta y hace preflight de secuencias salientes sobre el mismo sustrato de Collections/Records.

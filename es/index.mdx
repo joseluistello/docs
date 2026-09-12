@@ -9,6 +9,8 @@ Y casi nunca es solo el código. El cliente con el que hablaste la semana pasada
 
 Driftless es un solo workspace para un equipo y sus agentes. En lugar de dejar ese estado disperso, mantiene juntos el **Knowledge** que ya revisaste y quieres poder usar después y las **Operations** que operas día a día, como clientes, señales y pipelines. Los agentes leen y actúan sobre ese estado compartido con los permisos que tú defines, y las personas siguen siendo responsables de lo que la empresa trata como verdadero.
 
+La CLI, los paquetes y las API keys conservan el namespace `driftless` durante la ventana de compatibilidad. Las tools públicas de MCP usan nombres neutrales de capability; las llamadas `brein_*` y `driftless_*` siguen funcionando sólo como aliases ocultos.
+
 El valor está en el loop entre ambos: una señal se interpreta con contexto, se vuelve una acción sobre estado operacional y deja atrás Knowledge revisado para quien llegue después. [El loop de Driftless](/es/concepts/core-loop) recorre el modelo completo, y los agentes de código son el lugar más concreto para empezar.
 
 ## Conéctate en un minuto, más o menos

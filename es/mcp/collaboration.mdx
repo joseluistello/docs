@@ -1,58 +1,38 @@
 ---
-title: 'MCP: Workspace y colaboración'
-description: 'Las tools de colaboración por MCP: deja y resuelve comments sobre cualquier objeto de la spine, lista members y workspaces, y lee las estadísticas de resultado de propuestas.'
+title: 'MCP: Workspace'
+description: 'Lista los workspaces a los que una credencial puede llegar, y lee el uso comercial.'
 ---
 
-Estas tools dejan que un humano y un agente coordinen sobre el mismo workspace: anotar un objeto sin editarlo, encontrar los members y workspaces que una credencial puede alcanzar, y ver cómo les fue a las propuestas de agentes. Las escrituras de comment requieren el scope `work:write`; las tools de listado son lecturas de nivel member.
+Estas herramientas resuelven los identificadores que esperan las tools de escritura y leen el uso del workspace.
 
-## Comments
-
-Un **comment** apunta A un objeto de la spine (un topic o record) y opcionalmente a un field. No lleva governance y se resuelve en una edición; su texto nunca entra al cuerpo del topic. Los comments escritos por agentes son lo que hace al workspace colaborativo entre humanos y agentes.
-
-| Tool | Actions | Params principales | Notas |
-| --- | --- | --- | --- |
-| `driftless_context_comment` | `add`, `list`, `resolve` | `target_kind`, `target_id`, `field_key`, `body` | `open → resolved → wont_fix` |
-
-Permisos: `add` / `resolve` requieren `work:write`; `list` es de nivel member. Disponibilidad: Available.
-
-```text
-driftless_context_comment action:'add' target_kind:'topic' target_id:'billing-flow' field_key:'decisions' body:'This contradicts the refund invariant'
-```
-
-La ubicación clave es el gate de Nota a Knowledge: fija una objeción precisa a nivel de field en la revisión en vez de un approve o reject grueso.
-
-## Members y workspaces
-
-Úsalas para resolver los identificadores que esperan las tools de escritura: un `owner_clerk_id` para asignar un record, o el slug de workspace al que una credencial puede apuntar.
+## Workspaces y uso
 
 | Tool | Propósito | Devuelve |
 | --- | --- | --- |
-| `driftless_members` | Lista los members del workspace | member id, rol, email |
-| `driftless_workspaces` | Lista los workspaces a los que puede apuntar tu credencial | slugs de workspace |
+| `workspaces` | Listar los workspaces a los que tu credencial puede apuntar | slugs de workspace |
+| `usage` | Leer el allowance comercial mensual (requests + créditos) | plan, límites, renovación |
 
-Permisos: lecturas de nivel member. Disponibilidad: Available. Cada tool acepta un argumento opcional `workspace` para apuntar a otro workspace al que tu credencial está autorizada.
+Permisos: lecturas de nivel miembro. Disponibilidad: disponible. Cada tool acepta un argumento opcional `workspace` para apuntar a otro workspace autorizado para tu credencial.
 
 ```text
-driftless_members   → [ { id, role, email } ]   (los valores válidos de owner_clerk_id)
+workspaces → [ { slug, name, role } ]
 ```
+
+## Retirado del catálogo público
+
+`members` (listar los miembros del workspace) y los comentarios (`context_comment`) no
+tienen ninguna tool de MCP — sus definiciones y handlers fueron eliminados, no sólo
+ocultos; una llamada legacy `driftless_*` ahora responde "Unknown tool". Ambos siguen
+disponibles mediante el CLI y el dashboard — listar miembros no es trabajo de agente.
 
 ## Permisos
 
 | Scope | Cubre |
 | --- | --- |
-| `work:write` | `comment` add y resolve |
-| member (lectura) | `comment` list, `members`, `workspaces` |
-
-## Disponibilidad
-
-| Capacidad | Estado |
-| --- | --- |
-| Comments (`add`, `list`, `resolve`) | Available |
-| Listas de members y workspaces | Available |
+| miembro (lectura) | `workspaces`, `usage` |
 
 ## Relacionado
 
-- [Comentarios](/es/concepts/comments), [Workspaces](/es/concepts/workspaces) - los conceptos.
-- [Govern agent learning](/es/guides/govern-agent-learning) - comments en el gate de revisión.
-- [CLI: Context Commands](/es/cli/context) - comments y members desde la terminal.
-- [MCP & OAuth](/es/mcp/overview) - setup, auth y scopes.
+- [Workspaces](/es/concepts/workspaces) - el concepto.
+- [CLI: comandos de contexto](/es/cli/context) - miembros desde la terminal.
+- [MCP y OAuth](/es/mcp/overview) - setup, auth y scopes.

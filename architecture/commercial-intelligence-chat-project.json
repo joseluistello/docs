@@ -148,11 +148,11 @@
       "depends_on": ["p4_research_planner"]
     },
     {
-      "key": "p4_apollo_adapter",
-      "title": "P4.6 Añadir Apollo sólo como entity/contact enrichment",
-      "description": "Crear EntityEnrichmentProviderPort y Apollo adapter. Requiere Entity/domain resuelto; organization first, people sólo cuando contract lo pide. Batch dentro del límite vigente, field-level provenance/freshness, estimate/credits, no re-enrich de campos frescos. Secrets cifrados, fixtures y fallbacks. Dejar en review.",
-      "acceptance": "Apollo nunca genera universo desde cero; no recibe duplicados/no-resueltos; sólo compra campos faltantes; cost cap se respeta; provider types quedan encapsulados.",
-      "validate": "pnpm --filter @driftless/api test -- apollo && pnpm --filter @driftless/api build",
+      "key": "p4_datagma_adapter",
+      "title": "P4.6 Añadir Datagma sólo como entity/contact enrichment",
+      "description": "Crear EntityEnrichmentProviderPort y Datagma adapter. Requiere Entity/domain resuelto; sólo busca personas cuando el usuario desbloquea Contact Path. Batch pequeño, field-level provenance/freshness, créditos del proveedor sin inventar conversión USD, no re-enrich de campos frescos. Secret server-side, fixtures y fallbacks. Dejar en review.",
+      "acceptance": "Datagma nunca genera universo desde cero; no recibe duplicados/no-resueltos; sólo compra campos faltantes; cost cap se respeta; provider types quedan encapsulados.",
+      "validate": "pnpm --filter @driftless/api test -- datagma && pnpm --filter @driftless/api build",
       "depends_on": ["p4_exa_adapter"]
     },
     {
@@ -161,7 +161,7 @@
       "description": "Conservar DiscoveryProviderPort/adapter, pero registrar la capacidad exhaustive_discovery como último escalón. Añadir preview, quote/approval, marginal coverage, stop condition y reconciliation. Remover cualquier ruta que lo use como search genérico o enrichment rutinario. No hardcodear tarifa; cost policy versionada. Dejar en review.",
       "acceptance": "Parallel no corre sin aprobación/cap; warehouse y rutas baratas preceden salvo routing_reason; preview no contamina Records; cancel/retry/reconcile son idempotentes.",
       "validate": "pnpm --filter @driftless/api exec vitest run src/radar/adapters/parallel.smoke.spec.ts src/radar/parallel-fixtures.spec.ts src/radar/radar-run.service.spec.ts",
-      "depends_on": ["p4_apollo_adapter"]
+      "depends_on": ["p4_datagma_adapter"]
     },
     {
       "key": "p4_multisource_resolution",
@@ -207,7 +207,7 @@
       "key": "p6_evals_rollout",
       "title": "P6.1 Completar evals, observabilidad, flags y rollout shadow",
       "description": "Implementar eventos/métricas del plan, feature flags server-side, kill switches por provider/source/paid acquisition, cohortes y shadow planner. Añadir eval pack español con warehouse hit/partial/stale, COFEPRIS+DENUE ambiguity/intersection, conflicts, no-paid, prompt injection, corp scopes y negative ICP. Ejecutar harness completo y staging smoke para cambios P0/P1. Producir rollback y comparación contra baseline. Dejar en review; no activar GA.",
-      "acceptance": "Trajectory evals prueban compiler-before-tools, warehouse-before-paid, no Parallel sin approval, Apollo sólo resolved, evidence citations, no Knowledge mutation, causal run ids y cap. Kill switches probados. Harness cero fallos. Reporte de precision/costo/latencia y riesgos residuales disponible.",
+      "acceptance": "Trajectory evals prueban compiler-before-tools, warehouse-before-paid, no Parallel sin approval, Datagma sólo resolved, evidence citations, no Knowledge mutation, causal run ids y cap. Harness cero fallos. Reporte de precisión/costo/latencia y riesgos residuales disponible.",
       "validate": "npm run typecheck && npm run test && npm run harness:chat-evals && bash scripts/harness/check.sh && driftless context get --diff",
       "depends_on": ["p5_analytics_learning"]
     },

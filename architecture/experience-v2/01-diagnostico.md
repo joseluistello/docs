@@ -122,7 +122,7 @@ Solo hay cuatro familias de pregunta legítimas:
 ## 5. Qué nunca debe pedir ni mostrar
 
 - Nada ya dicho o almacenado (EXP-3).
-- Nada en vocabulario interno **[REQUISITO EXP-10]**: warehouse, capability, source pack, recipe, provider (Parallel/Exa/Apollo), licencias, cadencias de ingestión, schemas, contratos, IDs. La familia de la fuente sí existe para el usuario, pero como **evidencia** ("Compranet, 3 ago 2026", "registro público de establecimientos"), jamás como arquitectura. Vigencia: allowlist léxico en CI sobre TODOS los componentes de la superficie (hoy el lexicon test cubre solo el archivo legacy).
+- Nada en vocabulario interno **[REQUISITO EXP-10]**: warehouse, capability, source pack, recipe, provider (Parallel/Exa/Datagma), licencias, cadencias de ingestión, schemas, contratos, IDs. La familia de la fuente sí existe para el usuario, pero como **evidencia** ("Compranet, 3 ago 2026", "registro público de establecimientos"), jamás como arquitectura. Vigencia: allowlist léxico en CI sobre TODOS los componentes de la superficie (hoy el lexicon test cubre solo el archivo legacy).
 - Permiso para trabajo gratuito, reversible y dentro del encargo (se hace y se narra, no se solicita).
 - Que el usuario "complete su configuración" para merecer una respuesta. El perfil se construye como subproducto del primer encargo, no como peaje previo.
 - Tareas de operador: elegir fuente, reintentar pasos, interpretar errores, decidir entre duplicados técnicos.

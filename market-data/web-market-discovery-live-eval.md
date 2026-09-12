@@ -123,18 +123,16 @@ because the citation is the thing that makes the rest checkable.
 ## The command
 
 ```bash
-# From a workspace with the warehouse configured and the executor credential set.
-# The chat turn is the product surface; there is no separate discovery endpoint,
-# no CLI and no MCP tool for this capability in this change — by design.
-curl -sS -X POST "$API/workspaces/$WS/chat/threads/$THREAD/messages" \
+# Current opportunity discovery is scheduled or invoked through the Commercial
+# Core operational endpoint; the retired conversational route is not a contract.
+curl -sS -X POST "$API/workspaces/$WS/commercial-core/opportunities/weekly" \
   -H "authorization: Bearer $KEY" \
   -H "content-type: application/json" \
-  -d '{"content":"Vendo estructuras metálicas. Encuentra empresas que estén construyendo o ampliando plantas industriales en Nuevo León."}'
+  -d '{"collection_id":"<opportunity-collection-id>"}'
 ```
 
-Then read the persisted Work Session for that turn: the `web_discovery` event
-carries the platform-owned candidates, and the artifact carries the report with
-its audit, coverage and citations.
+Then read the persisted opportunity records and the latest Commercial Core Inbox
+report. They carry the platform-owned evidence references, scoring and actions.
 
 ## Reading the result honestly
 

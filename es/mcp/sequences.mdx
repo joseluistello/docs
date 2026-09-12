@@ -1,0 +1,82 @@
+---
+title: 'MCP: Secuencias'
+description: 'Redacta, previsualiza y hace preflight de una secuencia de email saliente — nunca la envía ni la activa — mediante tools de MCP gobernadas.'
+---
+
+Sequences (Secuencias) envuelve el motor de email saliente ya existente de Brein
+(`EMAIL_CAMPAIGNS_ENABLED`, un ledger inmutable de autorización de envío, un
+dispatcher de Nylas). La superficie de MCP sólo expone el ciclo de vida de
+**draft, preview y preflight**. **No hay ninguna tool de envío o activación en
+esta superficie** — autorizar y enviar una secuencia es una decisión de una
+sola sesión humana tomada en el dashboard (`authorizeStep` / `activate`),
+nunca alcanzable desde `tools/call`.
+
+## Tools
+
+| Tool | Propósito |
+| --- | --- |
+| `sequence_list` | Listar cada secuencia del workspace, más reciente primero, con su status |
+| `sequence_get` | Una secuencia: campaign, steps, recipients, mensajes renderizados, sender y cada autorización de envío registrada |
+| `sequence_create_draft` | Crear un draft inerte de 3 steps a partir de 1 a 5 contactos explícitos (email obligatorio) |
+| `sequence_update_draft` | Editar un draft sin enviar — campos de la campaign, o el subject/body/wait_days de un step |
+| `sequence_preview` | Renderizar cada step para cada recipient exactamente como se enviaría, con la personalización resuelta y las supresiones aplicadas |
+| `sequence_check` | El preflight antes de proponer la autorización: `blocking[]`, `warnings[]`, `ready: boolean` |
+
+```text
+sequence_create_draft name:'Empaque flexible' contacts:[{email:'ana@example.com', first_name:'Ana', company_name:'Acme'}]
+  → { ref:'sequence:<id>', status:'draft', next_action:'Corre sequence_check…' }
+
+sequence_check sequence_id:'<id>'
+  → { ready:false, blocking:['No hay un remitente conectado y verificado…'], warnings:[] }
+```
+
+## Lo que sequence_check realmente verifica
+
+`sequence_check` está construido sobre los datos reales de `EmailCampaignsService`
+— no es una ficción de spec. Bloquea cuando: no hay un mailbox de sender
+conectado/listo, no hay recipients, todos los recipients están suprimidos
+(unsubscribe global), o no queda ningún mensaje pendiente por enviar. Advierte
+sobre: tokens `{{personalization}}` sin resolver y audiencias parcialmente
+suprimidas.
+
+**No implementado, y no reclamado.** Dos checks que a veces se asumen de un
+preflight de secuencias no existen hoy en ninguna parte de
+`EmailCampaignsService`, y `sequence_check` no reclama correrlos:
+
+- Verificación de SPF/DKIM del dominio.
+- Un check de `daily_limit` contra el tamaño de la audiencia (`EmailCampaign`
+  no tiene ningún campo `daily_limit`).
+
+No trates un resultado `ready:true` como prueba de que alguno de los dos fue
+verificado.
+
+## Lo que sequence_create_draft no hace
+
+El contrato real `CreateCampaignDto` toma **contactos explícitos** — un nombre,
+una company y una dirección de email literal — no una referencia de audiencia
+tipo `record_ids[]`/`search_id` de CRM. La tool de MCP está conectada a ese
+contrato real en lugar de inventar un resolver: hoy no hay ningún camino del
+lado del servidor que convierta un id de record de CRM en una dirección sin
+exponerla primero al caller (Empresas y personas deliberadamente nunca
+devuelve una coordenada a través de MCP — ver [MCP: Criterio y
+enrichment](/es/mcp/knowledge)). Pasa la dirección que ya tienes (por ejemplo,
+desde un `people_reveal` aceptado).
+
+De la misma forma, `daily_limit` y un default de dedup `skip_if_in_sequence`
+no son campos del schema — `EmailCampaignsService` siempre crea la misma
+plantilla de tres steps (introducción / seguimiento / cierre), editable
+después con `sequence_update_draft`.
+
+## Editar un draft que ya tiene una autorización pendiente
+
+`sequence_update_draft` todavía no puede calcular ni reportar un mismatch de
+fingerprint exacto como lo hace internamente el flujo de autorización del
+dashboard. Lo que hace hoy: si la secuencia tiene algún `send_authorization`
+sin ejecutar, la respuesta lleva un `warning` que nombra el conteo, para que
+el caller vuelva a correr `sequence_check` y reautorice en vez de confiar en
+una aprobación desactualizada.
+
+## Relacionado
+
+- [MCP: CRM (Prospectos)](/es/mcp/work) — el mismo sustrato de Collections/Records del que suelen venir los contactos de una secuencia.
+- [MCP y OAuth](/es/mcp/overview) — setup, autenticación y scopes.

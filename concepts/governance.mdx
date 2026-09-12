@@ -7,14 +7,14 @@ Driftless governs **understanding** the way GitHub governs code. A topic isn't "
 
 ## Everything is one topic that evolves
 
-There's one primitive, a **topic**, and it matures along a single trust axis: **Note → Knowledge**. A **Note** is a draft (private by default; share it to the workspace and it's **Up for review**). **Knowledge** is the team's source of truth: *a note becomes knowledge once it's merged in*. Merging is an **owner/admin** act. An owner or admin can merge it themselves, or explicitly ask an agent to run the merge on their behalf, same authority either way. To change existing Knowledge you open a **Suggested edit**, which an owner or admin merges.
+There's one primitive, a **topic**, and it matures along a single trust axis: **Note → Knowledge**. A **Note** is a private draft that its author can put **Up for review**. **Knowledge** is the team's source of truth: *a note becomes knowledge once it's merged in*. Merging is an **owner/admin** act. An owner or admin can merge it themselves, or explicitly ask an agent to run the merge on their behalf, same authority either way. To change existing Knowledge you open a **Suggested edit**, which an owner or admin merges.
 
 ```text
 Note  →  Up for review  →  Knowledge     (+ Archived)
 (draft)    (proposed)      (reviewed)
 ```
 
-- **Note**: a draft or private observation. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here. Share it to the workspace and it's **Up for review**.
+- **Note**: a draft or private observation. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here, then propose it for review when it is ready.
 - **Up for review**: a Note put up for human review. It's awaiting a merge, lives in the review queue, and can be sent back with a reason.
 - **Knowledge**: the team's source of truth, the notes merged in. An owner or admin's authority added it to knowledge, so it joins the team's **living, code-anchored knowledge graph**, the multi-context map of the whole codebase. This is the durable truth an agent consumes.
 
@@ -31,7 +31,7 @@ driftless context archive <slug>     # retire it
 
 ## Three surfaces
 
-The dashboard mirrors the three stages: **Knowledge** (the Knowledge graph, merged-in notes only), **Review queue** (the merge/reject queue plus re-review of drifted context), and **Notes** (your private workspace, with share controls and "expiring soon").
+The dashboard mirrors the three stages: **Knowledge** (the Knowledge graph, merged-in notes only), **Review queue** (the merge/reject queue plus re-review of drifted context), and **Notes** (your private workspace, with an "expiring soon" state). Notes are not a teammate-inbox or notification surface; use a Collection or the commercial Inbox for operational work.
 
 ## Who can merge: workspace roles
 

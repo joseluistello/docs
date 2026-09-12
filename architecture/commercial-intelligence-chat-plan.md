@@ -68,7 +68,7 @@ No posicionar el producto como “otro buscador de leads”. La búsqueda es el 
 
 1. **Un solo Chat y un solo AgentRuntime.** Radar no crea una segunda experiencia conversacional ni un runtime paralelo.
 2. **Warehouse-first.** Toda intención de descubrimiento comercial ejecuta un preflight determinístico contra el warehouse antes de cotizar un proveedor pagado.
-3. **Proveedor no es fuente.** Exa, Parallel y Apollo son capacidades intercambiables; DENUE, SAT, IIEG, sitios corporativos y documentos son fuentes con licencia, frescura y evidencia propias.
+3. **Proveedor no es fuente.** Exa, Parallel y Datagma son capacidades intercambiables; DENUE, SAT, IIEG, sitios corporativos y documentos son fuentes con licencia, frescura y evidencia propias.
 4. **No existe un `CommercialProfile` gigante como segunda fuente de verdad.** El perfil es una proyección compilada desde Topics atómicos, Collections, Records, Entities y evidencia.
 5. **No se embebe todo el workspace en cada turno.** Se compila un bundle pequeño, versionado, justificable y relevante a la intención.
 6. **Embeddings son opcionales para recuperación, nunca para autoridad.** No determinan permisos, confianza ni capacidad de mutar datos.
@@ -78,7 +78,7 @@ No posicionar el producto como “otro buscador de leads”. La búsqueda es el 
 10. **Entity es la identidad cross-collection.** La deduplicación deja de depender de escanear JSONB en una sola Collection.
 11. **Knowledge no se reescribe automáticamente.** El sistema produce Notes o Suggested edits; proposer y approver permanecen separados.
 12. **Precio antes de gasto.** Toda ruta pagada presenta estimado y pide aprobación explícita o usa un budget cap ya aprobado.
-13. **Parallel es el último escalón.** Se reserva para descubrimiento exhaustivo o multi-criterio difícil. Exa se usa para búsqueda y evidencia web; Apollo, para resolver o enriquecer una entidad ya identificada.
+13. **Parallel es el último escalón.** Se reserva para descubrimiento exhaustivo o multi-criterio difícil. Exa se usa para búsqueda y evidencia web; Datagma, para resolver o enriquecer una entidad ya identificada.
 14. **Los proveedores permanecen detrás del lenguaje de producto.** La UI habla de “datos propios”, “fuentes públicas”, “web” y “enriquecimiento”; muestra el origen concreto en evidencia, no como arquitectura expuesta.
 15. **Mismo modelo conceptual para pyme y corporativo; distinta profundidad.** La primera entrega es workspace-level. La jerarquía empresarial no se simula con metadata sin permisos reales.
 
@@ -160,7 +160,7 @@ Transversalmente se conservan:
 
 | Término | Definición |
 |---|---|
-| Provider | Servicio técnico que ejecuta una capacidad: Exa, Parallel, Apollo |
+| Provider | Servicio técnico que ejecuta una capacidad: Exa, Parallel, Datagma |
 | Source | Origen real de la información: DENUE, SAT, sitio de empresa, nota de prensa |
 | Source Pack | Contrato versionado que sabe ingerir una familia de fuentes |
 | Executor | Adaptador que llama una capacidad externa o job interno |
@@ -186,7 +186,7 @@ flowchart LR
   RP --> W[Warehouse]
   RP --> SP[Source Packs públicos]
   RP --> X[Exa web search]
-  RP --> A[Apollo enrichment]
+  RP --> A[Datagma enrichment]
   RP --> P[Parallel FindAll]
   W --> N[Normalizer + Entity Resolver]
   SP --> N
@@ -228,7 +228,7 @@ apps/api/src/radar/
 │   └── entity-enrichment-provider.port.ts  # nuevo; enrich resolved entity
 └── adapters/
     ├── exa.adapter.ts
-    └── apollo.adapter.ts
+    └── datagma.adapter.ts
 ```
 
 `libs/db` recibe solamente Entities y migrations. `apps/api` mantiene la lógica y NestJS. Dashboard renderiza contratos; no decide routing ni costos.
@@ -702,7 +702,7 @@ La petición interactiva nunca autoriza al agente a fabricar y activar un scrape
 1. **Warehouse:** datos ya adquiridos; costo marginal cero para el usuario.
 2. **Source Packs determinísticos:** DENUE, IIEG, SAT u otra fuente con contrato y licencia aprobada.
 3. **Exa search/fetch:** descubrir páginas o llenar evidencia web faltante.
-4. **Apollo:** enriquecer una organización/persona ya resuelta, principalmente reachability y atributos comerciales.
+4. **Datagma:** enriquecer una organización/persona ya resuelta, principalmente reachability y atributos comerciales.
 5. **Parallel FindAll:** búsqueda exhaustiva multi-criterio cuando las rutas anteriores no alcanzan la cobertura solicitada.
 
 Excepciones permitidas:
@@ -723,7 +723,7 @@ Solicitud: “Exportadores de aguacate de Michoacán con señales recientes de e
 2. Un Source Pack de exportadores o padrón autorizado aporta la condición exportadora.
 3. Exa busca evidencia reciente de expansión sólo para las entidades candidatas, con queries por nombre/dominio.
 4. Entity Resolver fusiona aliases/dominios y registra contradicciones.
-5. Apollo se ejecuta sólo sobre las entidades aceptables sin contacto suficiente.
+5. Datagma se ejecuta sólo sobre las entidades aceptables sin contacto suficiente.
 6. Parallel se cotiza únicamente si faltan entidades para el target y el usuario necesita exhaustividad.
 
 El resultado no dice “mezclé Parallel con DENUE”. Dice:
@@ -780,24 +780,24 @@ interface WebSearchProviderPort {
 
 El adapter convierte resultados a Artifacts/Observations/Claims antes de que lleguen a Chat.
 
-### 10.2 Apollo
+### 10.2 Datagma
 
-Usar después de resolver una Entity o dominio:
+Usar después de resolver una Entity y su dominio:
 
-- organización por domain/website/LinkedIn/name;
-- headcount, industry, revenue/funding cuando el plan contratado lo permita;
-- personas/contact paths y validación comercial;
+- buscar personas por funciones compradoras dentro de esa empresa;
+- conservar nombre, cargo y LinkedIn de hasta tres decisores;
+- aceptar un correo sólo cuando Datagma lo marque explícitamente verificado;
+- mantener los correos probables/catch-all fuera de una ruta lista;
 - batch pequeño y deduplicado.
 
 ```ts
 interface EntityEnrichmentProviderPort {
-  enrichOrganization(input: ResolvedOrganizationInput): Promise<EnrichmentResult>
-  enrichPeople(input: ResolvedPeopleInput): Promise<EnrichmentResult>
-  estimate(input: EnrichmentEstimateInput): Promise<ProviderQuote>
+  enrich(input: ResolvedEntityInput): Promise<EnrichmentResult>
+  estimate(input: ResolvedEntityInput): Promise<ProviderQuote>
 }
 ```
 
-No enviar una entidad a Apollo si los campos requeridos ya están frescos y suficientemente confiables.
+No enviar una entidad a Datagma si los campos requeridos ya están frescos y suficientemente confiables.
 
 ### 10.3 Parallel
 
@@ -1240,7 +1240,7 @@ No añadir GIN general a todo JSONB. Preferir índices pequeños y específicos 
 
 ### 17.2 Secretos
 
-- Keys de Exa/Apollo/Parallel en provider credentials cifradas con `libs/encryption`.
+- Keys de Exa/Datagma/Parallel en provider credentials cifradas con `libs/encryption`.
 - ConfigService tipado; nunca `process.env` directo en services.
 - No loggear headers, raw payloads de contacto ni tokens.
 - BYO key opcional con scope y rotación.
@@ -1645,15 +1645,15 @@ Trabajo:
 - fixtures, cost telemetry y kill switch;
 - key cifrada y config validada.
 
-#### 4.4 Apollo adapter
+#### 4.4 Datagma adapter
 
 Trabajo:
 
 - `EntityEnrichmentProviderPort`;
-- organization first; people only when requested;
-- batch <= provider limit vigente;
+- contact-only; people only after explicit Contact Path unlock;
+- batch bounded and duplicate-free;
 - field-level provenance/freshness;
-- credits/quote;
+- provider-credit estimate without inventing a USD conversion;
 - no re-enrich fresh data.
 
 #### 4.5 Reencuadrar Parallel
@@ -1681,12 +1681,12 @@ Aceptación Fase 4:
 
 - con warehouse suficiente, cero proveedor pagado;
 - con gap web, Exa recibe sólo queries/entidades necesarias;
-- Apollo nunca descubre lista desde cero;
+- Datagma nunca descubre lista desde cero;
 - Parallel nunca corre sin aprobación;
 - multi-source produce una Entity y claims diferenciados;
 - costo real <= cap.
 
-Rollback: flags independientes `research_planner_v1`, `exa_acquisition`, `apollo_enrichment`, `unified_research_artifact`.
+Rollback: revert the adapter binding or remove `DATAGMA_API_KEY` from the staging service; the capability then degrades as unconfigured.
 
 ---
 
@@ -1854,7 +1854,7 @@ Assertions de trayectoria:
 - compila contexto antes de planear;
 - usa warehouse antes de pago cuando cubre;
 - no llama Parallel sin quote/approval;
-- Apollo sólo recibe entities resueltas;
+- Datagma sólo recibe entities resueltas;
 - no presenta inferencia como hecho;
 - cita evidence claims;
 - no muta Knowledge;
@@ -1917,7 +1917,7 @@ Las pruebas integration con Postgres y provider fixtures forman parte del gate d
 - `commercial_context_compiler_v1`;
 - `research_planner_v1`;
 - `exa_acquisition`;
-- `apollo_enrichment`;
+- `datagma_enrichment`;
 - `unified_research_artifact`;
 - `commercial_outcomes_v1`;
 - `commercial_learning_v1`.
@@ -2002,7 +2002,7 @@ La optimización primaria es costo por resultado aceptado/verificado, no costo p
 | Warehouse stale | claims antiguos tratados como actuales | freshness policy por claim |
 | Fuente dominante | alta cobertura, baja diversidad | source-family diversity y corroboración |
 | Parallel destruye margen | costo por accepted lead sube | último escalón, preview, cap |
-| Apollo compra datos redundantes | enrichment sin nuevo field | field-gap planner y freshness |
+| Datagma compra datos redundantes | enrichment sin nuevo field | field-gap planner y freshness |
 | Duplicados | una empresa en varias filas | Entity-first y upsert transaccional |
 | Aprendizaje espurio | ICP cambia por muestras pequeñas | refinery + muestra/confianza + aprobación |
 | Scope corporativo falso | metadata sin aislamiento | no lanzar hasta RBAC real |
@@ -2067,7 +2067,7 @@ El supervisor rechaza el output si ocurre cualquiera de estos puntos:
 
 - [ ] La ruta pagada corrió antes del warehouse sin razón registrada.
 - [ ] Parallel se usó como search genérico o enrichment rutinario.
-- [ ] Apollo recibió entidades no resueltas o duplicadas.
+- [ ] Datagma recibió entidades no resueltas o duplicadas.
 - [ ] Un provider type escapó al dominio/UI.
 - [ ] Se creó una segunda fuente de verdad del perfil.
 - [ ] Knowledge se modificó sin Suggested edit/aprobación.
@@ -2123,7 +2123,7 @@ Verificar nuevamente al implementar porque precios y límites cambian:
 - Exa pricing: <https://exa.ai/pricing>
 - Parallel FindAll: <https://docs.parallel.ai/api-reference/findall/findall-beta>
 - Parallel pricing: <https://parallel.ai/pricing>
-- Apollo organization enrichment: <https://docs.apollo.io/reference/organization-enrichment>
+- Datagma Find People: <https://datagmaapi.readme.io/reference/ingressservice_findpeople>
 - Supabase Row Level Security: <https://supabase.com/docs/guides/database/postgres/row-level-security>
 - Supabase database hardening: <https://supabase.com/docs/guides/database/hardening-data-api>
 - PostgreSQL `security_invoker` views: <https://www.postgresql.org/docs/current/sql-createview.html>

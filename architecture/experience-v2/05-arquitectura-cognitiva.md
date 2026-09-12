@@ -45,7 +45,7 @@ De E2/E3 se derivan siete capacidades, y cada una señala a quién debe pertenec
 ├────────────────────────────────────────────────────────────────┤
 │  SUSTRATO (se conserva tal cual)                               │
 │   gateway de 3 funciones al warehouse · ledger de créditos     │
-│   quotes/aprobaciones · provider ports (Parallel/Exa/Apollo)   │
+│   quotes/aprobaciones · provider ports (Parallel/Exa/Datagma)   │
 │   evidencia/citas · outcome ledger · Collections como destino  │
 └────────────────────────────────────────────────────────────────┘
 ```

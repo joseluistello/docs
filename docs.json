@@ -101,7 +101,6 @@
             "icon": "layers",
             "pages": [
               "concepts/collections",
-              "concepts/notes-sharing",
               "concepts/comments"
             ]
           },
@@ -212,7 +211,6 @@
             "icon": "layers",
             "pages": [
               "es/concepts/collections",
-              "es/concepts/notes-sharing",
               "es/concepts/comments"
             ]
           },
@@ -336,10 +334,10 @@
   "seo": {
     "metatags": {
       "canonical": "https://docs.trybrein.com",
-      "og:image": "https://trybrein.com/opengraph.jpg",
+      "og:image": "https://trybrein.com/opengraph.png",
       "og:image:width": "1200",
       "og:image:height": "630",
-      "twitter:image": "https://trybrein.com/opengraph.jpg",
+      "twitter:image": "https://trybrein.com/opengraph.png",
       "twitter:card": "summary_large_image"
     },
     "indexing": "all"

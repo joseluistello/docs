@@ -3,30 +3,47 @@ title: 'Find your first opportunities'
 description: "Turn your company website into reviewed commercial context and a short, evidence-backed opportunity list."
 ---
 
-Brein's commercial onboarding starts with the information your company already publishes. It uses that material to draft what you sell, who is likely to buy, the markets you serve, and the signals that could indicate demand. You review that draft before it becomes durable context.
+Brein's commercial onboarding starts with the information your company already publishes. It uses that material to draft what you sell, who is likely to buy, the markets you serve, and the public trigger types worth searching next. Those triggers are hypotheses, not claims that an event already happened. You review that draft before it becomes durable context.
 
 <Steps>
   <Step title="Add your company website">
     Paste the public URL for your company. If the site is ambiguous, add one sentence describing what you sell. Brein searches only public material from the site for this first draft.
   </Step>
   <Step title="Review the commercial profile">
-    Check the proposed offer, ideal customers, exclusions, buying signals, geography, and market language. Edit anything the evidence did not capture correctly, then confirm it.
+    Check the proposed offer, ideal customers, exclusions, buying signals, geography, and market language. Brein proposes at least one observable trigger before continuing; edit it if needed, then confirm it.
 
     Confirmation saves the profile as commercial context for later Brein workflows. The draft is not silently treated as reviewed Knowledge.
   </Step>
   <Step title="Inspect the first opportunities">
-    Brein searches the web for current signals that match the confirmed profile and returns up to five candidates with source links and an explanation of the possible fit.
+    Brein first runs bounded searches over its published-data warehouse for related tenders, awards, active buyers, contract winners, permits, expansions, and relevant company records. It qualifies each candidate from the observed event, its alignment with your confirmed search signals, freshness, evidence completeness, and identity strength. The resulting score orders review effort; it is not a probability of purchase. Weak candidates are left out instead of filling the list, so Brein may return fewer than five accounts. If fewer than three qualified accounts survive, the same governed discovery flow may add qualified web candidates.
+
+    The screen opens as a compact shortlist. Choose an account to inspect what happened, why it is worth reviewing, what remains uncertain, and the published sources without leaving the list.
 
     <Note>
       This is a bounded search, not a complete map of the market. Commercial relevance is an inference, and each candidate should be reviewed against its evidence.
     </Note>
   </Step>
-  <Step title="Save the candidates worth pursuing">
-    Select the opportunities you want to keep. Brein previews the CRM fields and destination before writing anything. After you confirm, it creates or reuses the `Oportunidades` Collection and saves the selected records with their evidence and provenance.
+  <Step title="Work one company">
+    Choose **Work this company** from its inspector. Brein creates or reuses the `Oportunidades` Collection and saves that account with its next action, published sources, and provenance. The same inspector then offers **Find decision-makers**. This first search returns public professional profiles and does not spend customer contact credits.
+  </Step>
+  <Step title="Choose a decision-maker">
+    Brein returns at most three people rather than a large contact table. Each option shows the person's name, role, and attributable LinkedIn profile, but no email. Choose one person first. Brein then creates a free quote bound to that exact candidate and asks for a separate confirmation before looking up one verified work email. It never reveals the other candidates or triggers an automatic fallback.
+
+    The completed onboarding moment explains the whole path together: **why Brein found the company, who you chose, and the verified channel you can use next**. It also shows the contact credits actually retained. If no verified email is delivered, the reserved customer credits are refunded and you may choose another discovered person.
   </Step>
 </Steps>
 
-The onboarding does not find personal contact details, connect a sender, or send outreach. Those actions remain separate from opportunity discovery so you can decide which companies deserve deeper enrichment first.
+## After onboarding
+
+The onboarding creates the commercial context that later runs read. From there, the working loop is deliberately CRM-first:
+
+1. **Weekly opportunity review.** Brein checks for new public signals, scores candidates, explains *why now*, and deduplicates them by their source-backed opportunity identity. Existing records are updated rather than copied.
+2. **Review in CRM.** Selected opportunities live in the `Oportunidades` Collection. Their lifecycle is `nueva` → `revisar` or `prioritaria`, with `descartada` available when the signal is not worth pursuing. Evidence stays on the record so a decision can be audited.
+3. **Read the briefing in Inbox.** The dashboard Inbox persists the commercial report: what Brein found, the three opportunities that deserve attention, blockers, and the next concrete actions. It is a report surface, not a shared-notes feed.
+4. **Activate one account at a time.** Open a selected CRM record to find up to three public decision-maker profiles without spending customer contact credits. Choose one person, review a free quote bound to that exact candidate, and explicitly confirm before Brein looks up one verified work email. A miss is refunded and never widens automatically to another person or provider.
+5. **Prepare, do not send.** Once a reliable contact path exists, Brein can prepare a first draft and follow-up sequence for review. No sender is connected, and nothing is sent or scheduled.
+
+The weekly search and the first opportunity list are bounded discoveries, not an exhaustive view of a market. Commercial fit is an inference, so review each record against its evidence before moving it to `prioritaria`.
 
 ## Related concepts
 
