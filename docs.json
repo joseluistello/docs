@@ -61,7 +61,7 @@
     "languages": [
       {
         "language": "en",
-        "default": true,
+        "default": false,
         "groups": [
           {
             "group": "Get started",
@@ -114,6 +114,7 @@
       },
       {
         "language": "es",
+        "default": true,
         "groups": [
           {
             "group": "Primeros pasos",
