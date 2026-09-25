@@ -1,117 +1,56 @@
 ---
-title: 'Collections'
-description: "The object-native operational substrate. A Collection is a configured table; a Record is one typed row. A CRM, a bug tracker, support tickets, a content calendar: each is a configured Collection, not new code. Reads are active-only and bounded by default; archive, restore and purge are explicit, governed lifecycle operations."
+title: 'Collections and contact Records'
+description: 'The CRM substrate behind Prospectos: a bounded Collection of contact Records, with a governed lifecycle and an explicit creation boundary.'
 ---
 
-A **Collection** is a configured table on the workspace spine; a **Record** is one typed row in it. This is the operational half of the workspace, where the work *lives* (leads, bugs, tickets, posts), as opposed to Topics, which capture what the team *knows*.
+A **Collection** is a configured workspace table. A **Record** is one typed row. In the current Brein product, the customer-facing use is Prospectos: a Collection of people the workspace has explicitly acquired and filed.
 
-The point of the substrate is that you don't build apps. A CRM, a bug tracker, a support desk, and a content calendar are all the **same primitive**: a typed Record flowing through a configured Collection. A new use case is a configuration, not new code.
+A company, supplier observation, tender, award, permit, risk mark, or research row is not a CRM Record. Those objects can remain market context or evidence. A person becomes a Record only through the revealed/imported-contact path.
 
-Reads are **active-only, bounded and brief by default** across every surface. A `collection list` returns active collections in a bounded page; archived ones only surface when you explicitly opt in with `--include-archived` (CLI), `include_archived: true` (MCP), or `?include_archived=true` (REST). A `collection get` comes back **brief** unless you ask for `full`. Archive, restore and purge are **separate, explicit** operations — lifecycle is never collapsed into `update --status`.
+## What a Prospectos Collection holds
 
-<Note>
-Collections are Driftless's operational primitive: a human-run system of record augmented by AI. They are not built on Topics; instead, a Collection can reference criterion Knowledge that guides how its Records should be handled.
-</Note>
+- **Contact fields:** the person, account, role, channel availability, and bounded sales fields the workspace needs.
+- **Lifecycle:** named stages such as new, contacted, replied, meeting, closed, or discarded, configured for the team's sales process.
+- **Cerebro criterion:** the documents that explain how the team should work these contacts.
+- **Bounded reads:** active-only pages by default, with continuation when more records exist.
 
-## The three archetypes
+The underlying Collection/Record model is shared infrastructure. It is not a promise that Brein is a generic database builder for bug trackers, calendars, or arbitrary schemas.
 
-Every use case collapses into one of three shapes:
+## Contact-first lifecycle
 
-- **Pipeline**: records flow through a `status` lifecycle on a board: leads, bugs, support tickets, ad campaigns.
-- **Analysis**: a record is an artifact anchored to a source that can **drift** (the source changed) versus **decay** (no activity): call analysis, competitor tracking, SEO audits.
-- **Content**: a record with a publication lifecycle (draft → published): blog posts, product copy. The published artifact lives in your site/CMS; the collection tracks the work.
+```text
+masked person candidate
+  → explicit quote and confirmation
+  → revealed/imported contact
+  → explicit people_file
+  → CRM Record
+  → status, history, and follow-up
+```
 
-## What a Collection holds
+`crm_record` updates an existing contact Record. It does not create one from a company or evidence row. `collection_query` reads; `crm_collection` creates an empty container; `people_file` files the acquired person.
 
-- **`record_schema`**: the typed field definitions (the columns). Field types: `text`, `long_text`, `number`, `currency`, `date`, `datetime`, `select`, `multi_select`, `status`, `relation`, `user`, `url`, `email`, `phone`, `file`, `anchor_ref`, `ai_field`. A `status` field carries `stages[]`, the lifecycle a record flows through.
-- **`views`**: saved views over the records: `board`, `table`, `list`, `calendar`, `gallery`, each with `group_by`, `filter`, `sort`, and `visible_fields`.
-- **`criterion_rel_slugs`**: the Knowledge **Topics the work reads before acting**. This is the seam coming down: a lead pipeline reads `how-we-sell` and `icp`, so the work happens with the team's criteria.
-- **`distill_policy`**: a configuration field for how a terminal record should distill back into a Note (the seam going up): closing a bug or winning a deal can leave a durable learning in the vault. The distill returns a **`context_outcome`** (`created` · `already_exists` · `skipped` · `failed`), surfaced on the record's create/update response — an observable, best-effort result that never blocks the write.
+## MCP contract
 
-## A Record
+The current MCP surface is:
 
-A Record is one row: its `fields` are the typed values (keyed by the Collection's field keys), and its `status` is **validated against the Collection's own stages**. Each Collection defines its own lifecycle, so a record can only sit in a stage its Collection declares.
+- `collection_query` — bounded list, query, get, and aggregate reads;
+- `crm_record` — update an existing contact Record, read history, or schedule follow-up;
+- `crm_collection` — create an empty contact-oriented Collection;
+- `people_file` — create the contact Record from a revealed/imported person.
+
+Generic Collection schema CRUD, `entity`, permanent purge, and Record delete are not public MCP tools. The former `collection_record` name is a hidden compatibility alias for reads and existing-Record updates; it does not restore the old company/account creation behavior.
+
+## CLI and REST
+
+The CLI and REST still expose lower-level configuration and lifecycle operations for administrators and technical clients. Read the current command or endpoint contract before using them; do not infer a customer workflow from the existence of a generic Record route.
 
 ## Entities
 
-A Record is a row inside one Collection. An **Entity** is an identity that can span Collections: the same customer who appears as a lead in the sales pipeline and a ticket in support. An entity is not a row in a Collection; it is a separate object that Records point at.
+Entities may exist as a shared identity model inside the platform, but the public MCP entity tool is not part of the commercial product. A person, company, or external observation is linked to CRM work only when the server can attest the relationship; approximate names and client URLs are not identity proof.
 
-An entity carries:
+## Related
 
-- **`kind`**: the identity type (for example `company`, `person`).
-- **`name`**: its display name.
-- **`dedup_key`**: the stable key that makes it unique within its `kind`.
-- **`attributes`**: free-form typed values.
-
-Entities **upsert** idempotently on `(kind, dedup_key)`: writing the same pair twice updates the entity instead of creating a duplicate. A Record links to an entity by setting its top-level `entity_id` (never a field inside `fields`), so several Records across different Collections can resolve to one identity.
-
-Entities are available on three surfaces: the CLI (`driftless collection entity add|list`), MCP (`driftless_entity`, `action: list | get | upsert`), and REST (`/workspaces/:slug/entities`).
-
-<Note>
-Connector `import` (via the [Broker](/integrations/broker)) maps a provider's mirrored records into Collection Records. That is different from Broker `index`, which materializes connector documents for retrieve, not Collection Records. See [Broker: reads and materialization](/integrations/broker#reads-and-materialization).
-</Note>
-
-## Using collections
-
-From the CLI (the surface also exists in MCP as `driftless_collection` and `driftless_collection_record`):
-
-```bash
-# Configure a Sales Pipeline: schema/views accept inline JSON or @file
-driftless collection add "Sales Pipeline" --archetype pipeline \
-  --schema '[{"key":"company","type":"text"},{"key":"mrr","type":"currency"},{"key":"stage","type":"status","stages":["new","qualified","won","lost"]}]' \
-  --views  '[{"type":"board","group_by":"stage"}]' \
-  --criterion "how-we-sell,icp"
-
-# Find a collection by intent, then read it brief or full
-driftless collection search "sales pipeline with won stage"
-driftless collection get <collection-id> --view full
-
-# Add and advance records; a status move to a terminal stage returns a context_outcome
-driftless collection record add <collection-id> --fields '{"company":"Acme","mrr":500}' --status new
-driftless collection records   <collection-id> --status won --limit 25 --cursor <token>
-driftless collection record update <collection-id> <record-id> --status won
-
-# Audit the substrate; safe-delete a record
-driftless collection doctor
-driftless collection record rm <collection-id> <record-id> --dry-run
-```
-
-## Retrieve before you act: the seam in one call
-
-Before working a record, an agent reads the collection's **criterion** Knowledge:
-the `criterion_rel_slugs` resolved into the actual topics (`how-we-sell`, `icp`),
-so the work happens with the team's criteria, not from scratch.
-
-The `retrieve` action delivers both halves of the seam at once: the relevant
-records **and** the criterion to read first:
-
-```text
-MCP: driftless_collection action:'retrieve' id:'<collection-id>'
-     [query / status / entity_id / drifted / updated_after / fields / view / limit / cursor]
-  → { records, nextCursor, criterion, criterion_missing }
-API: GET /workspaces/:slug/collections/:id/retrieve?status=won&limit=25
-CLI: driftless collection retrieve <collection-id> --query "won acme" --limit 25
-```
-
-`criterion` is the team's Knowledge to apply; `criterion_missing` flags any
-criterion slug that doesn't resolve (a gap to close). Records paginate by keyset
-(`nextCursor`). Read the criterion, then act on a record with
-`driftless_collection_record action:'update'`. For just the criterion (no records),
-use `driftless_collection action:'context'`.
-
-This mirrors topic [retrieve](/mcp/overview): one call returns *what to read* and
-*what to work on*, instead of hand-chaining a list and a separate criterion lookup.
-
-## Lifecycle, archive and purge
-
-A collection moves through one of two lifecycle states (`active` · `archived`):
-
-1. **Active** — records are read and worked.
-2. **Archived** — `collection archive` retires an active collection. An archived collection is **immutable**: only `restore` (back to `active`) and `purge` can touch it. `update`, record writes and `retrieve` are rejected with `409`.
-3. **Purged** — `collection purge` is permanent and **owner/admin only**. Run `--dry-run` first to read the impact (`version`, records, `entity_links_removed`, and `distilled_notes_preserved` — the distilled Notes the collection spawned are **preserved**, not deleted). Confirm with `--expected-version <n>` (compare-and-set on the version you just read). The call is audited and idempotent: a repeat after the collection is gone returns `already_absent`, never `404`.
-
-Safe record delete is the same shape: `collection record rm` only deletes a record in a non-archived collection, and `--dry-run` previews the **Entity link** that would be removed and the **distilled Notes** that are preserved (not deleted). The delete is workspace-membership gated, not owner/admin — any member may remove a record.
-
-<Note>
-`archive` and `restore` are reversible; `purge` is the only permanent operation. They are **separate commands/routes/actions** on every surface — a `update --status` that tries to archive is rejected with `409` and names the lifecycle route to use instead.
-</Note>
+- [The Brein workspace](/product/workspace)
+- [MCP: CRM](/mcp/work)
+- [API: Collections](/api/collections)
+- [CLI: Collections](/cli/collections)

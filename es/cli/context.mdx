@@ -1,18 +1,31 @@
 ---
 title: 'Comandos de contexto'
-description: "Crea, lee, actualiza y elimina topics de contexto desde la CLI."
+description: "Los cuatro verbos de documento — ls, read, write, search — más los comandos con forma de topic sobre el mismo store."
 ---
+
+## Los cuatro verbos de documento
+
+Cerebro son documentos markdown en carpetas: un documento es `<carpeta>/<nombre>.md`, la carpeta es un área de conocimiento y `<carpeta>/Structure.md` dice para qué sirve esa área. Estos cuatro verbos son el modelo completo; los comandos con forma de topic de abajo operan sobre exactamente el mismo store.
+
+| Comando | Flags | Descripción | Ejemplo |
+|---|---|---|---|
+| `context ls [carpeta]` | `--json` | Lista el árbol — carpetas y luego sus documentos (`Structure.md` primero). Omite la carpeta para ver todo. | `driftless context ls billing` |
+| `context read <ruta>` | `--json` | Imprime el cuerpo markdown (cuerpo en stdout, encabezado en stderr, así se pipea limpio) | `driftless context read billing/refund-flow.md` |
+| `context write <ruta>` | `--content @f\|"md"`, `--title`, `--private`, `--public`, `--dry-run`, `--allow-secrets`, `--json` | Crea o **REEMPLAZA** un documento. Léelo primero si ya existe. Una carpeta desconocida crea el área. | `driftless context write billing/refund-flow.md --content @doc.md --title "Refunds"` |
+| `context search "<q>"` | `--folder <f>`, `--limit <n>`, `--json` | Busca documentos; imprime `ruta · título` + un snippet por hit | `driftless context search "idempotency" --folder billing` |
+
+Un documento nace compartido en el workspace: no hay nada que aprobar. `--private` lo guarda solo para ti y `--public` lo devuelve al equipo (`is_private` en la API/MCP); `context add --private` hace lo mismo al crear. Mira [Visibilidad y compartir](/es/concepts/governance).
 
 ## Listar y buscar
 
 | Comando | Flags | Descripción | Ejemplo |
 |---|---|---|---|
-| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | Lista topics con filtros. Por defecto muestra los **40 más relevantes** (los drifteados primero); imprime `Showing N of M`. Usa `--all` / `--limit N` para ver más (`--json` no tiene tope). `--suggested` = lo que todavía no es Knowledge (Notas + En revisión: `draft` + `proposed`). `--tag` se puede repetir (semántica OR), así puedes listar una categoría entera. | `driftless context list --tag billing` |
+| `context list` | `--stale`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | Lista topics con filtros. Por defecto muestra los **40 más relevantes** (los drifteados primero); imprime `Showing N of M`. Usa `--all` / `--limit N` para ver más (`--json` no tiene tope). `--tag` se puede repetir (semántica OR), así puedes listar una categoría entera. | `driftless context list --tag billing` |
 | `context get <topic>` | `--json` | Detalle completo del topic | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Empareja topics con archivos | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics para los cambios actuales | `driftless context get --diff` |
 | `context get --diff --mark` | `--mark` | …y marca como **drifted** los topics que coinciden desde git local | `driftless context get --diff --mark` |
-| `context search` | consulta, `--tag <name>`, `--json`, `--include-notes` | Búsqueda de texto completo **ordenada por relevancia** (top 50; las coincidencias de nombre/título quedan más arriba). Admite `"frases entre comillas"`, `OR`, `-negación`. Acota con más términos en vez de paginar. `--tag` (repetible, OR) limita la búsqueda a una categoría. Knowledge + topics en revisión; las Notas quedan fuera salvo que uses `--include-notes`. | `driftless context search "refunds" --tag billing` |
+| `context search` | consulta, `--tag <name>`, `--json`, `--include-notes` | Búsqueda de texto completo **ordenada por relevancia** (top 50; las coincidencias de nombre/título quedan más arriba). Admite `"frases entre comillas"`, `OR`, `-negación`. Acota con más términos en vez de paginar. `--tag` (repetible, OR) limita la búsqueda a una categoría. Los documentos privados quedan fuera salvo que uses `--include-notes`. | `driftless context search "refunds" --tag billing` |
 
 ## Tags: el registro de categorías
 
@@ -54,22 +67,22 @@ Cada `--pattern` y `--add-pattern` se valida contra tu checkout local antes de l
 | `context relations` | `--json` | Lista las relaciones tipadas | `driftless context relations payment-flow` |
 | `context graph` | `--depth N`, `--json` | Grafo de relaciones entre topics | `driftless context graph payment-flow --depth 2` |
 
-`context doctor` audita la capa de topics buscando zombis (patterns que coinciden con cero archivos), huérfanos (repo eliminado), stale y borradores.
+`context doctor` audita la capa de topics buscando zombis (patterns que coinciden con cero archivos), huérfanos (repo eliminado), stale y documentos delgados (`draft`) — `status` es inerte, no un estado de gobernanza.
 
-## Gobernanza
+## Compatibilidad (no-op)
 
-Un topic se vuelve Knowledge solo una vez que se fusiona. Ciclo de vida: `draft → proposed → reviewed → archived`. Los agentes proponen; fusionar es un acto de owner/admin. Un agente lo ejecuta solo cuando un owner/admin lo pide explícitamente. Mira [Gobernanza](/es/concepts/governance).
+La gobernanza Nota→Knowledge está **retirada**. Estos comandos siguen en la superficie para que un agente o script viejo reciba una respuesta en vez de un error: cada uno imprime *"Los documentos de Cerebro no necesitan aprobación; edítalos con `driftless context write`."* y sale con 0. No los llames — para cambiar un documento, reescríbelo. Mira [Visibilidad y compartir](/es/concepts/governance).
 
 | Comando | Descripción | Ejemplo |
 |---|---|---|
-| `context propose <topic>` | Pone una Nota en revisión | `driftless context propose payment-flow` |
-| `context approve <topic>` | Súmala a Knowledge (owner/admin; solo cuando te lo piden) | `driftless context approve payment-flow` |
-| `context reject <topic>` | Devuélvela a Nota | `driftless context reject payment-flow` |
-| `context archive <topic>` | Retira un topic | `driftless context archive payment-flow` |
-| `context pr <topic>` | Lista las ediciones sugeridas | `driftless context pr payment-flow` |
-| `context pr <topic> --open` | Abre una edición sugerida (`--summary` + flags de contenido) | `driftless context pr payment-flow --open --summary "..." --content @new.md` |
-| `context pr <topic> --merge <id>` | Fusiona una edición sugerida (owner/admin) | `driftless context pr payment-flow --merge <id>` |
-| `context pr <topic> --reject <id>` | Cierra una edición sugerida sin fusionarla (owner/admin) | `driftless context pr payment-flow --reject <id>` |
+| `context propose <topic>` | No-op | `driftless context propose payment-flow` |
+| `context approve <topic>` | No-op | `driftless context approve payment-flow` |
+| `context reject <topic>` | No-op | `driftless context reject payment-flow` |
+| `context archive <topic>` | No-op | `driftless context archive payment-flow` |
+| `context ack <topic>` | No-op | `driftless context ack payment-flow` |
+| `context unvouch <topic>` | No-op | `driftless context unvouch payment-flow` |
+| `context pr <topic>` | No-op (las ediciones sugeridas están retiradas) | `driftless context pr payment-flow` |
+| — | Para cambiar un documento: léelo, integra el hecho nuevo y escríbelo de vuelta | `driftless context write billing/refund-flow.md --content @doc.md` |
 
 ## Compartir
 
@@ -89,7 +102,7 @@ Un workspace es el contenedor de más alto nivel para el contexto; puedes perten
 | `workspace add --key <drift_…>` | Registra un workspace con su API key | `driftless workspace add --key drift_…` |
 | `context move <topic> --to <slug>` | Reubica un topic en otro workspace | `driftless context move payment-flow --to acme-platform` |
 
-`context move` reinicia el topic a Nota en su nuevo workspace (el estado Knowledge no se traslada entre workspaces) y requiere owner/admin en el origen más membresía en el destino. Mira [Workspaces](/es/concepts/workspaces).
+`context move` reubica el documento y requiere owner/admin en el origen más membresía en el destino. Mira [Workspaces](/es/concepts/workspaces).
 
 ## Más allá del contexto: el resto del workspace
 
@@ -99,7 +112,7 @@ Todo el workspace es headless, no solo los topics. La misma CLI maneja las super
 |---|---|---|
 | **Collections y records** | `collection list\|get\|records`, `collection record add\|update` | [Collections](/es/concepts/collections) |
 | **Áreas** | `area list\|add\|rename\|rm`, más `context add/update --area` | [Áreas](/es/concepts/areas) |
-| **Notas y Knowledge** | `note add`, `context propose` y `context approve` | [Gobernanza](/es/concepts/governance) |
+| **Documentos y visibilidad** | `note add`, `context write`, `context share` | [Visibilidad y compartir](/es/concepts/governance) |
 | **Miembros** | `member list\|invite\|role\|rm\|invites` | [Workspaces](/es/concepts/workspaces#invitaciones) |
 | **Market data** | `market capabilities\|suppliers\|opportunities\|awards\|risks\|permits` | [Market Data](/es/api/market-data) |
 

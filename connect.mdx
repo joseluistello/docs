@@ -1,0 +1,164 @@
+---
+title: 'Connect your AI to Brein'
+description: 'Connect ChatGPT, Claude, OpenCode, Cursor, Hermes, OpenClaw, or another MCP client to the Brein workspace.'
+---
+
+Brein is connected through one remote MCP server:
+
+```text
+https://api.trybrein.com/mcp
+```
+
+The client chooses the model. Brein supplies the governed commercial capabilities: market evidence, companies, people, contacts, CRM, research, and campaigns.
+
+## Choose your client
+
+<CardGroup cols={3}>
+  <Card title="ChatGPT" icon="message-circle" href="#chatgpt">
+    Connect the published Brein app and authorize your workspace with OAuth.
+  </Card>
+  <Card title="Claude" icon="bot" href="#claude">
+    Add Brein as a remote MCP connector and sign in to the workspace you want to use.
+  </Card>
+  <Card title="OpenCode" icon="terminal" href="#opencode">
+    Add the remote server with one command, then authenticate inside OpenCode.
+  </Card>
+  <Card title="Cursor" icon="mouse-pointer-2" href="#other-mcp-clients">
+    Add the same remote URL to Cursor's MCP server configuration.
+  </Card>
+  <Card title="Hermes" icon="radio" href="#hermes-and-openclaw">
+    Use the remote MCP endpoint with OAuth where supported or a scoped API key.
+  </Card>
+  <Card title="OpenClaw" icon="terminal" href="#hermes-and-openclaw">
+    Connect the hosted Brein server without installing the Brein CLI.
+  </Card>
+</CardGroup>
+
+These are supported client surfaces, not a claim that every organization has a commercial partnership with Brein. The client keeps control of its own model and account; Brein controls workspace access, tools, usage, and audit.
+
+## ChatGPT
+
+In the Brein app or your ChatGPT connector settings, add:
+
+```text
+https://api.trybrein.com/mcp
+```
+
+Complete the Brein authorization screen, select the intended workspace, and approve the requested capabilities. The connector should then discover the current neutral Brein tools.
+
+Start with a bounded read:
+
+```text
+Show my available Brein workspaces and the current commercial usage.
+```
+
+Do not ask the agent to reveal a contact or activate a campaign before it has shown you the audience, price, or activation proof.
+
+## Claude
+
+Add the endpoint as a remote MCP connector:
+
+```text
+https://api.trybrein.com/mcp
+```
+
+Use OAuth when Claude offers the connector authorization flow. If your tenant only supports header authentication, use the scoped API-key fallback below.
+
+After signing in, select the authorized Brein workspace before asking for market, CRM, or campaign actions.
+
+## OpenCode
+
+Install OpenCode, then add Brein globally:
+
+```bash
+opencode mcp add brein --global \
+  --url https://api.trybrein.com/mcp
+```
+
+Inside OpenCode, run:
+
+```text
+/mcps
+```
+
+Select Brein and complete the browser authorization. When the status is `connected`, the agent can discover the server's tools.
+
+You can also configure it manually in `opencode.jsonc`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "brein": {
+        "type": "remote",
+        "url": "https://api.trybrein.com/mcp"
+      }
+    }
+  }
+}
+```
+
+OAuth credentials stay outside the project configuration. A tool may appear in OpenCode under the local namespace `brein_`, such as `brein_context_get`; that prefix is added by OpenCode and is not a different Brein API.
+
+## Other MCP clients
+
+The setup is the same for a standard remote MCP client:
+
+1. Add a remote server.
+2. Use the absolute Brein endpoint.
+3. Complete OAuth or use a scoped API key if OAuth is unavailable.
+4. Select the authorized workspace.
+5. Verify the connection with a bounded read.
+
+The client can use any model it already supports. Brein does not require a particular model provider.
+
+## Hermes and OpenClaw
+
+For a client that supports remote MCP OAuth, use the normal Brein authorization flow. For a client that requires headers, keep the key in an environment variable:
+
+```jsonc
+{
+  "mcp": {
+    "servers": {
+      "brein": {
+        "type": "remote",
+        "url": "https://api.trybrein.com/mcp",
+        "oauth": false,
+        "headers": {
+          "X-API-Key": "{env:BREIN_API_KEY}"
+        }
+      }
+    }
+  }
+}
+```
+
+Never commit the raw key to a repository. API keys are scoped to authorized workspaces and do not replace the workspace membership or role checks.
+
+## What the connection gives you
+
+A connected client can use the governed Brein capabilities, including:
+
+- read and maintain Cerebro documents;
+- search published market evidence;
+- search companies and masked people;
+- quote and explicitly reveal selected people;
+- read and update contact Records;
+- prepare and review campaigns;
+- inspect commercial usage;
+- run durable research.
+
+Reading is not the same as acting. Contact reveals, CRM writes, and Campaign activation retain their own cost, policy, confirmation, and audit contracts.
+
+## Troubleshooting
+
+| Symptom | Check |
+|---|---|
+| `401 Unauthorized` | Reconnect OAuth or replace the scoped API key. |
+| `403 Forbidden` | Check workspace membership, role, scope, and client grant. |
+| Tools are missing | Reconnect the client; MCP clients cache tool catalogs per session. |
+| Wrong workspace | Switch the active workspace in the client or reauthorize. |
+| A contact action is refused | Run the current quote/confirmation flow; do not bypass it with raw coordinates. |
+
+For the complete tool and authentication contract, see [MCP & OAuth](/mcp/overview). For non-AI integrations, use the [REST API](/api/overview).

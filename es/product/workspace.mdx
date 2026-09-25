@@ -1,0 +1,61 @@
+---
+title: 'El workspace de Brein'
+description: "Un mapa de las superficies comerciales, caminos de acceso y límites de Brein."
+---
+
+Brein es un workspace de inteligencia comercial para fundadores y equipos de ventas. Conecta el criterio comercial, la evidencia de mercado publicada, las personas, el trabajo CRM, las campañas y la investigación durable sin hacer que un objeto represente a otro.
+
+## Comienza con el loop comercial
+
+```txt
+Señal → Contexto → Evidencia → Inferencia → Acción → Decisión humana → Resultado → Aprendizaje
+```
+
+Una señal se interpreta contra Cerebro. La evidencia se revisa mediante las superficies gobernadas de mercado o investigación. La persona elige la siguiente acción y Brein conserva el resultado para que la siguiente corrida no empiece desde una conversación vacía.
+
+## Superficies del cliente
+
+### Mercado y evidencia
+
+- **Empresas** busca en un directorio acotado de empresas usando el criterio que la persona entrega. La búsqueda no revela coordenadas en silencio.
+- **Personas** son decisores públicos enmascarados encontrados dentro del resultado de una empresa. Son candidatos hasta que la persona elige explícitamente a quién revelar.
+- **Contactos** es la libreta adquirida: personas ya reveladas o importadas. Es distinta de la superficie de descubrimiento.
+- **Licitaciones** conserva filtros y procedencia específicos de licitación.
+- **Proveedores** expone los corpora de proveedores de Brein sin presentarlos como un directorio global exhaustivo.
+- **Adjudicaciones** conserva comprador, proveedor, monto, moneda y fecha de adjudicaciones publicadas.
+- **Registros** expone permisos y evidencia de registros con límites de nombre exacto y cobertura.
+- **Investigador** ejecuta investigación durable y devuelve un dossier portátil con compuertas de verificación.
+
+### Trabajo y activación
+
+- **Cerebro** guarda la verdad comercial durable como documentos markdown en carpetas: oferta, ICP, exclusiones, señales, geografía, compradores, mensajes, playbooks y decisiones aprendidas.
+- **Prospectos** es el sistema operacional de registro del CRM. Un Record se crea sólo cuando una persona revelada o importada se archiva explícitamente.
+- **Campañas** prepara una secuencia saliente acotada desde contactos cuyo correo laboral ya está disponible. Crear un borrador es inerte; cada envío exige autorización humana explícita sobre la audiencia y el contenido revisados.
+- **Configuración** administra el workspace, equipo, facturación y créditos, conexiones, privacidad y eliminación. Las áreas, tags y background workers permanecen backend-only durante beta.
+
+## El límite entre contacto y CRM
+
+Este límite es intencional:
+
+```txt
+Empresa o evidencia → contexto de mercado
+Persona candidata → descubrimiento enmascarado
+Persona revelada/importada → Contacto adquirido
+Persona archivada explícitamente → Record del CRM
+```
+
+Seleccionar una empresa no crea un Record del CRM. Una observación de proveedor, licitación, adjudicación, permiso, marca de riesgo o fila de investigación tampoco. Esos objetos pueden aportar contexto al Record de una persona sólo cuando el servidor atestigua la relación.
+
+## Caminos de acceso
+
+El dashboard es la superficie principal del cliente. Las mismas capacidades gobernadas están disponibles mediante:
+
+- [CLI](/es/cli/setup) para terminal, administración y contexto de ingeniería soportado;
+- [MCP](/es/mcp/overview) para clientes de IA sobre `https://api.trybrein.com/mcp`;
+- [API REST](/es/api/overview) para integraciones y operaciones tipadas de mercado.
+
+El comando `driftless`, el namespace del paquete, el prefijo de API key y los aliases MCP ocultos siguen siendo contratos de compatibilidad. Las tools MCP públicas usan nombres neutrales.
+
+## Lo que Brein no promete
+
+Brein no es una base de datos exhaustiva, un constructor genérico de esquemas, un gestor de proyectos, una consola de observabilidad de agentes ni un sistema de ventas autónomo. Una búsqueda es acotada, una inferencia no es un hecho, una revelación de contacto exige autorización explícita separada y preparar un borrador nunca implica enviar un mensaje.

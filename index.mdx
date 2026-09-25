@@ -1,79 +1,65 @@
 ---
 title: 'Welcome to Brein'
-description: "One workspace where your team and its agents share what you know and what you operate, so context survives the next session, model, or tool."
+description: "Brein is a commercial-intelligence workspace for founders and sales teams: find a market, understand the evidence, and move a real opportunity forward."
 ---
 
-Your agent can write the code. What it can't do is know why your team ruled out that exact approach six months ago. That kind of context is real, but it lives scattered across chats, pull requests, and people's heads, and it goes stale the moment the code moves underneath it.
+Brein turns scattered market knowledge, published evidence, and commercial work into decisions your team can act on.
 
-It is rarely just the code. The customer you spoke to last week, the decision that ended a long debate, and the pipeline you are halfway through live in different tools, and you become the connective tissue between them. You re-explain the same state to the next teammate, the next agent, and the next session. The work gets done, and the context that made it possible quietly disappears.
+A founder or sales team should not need to stitch together a supplier directory, a web search, a spreadsheet, a CRM, and a separate research tool before deciding where to spend the next hour. Brein gives those pieces one governed loop:
 
-Brein is one workspace for a team and its agents. Instead of letting that state scatter, it keeps the **Knowledge** you have reviewed and want to rely on later together with the **Operations** you run day to day, like customers, signals, and pipelines. Agents read and act on that shared state through permissions you set, and people stay responsible for what the company treats as true.
+> **Signal → Context → Evidence → Inference → Action → Human decision → Outcome → Learning**
 
-The CLI, package names, and API keys keep the `driftless` namespace during the compatibility window. Public MCP tools use neutral capability names; both `brein_*` and `driftless_*` calls remain hidden compatibility aliases. Existing integrations continue to work, and new links use the Brein domains shown in these docs.
+Start with the problem your team is trying to solve. Brein searches a bounded market, shows the evidence behind each candidate, and keeps the commercial criterion your team is using in view while you decide what to work next.
 
-The value is the loop between them: a signal is interpreted with context, becomes an action on operational state, and leaves behind reviewed Knowledge for whoever comes next. [The Driftless loop](/concepts/core-loop) walks through the whole model, and coding agents are the most concrete place to start.
+## Start in Brein
 
-## Connect in about a minute
+[Open the Brein dashboard](https://app.trybrein.com) and follow the first commercial run:
 
-Same workspace whether a human or an agent reaches it. Install the CLI, point your agent at it, and you're in.
+1. Share your company website and, if useful, one sentence about what you sell.
+2. Review the proposed offer, ideal customers, exclusions, geography, and buying signals.
+3. Confirm the profile before Brein uses it as commercial context.
+4. Inspect a short, evidence-backed list of opportunities.
+5. Choose a company, review its people, and explicitly select the people worth revealing.
+6. Review the quote for the selected group, then confirm it before any contact credit is spent.
+7. File the revealed or imported contact into Prospectos and continue with Campañas when a verified work email is available.
 
-<Steps>
-  <Step title="Install the CLI and log in">
-    ```bash
-    npm install -g @driftless-sh/cli
-    driftless login
-    ```
+A bounded search is not a complete map of a market. Brein shows what it found, what remains uncertain, and why a candidate deserves review. An empty result is not proof that a company, person, or opportunity does not exist.
 
-    <Tip>
-      Running this in CI? Pass a key directly instead: `driftless login --key drift_your_api_key_here`. You can create one at [driftless.icu](https://trybrein.com) under Settings, then API Keys.
-    </Tip>
-  </Step>
+## What you can do in Brein
 
-  <Step title="Teach your coding agent">
-    ```bash
-    driftless install-skill
-    ```
+- **Empresas** — search a bounded company directory without revealing contact coordinates.
+- **Personas** — inspect masked public decision-makers inside a company result.
+- **Licitaciones, Proveedores, Adjudicaciones, and Registros** — browse distinct published evidence corpora with their own semantics and provenance.
+- **Investigador** — run durable research and return a portable dossier instead of a disconnected chat summary.
+- **Cerebro** — keep the offer, ICP, exclusions, signals, territory, buyers, messages, and learned decisions in markdown documents.
+- **Prospectos** — work CRM Records for people your team has explicitly chosen; companies and evidence do not become Records by themselves.
+- **Campañas** — prepare a bounded email sequence, review it, and require an explicit human authorization before it can send.
+- **Configuración** — manage the workspace, team, billing, connections, privacy, and deletion.
 
-    This drops `AGENTS.md` and `CLAUDE.md` into your repo. From then on, any coding agent that opens the repo already knows the rhythm: read what the team knows before editing, write back what it learned after.
-  </Step>
+[Read the workspace guide](/product/workspace) for the complete map.
 
-  <Step title="Connect an AI client over MCP">
-    Point ChatGPT, Claude, or Cursor at the Brein MCP endpoint:
+## Connect your AI
 
-    ```
-    https://api.trybrein.com/mcp
-    ```
+The fastest way to use Brein with an AI client is to connect the workspace through MCP:
 
-    Claude and ChatGPT handle the OAuth handshake themselves, so you just paste the URL. For the CLI, agents, and CI, send your key in the `X-API-Key` header instead. The full setup lives in [MCP & OAuth](/mcp/overview).
-  </Step>
-</Steps>
+[Connect ChatGPT, Claude, OpenCode, Cursor, Hermes, or OpenClaw](/connect).
 
-<Note>
-  Wiring an agent by hand? It really comes down to two moves: read before you edit, write back after you learn. Drop [the whole loop in one prompt](/quickstart#the-whole-loop-in-one-prompt) into any agent, or follow [Agent setup](/agents/setup) for your specific client.
-</Note>
+```text
+https://api.trybrein.com/mcp
+```
 
-## Explore the docs
+The client chooses the model. Brein supplies the governed commercial capabilities. You do not need to install the Brein CLI to connect an AI client.
 
-<CardGroup cols={2}>
-  <Card title="How it fits together" icon="compass" href="/concepts/core-loop">
-    Knowledge, Operations, and the loop that turns a signal into reviewed Knowledge. Start here for the whole model.
-  </Card>
-  <Card title="Connect" icon="plug" href="/cli/setup">
-    Every way a human or an agent plugs in: the CLI, agent skills, MCP, governed Connections, and self-hosted agents.
-  </Card>
-  <Card title="Concepts" icon="brain" href="/concepts/workspaces">
-    The Knowledge plane up close: workspaces, areas, topics, governance, and how drift keeps context honest.
-  </Card>
-  <Card title="Operate & collaborate" icon="layers" href="/concepts/collections">
-    Collections, records, notes, and comments: where commercial and operational state lives.
-  </Card>
-  <Card title="Agents" icon="bot" href="/agents/agentic-layer">
-    Librarian curation and platform-owned source monitoring.
-  </Card>
-  <Card title="CLI reference" icon="terminal" href="/cli/context">
-    Create, read, update, and anchor context topics from the command line.
-  </Card>
-  <Card title="API reference" icon="code" href="/api/overview">
-    The REST surface. Base URL, auth, the error envelope, workspaces, repos, topics, and integrations.
-  </Card>
-</CardGroup>
+## Developer access
+
+For deeper integrations, use:
+
+- [MCP & OAuth](/mcp/overview) for agent capabilities;
+- [REST API](/api/overview) for your own software;
+- [CLI compatibility](/cli/setup) for existing engineering-context workflows.
+
+The existing `driftless` command, package namespace, API-key prefix, and hidden MCP aliases remain compatibility contracts while their consumers migrate. They are not a second product.
+
+## For engineering teams
+
+Engineering context through Cerebro documents and path anchors is still supported. It is an additional use case, not the center of Brein: read the relevant context before editing code, then write back one clean document when you learn something durable. See [the engineering context reference](/concepts/core-loop#engineering-context-is-still-supported).

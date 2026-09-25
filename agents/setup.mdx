@@ -1,139 +1,54 @@
 ---
 title: 'Agent setup'
-description: 'Teach coding agents to sync, retrieve, and persist Driftless context.'
+description: 'Teach a coding agent to read Brein engineering context before editing and write one durable document afterward.'
 ---
 
-Driftless installs repo-local instructions for your coding agents. They teach an agent to pull the team's context before it touches an area, and to write back what it learned so the next session doesn't start from zero.
+Brein can support a software team's engineering context through Cerebro documents and path anchors. This is a secondary use case, separate from the commercial customer journey.
 
-## Agent workflow
+## The engineering loop
 
-The default agent workflow is **retrieve-first**: pull the team's context for the
-task before you touch the area, then persist what you learned.
+1. **Retrieve before editing.** Use the CLI or current MCP tools:
 
-1. **Retrieve context before editing.** Pick the first move by what you know:
-   - **You know the files** → `driftless context get --files "src/auth/guard.ts,src/auth/service.ts"` (drift shows as a freshness badge inline; no `sync` needed).
-   - **You know the topic** → `driftless context get <slug>`.
-   - **You have a task but no slug** → reach for the unified **retrieve** primitive: `driftless_context_retrieve` (MCP) or `POST /topics/retrieve` (API). It ranks search + match-files + list filters drifted-first and returns `brief` bodies (the durable *why*); call `driftless context get <slug>` for the one full body you need.
+   ```bash
+   driftless context get --files "src/auth/guard.ts,src/auth/service.ts"
+   driftless context get <document>
+   ```
 
-   Read the `what / how / gotchas / decisions / invariants` and the `governance.authoritative` flag.
-2. **If no topic exists, create one**: `driftless context add "my-area" --area <domain> --pattern "src/<module>/**" --content "..."` (it lands as a Note).
-3. **Persist what you learned**: `driftless context update <slug> --gotcha "..." --decision "..."`; for a topic that's already Knowledge, open a Suggested edit instead: `driftless context pr <slug> --open --summary "..." --content @file`.
-4. **Add relations if useful**: `driftless context update <slug> --rel depends_on:other-topic`.
-5. **Use JSON output when acting as an agent**: `driftless context get <slug> --json`.
+   Over MCP, start with `context_retrieve` and then call `context_get` for the one full document you need. Read the durable why — decisions, gotchas, invariants, and freshness — before changing code.
 
-A note becomes Knowledge only once an owner/admin merges it in (`reviewed`). Treat `reviewed` as truth, `draft`/`proposed` as a hint. (An agent can run that merge, but only when an owner/admin explicitly asks.) See [Governance](/concepts/governance).
+2. **Create or rewrite one clean document.** If no document covers the area, create one with `driftless context add` or `context_create`. If one exists, read it and consolidate the new fact with `context write` or `context_update`. A document is born shared with the workspace; there is no Note → Knowledge approval queue.
 
-### Summary / brief / full: keep reads fast
+3. **Use anchors narrowly.** A code document may point to a small, explicit set of paths or globs. An over-broad or zero-match anchor is a signal to fix the document, not to claim the code is covered.
 
-Reads default to a **light payload** so a result never floods the agent's context.
-`retrieve` and `context get --files` return **`brief`** bodies (what / decisions /
-gotchas / invariants, no full `content`); a single `context get <slug>` returns the
-**`full`** body because you named it; lists and search return a **`summary`** index
-row, bounded. Ask for `full` (e.g. `--full` / `view: "full"`) only when you need
-the whole body, and pair it with a small limit. The pattern is *brief to find the
-right topic, full for the one body you actually need.*
+4. **Persist only durable knowledge.** Do not turn a command transcript, temporary task, or one-off value into a document. The durable question is whether a future change would meaningfully contradict the claim.
 
-### Acting on operational records (Collections)
+5. **Reconnect after schema changes.** MCP clients cache tool definitions per connector session. Start a fresh session or reconnect the connector after Brein changes a schema.
 
-A Collection (CRM, tracker, content calendar) holds typed **records**. Before
-acting on a record, read the collection's **criterion** Knowledge, the team's
-"how we do this." The `retrieve` action gets relevant records **plus** that
-criterion in one call:
+## Installed files
 
 ```bash
-# MCP: driftless_collection action:'retrieve' id:'<collection-id>'
-#   → { records, nextCursor, criterion, criterion_missing }
-# Read the criterion, then act:
-# driftless_collection_record action:'update' collection_id:'<id>' record_id:'<id>' fields:{...}
-```
-
-### Operating an integration (Broker)
-
-If the work needs an external provider that's already connected, **operate** it
-through the broker, not by writing a script:
-
-```bash
-driftless broker operations <provider>            # what this connection can do (named operations)
-driftless broker invoke <provider> <operation> --input '{...}'   # run one (inline + audited)
-driftless broker records <provider> --model <m>   # read a synced model's records
-```
-
-**Connecting** a provider is integration *setup* (`driftless integration
-connect/confirm`, or the dashboard), a separate, human-led concern. If the
-operation you need is **not** in `broker operations <provider>`, **stop and report
-the missing capability**. Do not author or deploy an integration script to fill
-the gap.
-
-## Install the agent skill
-
-```bash
+pnpm add -g @driftless-sh/cli
+# or
+npm install -g @driftless-sh/cli
+driftless login
 driftless install-skill
 ```
 
-This installs AGENTS.md and CLAUDE.md into the current repo. Use this when you want agents to retrieve Driftless topics from their normal workflow.
+`install-skill` writes the managed `AGENTS.md` and `CLAUDE.md` blocks plus `.driftless/skill.md` for supported coding agents. Re-run it after upgrading the CLI when you want the installed instructions refreshed.
 
-If you need to re-run it later (e.g., to update the skill instructions after a CLI upgrade):
+## Read the current MCP surface
 
-```bash
-driftless install-skill
-```
+Use neutral capability names such as `context_retrieve`, `context_get`, `context_ls`, `context_read`, `context_write`, `context_search`, `collection_query`, `crm_record`, `people_file`, and `sequence_activate`.
 
-## What gets installed
+Do not build a new integration around retired tools such as `driftless_context_search`, `driftless_context_create`, `driftless_collection`, `driftless_tags`, or `driftless_areas`. Hidden aliases exist only for the documented compatibility window; they are not the current catalog.
 
-| File | Purpose |
-|---|---|
-| `AGENTS.md` | Agent instructions for Codex, Cursor, and other agentic tools |
-| `CLAUDE.md` | Agent instructions for Claude Code |
-| `.driftless/skill.md` | Full Driftless skill, the canonical reference for agents |
+## Commercial safety
 
-The managed block inside `AGENTS.md` and `CLAUDE.md` is wrapped in comments:
+The engineering skill does not grant permission to reveal contacts, spend credits, send email, or make consequential CRM decisions. Those operations have their own server-side scopes, explicit selections, confirmations, and audit requirements. See [MCP: Sequences](/mcp/sequences) and [The Brein workspace](/product/workspace).
 
-```text
-<!-- driftless:start -->
-... driftless context instructions ...
-<!-- driftless:end -->
-```
+## Related
 
-The Driftless block teaches agents this workflow:
-
-<Steps>
-  <Step title="Detect situation">
-    Agent runs `driftless doctor` to check API key, workspace, Git remote, and skill installation.
-  </Step>
-
-  <Step title="Retrieve context before editing">
-    ```bash
-    driftless context get --files "src/auth/guard.ts,src/users/service.ts"
-    ```
-    Agent gets matching topics for the files it is about to modify. Use `--json` for structured output.
-  </Step>
-
-  <Step title="Persist discoveries">
-    ```bash
-    driftless context update auth-flow \
-      --decision "WorkspaceGuard is global; use @Public() only for explicit public routes" \
-      --gotcha "Do not assume routes are public when guards are composed"
-    ```
-    Durable context goes back to Cloud so the next session doesn't start from zero.
-  </Step>
-</Steps>
-
-## Self-healing
-
-Running `driftless install-skill` again replaces the managed block contents without touching anything outside it. This means you can update the skill instructions without manual editing: re-run the command and the block refreshes to the latest version.
-
-## What to write back
-
-Use Driftless for durable architecture knowledge:
-
-- **Decisions**: why the code works this way
-- **Gotchas**: traps that would cause a future agent to make a bad edit
-- **Invariants**: rules that must stay true across refactors
-- **Anchors**: new or corrected file patterns after code moves
-- **Relations**: cross-repo dependencies discovered while working
-
-## What NOT to store
-
-<Warning>
-  Never put secrets, credentials, raw customer data, API keys, or temporary scratch notes in context topics.
-</Warning>
+- [Engineering context in the Brein loop](/concepts/core-loop#engineering-context-is-still-supported)
+- [CLI context commands](/cli/context)
+- [MCP: Criterion](/mcp/knowledge)
+- [MCP & OAuth](/mcp/overview)

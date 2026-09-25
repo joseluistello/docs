@@ -1,116 +1,85 @@
 ---
-title: 'The Driftless loop'
-description: "The two kinds of state a workspace connects, and the loop that turns a signal into reviewed Knowledge."
+title: 'The Brein commercial loop'
+description: "How durable commercial context, evidence, people, CRM work, and campaigns stay connected without promising autonomy."
 ---
 
-Driftless is one workspace for a team and its agents. The problem it solves is continuity, not just memory: models change, chats end, sessions reset, and agents lose their state, but the customer, the decision, and the project are still there in the morning. When that state lives in a dozen tools, a person spends the day carrying it by hand, re-explaining what already happened and deciding which version is still true. Driftless keeps that state in one place so the work remembers, and so the next person or agent starts from what the team already knows.
+Brein is a commercial-intelligence workspace. It keeps the commercial criterion, published evidence, and the work that follows in one governed loop:
 
-## Two kinds of state
+> **Signal → Context → Evidence → Inference → Action → Human decision → Outcome → Learning**
 
-A company's state usually separates durable context from operational records. Driftless holds both in one workspace, so they can feed each other instead of drifting apart.
+The point is not to turn every customer question into an agent workflow. The point is to make the next commercial decision more explainable than the last one.
 
-### Knowledge: what the team decided to keep
+## The parts of the loop
 
-Knowledge is the reviewed, durable context a team wants future people and agents to trust: the decision behind an approach, the constraint that must hold, the trap that cost someone a day. You capture it as a **Note**, a quick observation or draft. A **Topic** is the durable object a Note becomes once it is worth keeping, anchored to the exact code or system it describes so it can flag itself when that code moves. A Note is a hint; **Knowledge** is what the team has actually agreed to rely on. Not every Note becomes Knowledge, and that is healthy: most stay hints, and a few become the shared truth everyone builds on.
+### Context: Cerebro
 
-### Operations: what the company runs
+Cerebro holds the durable commercial truth a team wants to reuse: the offer, ideal customer profile, exclusions, geography, buying signals, buyers, messages, playbooks, and learned decisions.
 
-Operations is the recurring state a team works day to day: leads in a pipeline, bugs in a tracker, signals from customers, posts in a calendar. In Driftless each of these is a **Collection**, a configured table with typed fields and a lifecycle, and each row is a **Record**. A CRM, a bug tracker, and a content calendar are the same primitive with different configuration, not three apps you build. An **Entity** is a shared identity that ties Records together across Collections, so the same customer in a pipeline and in a support queue is understood as one. Before an agent works a Record, it can read the Knowledge the team attached to that Collection, so the work happens with the team's criteria rather than from scratch.
+It is made of markdown documents in folders. A document is born shared with the workspace; there is no approval ladder to climb. Rewriting a document is the normal way to consolidate durable knowledge. Engineering context and path anchors are supported where they describe a real system, but they are not the product's center.
 
-## The loop
+### Evidence: bounded market intelligence
 
-Neither plane is the product on its own. The product is the loop between them:
+Brein searches governed market corpora for published companies, tenders, awards, permits, registries, and related market evidence. Each lane keeps its own meaning, filters, identity rules, and provenance.
 
-> **Signal → Context → Action → Knowledge**
+- A search result is a candidate, not a complete market.
+- An empty result is not proof of nonexistence.
+- An award is a published award, not a payment.
+- A permit is a recorded permit, not a live operating guarantee.
+- Approximate identity stays approximate unless the server can attest a stronger relationship.
 
-A signal arrives. It is interpreted against the context the team already has. It becomes work. The work produces an action on a real system. The action leaves behind a learning that improves the next interpretation. Two everyday shapes:
+### Inference: the reason to review
 
-- A message from a customer can update a Record in a Collection, hand the agent the criteria the team recorded for that kind of action, and leave a reviewed learning for the next person or agent.
-- A product change can mark related Knowledge as possibly stale, create a review task, and improve what future agents receive the next time they touch that area.
+The system may propose relevance, likely buyers, or buying signals. Those are inferences for a person to inspect. A score or recommendation orders attention; it does not claim that a purchase is likely or that an event has already happened.
 
-These describe the model, not a promise that every step fires on its own. Some steps are a person clicking a button, some are an agent acting under permission, and some are a rule you configure. The point is that the state moves through one workspace instead of being carried between tools by hand.
+### Action: a bounded next step
 
-## How you reach the workspace
+The next step must match the object the person is working:
 
-These two kinds of state are the product. Everything else is a way to reach them, or a participant acting on them.
+- inspect a company and its people;
+- quote and explicitly authorize a selected group of people;
+- file a revealed or imported contact into Prospectos;
+- prepare and review a campaign;
+- run a research brief and return a dossier.
 
-- The **dashboard** is the visible workspace for people: boards, the topic graph, the review queue.
-- The **CLI**, the **MCP** server, and the **REST API** are access surfaces over the same workspace, kept close to one another. MCP is how an AI client like Claude or ChatGPT reaches Driftless, the CLI is how a terminal or a coding agent reaches it, and the API is how your own code does. None of them is a separate product, and none is the architecture; they are doors into the same state.
-- **Agents** are participants, not magic. An agent reads within the permissions you grant, takes bounded actions, records observations as Notes, and proposes changes, while a person stays responsible for anything the company commits to as true.
-- **Integrations** are governed access to systems Driftless does not own, like GitHub or Notion. An integration is not a subfeature of MCP: MCP is one door for agents, while an integration is a bounded, audited connection to an external tool that can stay the system of record while Driftless coordinates the work around it.
+Brein does not create a CRM Record from a company, supplier observation, tender, award, permit, or evidence row. A person is the unit that can enter the CRM workflow.
 
-## Who decides what becomes Knowledge
+### Outcome: a human decision
 
-An agent can discover something true, and it can also state a wrong interpretation with great confidence. So writing a claim and making it institutional Knowledge are deliberately separate acts. Agents observe, draft, relate, and propose. Merging a Note into Knowledge is an owner or admin decision, because Knowledge is what the whole team will trust later. This is not friction for its own sake: it is what lets an agent read Knowledge as truth and a Note as a hint, instead of treating every generated sentence as fact. People keep authorship over what the company commits to, and agents expand how far that reach goes.
+The person decides what deserves attention, what to disclose, what to activate, and what to discard. Brein preserves the decision, the evidence used, and the next action so the result can be reviewed later.
 
-## The two moves you make most
+## How the surfaces fit
 
-For a builder, the part of the loop you touch every day is the Knowledge plane, and it comes down to two moves: read before you work, write one clean note after you learn.
+- **Empresas** searches a bounded company directory.
+- **Personas** shows masked public decision-makers inside a company result.
+- **Contactos** is the acquired contact book: people already revealed or imported.
+- **Licitaciones, Proveedores, Adjudicaciones, and Registros** expose their own evidence semantics.
+- **Investigador** produces durable research dossiers with verification gates.
+- **Cerebro** keeps the criterion that should guide the work.
+- **Prospectos** works Records for people the team explicitly filed.
+- **Campañas** drafts and governs outbound sequences. Drafting is inert; sending requires a separate human authorization over the reviewed audience and content.
+- **Configuración** manages the workspace, team, billing, connections, privacy, and deletion.
 
-### Read before you work
+## The customer and developer doors
 
-Before you edit an area, pull what the team already knows about it. Drifted Topics carry a freshness badge inline, so there is no separate step to run.
+The dashboard is the primary customer surface. The [CLI](/cli/setup), [MCP](/mcp/overview), and [REST API](/api/overview) are access doors over the same governed capabilities, not separate products.
 
-```bash
-driftless context get --files "src/auth/guard.ts"   # match topics to files you're about to touch
-driftless context get auth-flow                      # full context for one topic
-driftless context get --diff                         # context for your local uncommitted changes
-```
+The existing `driftless` command, package namespace, API-key prefix, and hidden aliases are compatibility names during migration. Public MCP tools use neutral capability names.
 
-Read the `what / how / gotchas / decisions / invariants`, and the `governance.authoritative` flag, before you write anything.
+## Engineering context is still supported
 
-### Write one clean note after you learn
+When Brein is used inside a software team, the same Cerebro model can hold decisions, gotchas, invariants, and path anchors. The engineering loop is simpler:
 
-When you hit something durable, a gotcha, a decision, an invariant, leave exactly one clean Note. There is no approval gate that will fix a sloppy note later, so quality is enforced at write time by six rules.
+1. read the relevant context before editing;
+2. make the smallest coherent change;
+3. write back one clean document when you learn something durable;
+4. use path anchors to notice when a claim may be stale.
 
-1. **One concept per note.** Tempted to cover two? Write two.
-2. **Always file it into an area** (`--area`). Never leave it Unassigned; that's where vaults rot.
-3. **Anchor narrow** (`--pattern`, ~5-40 files, never `src/**`). For non-code, anchor the doc or system it's about.
-4. **Trust is a signal, not a gate.** Knowledge is truth, a Note is a hint, and both are real. Write a good note; don't chase approval.
-5. **Rewrite to consolidate; append to add.** Never stack a wall.
-6. **Content is the durable _why_, not a changelog.** No dates, "shipped", or PR refs; that lives in git.
+That is a supported use of Brein, not the commercial product's center.
 
-The litmus for whether something deserves a note at all: *would a future code change meaningfully contradict it?*
+## What Brein is not
 
-```bash
-driftless context add "auth-flow" \
-  --content "## What\nJWT validation + RBAC\n\n## How\nRS256 keys; guard decodes; role decorator checks" \
-  --area auth \
-  --pattern "src/auth/**" \
-  --tags security
-
-driftless context update auth-flow \
-  --decision "Chose RS256 over HS256 so services verify without a shared secret" \
-  --gotcha "Token refresh is NOT handled by this guard; see [[token-refresh]]" \
-  --rel depends_on:token-refresh
-```
-
-A Note becomes Knowledge once it is merged in. Agents propose; merging is an owner or admin act, and an agent runs it only when explicitly asked. Most notes stay notes, and that is expected: promotion is for the few cross-cutting truths the whole team relies on, not a step you complete on every note.
-
-```bash
-driftless context propose auth-flow     # draft → proposed
-driftless context approve auth-flow     # add to knowledge
-driftless context pr auth-flow --open --summary "..." --content @new.md   # change an approved topic
-```
-
-See [Governance](/concepts/governance).
-
-## Drift keeps Knowledge honest
-
-Stored text is not enough, because an old claim an agent trusts can be worse than none. When code changes on a tracked branch, Topics whose anchors overlap the changed files get marked **stale**, with a human-readable reason. Drift reaches you as a badge when you `context get` the area, so you don't have to go looking for it. Pull-request matches are recorded as activity without posting a review comment. That is how Knowledge stays honest: it knows when it may have stopped being true and asks to be looked at again.
-
-```bash
-driftless context doctor          # health audit: stale, zombie, orphaned, draft
-driftless sync                    # optional team-wide digest of what drifted
-```
-
-`driftless sync` is an **optional** digest. You almost never need it, because drift already reaches you inline. `context doctor` audits the topic layer itself: `stale`, `orphaned` (repo deleted), `zombie` (anchors match no file), `draft`.
-
-## What Driftless is not
-
-Being clear about the edges keeps the model honest:
-
-- It is not the foundation model, and it does not have to be your agent's runtime or harness. The harness runs the agent; Driftless holds the state the agent works from.
-- It does not replace every system of record. GitHub, your CRM, or Notion can stay authoritative while Driftless coordinates the work and the judgment around them.
-- It does not turn every agent output into truth. A generated claim is a Note until a person merges it.
-- It does not promise autonomy without governance. Agents act within permissions you can see, and a person stays accountable for consequential decisions.
+- It is not a generic database builder or an exhaustive directory export.
+- It is not a project manager, PR reviewer, CI system, or agent-observability console.
+- It does not turn every model inference into truth.
+- It does not read a customer's inbox or silently purchase, reveal, file, or send anything.
+- It does not promise autonomous decisions. Consequential writes and outbound sending remain attributable and human-authorized.

@@ -1,70 +1,48 @@
 ---
 title: 'Self-hosted agents (OpenClaw & Hermes)'
-description: "Connect Driftless to self-hosted agents like OpenClaw and Hermes Agent, through the CLI skill or the remote MCP endpoint."
+description: "Connect OpenClaw or Hermes to Brein through the compatibility CLI, the engineering skill, or the remote MCP endpoint."
 ---
 
-[OpenClaw](https://openclaw.ai/) and [Hermes Agent](https://hermes-agent.nousresearch.com/) are self-hosted, always-on AI agents. Both run on your own machine or a server, have **shell access**, read an **`AGENTS.md`** instruction file, support a **skills** system, and speak **MCP**. That gives you two ways to plug them into Driftless. Pick one, or use both.
+OpenClaw and Hermes Agent are self-hosted agents that may have shell access, skills, and MCP support. Brein offers two separate doors:
 
-## Which path?
+- **CLI + engineering skill** for a repository-based engineering workflow: read relevant Cerebro context before editing and write back one clean document after learning something durable.
+- **Remote MCP** for an AI client that should work with Brein's governed commercial capabilities.
 
-<CardGroup cols={2}>
-  <Card title="CLI + skill" icon="terminal">
-    The agent runs the `driftless` CLI from its shell and follows the installed skill: the full context loop (pull before editing, persist what it learns). Best when the agent already works in a repo.
-  </Card>
-  <Card title="Remote MCP" icon="plug">
-    The agent calls Driftless tools (`driftless_context_*`, `driftless_collection`, `tags`, …) over the hosted MCP endpoint, no shell or repo checkout required. Best for agents operating from an AI client.
-  </Card>
-</CardGroup>
+The CLI and package names remain `driftless` compatibility contracts. The public MCP endpoint uses neutral capability names.
 
-They compose: the CLI skill drives the read-before / write-after loop in a repo, while MCP exposes the same topics and work surface as tool calls. Both authenticate as **you** (your API key) and respect the same governance: agents propose, and merging into Knowledge is an owner/admin act the agent runs only when you explicitly ask.
-
-### Shared connection facts
+## Shared connection facts
 
 | | Value |
 |---|---|
-| MCP endpoint | `https://api.trybrein.com/mcp` (Streamable HTTP) |
-| MCP auth (agents) | `X-API-Key: drift_…` header |
+| MCP endpoint | `https://api.trybrein.com/mcp` |
+| MCP authentication | `X-API-Key: drift_…` or OAuth for supported clients |
 | CLI package | `@driftless-sh/cli` |
-| API key | Dashboard → **Settings → API Keys** at [app.driftless.icu](https://app.trybrein.com) |
+| API key | Brein dashboard → **Settings → API Keys** |
 
-<Note>
-An API key authorizes the agent for one workspace and carries your identity. Work-surface writes (collections, records, tags, areas) need the key's owner to have `work:write`; **merging into Knowledge needs owner/admin authority**. If the key's owner is an owner/admin, the agent can run the merge on your explicit request (stamped `approved_via: agent`); an ownerless or non-owner key can propose but is refused the merge.
-</Note>
+A key is scoped to the workspaces it is authorized for. It does not become a super key. Remove a person's membership and access to that workspace is revoked through the normal authorization boundary.
 
----
+## CLI + skill
 
-## OpenClaw
+Install and authenticate on the host that executes the agent:
 
-OpenClaw runs as a self-hosted **gateway** (`~/.openclaw/`) with a workspace at `~/.openclaw/workspace`, a `bash`/`process` sandbox, injected prompt files (`AGENTS.md`, `SOUL.md`, `TOOLS.md`), and skills at `~/.openclaw/workspace/skills/<skill>/SKILL.md`.
+```bash
+pnpm add -g @driftless-sh/cli
+# or
+npm install -g @driftless-sh/cli
+driftless login --key drift_your_api_key_here
+```
 
-### Option A: CLI + skill
+From the repository or workspace root:
 
-Run these in the gateway's environment (the host that executes OpenClaw's shell):
+```bash
+driftless install-skill
+```
 
-<Steps>
-  <Step title="Install the CLI">
-    ```bash
-    npm install -g @driftless-sh/cli
-    ```
-  </Step>
-  <Step title="Authenticate">
-    ```bash
-    driftless login --key drift_your_api_key_here
-    ```
-  </Step>
-  <Step title="Install the skill into the workspace">
-    From the repo (or workspace root) the agent operates in:
-    ```bash
-    cd ~/.openclaw/workspace        # or your project directory
-    driftless install-skill
-    ```
-    This writes `AGENTS.md`, `CLAUDE.md`, and `.driftless/`. OpenClaw picks up `AGENTS.md` as an injected prompt, so the agent now follows the Driftless loop.
-  </Step>
-</Steps>
+The skill teaches the engineering context loop. It does not grant the agent permission to send email, reveal contacts, spend credits, or make a consequential CRM decision without the underlying server authorization.
 
-### Option B: Remote MCP
+## Remote MCP
 
-Use the `mcp add` command (it writes the correct entry in `~/.openclaw/openclaw.json` and avoids hand-editing pitfalls):
+For OpenClaw:
 
 ```bash
 openclaw mcp add driftless \
@@ -73,45 +51,7 @@ openclaw mcp add driftless \
   --header X-API-Key:drift_your_api_key_here
 ```
 
-Then reload and confirm the `driftless_*` tools appear. The equivalent config entry looks like:
-
-```json
-{
-  "mcpServers": {
-    "driftless": {
-      "url": "https://api.trybrein.com/mcp",
-      "transport": "streamable-http",
-      "headers": { "X-API-Key": "drift_your_api_key_here" }
-    }
-  }
-}
-```
-
-<Warning>
-OpenClaw has known issues forwarding custom headers on the streamable-http transport ([#65590](https://github.com/openclaw/openclaw/issues/65590)) and does not expand `${ENV_VAR}` inside `headers` ([#70901](https://github.com/openclaw/openclaw/issues/70901)). Put the key **inline** and verify a `driftless_context_search` call actually authenticates (a 401 means the header isn't reaching us). Prefer the `mcp add` command over editing the JSON by hand, and keep the key out of any committed config.
-</Warning>
-
----
-
-## Hermes Agent
-
-Hermes runs on your infrastructure (a `$5` VPS up to serverless), with `execute_code`/terminal access, `AGENTS.md` support, and an [agentskills.io](https://agentskills.io)-compatible skills system. Config lives at `~/.hermes/config.yaml`.
-
-### Option A: CLI + skill
-
-Same three steps, run where Hermes executes its shell:
-
-```bash
-npm install -g @driftless-sh/cli
-driftless login --key drift_your_api_key_here
-cd /path/to/your/project && driftless install-skill   # writes AGENTS.md + .driftless/
-```
-
-Hermes reads `AGENTS.md` and can run `driftless` from its terminal tools, so the read-before / write-after loop works without any further wiring.
-
-### Option B: Remote MCP
-
-Add Driftless under `mcp_servers` in `~/.hermes/config.yaml`:
+For Hermes, add the endpoint under `mcp_servers` in `~/.hermes/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -124,27 +64,20 @@ mcp_servers:
       prompts: false
 ```
 
-Reload MCP from a Hermes session:
-
-```
-/reload-mcp
-```
-
-<Tip>
-To scope the agent tightly, whitelist tools with `tools.include: [driftless_context_search, driftless_context_get, driftless_context_create]` and add more as you trust it. Start small.
-</Tip>
-
----
+Use the current neutral tool names, such as `context_retrieve`, `context_get`, `collection_query`, `crm_record`, `people_search`, and `sequence_activate`. Do not build a new integration around retired tools such as `driftless_context_search`, `driftless_collection`, `driftless_tags`, or `driftless_areas`.
 
 ## Verify the connection
 
-Ask the agent to do one of these and confirm it returns your workspace's topics:
+1. Run a bounded read such as `context_retrieve` or `collection_query`.
+2. Confirm the response belongs to the intended workspace.
+3. If a write is required, use the current tool contract and the explicit authorization its result describes.
+4. Reconnect or reload MCP after a schema change; clients cache tool definitions per session.
 
-- **CLI path:** “Run `driftless context search <a keyword from your repo>`.”
-- **MCP path:** “Call `driftless_context_search` for `<keyword>`.”
+A `401` means the API key or OAuth token did not reach Brein. A `403` means the caller is authenticated but lacks the required workspace or role authority.
 
-A `401` on the MCP path means the `X-API-Key` header isn't reaching Driftless (re-check the inline value and, for OpenClaw, the header-forwarding caveat above).
+## Related
 
-<Note>
-MCP clients cache the tool list per session. After Driftless ships new, renamed, or removed tools, **reconnect / reload** the MCP server (OpenClaw: re-run `mcp add` or restart the gateway; Hermes: `/reload-mcp`) so the agent sees the current surface. The work-surface tools (`driftless_tags`, `driftless_areas`, `driftless_collection`, `driftless_collection_record`) are action-based; pass `action` to select the operation. See [MCP overview](/mcp/overview) for the full tool list.
-</Note>
+- [MCP & OAuth](/mcp/overview)
+- [CLI Setup](/cli/setup)
+- [The Brein workspace](/product/workspace)
+- [Engineering context](/concepts/core-loop#engineering-context-is-still-supported)

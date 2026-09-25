@@ -1,11 +1,11 @@
 ---
-title: 'Topics y relaciones'
-description: 'Cómo los topics conectan el código con el conocimiento del equipo.'
+title: 'Documentos y relaciones'
+description: 'Un topic ES un documento — un archivo markdown en una carpeta — y cómo los documentos conectan el código con el conocimiento del equipo.'
 ---
 
-## ¿Qué es un topic?
+## ¿Qué es un documento?
 
-Un topic es la unidad atómica de contexto en Driftless. Conecta una porción de tu sistema con el conocimiento compartido del equipo sobre ella. La porción puede ser TypeScript, Python, Rust, Go, docs, config, infraestructura, o un flujo de trabajo que abarca varios repos.
+Un documento es la unidad atómica de contexto en Driftless: un archivo markdown en `<carpeta>/<nombre>.md`, donde la carpeta es un área de conocimiento. ("Topic" es el nombre viejo del mismo objeto: la API con forma de topic es una vista estructurada sobre el documento.) Conecta una porción de tu sistema con el conocimiento compartido del equipo sobre ella. La porción puede ser TypeScript, Python, Rust, Go, docs, config, infraestructura, o un flujo de trabajo que abarca varios repos.
 
 Un topic tiene:
 
@@ -24,13 +24,13 @@ Un topic tiene:
 | **anchors** | Patrones, archivos y repos que ligan este topic al código |
 | **tags** | Categorías del workspace para descubrimiento y filtrado (ej.: `auth`, `billing`): filtra con `context list/search --tag <name>`, el parámetro `tags` de MCP, o los chips del dashboard. Precréalas y cúralas en el registro (`driftless tags`) |
 | **relations** | Links tipados a otros topics |
-| **classification** | Estado (`reviewed`, `draft`) |
+| **classification** | `status` — inerte, conservado por compatibilidad |
 
 Los topics son **content-first**: el cuerpo markdown `content` ES el topic. Los campos estructurados (`gotcha` / `decision` / `invariant` / `check`) son highlights opcionales que se ponen encima. Agrega uno solo cuando quieras que ese punto específico aparezca en el brief de un futuro agente. Usa `tags` para etiquetar y agrupar topics.
 
 ## Crea tu primer topic
 
-Empieza con el topic útil más pequeño: una nota durable que explique un área lo suficientemente bien para que un humano o agente futuro pueda trabajar ahí.
+Empieza con el documento útil más pequeño: uno que explique un área lo suficientemente bien para que un humano o agente futuro pueda trabajar ahí.
 
 ```bash
 # The first topic should be something REAL: the gotcha that bit you, the
@@ -82,25 +82,25 @@ Quita anchors cuando ya no tengan sentido:
 driftless context update auth-flow --remove-pattern "src/old-auth/**"
 ```
 
-## Clasificación de topics
+## Clasificación de documentos
 
-Un topic es content-first: el cuerpo markdown `content` ES el topic. Usa `tags` para etiquetar y agrupar topics. El único eje de confianza es `status`.
+Un documento es content-first: el cuerpo markdown `content` ES el documento. Usa `tags` para etiquetar y agrupar documentos; la carpeta es su casa.
 
-### Status: ciclo de vida de gobernanza
+### Status: inerte
 
-Una nota se vuelve Knowledge una vez que se fusiona: `draft → proposed → reviewed → archived`. `reviewed` es Knowledge; la respuesta de lectura lleva `governance.authoritative`. Los agentes proponen; fusionar es un acto de owner/admin (un agente lo corre solo cuando se le pide explícitamente). Ver [Gobernanza](/es/concepts/governance).
+El eje de confianza Nota→Knowledge está **retirado**. Un documento nace compartido en el workspace y no hay nada que aprobar, así que `status` se conserva en el contrato por compatibilidad y nada lo lee como autoridad. La señal sobre la que sí vale actuar es `stale`. Ver [Visibilidad y compartir](/es/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
-| `draft` | Capturado, todavía sin fusionar: una pista (una Nota), no verdad |
-| `proposed` | En revisión |
-| `reviewed` | **Knowledge**: un owner/admin lo fusionó (o un agente lo hizo a pedido suyo); el agente lo trata como verdad |
+| `draft` | Inerte. En `context doctor` significa *empezado y nunca terminado*, no *sin aprobar* |
+| `proposed` | Inerte. Un valor histórico |
+| `reviewed` | Inerte. Un valor histórico — la insignia desapareció, el contenido y el historial se conservaron |
 | `archived` | Retirado |
-| `orphaned` | Impulsado por código (repo borrado), ortogonal a la gobernanza |
+| `orphaned` | Impulsado por código (repo borrado) |
 
 ### Visibilidad
 
-Un topic vive en el **workspace** y es visible para todos sus miembros. La excepción es una **Nota privada** (un draft con `is_private` puesto), visible solo para su creador hasta que se ponga en revisión o se le quite la marca. ¿Necesitas aislamiento entre grupos? Usa un workspace aparte.
+Un documento vive en el **workspace** y es visible para todos sus miembros desde el momento en que lo escribes. La excepción es un **documento privado** (`is_private` puesto), visible solo para su creador hasta que lo comparta — un toggle, no una etapa. ¿Necesitas aislamiento entre grupos? Usa un workspace aparte.
 
 ## Relaciones tipadas
 

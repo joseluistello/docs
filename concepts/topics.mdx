@@ -1,11 +1,11 @@
 ---
-title: 'Topics and relations'
-description: 'How topics connect code to team knowledge.'
+title: 'Documents and relations'
+description: 'A topic IS a document — a markdown file in a folder — and how documents connect code to team knowledge.'
 ---
 
-## What is a topic?
+## What is a document?
 
-A topic is the atomic unit of context in Driftless. It connects a slice of your system to the team's shared knowledge about it. The slice can be TypeScript, Python, Rust, Go, docs, config, infrastructure, or a workflow that spans repos.
+A document is the atomic unit of context in Driftless: a markdown file at `<folder>/<name>.md`, where the folder is a knowledge area. ("Topic" is the older name for the same object — the topic-shaped API is a structured view over the document.) It connects a slice of your system to the team's shared knowledge about it. The slice can be TypeScript, Python, Rust, Go, docs, config, infrastructure, or a workflow that spans repos.
 
 A topic has:
 
@@ -24,13 +24,13 @@ A topic has:
 | **anchors** | Patterns, files, and repos that link this topic to code |
 | **tags** | Workspace categories for discovery and filtering (e.g., `auth`, `billing`): filter with `context list/search --tag <name>`, the MCP `tags` param, or the dashboard chips. Pre-create and curate them in the registry (`driftless tags`) |
 | **relations** | Typed links to other topics |
-| **classification** | Status (`reviewed`, `draft`) |
+| **classification** | `status` — inert, kept for backwards compatibility |
 
 Topics are **content-first**: the markdown `content` body IS the topic. The structured fields (`gotcha` / `decision` / `invariant` / `check`) are optional highlights layered on top. Add one only when you want that specific thing surfaced to a future agent's brief. Use `tags` to label and group topics.
 
 ## Create your first topic
 
-Start with the smallest useful topic: a durable note that explains one area well enough for a future human or agent to work there.
+Start with the smallest useful document: one that explains one area well enough for a future human or agent to work there.
 
 ```bash
 # The first topic should be something REAL: the gotcha that bit you, the
@@ -82,25 +82,25 @@ Remove anchors when they no longer make sense:
 driftless context update auth-flow --remove-pattern "src/old-auth/**"
 ```
 
-## Topic classification
+## Document classification
 
-A topic is content-first: the markdown `content` body IS the topic. Use `tags` to label and group topics. The only trust axis is `status`.
+A document is content-first: the markdown `content` body IS the document. Use `tags` to label and group documents; the folder is its home.
 
-### Status: governance lifecycle
+### Status: inert
 
-A note becomes Knowledge once it's merged in: `draft → proposed → reviewed → archived`. `reviewed` is Knowledge; the read response carries `governance.authoritative`. Agents propose; merging is an owner/admin act (an agent runs it only when explicitly asked). See [Governance](/concepts/governance).
+The Note→Knowledge trust axis is **retired**. A document is born shared with the workspace and there is nothing to approve, so `status` is kept on the wire for backwards compatibility and nothing reads it as authority. The signal worth acting on is `stale`. See [Visibility & sharing](/concepts/governance).
 
 | Status | Meaning |
 |--------|---------|
-| `draft` | Captured, not yet merged in: a hint (a Note), not truth |
-| `proposed` | Up for review |
-| `reviewed` | **Knowledge**: an owner/admin merged it in (or an agent did on their request); the agent treats it as truth |
+| `draft` | Inert. In `context doctor` it means *started and never finished*, not *unapproved* |
+| `proposed` | Inert. A historical value |
+| `reviewed` | Inert. A historical value — the badge is gone, the content and history were kept |
 | `archived` | Retired |
-| `orphaned` | Code-driven (repo deleted), orthogonal to governance |
+| `orphaned` | Code-driven (repo deleted) |
 
 ### Visibility
 
-A topic lives in the **workspace** and is visible to all its members. The exception is a **private Note** (a draft with `is_private` set), visible only to its creator until put up for review or un-marked. Need isolation between groups? Use a separate workspace.
+A document lives in the **workspace** and is visible to all its members the moment you write it. The exception is a **private document** (`is_private` set), visible only to its creator until they share it — a toggle, not a stage. Need isolation between groups? Use a separate workspace.
 
 ## Typed relations
 

@@ -1,100 +1,55 @@
 ---
 title: 'Seguridad'
-description: 'Cómo Driftless maneja el cifrado, las API keys, OAuth y la protección de datos.'
+description: 'Cómo Brein protege credenciales del workspace, datos comerciales, evidencia de mercado y email saliente.'
 ---
 
-## Cifrado
+## Credenciales y cifrado
 
-Todos los secretos almacenados en Driftless se cifran con **AES-256-GCM** antes de llegar a la base de datos. Esto incluye:
+Brein guarda las credenciales mediante la frontera de cifrado de la plataforma. Las API keys, tokens OAuth, credenciales de providers y secretos de webhooks no son output del cliente. Las API keys crudas se muestran sólo al crearlas y no se pueden recuperar después.
 
-- API keys
-- Secretos de webhooks
-- Tokens OAuth y códigos de autorización
+Las API keys usan el prefijo de compatibilidad `drift_` durante la migración. Una key está acotada a los workspaces autorizados; no es una super key. Si eliminas a una persona del workspace, su acceso vivo se elimina mediante la frontera de autorización.
 
-La clave de cifrado se deriva de variables de entorno y nunca se almacena en la base de datos.
+## Autenticación
 
-<Warning>
-  Nunca almacenes secretos en texto plano en Driftless. La capa de cifrado es obligatoria y se aplica de forma transparente.
-</Warning>
+- **API key:** para CLI, CI y clientes técnicos soportados.
+- **OAuth 2.0 con PKCE:** para clientes MCP como ChatGPT y Claude.
+- **Sesión Clerk:** para acciones autenticadas del dashboard.
 
-## API keys
+Los recursos del workspace están protegidos por el guard global. Las rutas públicas son infraestructura, sitio público, webhooks firmados, discovery OAuth o share/unsubscribe explícitos; no son un bypass general de datos del workspace.
 
-Las API keys son el mecanismo de autenticación principal para la CLI y CI.
+## Fronteras MCP
 
-- Las keys se generan con un prefijo `drift_` para identificarlas fácilmente
-- La key en crudo se muestra **solo una vez**, al momento de crearla
-- Las keys se almacenan como hashes con salt; el valor en crudo no se puede recuperar
-- Las keys se pueden revocar en cualquier momento desde el dashboard
-- Se admiten múltiples keys por workspace
-- Una key deja de funcionar cuando su creador es removido de ese workspace
+El adaptador MCP es un adaptador de protocolo sobre la API REST. No accede directamente a Postgres ni a librerías internas. Las tools públicas usan nombres neutrales; los aliases de marca son llamadas de compatibilidad, no capacidades adicionales.
 
-Crea keys desde el dashboard en **Settings > API Keys** o mediante la CLI:
-
-```bash
-driftless login
-```
-
-## OAuth y MCP
-
-Driftless admite autorización OAuth 2.0 para aplicaciones cliente de MCP (Model Context Protocol) como ChatGPT y Claude. OAuth permite que clientes de IA de terceros accedan al contexto de tu workspace con el consentimiento explícito del usuario.
-
-### Scopes de OAuth
-
-| Scope | Descripción |
-|---|---|
-| `context:read` | Lee topics y contexto |
-| `topics:create` | Crea nuevos topics |
-| `topics:write` | Actualiza topics existentes |
-| `context:diff` | Lee el diff de topics para cambios locales |
-
-### Flujo de OAuth
-
-1. El cliente MCP redirige al usuario a `/api/v1/oauth/authorize` en la API de Driftless
-2. El usuario da su consentimiento en el dashboard en `/oauth/authorize`
-3. La API emite un código de autorización (con soporte PKCE)
-4. El cliente intercambia el código por un token de acceso en `/api/v1/oauth/token`
-5. El cliente usa el token bearer para llamar a las herramientas MCP
-
-### Seguridad de los tokens
-
-- Los códigos de autorización, tokens de acceso y tokens de refresco se almacenan solo como hashes, nunca en texto plano
-- Los tokens nunca se registran ni se devuelven después de la emisión inicial
-- El servidor MCP (`apps/mcp`) es un adaptador de protocolo que llama a la API REST existente de Driftless. Nunca accede a Postgres ni a librerías internas directamente.
+Cada llamada está acotada al workspace. Las tools retiradas de gobernanza, grafo, entity genérica, Broker genérico, members y borrado de topics responden `Unknown tool` en vez de conceder un permiso nuevo silenciosamente.
 
 ## Manejo de datos
 
-| Dato | Almacenamiento | Cifrado |
-|---|---|---|
-| Contenido de topics | Postgres | En reposo (Supabase) |
-| API keys | Postgres (hasheado) | Hasheado + cifrado |
-| Tokens OAuth | Postgres (hasheado) | Hasheado + cifrado |
-| Código fuente | Nunca se almacena | N/A |
+| Dato | Frontera |
+|---|---|
+| Documentos de Cerebro | Contexto comercial o de ingeniería durable y acotado al workspace. |
+| Datos de empresas y personas | Enmascarados para lecturas model-facing; las coordenadas sólo salen por un camino explícito y gobernado. |
+| Evidencia de mercado | Respuestas tipadas, de sólo lectura, acotadas y con procedencia. |
+| Records CRM | Records centrados en contactos, creados por personas reveladas/importadas archivadas explícitamente. |
+| Email saliente | Datos de destinatarios autorizados y contenido renderizado; no se importa contenido del inbox. |
+| Credenciales de providers | Vault server-side; nunca se devuelven a la superficie customer-facing. |
 
-Driftless **nunca almacena** tu código fuente. Los Topics conservan solo los paths y patrones glob explícitos que registra tu equipo.
+Brein no lee, lista, busca, resume ni devuelve mensajes, hilos, contactos, borradores o email personal del cliente. Puede observar interacción con mensajes que envió: aperturas, clics y la existencia de una respuesta. **Detectar interacción no es leer el mailbox.**
 
-## Red
+## Email saliente
 
-- Todo el tráfico entre la CLI, el dashboard y la API es HTTPS
-- Las API keys se envían en cabeceras `x-api-key`, nunca en parámetros de URL
-- Las cargas firmadas de webhooks de proveedores se verifican antes de procesarse
-- La API corre en Render con variables de entorno cifradas
+Un remitente conectado es conectividad, no permiso para enviar. Brein exige una audiencia y un contenido revisados antes de activar, más una confirmación explícita separada. Las comprobaciones de supresión y derechos se aplican antes del despacho. Una revelación de contacto vacía o fallida no se cobra y nunca amplía automáticamente a otro provider.
 
-## Protección contra extracción masiva
+## Extracción y controles de red
 
-Todo lo que una persona autorizada puede ver en un navegador puede copiarse.
-Por eso Driftless protege el límite que sí puede hacerse cumplir, en vez de
-afirmar que los endpoints del navegador son secretos:
-
-- las consultas de inteligencia se limitan por persona verificada y workspace,
-  en conjunto entre todos los endpoints y sin multiplicarse al cambiar de IP;
-- las entregas exitosas tienen además un techo horario compartido en la base de
-  datos, que sobrevive despliegues y múltiples instancias;
-- el plan y los tamaños de página definidos por el servidor limitan lo entregado;
-- los enlaces de registros y cursores son referencias opacas autenticadas, y
-  los identificadores internos no se exponen;
-- las respuestas autenticadas no se almacenan en caché y el dashboard no
-  conserva sus cuerpos en el almacenamiento del navegador.
+- las requests de mercado están acotadas por persona verificada y workspace;
+- las entregas exitosas tienen un techo horario respaldado por base de datos;
+- la paginación usa cursores opacos autenticados;
+- referencias de records y source ids no son handles intercambiables de extracción;
+- las respuestas autenticadas no son cacheables;
+- los webhooks firmados de providers se verifican antes de procesarse;
+- el tráfico entre clientes y la API usa HTTPS.
 
 ## Reportes
 
-Si descubres un problema de seguridad, por favor repórtalo a security@driftless.icu. No abras un issue público.
+Si descubres un problema de seguridad, repórtalo de forma privada a `security@driftless.icu`. No abras un issue público con credenciales, datos de clientes o contenidos de mensajes.

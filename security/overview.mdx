@@ -1,100 +1,55 @@
 ---
 title: 'Security'
-description: 'How Driftless handles encryption, API keys, OAuth, and data protection.'
+description: 'How Brein protects workspace credentials, commercial data, market evidence, and outbound email.'
 ---
 
-## Encryption
+## Credentials and encryption
 
-All secrets stored in Driftless are encrypted with **AES-256-GCM** before they reach the database. This includes:
+Brein stores credentials through the platform encryption boundary. API keys, OAuth tokens, provider credentials, and webhook secrets are not customer output. Raw API keys are shown only at creation and are not recoverable afterward.
 
-- API keys
-- Webhook secrets
-- OAuth tokens and authorization codes
+API keys use the compatibility `drift_` prefix during migration. A key is scoped to authorized workspaces; it is not a super key. Removing a person's membership removes that person's live access through the workspace authorization boundary.
 
-The encryption key is derived from environment variables and never stored in the database.
+## Authentication
 
-<Warning>
-  Never store plaintext secrets in Driftless. The encryption layer is mandatory and applied transparently.
-</Warning>
+- **API key:** for CLI, CI, and supported technical clients.
+- **OAuth 2.0 with PKCE:** for MCP clients such as ChatGPT and Claude.
+- **Clerk session:** for authenticated dashboard actions.
 
-## API keys
+Workspace resources are protected by the global workspace guard. Public routes are explicit infrastructure, public-site, signed-webhook, OAuth discovery, or share/unsubscribe routes; they are not a general bypass for workspace data.
 
-API keys are the primary authentication mechanism for the CLI and CI.
+## MCP boundaries
 
-- Keys are generated with a `drift_` prefix for easy identification
-- The raw key is shown **only once** at creation time
-- Keys are stored as salted hashes; the raw value cannot be recovered
-- Keys can be revoked at any time from the dashboard
-- Multiple keys per workspace are supported
-- A key stops working when its creator is removed from that workspace
+The MCP adapter is a protocol adapter over the REST API. It does not access Postgres or internal libraries directly. Public tools use neutral capability names; branded aliases are compatibility calls, not additional capabilities.
 
-Create keys from the dashboard under **Settings > API Keys** or via the CLI:
-
-```bash
-driftless login
-```
-
-## OAuth & MCP
-
-Driftless supports OAuth 2.0 authorization for MCP (Model Context Protocol) client applications such as ChatGPT and Claude. OAuth allows third-party AI clients to access your workspace context with explicit user consent.
-
-### OAuth scopes
-
-| Scope | Description |
-|---|---|
-| `context:read` | Read topics and context |
-| `topics:create` | Create new topics |
-| `topics:write` | Update existing topics |
-| `context:diff` | Read topic diff for local changes |
-
-### OAuth flow
-
-1. The MCP client redirects the user to `/api/v1/oauth/authorize` on the Driftless API
-2. The user consents in the dashboard at `/oauth/authorize`
-3. The API issues an authorization code (PKCE-supported)
-4. The client exchanges the code for an access token at `/api/v1/oauth/token`
-5. The client uses the bearer token to call MCP tools
-
-### Token security
-
-- Authorization codes, access tokens, and refresh tokens are stored as hashes only, never plaintext
-- Tokens are never logged or returned after initial issuance
-- The MCP server (`apps/mcp`) is a protocol adapter that calls the existing Driftless REST API. It never accesses Postgres or internal libraries directly.
+Every call is workspace-scoped. Retired governance, graph, generic entity, generic Broker, member, and topic-delete tools answer `Unknown tool` rather than silently granting a new permission.
 
 ## Data handling
 
-| Data | Storage | Encryption |
-|---|---|---|
-| Topic content | Postgres | At rest (Supabase) |
-| API keys | Postgres (hashed) | Hashed + encrypted |
-| OAuth tokens | Postgres (hashed) | Hashed + encrypted |
-| Source code | Never stored | N/A |
+| Data | Boundary |
+|---|---|
+| Cerebro documents | Workspace-scoped durable commercial or engineering context. |
+| Company and people data | Masked for model-facing reads; contact coordinates are only delivered through an explicit, governed path. |
+| Market evidence | Typed, read-only, bounded, provenance-bearing responses. |
+| CRM Records | Contact-first records created by explicitly filed revealed/imported people. |
+| Outbound email | Authorized recipient data and rendered campaign content; no inbox content is imported. |
+| Provider credentials | Server-side vault storage; never returned to the customer-facing tool surface. |
 
-Driftless **never stores** your source code. Topics keep only the explicit paths and glob anchors that your team records.
+Brein does not read, list, search, summarize, or return a customer's inbox messages, threads, contacts, drafts, or personal email. It can observe engagement with messages it sent: opens, clicks, and the existence of a reply. **Detecting engagement is not reading the mailbox.**
 
-## Network
+## Outbound email
 
-- All traffic between CLI, dashboard, and API is HTTPS
-- API keys are sent in `x-api-key` headers, never in URL parameters
-- Signed provider webhook payloads are verified before processing
-- The API runs on Render with encrypted environment variables
+A connected sender is connectivity, not permission to send. Brein requires a reviewed audience and content before activation, plus a separate explicit confirmation. Suppression and rights checks are enforced before dispatch. A failed or empty contact reveal is not charged and never widens automatically to another provider.
 
-## Protection against bulk extraction
+## Extraction and network controls
 
-Anything an authorized person can see in a browser can ultimately be copied.
-Driftless therefore protects the enforceable boundary instead of claiming that
-browser endpoints are secret:
-
-- market-intelligence requests are limited per verified person and workspace,
-  across all endpoints and source IPs;
-- successful deliveries also have a database-backed hourly ceiling that
-  survives deploys and multiple API instances;
-- plan allowances and server-owned page sizes limit the amount delivered;
-- record links and cursors are authenticated opaque values, while internal
-  record ids are not exposed;
-- authenticated responses are non-cacheable and the dashboard does not persist
-  response bodies in browser storage.
+- market requests are bounded per verified person and workspace;
+- successful deliveries have a database-backed hourly ceiling;
+- pagination uses authenticated opaque cursors;
+- record references and source ids are not interchangeable extraction handles;
+- authenticated responses are non-cacheable;
+- signed provider webhooks are verified before processing;
+- traffic between clients and the API uses HTTPS.
 
 ## Reporting
 
-If you discover a security issue, please report it to security@driftless.icu. Do not open a public issue.
+If you discover a security issue, report it privately to `security@driftless.icu`. Do not open a public issue with credentials, customer data, or message contents.

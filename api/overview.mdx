@@ -1,6 +1,6 @@
 ---
 title: 'API Overview'
-description: 'Base URL, authentication, and public endpoints.'
+description: 'The authenticated Brein REST surface: workspace resources, Cerebro, CRM, market intelligence, research, and campaigns.'
 ---
 
 Base URL:
@@ -11,81 +11,60 @@ https://api.trybrein.com/api/v1
 
 ## Authentication
 
-Most endpoints require either a Clerk session from the dashboard or an API key from the CLI.
+Workspace resources require an authenticated API key, a Clerk session, or an authorized OAuth token. A missing or invalid credential returns `401`; an authenticated caller without the required workspace scope returns `403`.
 
 ```bash
-curl https://api.trybrein.com/api/v1/workspaces/acme/repos \
+curl https://api.trybrein.com/api/v1/me \
   -H "x-api-key: drift_your_api_key_here"
 ```
 
-<Warning>
-  Treat API keys as secrets. Driftless stores keys encrypted and only shows the raw value once when created.
-</Warning>
+Treat API keys as secrets. Brein stores them encrypted and shows the raw value only when it is created.
 
-## Public endpoints
+## Workspace resources
 
-These endpoints do not require authentication:
-
-| Method | Path | Purpose |
+| Resource | Main routes | Customer job |
 |---|---|---|
-| `GET` | `/health` | Runtime health check |
-| `GET` | `/version` | API version and deploy metadata |
-| `POST` | `/workspaces` | Workspace bootstrap |
-| `GET` | `/blog/posts` | Public blog index |
-| `GET` | `/blog/posts/:slug` | Public blog post |
-| `POST` | `/webhooks/clerk` | Clerk webhook receiver |
+| Workspace and team | `/workspaces/:slug`, `/members`, `/api-keys` | Manage the workspace, people, roles, and scoped credentials. |
+| Commercial usage | `/workspaces/:slug/commercial-usage` | Read plan, requests, intelligence credits, contact credits, renewal, and upgrade action. |
+| Cerebro documents | `/workspaces/:slug/documents/*` | Read and write markdown documents in folders. |
+| CRM | `/workspaces/:slug/collections/*` | Operate contact Records and their bounded lifecycle. |
+| Companies and people | `/workspaces/:slug/radar/*` | Search companies, discover masked people, reveal selected people, manage acquired contacts, and file them. |
+| Lists | `/workspaces/:slug/radar/lists/*` | Save, refresh, quote, reveal, and export a selected people-search result. |
+| Market Data | `/workspaces/:slug/market-data/*` | Run typed, read-only supplier, opportunity, award, risk, and permit operations. |
+| Explorer | `/workspaces/:slug/intelligence/explorer/*` | Search and inspect the customer-facing company/evidence explorer. |
+| Research | `/workspaces/:slug/research/*` | Start, inspect, stream, and cancel durable Investigador runs. |
+| Email and campaigns | `/workspaces/:slug/email-campaigns/*`, `/email-mailboxes/*` | Prepare, review, authorize, activate, pause, and measure outbound sequences. |
+| Integrations | `/workspaces/:slug/integrations/*` | List, connect, confirm, reconnect, and disconnect providers. |
+| Broker | `/workspaces/:slug/broker/*` | Inspect and run governed operations over an existing connection. |
 
-## Auth and API keys
+Every workspace route is workspace-scoped and authenticated. A caller cannot use one workspace's key or route to read another workspace's data.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/me` | Current identity and workspace context |
-| `POST` | `/workspaces/:slug/api-keys` | Create an API key for that workspace |
-| `GET` | `/workspaces/:slug/api-keys` | List a workspace's API keys |
-| `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoke an API key |
+## Public infrastructure routes
 
-## Commercial usage
+The public surface is intentionally small. It includes runtime health and version routes, the first-run workspace bootstrap, public website content routes, OAuth discovery/register/token endpoints, signed webhook receivers, unsubscribe/share endpoints, and other explicitly public platform routes.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/workspaces/:slug/commercial-usage` | Read plan, monthly intelligence usage, separate contact-credit balance and allowance, renewal date, promotion availability, and the contact-sales action |
+The exact public allowlist is owned by the API and its route decorators; do not infer that a resource is public because a client does not currently show a session. See [Errors](/api/errors) for the common envelope and [Security](/security/overview) for data boundaries.
 
-Searching the market corpora — search, count, compare, history and aggregate —
-spends no allowance on any plan, and returns up to 50 results per request.
-Explore includes 25 intelligence credits and a separate 25 contact credits per
-calendar month. Founder is USD 29 per month with 250 intelligence credits and a
-separate 250 contact credits. An intelligence credit is spent only when a
-company detail actually returns a published coordinate. Contact unlocks spend 2 contact credits per company and never reduce
-the intelligence allowance. Every workspace may redeem one deep-research turn
-without using either balance.
-One top-level
-request counts once; internal tool calls do not. Cerebro, CRM, navigation, and
-capability discovery are free. Successful market-data responses include
-`commercial_usage`. An exhausted allowance returns HTTP `402` with a stable
-`COMMERCIAL_*` code, `retryable: false`, the current `usage`, and
-`next_action.kind: "contact_sales"`.
+## Market and activation boundary
 
-## OAuth
+Market analysis is separate from contact activation:
 
-OAuth 2.0 endpoints for MCP client applications:
+- market reads, counts, comparisons, history, and aggregates do not spend credits;
+- a company detail that actually returns a published coordinate can spend an intelligence credit;
+- contact reveal is person-first, quoted for the selected group, separately confirmed, and charged against the separate contact balance;
+- a failed or empty reveal is refunded and never triggers an automatic provider fallback.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/oauth/authorize` | Authorization consent screen |
-| `POST` | `/oauth/token` | Exchange authorization code for access token |
-| `POST` | `/oauth/register` | Register an OAuth client |
-| `POST` | `/oauth/revoke` | Revoke an access token |
+Successful commercial responses expose the current usage state. An exhausted allowance fails closed with an actionable `402`; it does not turn into a generic cancellation.
 
-## Resource references
+## Compatibility surfaces
 
-Detailed endpoint references by resource:
+The API keeps some Topics, sharing, relation, and legacy CLI compatibility routes mounted. They are not the primary customer model. The current Cerebro model is documents in folders; the current CRM model is contact-first Records; and the current MCP catalog uses neutral capability names. Historical rows and routes may remain until their active consumers migrate, but compatibility is not a new product surface.
 
-- [Collections, Records, and Entities](/api/collections)
-- [Broker and Connections](/api/broker)
-- [Comments, Areas, and Tags](/api/collaboration)
-- [Topics](/api/topics)
-- [Integrations](/api/integrations)
-- [Workspaces](/api/workspaces)
-- [Repos](/api/repos)
+## Related references
+
+- [Workspace and team](/api/workspaces)
+- [Topics and Cerebro documents](/api/topics)
+- [Collections and Records](/api/collections)
 - [Market Data](/api/market-data)
-- [Errors](/api/errors)
+- [MCP & OAuth](/mcp/overview)
+- [Security](/security/overview)

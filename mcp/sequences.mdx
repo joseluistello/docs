@@ -1,77 +1,54 @@
 ---
 title: 'MCP: Sequences'
-description: 'Draft, preview, and preflight an outbound email sequence — never send or activate it — through governed MCP tools.'
+description: 'Prepare, review, explicitly authorize, activate, pause, and measure bounded outbound email sequences through governed MCP tools.'
 ---
 
-Sequences (Secuencias) wrap Brein's existing outbound-email engine
-(`EMAIL_CAMPAIGNS_ENABLED`, an immutable send-authorization ledger, a Nylas
-dispatcher). The MCP surface only exposes the **draft, preview and preflight**
-lifecycle. There is **no send or activate tool anywhere on this surface** —
-authorizing and sending a sequence is a single human-session decision made in
-the dashboard (`authorizeStep` / `activate`), never reachable from `tools/call`.
+MCP exposes the campaign lifecycle, but it does not turn sending into an implicit side effect. A sequence starts as an inert draft. Before real email leaves the workspace, the person must see the audience, steps, readiness result, and warnings, then explicitly confirm activation with the server-issued proof.
+
+Brein observes engagement with its own outbound messages — opens, clicks, and the existence of a reply — without reading the customer's inbox. Replies remain in Gmail or Outlook.
 
 ## Tools
 
 | Tool | Purpose |
 | --- | --- |
-| `sequence_list` | List every sequence in the workspace, most recent first, with its status |
-| `sequence_get` | One sequence: campaign, steps, recipients, rendered messages, sender, and every send authorization on record |
-| `sequence_create_draft` | Create an inert 3-step draft from 1-5 explicit contacts (email required) |
-| `sequence_update_draft` | Edit an unsent draft — campaign fields, or one step's subject/body/wait_days |
-| `sequence_preview` | Render every step for every recipient exactly as it would send, with personalization resolved and suppressions applied |
-| `sequence_check` | The preflight before proposing authorization: `blocking[]`, `warnings[]`, `ready: boolean` |
+| `sequence_list` | List sequences in the workspace with status and sender context. |
+| `sequence_get` | Read the sequence, steps, masked recipients, rendered messages, sender, and authorization history. |
+| `sequence_create_draft` | Create an inert draft from acquired contacts or an explicitly valid audience. |
+| `sequence_update_draft` | Edit an unsent draft. |
+| `sequence_preview` | Render the messages as they would send, with personalization and suppressions applied. |
+| `sequence_check` | Run preflight and return `blocking`, `warnings`, and `ready`. |
+| `sequence_activate` | Activate a ready sequence after a human confirms the reviewed audience and proof. |
+| `sequence_pause` | Stop further sends while preserving the draft and history. |
+| `sequence_cancel` | End the sequence and stop pending recipients without deleting history. |
+| `sequence_metrics` | Read per-sequence people-level outcomes. |
+| `sequence_analytics` | Read workspace-level campaign and engagement analytics. |
+| `sequence_reply_thread` | Read reply metadata and thread identity, never the customer's message body. |
+| `mailbox_status` | Read sender health and capacity without exposing mailbox addresses. |
+| `mailbox_propose_pace` | Prepare a sealed pacing proposal. |
+| `mailbox_set_pace` | Apply pacing only after the sealed proposal and explicit confirmation. |
 
-```text
-sequence_create_draft name:'Empaque flexible' contacts:[{email:'ana@example.com', first_name:'Ana', company_name:'Acme'}]
-  → { ref:'sequence:<id>', status:'draft', next_action:'Run sequence_check…' }
+## The activation boundary
 
-sequence_check sequence_id:'<id>'
-  → { ready:false, blocking:['No hay un remitente conectado y verificado…'], warnings:[] }
-```
+A successful preflight is necessary but not sufficient. `sequence_activate` requires:
 
-## What sequence_check actually verifies
+1. a ready sequence;
+2. an activation token minted by `sequence_check`, valid for ten minutes and bound to that exact audience, step count, and sender;
+3. `confirm: true` after a person has reviewed and agreed to the send.
 
-`sequence_check` is built on the real `EmailCampaignsService` data — it is not
-a spec fiction. It blocks on: no connected/ready sender mailbox, no
-recipients, every recipient suppressed (global unsubscribe), or no pending
-message left to send. It warns on: unresolved `{{personalization}}` tokens and
-partially suppressed audiences.
+There is no per-recipient send tool and no way to bypass the human authorization by calling a generic action router. A draft can be edited or checked as often as needed; creating it never confirms, schedules, or sends anything.
 
-**Not implemented, and not claimed.** Two checks sometimes assumed of a
-sequence preflight do not exist anywhere in `EmailCampaignsService` today and
-`sequence_check` does not claim to run them:
+## Audience safety
 
-- Domain SPF/DKIM verification.
-- A `daily_limit`-vs-audience-size check (`EmailCampaign` has no `daily_limit`
-  field at all).
+Campaigns use acquired contacts whose work email is already available and whose rights permit contact. A company, market row, research observation, or masked person is not automatically a campaign recipient. If a selected contact is suppressed, the preflight reports it instead of quietly sending to someone else.
 
-Do not treat a `ready:true` result as proof either was checked.
+## What Brein observes
 
-## What sequence_create_draft does not do
+The outbound system can report that a message was opened, that a link was clicked, or that a reply exists on the thread. Those are engagement signals from the sending provider's tracking infrastructure. Brein does not import, index, search, summarize, or return inbox messages, threads, contacts, drafts, or message bodies.
 
-The real `CreateCampaignDto` contract takes **explicit contacts** — a name,
-company and a literal email address — not a CRM `record_ids[]`/`search_id`
-audience reference. The MCP tool is wired to that real contract rather than
-inventing a resolver: there is no server-side path today that turns a CRM
-record id into an address without exposing it to the caller first (Empresas y
-personas deliberately never returns a coordinate through MCP — see
-[MCP: Criterion and enrichment](/mcp/knowledge)). Pass the address you already
-hold (for example, from an accepted `people_reveal`).
-
-Likewise, `daily_limit` and a `skip_if_in_sequence` dedup default are not
-schema fields — `EmailCampaignsService` always creates the same three-step
-template (introducción / seguimiento / cierre), editable afterward with
-`sequence_update_draft`.
-
-## Editing a draft that already has a pending authorization
-
-`sequence_update_draft` cannot yet compute or report an exact fingerprint
-mismatch the way the dashboard's authorize flow does internally. What it does
-today: if the sequence has any unexecuted `send_authorization`, the response
-carries a `warning` naming the count, so the caller re-runs `sequence_check`
-and re-authorizes rather than trusting a stale approval.
+Counts are people who engaged at least once, not raw tracking events. A click on a configured booking link is intent to follow up, not proof of a meeting and not permission to move a CRM Record automatically.
 
 ## Related
 
-- [MCP: CRM (Prospectos)](/mcp/work) — the same Collections/Records substrate a sequence's contacts often come from.
-- [MCP & OAuth](/mcp/overview) — setup, authentication, and scopes.
+- [MCP: CRM](/mcp/work) — the acquired-contact and Record boundary.
+- [MCP & OAuth](/mcp/overview) — authentication and public tool families.
+- [Security](/security/overview) — send-only and data-protection boundaries.

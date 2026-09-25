@@ -1,52 +1,36 @@
 ---
 title: 'MCP: Integrations'
-description: 'Read data from an already-connected provider over MCP with synthesized <provider> connector tools. Gated, governed, and audited.'
+description: 'Read data from a ready, already-connected provider through synthesized provider-specific MCP tools.'
 ---
 
-External systems are reached over MCP through **synthesized connector tools**: a ready
-provider connection exposes `<provider>_records` and
-`<provider>_document_content` in `tools/list`. They operate a [Connection](/integrations/overview) that already exists, and never connect or disconnect one (setup is a human-led flow in the dashboard or CLI, not on the MCP surface). If an agent needs data the tool does not expose, it must report the missing capability, never author a script.
+External systems are reached over MCP through **synthesized connector tools**. A ready provider connection may expose:
 
-The generic `broker` router (the action-based `connections` / `operations` / `invoke` / `records` / `index` tool) has **no MCP tool at all**: its definition and handler were deleted, not merely hidden — a legacy `driftless_broker` call now answers "Unknown tool". It remains available through the CLI and dashboard.
+- `<provider>_records` — a bounded, delta-aware page from a synced model;
+- `<provider>_document_content` — bounded, citeable content from a document provider.
 
-<Warning>
-The Broker is **gated**: off by default in production (`DRIFTLESS_BROKER_ENABLED`), with a separate external lane (`DRIFTLESS_BROKER_ROLLOUT`) and per-principal grants. A listed tool is not a usable one: a faceless OAuth/MCP caller with no grant gets an empty result even against a healthy connection.
-</Warning>
+These tools operate on a Connection that already exists. They do not connect or disconnect a provider; setup remains a human-led flow in the dashboard or CLI. If the required capability is not listed, report the missing capability rather than authoring a script.
 
-## Synthesized connector tools
+There is no generic `broker` MCP router. A legacy `driftless_broker` call answers `Unknown tool`. The Broker remains available through its CLI and REST surfaces.
 
-| Tool | Purpose | Effect |
-| --- | --- | --- |
-| `<provider>_records` | Read a synced model's records from the mirror (bounded page, delta-aware) | read |
-| `<provider>_document_content` | Read one document's bounded, citeable text, live (any content provider) | read |
+## Synthesized tools
 
-```text
-notion_records model:'ContentMetadata' limit:5
-notion_document_content external_id:'<id>'
-```
+| Tool | Effect | Boundary |
+|---|---|---|
+| `<provider>_records` | read | Synced provider data; bounded page and cursor. |
+| `<provider>_document_content` | read | Live or materialized document content according to the provider capability. |
+
+A tool appears only when synthesis is enabled, the provider exposes a `ready` read capability, and the workspace rollout permits it. A listed tool still requires the normal connection, grant, and workspace authorization checks.
 
 ## Gates and permissions
 
-Three independent, fail-closed gates apply to an external caller, in order: the master switch (`DRIFTLESS_BROKER_ENABLED`), the external lane (`DRIFTLESS_BROKER_ROLLOUT`), and a per-principal grant. An operation must also be policy-allowed; in production the policy registry ships empty, so no write is invokable.
+The Broker and synthesized tools are fail-closed. The feature switch, external rollout, per-principal grant, operation policy, connection health, and workspace scope must all allow the read. A listed tool is not automatically usable.
 
-| Scope | Covers |
-| --- | --- |
-| `broker:read` | Connector reads (`records`, `document-content`) |
-| `broker:invoke` / `broker:admin` | The generic broker router's write/admin actions (deleted from the MCP catalog; CLI/dashboard only) |
-
-The `broker:*` scopes are enforced only when the Broker is enabled, and they gate the lane on top of rollout and grants. An internal caller (an owned API key or dashboard session) skips the grant gate but still needs the rest.
-
-## Availability
-
-| Capability | State |
-| --- | --- |
-| Synthesized per-workspace read tools (`<provider>_records`, `<provider>_document_content`) | Available only when synthesis is enabled and a capability is `ready` |
-| Write-capability synthesis | Not available (never synthesized) |
-| Generic `broker` router in `tools/list` | Deleted — no MCP tool at all |
+Write capabilities are never synthesized. Connecting a provider, deploying a connector function, or managing grants is outside this MCP read surface.
 
 ## Related
 
-- [Integrations and Connections](/integrations/overview), [Broker](/integrations/broker) - the model and semantics.
-- [Use external context in operational work](/guides/external-context-with-broker) - the workflow.
-- [CLI: Integrations and Broker](/cli/integrations), [API: Broker and Connections](/api/broker) - the other surfaces.
-- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.
+- [Integrations and Connections](/integrations/overview)
+- [Broker](/integrations/broker)
+- [CLI: Integrations and Broker](/cli/integrations)
+- [API: Broker and Connections](/api/broker)
+- [MCP & OAuth](/mcp/overview)

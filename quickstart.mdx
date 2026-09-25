@@ -1,64 +1,61 @@
 ---
 title: 'Quickstart'
-description: "Add Brein to your coding agent and watch your first piece of team context show up in about a minute."
+description: "Start a governed commercial loop in Brein: infer a profile, inspect evidence, choose people, and file the first contact."
 ---
 
-Brein is one workspace where a team and its agents share durable state: the Knowledge you keep, the Operations you run, and the Work in flight. The installed CLI and agent commands retain the `driftless` name for compatibility. This quickstart starts where builders feel it first: your agent reads the relevant context before it touches an area and writes back what it learns. You don't learn a system. Your agent does. Here's the whole setup.
+Brein is a commercial-intelligence workspace. The fastest way to understand it is to complete one real loop from a public website to a contact your team explicitly chose.
 
 <Steps>
-  <Step title="Install and log in">
-    ```bash
-    npm install -g @driftless-sh/cli
-    driftless login
-    ```
-
-    <Tip>
-      For CI or non-interactive setup, pass a key instead: `driftless login --key drift_your_api_key_here` (create one at [driftless.icu](https://trybrein.com) → Settings → API Keys).
-    </Tip>
+  <Step title="Open the workspace">
+    Go to [app.trybrein.com](https://app.trybrein.com), sign in, and create or choose your workspace.
   </Step>
+  <Step title="Share what you sell">
+    Add your public company website. If the site does not explain the offer clearly, add one sentence in your own words.
 
-  <Step title="Teach your agent">
-    ```bash
-    driftless install-skill
-    ```
-
-    This writes `AGENTS.md` and `CLAUDE.md` into your repo. From now on, any coding agent that opens the repo knows the loop: pull team context before editing, persist what it learns after.
+    Brein uses bounded public information to draft a commercial profile. The website accelerates the draft; it is not authority by itself.
   </Step>
+  <Step title="Review and confirm the profile">
+    Check the proposed offer, likely buyers, exclusions, geography, and buying signals. Buying signals are hypotheses to search next, not claims that an event has already happened.
 
-  <Step title="Go code">
-    Work as you normally would. Your agent pulls context before it touches an area, and saves new gotchas and decisions as it learns them. Come back to [your dashboard](https://trybrein.com) and watch your first memory show up.
+    Edit anything that is wrong. Confirm the profile only when it reflects your commercial reality.
+  </Step>
+  <Step title="Inspect the first shortlist">
+    Brein searches its governed market evidence and returns a compact, bounded shortlist. Review the observed event, the reason it surfaced, freshness, identity strength, and the sources behind it.
+
+    A score orders review effort. It is not a probability of purchase, and the shortlist is not an exhaustive market map.
+  </Step>
+  <Step title="Choose a company and its people">
+    Open a company to inspect its public professional profiles. People remain masked while you decide who is relevant.
+
+    Select the people worth revealing. There is no fixed display ceiling; the workspace balance is the limit for an authorized reveal.
+  </Step>
+  <Step title="Review the quote and confirm">
+    Brein quotes the whole selected group once. Review the audience, price, and available balance, then give the separate explicit confirmation required before a verified work-email lookup.
+
+    A failed or empty result is not charged, and Brein does not silently widen the request or switch providers.
+  </Step>
+  <Step title="Work the contact">
+    A revealed or imported contact can be filed explicitly into Prospectos. The company itself remains market context; it does not become a CRM Record just because you selected it.
+
+    Once a contact has an available work email, Campañas can prepare a bounded sequence for review. Creating or editing a draft never sends anything.
   </Step>
 </Steps>
 
-That's it. Pull before, persist after. That's Brein.
+## What you can explore next
 
-## The whole loop, in one prompt
+- [The workspace guide](/product/workspace) — the complete map of Brein.
+- [Find your first opportunities](/guides/commercial-onboarding) — the same loop in more detail.
+- [Market Data](/api/market-data) — the typed, read-only market evidence contract.
+- [Investigador](/guides/overview#run-governed-research) — durable research dossiers and verification gates.
 
-Prefer not to install the skill, or want to drop the behavior into any agent directly? This is all it needs:
+## Connect your AI
+
+The recommended next step for an AI client is the hosted MCP endpoint:
 
 ```text
-This repository uses Driftless for shared team memory.
-
-BEFORE you edit code, pull what the team already knows about the files
-you're touching:
-    driftless context get --files "<files you're about to change>"
-Read the gotchas, decisions and invariants before writing anything.
-
-AFTER you learn something durable, a gotcha that cost you time, a decision
-you made, a constraint that must hold, write it back:
-    driftless context update <topic> --gotcha "..." --decision "..."
-    # or, if no topic fits the area yet:
-    driftless context add <name> --pattern "<glob>" --what "..." --how "..."
-
-That's the whole loop: pull before, persist after. Do it as part of your work.
+https://api.trybrein.com/mcp
 ```
 
-## Going deeper
+[Open the connection guide](/connect) for ChatGPT, Claude, OpenCode, Cursor, Hermes, OpenClaw, and API-key fallback instructions.
 
-You don't need any of this to start. Reach for it once you have a few topics and want more out of them:
-
-- [The Driftless loop](/concepts/core-loop): the whole model, Knowledge, Operations, and Work, and the loop between them.
-- [Topics](/concepts/topics): the content, anchors, and fields each one carries.
-- [Drift & freshness](/concepts/drift): how a topic flags itself when its code moves underneath it.
-- [The CLI](/cli/context): anchoring topics to files, file-matched retrieval, relations.
-- [Agent setup in depth](/agents/setup): wiring Driftless into specific coding agents.
+The client chooses the model. Brein supplies the governed commercial capabilities, so you do not need to install the Brein CLI.

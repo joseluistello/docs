@@ -1,92 +1,58 @@
 ---
-title: 'Topics'
-description: 'CRUD, governance, relations, and the topic graph.'
+title: 'Topics and Cerebro documents'
+description: 'Current Cerebro document routes plus the retired Topics compatibility surface.'
 ---
 
-<Note>
-The canonical path is `/topics`. `/watchers` still works as a deprecated alias for old CLIs and is removed in a later release.
-</Note>
+Cerebro is the current customer-facing document model. The dashboard and current document API use markdown documents in folders. The older Topics API remains mounted for compatibility, but its governance and graph language is not the current customer workflow.
 
-## Core CRUD
+## Current Cerebro document routes
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics` | List topics (visible to the caller), relevance-ranked (drifted-first). `?limit=&offset=` bounds the page; archived topics are hidden unless `?status=archived` |
-| `POST` | `/workspaces/:slug/topics` | Create a topic (a Note, or `status: proposed` to put it up for review) |
-| `GET` | `/workspaces/:slug/topics/:topic` | Get topic detail |
-| `PATCH` | `/workspaces/:slug/topics/:topic` | Update a topic |
-| `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic |
+| `GET` | `/workspaces/:slug/documents/tree` | Browse the document tree. |
+| `GET` | `/workspaces/:slug/documents/file` | Read one document by folder/path. |
+| `PUT` | `/workspaces/:slug/documents/file` | Create or replace a document. |
+| `GET` | `/workspaces/:slug/documents/search` | Search document content within the workspace. |
 
-The read response is the canonical context. It includes a flat `trust` verdict (`reviewed` | `proposed` | `draft`) plus `classification.status` and a `governance` block: the trust signal an agent consumes. Key on `trust` directly:
+A document is born shared with the workspace. There is no Note → Knowledge approval queue in the current customer model. To change durable commercial context, read the current document and rewrite the consolidated body.
 
-```json
-{
-  "trust": "reviewed",
-  "classification": { "status": "reviewed" },
-  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
-}
-```
+## Topics compatibility routes
 
-## Search & Matching
+These routes remain available for existing technical clients:
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics/search` | Full-text search, relevance-ranked. `?tags=a,b` scopes to topics carrying ANY of those tags; `?limit=` caps the result set (default 50); `?stale=true\|false` filters by freshness; archived topics are never returned |
-| `POST` | `/workspaces/:slug/topics/match-files` | Match files to topics |
+| `GET` | `/workspaces/:slug/topics` | List topics. |
+| `POST` | `/workspaces/:slug/topics` | Create a topic-shaped document record. |
+| `GET` | `/workspaces/:slug/topics/:topic` | Read one topic. |
+| `PATCH` | `/workspaces/:slug/topics/:topic` | Update one topic. |
+| `DELETE` | `/workspaces/:slug/topics/:topic` | Delete a topic through the compatibility API. |
 
-`GET /workspaces/:slug/topics` also accepts `?tags=a,b` (comma-separated, OR semantics). Tag names are normalized server-side (lowercase, whitespace→dashes).
+`status`, `trust`, proposal, and governance fields may remain in historical responses for compatibility, but they do not create an active approval workflow. Do not branch a new customer integration on them.
 
-## Tags
+## Search and path matching
 
-The workspace tag registry: tags as first-class objects so they can be pre-created with a description before any topic uses them. Attaching an unregistered tag via a topic write auto-registers it.
+The compatibility Topics surface also retains bounded search and path matching:
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/workspaces/:slug/tags` | List with per-tag topic counts, paginated (`?limit=&offset=`, default 50, most-used first), returns `{ tags, total, has_more }` |
-| `POST` | `/workspaces/:slug/tags` | Create `{ name, description? }`, idempotent (existing tag merges the description) |
-| `PATCH` | `/workspaces/:slug/tags/:name` | Rename (`{ name }`, rewrites every topic carrying the tag; owner/admin) and/or describe (`{ description }`) |
-| `DELETE` | `/workspaces/:slug/tags/:name` | Delete + detach from every topic (owner/admin) |
+- `GET /workspaces/:slug/topics/search`
+- `POST /workspaces/:slug/topics/match-files`
+- `GET /workspaces/:slug/topics?stale=true|false`
 
-## Health & Graph
+Engineering path anchors remain useful for software teams, but they are not the commercial product's center.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/workspaces/:slug/topics/audit` | Context health audit |
-| `GET` | `/workspaces/:slug/topics/events` | Topic event timeline |
-| `GET` | `/workspaces/:slug/topics/graph` | Topic graph |
+## Retired governance
 
-## Governance
+The former Note → Knowledge verbs and proposal lifecycle are retired. Routes such as `propose`, `approve`, `reject`, proposals, and merge are compatibility no-ops where they still exist; they do not move a document through a review state. Use the document update path or the CLI context commands instead.
 
-A topic becomes Knowledge only once an owner/admin merges it in. See [Governance](/concepts/governance). `approve` / `reject` and Suggested-edit `merge` / `reject` require owner/admin authority. They succeed for an owner/admin principal on any surface (dashboard, owned CLI key, or an OAuth/MCP token the owner/admin authorized), and the merge is stamped `approved_via` (`human` or `agent`). A faceless or non-owner principal is rejected.
+The topic graph, manual relations, and customer-facing governance chrome are not part of the current Cerebro customer workflow. They may remain in storage or technical compatibility surfaces for consumers that have not migrated.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/propose` | `draft → proposed` |
-| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (reviewed) |
-| `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
-| `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
-| `GET` | `/workspaces/:slug/topics/:topic/proposals` | List Suggested edits |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Open a Suggested edit (`{ summary, patch }`) |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Merge a Suggested edit |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Close a Suggested edit |
+## Visibility and sharing
 
-## Relations
+A document's workspace visibility and public sharing are separate from the retired governance model. The CLI and dashboard own the human-facing sharing controls; the current public MCP catalog does not expose topic delete, publishing, graph, relations, comments, or proposal tools.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/relations` | Add a typed relation |
-| `GET` | `/workspaces/:slug/topics/:topic/relations` | List relations |
-| `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Delete a relation |
+## Related
 
-<Note>
-`POST /topics` and `PATCH /topics/:topic` responses may include `anchor_validation`: per-pattern match counts against the repo's default branch (`ok` / `overbroad` / `zero`, with samples and warnings). Advisory only: it never blocks the write. It is omitted when the write carries no pattern, or when no repo is linked. When a repo IS linked but the deployment holds no file index for it, the field is present as `{ "skipped": "…" }` naming the reason — so an absent field never has to be read as "your globs were checked and are fine". `POST …/relations` is reachable by OAuth (MCP) principals with `topics:write`; deleting relations stays human-only.
-</Note>
-
-## Share
-
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/share` | Create a public read-only link |
-| `DELETE` | `/workspaces/:slug/topics/:topic/share` | Revoke the link |
-| `GET` | `/s/:token` | Public page (no auth) |
-| `GET` | `/s/:token/raw` | Public markdown (no auth) |
+- [Cerebro and the commercial loop](/concepts/core-loop)
+- [CLI context commands](/cli/context)
+- [MCP: Criterion](/mcp/knowledge)
+- [The Brein workspace](/product/workspace)

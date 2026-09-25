@@ -1,92 +1,58 @@
 ---
-title: 'Topics'
-description: 'CRUD, gobernanza, relaciones y el grafo de topics.'
+title: 'Topics y documentos de Cerebro'
+description: 'Rutas actuales de documentos de Cerebro y la superficie Topics retirada.'
 ---
 
-<Note>
-La ruta canónica es `/topics`. `/watchers` sigue funcionando como alias obsoleto para CLIs antiguas y se elimina en una versión posterior.
-</Note>
+Cerebro es el modelo actual de documentos para el cliente. El dashboard y la API actual usan documentos markdown dentro de carpetas. La API antigua de Topics sigue montada por compatibilidad, pero su lenguaje de gobernanza y grafo no es el flujo actual del cliente.
 
-## CRUD principal
+## Rutas actuales de documentos de Cerebro
 
 | Método | Ruta | Propósito |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics` | Lista los topics (visibles para quien llama), ordenados por relevancia (los drifted primero). `?limit=&offset=` acota la página; los topics archivados quedan ocultos salvo `?status=archived` |
-| `POST` | `/workspaces/:slug/topics` | Crea un topic (una Nota, o `status: proposed` para ponerlo en revisión) |
-| `GET` | `/workspaces/:slug/topics/:topic` | Obtiene el detalle del topic |
-| `PATCH` | `/workspaces/:slug/topics/:topic` | Actualiza un topic |
-| `DELETE` | `/workspaces/:slug/topics/:topic` | Elimina un topic |
+| `GET` | `/workspaces/:slug/documents/tree` | Explora el árbol de documentos. |
+| `GET` | `/workspaces/:slug/documents/file` | Lee un documento por carpeta/ruta. |
+| `PUT` | `/workspaces/:slug/documents/file` | Crea o reemplaza un documento. |
+| `GET` | `/workspaces/:slug/documents/search` | Busca contenido de documentos en el workspace. |
 
-La respuesta de lectura es el contexto canónico. Incluye un veredicto plano `trust` (`reviewed` | `proposed` | `draft`) más `classification.status` y un bloque `governance`: la señal de confianza que consume un agente. Usa `trust` directamente como clave:
+Un documento nace compartido con el workspace. No hay una cola de aprobación Note → Knowledge en el modelo actual. Para cambiar contexto comercial durable, lee el documento actual y reescribe el cuerpo consolidado.
 
-```json
-{
-  "trust": "reviewed",
-  "classification": { "status": "reviewed" },
-  "governance": { "authoritative": true, "approved_by": "u_cto", "approved_at": "..." }
-}
-```
+## Rutas Topics de compatibilidad
 
-## Búsqueda y emparejamiento
+Estas rutas siguen disponibles para clientes técnicos existentes:
 
 | Método | Ruta | Propósito |
 |---|---|---|
-| `GET` | `/workspaces/:slug/topics/search` | Búsqueda de texto completo, ordenada por relevancia. `?tags=a,b` limita a los topics que llevan CUALQUIERA de esos tags; `?limit=` limita el conjunto de resultados (por defecto 50); `?stale=true\|false` filtra por frescura; los topics archivados nunca se devuelven |
-| `POST` | `/workspaces/:slug/topics/match-files` | Empareja archivos con topics |
+| `GET` | `/workspaces/:slug/topics` | Lista topics. |
+| `POST` | `/workspaces/:slug/topics` | Crea un registro con forma de topic. |
+| `GET` | `/workspaces/:slug/topics/:topic` | Lee un topic. |
+| `PATCH` | `/workspaces/:slug/topics/:topic` | Actualiza un topic. |
+| `DELETE` | `/workspaces/:slug/topics/:topic` | Elimina un topic mediante la API de compatibilidad. |
 
-`GET /workspaces/:slug/topics` también acepta `?tags=a,b` (separados por comas, semántica OR). Los nombres de tags se normalizan del lado del servidor (minúsculas, espacios→guiones).
+Los campos `status`, `trust`, proposal y governance pueden permanecer en respuestas históricas, pero no crean un flujo activo de aprobación. No construyas una integración nueva de cliente sobre ellos.
 
-## Tags
+## Búsqueda y coincidencia de rutas
 
-El registro de tags del workspace: los tags como objetos de primera clase para poder crearlos por adelantado con una descripción antes de que algún topic los use. Adjuntar un tag no registrado mediante una escritura de topic lo registra automáticamente.
+La superficie Topics conserva búsqueda acotada y coincidencia de rutas:
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `GET` | `/workspaces/:slug/tags` | Lista con conteos de topics por tag, paginado (`?limit=&offset=`, por defecto 50, los más usados primero), devuelve `{ tags, total, has_more }` |
-| `POST` | `/workspaces/:slug/tags` | Crea `{ name, description? }`, idempotente (un tag existente fusiona la descripción) |
-| `PATCH` | `/workspaces/:slug/tags/:name` | Renombra (`{ name }`, reescribe cada topic que lleva el tag; owner/admin) y/o describe (`{ description }`) |
-| `DELETE` | `/workspaces/:slug/tags/:name` | Elimina + desasocia de cada topic (owner/admin) |
+- `GET /workspaces/:slug/topics/search`
+- `POST /workspaces/:slug/topics/match-files`
+- `GET /workspaces/:slug/topics?stale=true|false`
 
-## Salud y grafo
+Las anclas de rutas siguen siendo útiles para equipos de software, pero no son el centro del producto comercial.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `GET` | `/workspaces/:slug/topics/audit` | Auditoría de salud del contexto |
-| `GET` | `/workspaces/:slug/topics/events` | Línea de tiempo de eventos del topic |
-| `GET` | `/workspaces/:slug/topics/graph` | Grafo de topics |
+## Gobernanza retirada
 
-## Gobernanza
+Los verbos|Note → Knowledge y el ciclo de proposals están retirados. Rutas como `propose`, `approve`, `reject`, proposals y merge son no-ops de compatibilidad donde todavía existen; no mueven un documento por estados de revisión. Usa la ruta de actualización de documentos o los comandos de contexto de la CLI.
 
-Un topic se convierte en Knowledge solo cuando un owner/admin lo fusiona. Consulta [Gobernanza](/es/concepts/governance). `approve` / `reject` y el `merge` / `reject` de Edición sugerida requieren autoridad de owner/admin. Tienen éxito para un principal owner/admin en cualquier superficie (dashboard, key de CLI con dueño, o un token OAuth/MCP que el owner/admin autorizó), y la fusión se sella con `approved_via` (`human` o `agent`). Un principal sin rostro o que no es owner es rechazado.
+El grafo de topics, las relaciones manuales y el chrome de gobernanza para clientes no forman parte del flujo actual de Cerebro. Pueden permanecer en almacenamiento o superficies técnicas de compatibilidad para consumidores que no han migrado.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/propose` | `draft → proposed` |
-| `POST` | `/workspaces/:slug/topics/:topic/approve` | `→ reviewed` (reviewed) |
-| `POST` | `/workspaces/:slug/topics/:topic/reject` | `proposed → draft` |
-| `POST` | `/workspaces/:slug/topics/:topic/archive` | `→ archived` |
-| `GET` | `/workspaces/:slug/topics/:topic/proposals` | Lista las Ediciones sugeridas |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals` | Abre una Edición sugerida (`{ summary, patch }`) |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/merge` | Fusiona una Edición sugerida |
-| `POST` | `/workspaces/:slug/topics/:topic/proposals/:id/reject` | Cierra una Edición sugerida |
+## Visibilidad y compartir
 
-## Relaciones
+La visibilidad de un documento en el workspace y el compartir público son separados del modelo retirado de gobernanza. La CLI y el dashboard controlan el sharing humano; el catálogo MCP público no expone borrado de topics, publicación, grafo, relaciones, comentarios ni proposals.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/relations` | Añade una relación tipada |
-| `GET` | `/workspaces/:slug/topics/:topic/relations` | Lista las relaciones |
-| `DELETE` | `/workspaces/:slug/topics/:topic/relations/:relationId` | Elimina una relación |
+## Relacionado
 
-<Note>
-Las respuestas de `POST /topics` y `PATCH /topics/:topic` pueden incluir `anchor_validation`: conteos de coincidencias por patrón contra la rama por defecto del repo (`ok` / `overbroad` / `zero`, con muestras y advertencias). Solo informativo: nunca bloquea la escritura. Se omite cuando la escritura no lleva ningún patrón, o cuando no hay un repo vinculado. Cuando SÍ hay repo vinculado pero el deployment no tiene índice de archivos para él, el campo llega como `{ "skipped": "…" }` nombrando la razón — para que un campo ausente nunca se lea como «tus globs se revisaron y están bien». `POST …/relations` es accesible para principales OAuth (MCP) con `topics:write`; eliminar relaciones sigue siendo solo para humanos.
-</Note>
-
-## Compartir
-
-| Método | Ruta | Propósito |
-|---|---|---|
-| `POST` | `/workspaces/:slug/topics/:topic/share` | Crea un enlace público de solo lectura |
-| `DELETE` | `/workspaces/:slug/topics/:topic/share` | Revoca el enlace |
-| `GET` | `/s/:token` | Página pública (sin autenticación) |
-| `GET` | `/s/:token/raw` | Markdown público (sin autenticación) |
+- [Cerebro y el loop comercial](/es/concepts/core-loop)
+- [Comandos de contexto de la CLI](/es/cli/context)
+- [MCP: Criterio](/es/mcp/knowledge)
+- [El workspace de Brein](/es/product/workspace)

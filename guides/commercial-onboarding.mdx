@@ -1,52 +1,60 @@
 ---
 title: 'Find your first opportunities'
-description: "Turn your company website into reviewed commercial context and a short, evidence-backed opportunity list."
+description: "Turn a public website into reviewed commercial context, evidence-backed candidates, and the first explicitly chosen contact."
 ---
 
-Brein's commercial onboarding starts with the information your company already publishes. It uses that material to draft what you sell, who is likely to buy, the markets you serve, and the public trigger types worth searching next. Those triggers are hypotheses, not claims that an event already happened. You review that draft before it becomes durable context.
+Brein's first commercial run starts with what your company already publishes. It drafts a commercial profile, uses the confirmed criterion to search bounded market evidence, and helps you move from a candidate to a person your team can actually work.
 
 <Steps>
-  <Step title="Add your company website">
-    Paste the public URL for your company. If the site is ambiguous, add one sentence describing what you sell. Brein searches only public material from the site for this first draft.
+  <Step title="Share the website">
+    Add your public company website. If the site is ambiguous, add one sentence describing what you sell. Brein performs a bounded public read and marks its proposed fields as inferred.
   </Step>
   <Step title="Review the commercial profile">
-    Check the proposed offer, ideal customers, exclusions, buying signals, geography, and market language. Brein proposes at least one observable trigger before continuing; edit it if needed, then confirm it.
-
-    Confirmation saves the profile as commercial context for later Brein workflows. The draft is not silently treated as reviewed Knowledge.
+    Check the offer, likely buyers, exclusions, geography, and buying signals. Buying signals are hypotheses to search next, not claims that an event already happened. Edit and confirm the profile before treating it as commercial context.
   </Step>
   <Step title="Inspect the first opportunities">
-    Brein first runs bounded searches over its published-data warehouse for related tenders, awards, active buyers, contract winners, permits, expansions, and relevant company records. It qualifies each candidate from the observed event, its alignment with your confirmed search signals, freshness, evidence completeness, and identity strength. The resulting score orders review effort; it is not a probability of purchase. Weak candidates are left out instead of filling the list, so Brein may return fewer than five accounts. If fewer than three qualified accounts survive, the same governed discovery flow may add qualified web candidates.
+    Brein reads related published evidence such as tenders, awards, buyers, contract winners, permits, expansions, and company records. It qualifies candidates from the observed event, alignment with the confirmed signals, freshness, evidence completeness, and identity strength.
 
-    The screen opens as a compact shortlist. Choose an account to inspect what happened, why it is worth reviewing, what remains uncertain, and the published sources without leaving the list.
-
-    <Note>
-      This is a bounded search, not a complete map of the market. Commercial relevance is an inference, and each candidate should be reviewed against its evidence.
-    </Note>
+    The shortlist is compact and may contain fewer than five accounts. A score orders review effort; it is not a purchase probability. If the warehouse produces too few qualified accounts, a bounded web discovery step may add candidates. Discovery is never exhaustive.
   </Step>
-  <Step title="Work one company">
-    Choose **Work this company** from its inspector. Brein creates or reuses the `Oportunidades` Collection and saves that account with its next action, published sources, and provenance. The same inspector then offers **Find decision-makers**. This first search returns public professional profiles and does not spend customer contact credits.
+  <Step title="Choose one company">
+    Open a candidate to inspect why it surfaced, what happened, what remains uncertain, and which published sources support it. Selecting a company keeps it as market context; it does not create a CRM Record or reveal contact coordinates.
   </Step>
-  <Step title="Choose a decision-maker">
-    Brein returns at most three people rather than a large contact table. Each option shows the person's name, role, and attributable LinkedIn profile, but no email. Choose one person first. Brein then creates a free quote bound to that exact candidate and asks for a separate confirmation before looking up one verified work email. It never reveals the other candidates or triggers an automatic fallback.
-
-    The completed onboarding moment explains the whole path together: **why Brein found the company, who you chose, and the verified channel you can use next**. It also shows the contact credits actually retained. If no verified email is delivered, the reserved customer credits are refunded and you may choose another discovered person.
+  <Step title="Choose the people">
+    Inspect the company's masked public professional profiles. Search itself does not spend contact credits. Choose the people worth revealing; there is no fixed display ceiling.
+  </Step>
+  <Step title="Quote and authorize the selected group">
+    Brein prices the whole selected group once. Review the audience, price, and available balance, then give a separate explicit confirmation before the verified work-email lookup. A miss or empty result is refunded and never triggers an automatic provider fallback.
+  </Step>
+  <Step title="File the contact and continue">
+    A revealed or imported person can be filed explicitly into Prospectos. The company remains attached context only when the server attests the relationship. A verified work email makes a Campaign draft possible; creating the draft never confirms, schedules, or sends it.
   </Step>
 </Steps>
 
 ## After onboarding
 
-The onboarding creates the commercial context that later runs read. From there, the working loop is deliberately CRM-first:
+The onboarding moment is complete when the workspace can explain, in one place:
 
-1. **Weekly opportunity review.** Brein checks for new public signals, scores candidates, explains *why now*, and deduplicates them by their source-backed opportunity identity. Existing records are updated rather than copied.
-2. **Review in CRM.** Selected opportunities live in the `Oportunidades` Collection. Their lifecycle is `nueva` → `revisar` or `prioritaria`, with `descartada` available when the signal is not worth pursuing. Evidence stays on the record so a decision can be audited.
-3. **Read the briefing in Inbox.** The dashboard Inbox persists the commercial report: what Brein found, the three opportunities that deserve attention, blockers, and the next concrete actions. It is a report surface, not a shared-notes feed.
-4. **Activate one account at a time.** Open a selected CRM record to find up to three public decision-maker profiles without spending customer contact credits. Choose one person, review a free quote bound to that exact candidate, and explicitly confirm before Brein looks up one verified work email. A miss is refunded and never widens automatically to another person or provider.
-5. **Prepare, do not send.** Once a reliable contact path exists, Brein can prepare a first draft and follow-up sequence for review. No sender is connected, and nothing is sent or scheduled.
+- why the company was found;
+- which people you selected;
+- which verified channel is available next;
+- what remains to verify.
 
-The weekly search and the first opportunity list are bounded discoveries, not an exhaustive view of a market. Commercial fit is an inference, so review each record against its evidence before moving it to `prioritaria`.
+From there, the commercial loop continues:
 
-## Related concepts
+1. revisit the named market corpora when the question changes;
+2. work the contact in Prospectos with the Collection's Cerebro criterion;
+3. prepare, review, explicitly authorize, and monitor a Campaign;
+4. use Investigador when the question is a durable export or supplier-replacement dossier;
+5. rewrite Cerebro when a decision should guide future work.
 
-- [Collections](/concepts/collections) explains where selected opportunities live.
-- [Operate a Collection](/guides/operate-a-collection) shows how to review and advance CRM records.
-- [Governance](/concepts/governance) explains the difference between a draft Note and reviewed Knowledge.
+<Note>
+  A company, market row, tender, award, permit, or research observation is context or evidence. It becomes a CRM Record only through the explicit filing of a revealed or imported person.
+</Note>
+
+## Related
+
+- [The Brein workspace](/product/workspace) — the complete surface map.
+- [MCP: CRM](/mcp/work) — bounded CRM reads and contact-record updates.
+- [MCP: Sequences](/mcp/sequences) — governed campaign preparation and activation.
+- [Market Data](/api/market-data) — typed market evidence operations.

@@ -1,12 +1,55 @@
 ---
-title: 'Workspaces'
-description: 'Gestiona los detalles, los miembros y las integraciones del workspace.'
+title: 'Administración de workspace y equipo'
+description: 'Administra detalles, miembros, roles, API keys con scope, facturación y eliminación de un workspace Brein.'
 ---
+
+Todas las rutas están acotadas al workspace y requieren autenticación. El caller debe tener membresía viva en el workspace de la URL; un no-miembro no recibe datos de otro tenant.
+
+## Ciclo del workspace
 
 | Método | Ruta | Propósito |
 |---|---|---|
-| `GET` | `/workspaces/:slug` | Obtiene los detalles del workspace |
-| `PATCH` | `/workspaces/:slug` | Actualiza la configuración del workspace |
-| `GET` | `/workspaces/:slug/members` | Lista los miembros |
-| `POST` | `/workspaces/:slug/members` | Invita a un miembro |
-| `DELETE` | `/workspaces/:slug/members/:memberId` | Elimina a un miembro |
+| `POST` | `/workspaces` | Bootstrap de workspace durante el primer ingreso. |
+| `GET` | `/workspaces/self-serve` | Contrato público/self-serve donde esté habilitado. |
+| `GET` | `/workspaces/:slug` | Lee detalles del workspace. |
+| `PATCH` | `/workspaces/:slug` | Actualiza configuración ordinaria. |
+| `PATCH` | `/workspaces/:slug/plan` | Aplica un cambio de plan controlado por el servidor. |
+| `DELETE` | `/workspaces/:slug` | Elimina el workspace bajo el contrato humano actual de confirmación. |
+
+Los cambios de plan y facturación los controla el servidor. Un cliente no puede autorizar sus propios price ids ni metadata de allowances.
+
+## Miembros y roles
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/members` | Lista miembros y roles. |
+| `POST` | `/workspaces/:slug/members` | Invita a un miembro. |
+| `PATCH` | `/workspaces/:slug/members/:memberId` | Cambia un rol elegible. |
+| `DELETE` | `/workspaces/:slug/members/:memberId` | Elimina a un miembro. |
+
+Los roles son `owner`, `admin` y `member`. La transferencia de owner y la protección del último owner se aplican server-side. Eliminar la membresía revoca el acceso vivo de la persona al workspace.
+
+## API keys con scope
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| `GET` | `/workspaces/:slug/api-keys` | Lista metadata de keys, nunca secretos crudos. |
+| `POST` | `/workspaces/:slug/api-keys` | Crea una key con scope. |
+| `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoca una key. |
+
+La key cruda se muestra una sola vez. Puede autorizarse para varios workspaces, pero su acceso vivo nunca supera la membresía y el rol actual de su identidad humana.
+
+## Uso comercial
+
+`GET /workspaces/:slug/commercial-usage` devuelve el plan autoritativo, requests, créditos de inteligencia, créditos de contacto separados, renovación, disponibilidad promocional y la siguiente acción correcta. No deduzcas el allowance desde el estado del cliente.
+
+## Errores y seguridad
+
+Usa el sobre estable y ramifica según `code`, no según prosa. Las operaciones de miembros, keys, facturación y eliminación son auditadas. Los secretos nunca se devuelven en listas, errores, logs ni documentación.
+
+## Relacionado
+
+- [Workspaces](/es/concepts/workspaces)
+- [Resumen de API](/es/api/overview)
+- [Errores](/es/api/errors)
+- [Seguridad](/es/security/overview)

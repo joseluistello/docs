@@ -1,82 +1,54 @@
 ---
-title: 'MCP: Secuencias'
-description: 'Redacta, previsualiza y hace preflight de una secuencia de email saliente — nunca la envía ni la activa — mediante tools de MCP gobernadas.'
+title: 'MCP: Sequences'
+description: 'Prepara, revisa, autoriza explícitamente, activa, pausa y mide secuencias de email acotadas mediante tools MCP gobernadas.'
 ---
 
-Sequences (Secuencias) envuelve el motor de email saliente ya existente de Brein
-(`EMAIL_CAMPAIGNS_ENABLED`, un ledger inmutable de autorización de envío, un
-dispatcher de Nylas). La superficie de MCP sólo expone el ciclo de vida de
-**draft, preview y preflight**. **No hay ninguna tool de envío o activación en
-esta superficie** — autorizar y enviar una secuencia es una decisión de una
-sola sesión humana tomada en el dashboard (`authorizeStep` / `activate`),
-nunca alcanzable desde `tools/call`.
+MCP expone el ciclo de campañas, pero no convierte el envío en un efecto implícito. Una secuencia empieza como borrador inerte. Antes de que salga un email real, la persona debe ver la audiencia, los pasos, el resultado de readiness y las advertencias, y después confirmar explícitamente la activación con la prueba emitida por el servidor.
+
+Brein observa la interacción con sus propios emails salientes —aperturas, clics y la existencia de una respuesta— sin leer la bandeja de entrada del cliente. Las respuestas permanecen en Gmail u Outlook.
 
 ## Tools
 
 | Tool | Propósito |
 | --- | --- |
-| `sequence_list` | Listar cada secuencia del workspace, más reciente primero, con su status |
-| `sequence_get` | Una secuencia: campaign, steps, recipients, mensajes renderizados, sender y cada autorización de envío registrada |
-| `sequence_create_draft` | Crear un draft inerte de 3 steps a partir de 1 a 5 contactos explícitos (email obligatorio) |
-| `sequence_update_draft` | Editar un draft sin enviar — campos de la campaign, o el subject/body/wait_days de un step |
-| `sequence_preview` | Renderizar cada step para cada recipient exactamente como se enviaría, con la personalización resuelta y las supresiones aplicadas |
-| `sequence_check` | El preflight antes de proponer la autorización: `blocking[]`, `warnings[]`, `ready: boolean` |
+| `sequence_list` | Lista secuencias del workspace con estado y contexto del remitente. |
+| `sequence_get` | Lee secuencia, pasos, receptores enmascarados, mensajes renderizados, remitente e historial de autorizaciones. |
+| `sequence_create_draft` | Crea un borrador inerte desde contactos adquiridos o una audiencia explícitamente válida. |
+| `sequence_update_draft` | Edita un borrador no enviado. |
+| `sequence_preview` | Renderiza los mensajes como se enviarían, con personalización y supresiones. |
+| `sequence_check` | Ejecuta preflight y devuelve `blocking`, `warnings` y `ready`. |
+| `sequence_activate` | Activa una secuencia lista después de que una persona confirme la audiencia revisada y la prueba. |
+| `sequence_pause` | Detiene nuevos envíos conservando borrador e historial. |
+| `sequence_cancel` | Termina la secuencia y detiene receptores pendientes sin borrar historial. |
+| `sequence_metrics` | Lee resultados por secuencia, contados por personas. |
+| `sequence_analytics` | Lee analítica y engagement de campañas del workspace. |
+| `sequence_reply_thread` | Lee metadatos e identidad del hilo, nunca el cuerpo del mensaje del cliente. |
+| `mailbox_status` | Lee salud y capacidad del remitente sin exponer direcciones. |
+| `mailbox_propose_pace` | Prepara una propuesta de ritmo sellada. |
+| `mailbox_set_pace` | Aplica el ritmo sólo después de la propuesta sellada y confirmación explícita. |
 
-```text
-sequence_create_draft name:'Empaque flexible' contacts:[{email:'ana@example.com', first_name:'Ana', company_name:'Acme'}]
-  → { ref:'sequence:<id>', status:'draft', next_action:'Corre sequence_check…' }
+## El límite de activación
 
-sequence_check sequence_id:'<id>'
-  → { ready:false, blocking:['No hay un remitente conectado y verificado…'], warnings:[] }
-```
+Un preflight exitoso es necesario, pero no suficiente. `sequence_activate` requiere:
 
-## Lo que sequence_check realmente verifica
+1. una secuencia lista;
+2. un activation token emitido por `sequence_check`, válido por diez minutos y ligado a esa audiencia, cantidad de pasos y remitencia exactos;
+3. `confirm: true` después de que una persona haya revisado y aceptado el envío.
 
-`sequence_check` está construido sobre los datos reales de `EmailCampaignsService`
-— no es una ficción de spec. Bloquea cuando: no hay un mailbox de sender
-conectado/listo, no hay recipients, todos los recipients están suprimidos
-(unsubscribe global), o no queda ningún mensaje pendiente por enviar. Advierte
-sobre: tokens `{{personalization}}` sin resolver y audiencias parcialmente
-suprimidas.
+No existe una tool de envío por receptor ni una forma de saltarse la autorización humana llamando a un router genérico. Un borrador puede editarse o revisarse tantas veces como sea necesario; crearlo nunca confirma, programa ni envía.
 
-**No implementado, y no reclamado.** Dos checks que a veces se asumen de un
-preflight de secuencias no existen hoy en ninguna parte de
-`EmailCampaignsService`, y `sequence_check` no reclama correrlos:
+## Seguridad de la audiencia
 
-- Verificación de SPF/DKIM del dominio.
-- Un check de `daily_limit` contra el tamaño de la audiencia (`EmailCampaign`
-  no tiene ningún campo `daily_limit`).
+Las campañas usan contactos adquiridos cuyo correo laboral ya está disponible y cuyos derechos permiten contacto. Una empresa, fila de mercado, observación de investigación o persona enmascarada no es automáticamente un receptor. Si un contacto seleccionado está suprimido, el preflight lo informa en vez de enviarle silenciosamente a otra persona.
 
-No trates un resultado `ready:true` como prueba de que alguno de los dos fue
-verificado.
+## Qué observa Brein
 
-## Lo que sequence_create_draft no hace
+El sistema saliente puede reportar que un mensaje fue abierto, que se hizo clic en un enlace o que existe una respuesta en el hilo. Son señales de engagement de la infraestructura de tracking del proveedor. Brein no importa, indexa, busca, resume ni devuelve mensajes, hilos, contactos, borradores o cuerpos de la bandeja del cliente.
 
-El contrato real `CreateCampaignDto` toma **contactos explícitos** — un nombre,
-una company y una dirección de email literal — no una referencia de audiencia
-tipo `record_ids[]`/`search_id` de CRM. La tool de MCP está conectada a ese
-contrato real en lugar de inventar un resolver: hoy no hay ningún camino del
-lado del servidor que convierta un id de record de CRM en una dirección sin
-exponerla primero al caller (Empresas y personas deliberadamente nunca
-devuelve una coordenada a través de MCP — ver [MCP: Criterio y
-enrichment](/es/mcp/knowledge)). Pasa la dirección que ya tienes (por ejemplo,
-desde un `people_reveal` aceptado).
-
-De la misma forma, `daily_limit` y un default de dedup `skip_if_in_sequence`
-no son campos del schema — `EmailCampaignsService` siempre crea la misma
-plantilla de tres steps (introducción / seguimiento / cierre), editable
-después con `sequence_update_draft`.
-
-## Editar un draft que ya tiene una autorización pendiente
-
-`sequence_update_draft` todavía no puede calcular ni reportar un mismatch de
-fingerprint exacto como lo hace internamente el flujo de autorización del
-dashboard. Lo que hace hoy: si la secuencia tiene algún `send_authorization`
-sin ejecutar, la respuesta lleva un `warning` que nombra el conteo, para que
-el caller vuelva a correr `sequence_check` y reautorice en vez de confiar en
-una aprobación desactualizada.
+Los conteos son personas que interactuaron al menos una vez, no eventos brutos. Un clic en un enlace de agenda configurado es intención de seguimiento, no prueba de una reunión ni permiso para mover un Record del CRM automáticamente.
 
 ## Relacionado
 
-- [MCP: CRM (Prospectos)](/es/mcp/work) — el mismo sustrato de Collections/Records del que suelen venir los contactos de una secuencia.
-- [MCP y OAuth](/es/mcp/overview) — setup, autenticación y scopes.
+- [MCP: CRM](/es/mcp/work) — límite entre contactos adquiridos y Records.
+- [MCP & OAuth](/es/mcp/overview) — autenticación y familias públicas.
+- [Seguridad](/es/security/overview) — envío de sólo lectura y límites de protección de datos.

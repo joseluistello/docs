@@ -1,6 +1,6 @@
 ---
 title: 'MCP: Criterion (Cerebro)'
-description: 'The commercial-criterion tools over MCP: retrieve and read the criterion, write and edit it. Technical graph, relations, governance, sharing, delete and tags/areas tools are deleted from the catalog.'
+description: 'The commercial-criterion tools over MCP: retrieve and read the criterion, write and edit it. Technical graph, relations, sharing, delete and tags/areas tools are deleted from the catalog; the retired governance tools are gone with them.'
 ---
 
 This is the Cerebro plane over MCP: the tools an AI client uses to read the team's commercial criterion before acting (offer, ICP, exclusions, signals, geography, buyers, messages, playbooks) and to maintain it. For setup, authentication, and the OAuth scopes referenced below, see [MCP & OAuth](/mcp/overview).
@@ -29,7 +29,7 @@ context_retrieve task:'harden the webhook handler' files:['src/webhooks/handler.
 
 | Tool | Purpose | Main params | Notes |
 | --- | --- | --- | --- |
-| `context_create` | Create a criterion topic | `title`, `content`, `area` | written directly as Knowledge — no pending-review queue on this surface (MCP · 2) |
+| `context_create` | Create a criterion document | `title`, `content`, `area` | the document is born shared with the workspace — there is no review queue anywhere (MCP · 2) |
 | `context_update` | Append-safe update | `topic`, fields | returns `anchor_validation` |
 
 Permissions: `topics:create` / `topics:write`. Availability: Available. Write responses carry `anchor_validation` (`ok` / `overbroad` / `zero`), which never blocks the write. No agent tool deletes a topic or publishes a public page — see below.
@@ -38,14 +38,14 @@ Permissions: `topics:create` / `topics:write`. Availability: Available. Write re
 
 The following surfaces have no MCP tool at all — their definitions and handlers
 were removed, not merely hidden; a legacy `driftless_*` call now answers
-"Unknown tool". Their curation and governance remains available to owners
-through the CLI and dashboard:
+"Unknown tool". Their curation remains available to owners through the CLI and
+dashboard:
 
 - Notes as a standalone product (`note_add`);
 - topic graph (`context_graph`) and relations (`context_relations`);
 - comments (`context_comment`);
-- proposals and governance (`context_propose`, `_approve`,
-  `_create_proposal`, `_proposals`, `_merge`);
+- the retired Note→Knowledge governance (`context_propose`, `_approve`,
+  `_create_proposal`, `_proposals`, `_merge`) — there is nothing to approve;
 - events and doctor (`context_events`, `_doctor`);
 - areas and tags (`areas`, `tags`);
 - delete (`context_delete`) — no agent tool deletes a topic;
@@ -62,6 +62,6 @@ through the CLI and dashboard:
 
 ## Related
 
-- [Cerebro](/concepts/knowledge), [Topics](/concepts/topics) - the concepts.
+- [The Driftless loop](/concepts/core-loop), [Documents and relations](/concepts/topics) - the concepts.
 - [CLI: Context Commands](/cli/context) - the same surface from the terminal.
 - [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.

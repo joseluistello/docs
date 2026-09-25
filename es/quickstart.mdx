@@ -1,64 +1,61 @@
 ---
 title: 'Inicio rápido'
-description: "Suma Driftless a tu agente de código y mira aparecer tu primer contexto de equipo en un minuto, más o menos."
+description: "Comienza un loop comercial gobernado en Brein: infiere un perfil, revisa evidencia, elige personas y archiva el primer contacto."
 ---
 
-Driftless es un solo workspace donde un equipo y sus agentes comparten estado durable: el Knowledge que conservas, las Operations que operas y el Work en marcha. Este inicio rápido empieza por donde los builders lo sienten primero: tu agente lee el contexto relevante antes de tocar un área y escribe de vuelta lo que aprende. Tú no aprendes un sistema. Lo aprende tu agente. Aquí está toda la configuración.
+Brein es un workspace de inteligencia comercial. La forma más rápida de entenderlo es completar un loop real desde un sitio web público hasta un contacto que tu equipo eligió explícitamente.
 
 <Steps>
-  <Step title="Instala e inicia sesión">
-    ```bash
-    npm install -g @driftless-sh/cli
-    driftless login
-    ```
-
-    <Tip>
-      Para CI o una configuración no interactiva, pasa una key: `driftless login --key drift_your_api_key_here` (crea una en [driftless.icu](https://trybrein.com) → Settings → API Keys).
-    </Tip>
+  <Step title="Abre el workspace">
+    Entra a [app.trybrein.com](https://app.trybrein.com), inicia sesión y crea o elige tu workspace.
   </Step>
+  <Step title="Comparte qué vendes">
+    Agrega el sitio web público de tu empresa. Si el sitio no explica bien la oferta, añade una frase con tus propias palabras.
 
-  <Step title="Enseña a tu agente">
-    ```bash
-    driftless install-skill
-    ```
-
-    Esto escribe `AGENTS.md` y `CLAUDE.md` en tu repo. De ahora en adelante, cualquier agente de código que abra el repo conoce el loop: traer el contexto del equipo antes de editar, y persistir lo que aprende después.
+    Brein usa información pública acotada para preparar un perfil comercial. El sitio acelera el borrador; por sí solo no es autoridad.
   </Step>
+  <Step title="Revisa y confirma el perfil">
+    Comprueba la oferta propuesta, compradores probables, exclusiones, geografía y señales de compra. Las señales son hipótesis para buscar después, no afirmaciones de que un evento ya ocurrió.
 
-  <Step title="A programar">
-    Trabaja como lo haces siempre. Tu agente trae el contexto antes de tocar un área, y guarda nuevos gotchas y decisiones a medida que los aprende. Vuelve a [tu dashboard](https://trybrein.com) y mira aparecer tu primera memoria.
+    Corrige lo que sea necesario. Confirma el perfil sólo cuando represente tu realidad comercial.
+  </Step>
+  <Step title="Inspecciona la primera lista">
+    Brein busca en su evidencia de mercado gobernada y devuelve una lista breve y acotada. Revisa el evento observado, la razón por la que apareció, la vigencia, la fortaleza de identidad y las fuentes.
+
+    El puntaje ordena el esfuerzo de revisión. No es una probabilidad de compra, y la lista no es un mapa exhaustivo del mercado.
+  </Step>
+  <Step title="Elige una empresa y sus personas">
+    Abre una empresa para revisar sus perfiles profesionales públicos. Las personas permanecen enmascaradas mientras decides quién es relevante.
+
+    Selecciona las personas que quieres revelar. No hay un techo fijo de visualización; el saldo del workspace es el límite para una revelación autorizada.
+  </Step>
+  <Step title="Revisa la cotización y confirma">
+    Brein cotiza todo el grupo seleccionado una sola vez. Revisa la audiencia, el precio y el saldo disponible, y después da la confirmación explícita separada antes de buscar un correo laboral verificado.
+
+    Un resultado vacío o fallido no se cobra, y Brein no amplía la solicitud ni cambia de proveedor en silencio.
+  </Step>
+  <Step title="Trabaja el contacto">
+    Un contacto revelado o importado puede archivarse explícitamente en Prospectos. La empresa sigue siendo contexto de mercado; no se convierte en un Record del CRM sólo porque la seleccionaste.
+
+    Cuando el contacto tenga un correo disponible, Campañas puede preparar una secuencia acotada para revisión. Crear o editar un borrador nunca envía nada.
   </Step>
 </Steps>
 
-Eso es todo. Traer antes, persistir después. Eso es Driftless.
+## Qué puedes explorar después
 
-## El loop completo, en un solo prompt
+- [La guía del workspace](/es/product/workspace) — el mapa completo de Brein.
+- [Encuentra tus primeras oportunidades](/es/guides/commercial-onboarding) — el mismo loop con más detalle.
+- [Market Data](/es/api/market-data) — el contrato tipado y de sólo lectura de la evidencia de mercado.
+- [Investigador](/es/guides/overview#investiga-con-gobernanza) — dossiers durables y compuertas de verificación.
 
-¿Prefieres no instalar el skill, o quieres meter el comportamiento directo en cualquier agente? Con esto basta:
+## Conecta tu IA
+
+El siguiente paso recomendado para un cliente de IA es el endpoint MCP alojado:
 
 ```text
-Este repositorio usa Driftless como memoria compartida del equipo.
-
-ANTES de editar código, trae lo que el equipo ya sabe sobre los archivos
-que vas a tocar:
-    driftless context get --files "<archivos que vas a cambiar>"
-Lee los gotchas, las decisiones y los invariantes antes de escribir nada.
-
-DESPUÉS de aprender algo durable, un gotcha que te costó tiempo, una decisión
-que tomaste, una restricción que debe cumplirse, escríbelo de vuelta:
-    driftless context update <topic> --gotcha "..." --decision "..."
-    # o, si todavía no hay un topic que calce con el área:
-    driftless context add <name> --pattern "<glob>" --what "..." --how "..."
-
-Ese es todo el loop: traer antes, persistir después. Hazlo como parte de tu trabajo.
+https://api.trybrein.com/mcp
 ```
 
-## Para ir más a fondo
+[Abre la guía de conexión](/es/connect) para ChatGPT, Claude, OpenCode, Cursor, Hermes, OpenClaw y las instrucciones de fallback con API key.
 
-No necesitas nada de esto para empezar. Búscalo cuando ya tengas algunos topics y quieras sacarles más provecho:
-
-- [El loop de Driftless](/es/concepts/core-loop): el modelo completo, Knowledge, Operations y Work, y el loop entre ellos.
-- [Topics](/es/concepts/topics): el contenido, los anclajes y los campos que lleva cada uno.
-- [Drift y frescura](/es/concepts/drift): cómo un topic se marca solo cuando su código se mueve por debajo.
-- [La CLI](/es/cli/context): anclar topics a archivos, recuperación por coincidencia de archivos, relaciones.
-- [Configuración de agentes a fondo](/es/agents/setup): conectar Driftless con agentes de código específicos.
+El cliente elige el modelo. Brein aporta las capacidades comerciales gobernadas, así que no necesitas instalar el CLI de Brein.

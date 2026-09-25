@@ -1,47 +1,63 @@
 ---
 title: 'MCP: CRM (Prospectos)'
-description: 'Lee páginas acotadas de records y avanza Records tipados (cuentas, oportunidades y seguimiento) mediante tools de MCP gobernadas.'
+description: 'Lee páginas acotadas de Records de contacto y avanza el trabajo CRM existente mediante tools MCP gobernadas.'
 ---
 
-CRM es el sistema operativo de registro de Brein: Prospectos (Collections/Records) guarda cuentas, oportunidades y seguimiento. Las tools de MCP son basadas en actions, acotadas por defecto, y usan los mismos contratos de servidor que el dashboard y el CLI. Las lecturas son de nivel miembro; las escrituras de ciclo de vida requieren `work:write`. El CRUD genérico de schema/config de Collection y el purge permanente no tienen tool de MCP — configurar un pipeline es trabajo humano, y ninguna tool de agente borra.
+Prospectos es el sistema operacional de registro de Brein. Sus Records representan personas que el workspace adquiere y archiva explícitamente; una empresa, fila de mercado o evidencia no es un Record del CRM.
 
-## Records
+La superficie MCP separa tres trabajos:
 
-Usa `collection_query` para lecturas acotadas (estado `ok` / `continue` / `incomplete`, nunca concluyas cobertura por una sola página). Antes de actuar sobre un record, lee el criterio de la Collection con `context_get` sobre sus `criterion_refs` — el criterio es lo que el equipo aplica a esos records.
+- `collection_query` lee páginas acotadas de Collections y Records;
+- `crm_record` actualiza, consulta el historial y programa seguimiento de un Record de contacto existente;
+- `crm_collection` crea un contenedor CRM vacío y reutilizable;
+- `people_file` archiva como Record una persona revelada o importada.
 
-| Tool | Actions principales | Propósito |
-| --- | --- | --- |
-| `collection_query` | `query`, `get`, `aggregate` | Leer records acotados con proyección, filtros y continuación explícitos |
-| `crm_record` | `add`, `update`, `history`, `bulk`, `schedule_activity` | Crear o avanzar records tipados; el status debe coincidir con el ciclo de vida de la Collection. Renombrada desde `collection_record` (MCP · 2) — las lecturas (`list`/`get`) ya no están en su enum de actions, usa `collection_query` |
+El CRUD genérico de esquemas, el purge permanente, el borrado de Records y el registro de entities no son tools MCP públicas. Esas operaciones quedan para humano o CLI cuando el contrato activo lo requiere.
+
+## Lee una página acotada
 
 ```text
 collection_query op:'query' collection_id:'<collection-id>' limit:25
   → { status:'ok'|'continue'|'incomplete', data:[ ... ], page_info:{ ... } }
 ```
 
-## Retirado del catálogo público
+Un resultado `continue` no es cobertura completa. Sigue su cursor antes de concluir. Lee los `criterion_refs` de la Collection con `context_get` cuando el trabajo dependa del criterio comercial del equipo.
 
-La configuración de schema de Collection (`collection`), el purge permanente
-(`collection_purge`), el borrado de records (`collection_record_delete`)
-y el registro de entidades (`entity`) no tienen ninguna tool de MCP — sus
-definiciones y handlers fueron eliminados, no sólo ocultos; una llamada legacy
-`driftless_*` ahora responde "Unknown tool". La configuración de schema sigue
-siendo una superficie humana de dashboard/CLI; la resolución de identidad
-ocurre del lado del servidor al guardar un record.
+## Actualiza un Record existente
+
+```text
+crm_record action:'update' collection_id:'<collection-id>' record_id:'<contact-record-id>' status:'Contactado'
+```
+
+`crm_record` no crea un Record de empresa o evidencia. Puede actualizar campos, moverse por el ciclo de la Collection, leer historial acotado y programar seguimiento de un Record de contacto existente.
+
+## Archiva una persona adquirida
+
+`people_file` es el único camino de la familia MCP actual que crea un Record de contacto. Acepta una persona revelada o importada y una Collection CRM de contactos adecuada. No crea Records desde resultados de búsqueda de empresas, evidencia de mercado u observaciones de investigación.
+
+## Retirado del catálogo
+
+Las siguientes superficies no tienen ninguna tool MCP; una llamada legacy `driftless_*` responde "Unknown tool":
+
+- configuración genérica de Collection (`collection`);
+- purge permanente de Collection (`collection_purge`);
+- borrado de Record (`collection_record_delete`);
+- registro de entities (`entity`).
+
+El nombre anterior `collection_record` es un alias oculto de compatibilidad para lecturas acotadas y actualización de Records existentes. No conserva el comportamiento antiguo de crear con `add` o `bulk`; usa `people_file` para crear contactos.
 
 ## Permisos
 
 | Scope o rol | Cubre |
 | --- | --- |
-| lectura de miembro | Lecturas de Collection y Record, contexto de criterio, historial |
-| `work:write` | Crear y actualizar Records; escrituras de ciclo de vida |
+| lectura de miembro | lecturas de Collections y Records, criterio e historial |
+| `work:write` | actualización de Records de contacto, archivado y acciones de ciclo |
 
-Los clientes MCP cachean schemas de tools por sesión de conector. Reconecta el conector después de una actualización para que los tools eliminados o cambiados se reflejen en el cliente.
+Los clientes MCP cachean schemas por sesión. Reconecta el conector después de una actualización para recibir herramientas eliminadas o cambiadas.
 
 ## Relacionado
 
-- [Collections](/es/concepts/collections) — el modelo operativo.
-- [Operar una Collection](/es/guides/operate-a-collection) — el flujo de trabajo.
-- [CLI: Collections](/es/cli/collections) y [API: Collections](/es/api/collections) — superficies equivalentes.
-- [MCP y OAuth](/es/mcp/overview) — setup, autenticación y scopes.
-- [MCP: Secuencias](/es/mcp/sequences) — redacta y hace preflight de secuencias salientes sobre el mismo sustrato de Collections/Records.
+- [El workspace de Brein](/es/product/workspace) — superficies y límite contacto/CRM.
+- [MCP: Sequences](/es/mcp/sequences) — preparación y activación gobernada de campañas.
+- [CLI: Collections](/es/cli/collections) y [API: Collections](/es/api/collections) — referencias técnicas equivalentes.
+- [MCP & OAuth](/es/mcp/overview) — configuración, autenticación y scopes.

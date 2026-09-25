@@ -1,18 +1,31 @@
 ---
 title: 'Context Commands'
-description: 'Create, read, update, and delete context topics from the CLI.'
+description: 'The four document verbs — ls, read, write, search — plus the topic-shaped commands over the same store.'
 ---
+
+## The four document verbs
+
+Cerebro is markdown documents in folders: a document is `<folder>/<name>.md`, the folder is a knowledge area, and `<folder>/Structure.md` says what that area is for. These four verbs are the whole model; the topic-shaped commands below operate on exactly the same store.
+
+| Command | Flags | Description | Example |
+|---|---|---|---|
+| `context ls [folder]` | `--json` | List the tree — folders, then their documents (`Structure.md` first). Omit the folder for everything. | `driftless context ls billing` |
+| `context read <path>` | `--json` | Print the markdown body (body on stdout, header on stderr, so it pipes cleanly) | `driftless context read billing/refund-flow.md` |
+| `context write <path>` | `--content @f\|"md"`, `--title`, `--private`, `--public`, `--dry-run`, `--allow-secrets`, `--json` | Create or **REPLACE** a document. Read it first when it already exists. An unknown folder creates the area. | `driftless context write billing/refund-flow.md --content @doc.md --title "Refunds"` |
+| `context search "<q>"` | `--folder <f>`, `--limit <n>`, `--json` | Search documents; prints `path · title` + a snippet per hit | `driftless context search "idempotency" --folder billing` |
+
+A document is born shared with the workspace — there is nothing to approve. `--private` keeps one to yourself and `--public` shares it back (`is_private` on the API/MCP); `context add --private` does the same at create time. See [Visibility & sharing](/concepts/governance).
 
 ## List & Search
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context list` | `--stale`, `--suggested`, `--status`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | List topics with filters. Defaults to the **40 most relevant** (drifted first); prints `Showing N of M`. Use `--all` / `--limit N` for more (`--json` is uncapped). `--suggested` = not-yet-Knowledge (Notes + Up for review: `draft` + `proposed`). `--tag` is repeatable (OR semantics), so you can list a whole category. | `driftless context list --tag billing` |
+| `context list` | `--stale`, `--repo`, `--tag <name>`, `--docs`, `--auto`, `--manual`, `--limit <n>`, `--all`, `--json` | List topics with filters. Defaults to the **40 most relevant** (drifted first); prints `Showing N of M`. Use `--all` / `--limit N` for more (`--json` is uncapped). `--tag` is repeatable (OR semantics), so you can list a whole category. | `driftless context list --tag billing` |
 | `context get <topic>` | `--json` | Full topic detail | `driftless context get b2b-guard` |
 | `context get --files` | `--files "a,b"`, `--json` | Match topics to files | `driftless context get --files "src/auth/guard.ts"` |
 | `context get --diff` | `--json`, `--mark` | Topics for current changes | `driftless context get --diff` |
 | `context get --diff --mark` | `--mark` | …and flag the matched topics **drifted** from local git | `driftless context get --diff --mark` |
-| `context search` | query, `--tag <name>`, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation`. Narrow with more terms rather than paging. `--tag` (repeatable, OR) scopes the search to a category. Knowledge + topics up for review; Notes excluded unless `--include-notes`. | `driftless context search "refunds" --tag billing` |
+| `context search` | query, `--tag <name>`, `--json`, `--include-notes` | **Relevance-ranked** full-text search (top 50; name/title matches rank highest). Supports `"quoted phrases"`, `OR`, `-negation`. Narrow with more terms rather than paging. `--tag` (repeatable, OR) scopes the search to a category. Private documents are excluded unless `--include-notes`. | `driftless context search "refunds" --tag billing` |
 
 ## Tags: the category registry
 
@@ -29,8 +42,8 @@ Tags are workspace-level categories topics anchor to. Names normalize on every s
 
 | Command | Flags | Description | Example |
 |---|---|---|---|
-| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--status`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**"` |
-| `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--status`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
+| `context add` | `--what`, `--how`, `--content`, `--pattern`, `--tags`, `--rel`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--file`, `--dry-run` | Create topic | `driftless context add "payment-flow" --content "# Payment Flow\n\n## What\nStripe checkout" --pattern "src/billing/**"` |
+| `context update` | `--what`, `--how`, `--content`, `--gotcha`, `--decision`, `--invariant`, `--check`, `--enforce`, `--add-pattern`, `--remove-pattern`, `--tags`, `--where`, `--decisions`, `--gotchas`, `--ownership`, `--pattern`, `--rel`, `--dry-run`, `--json` | Modify topic | `driftless context update payment-flow --gotcha "Idempotency keys required" --add-pattern "src/webhooks/stripe/**"` |
 | `context delete` | `--dry-run`, `--json` | Delete topic | `driftless context delete payment-flow --dry-run` |
 | `context merge` | `--into`, `--dry-run`, `--json` | Fold a duplicate into its survivor (archives source; prose never merged) | `driftless context merge payment-flow-2 --into payment-flow --dry-run` |
 | `context move` | `--to <workspace>`, `--dry-run`, `--json` | Re-home a topic to another workspace you belong to | `driftless context move payment-flow --to acme-platform` |
@@ -54,22 +67,22 @@ Every `--pattern` and `--add-pattern` is validated against your local checkout b
 | `context relations` | `--json` | List typed relations | `driftless context relations payment-flow` |
 | `context graph` | `--depth N`, `--json` | Topic relation graph | `driftless context graph payment-flow --depth 2` |
 
-`context doctor` audits the topic layer for zombie (patterns match zero files), orphaned (repo deleted), stale, and draft topics.
+`context doctor` audits the topic layer for zombie (patterns match zero files), orphaned (repo deleted), stale, and thin (`draft`) documents — `status` is inert, not a governance state.
 
-## Governance
+## Compatibility (no-op)
 
-A topic becomes Knowledge only once it's merged in. Lifecycle: `draft → proposed → reviewed → archived`. Agents propose; merging is an owner/admin act. An agent runs it only when an owner/admin explicitly asks. See [Governance](/concepts/governance).
+The Note→Knowledge governance is **retired**. These commands stay on the surface so an older agent or script gets an answer instead of an error: each prints *"Los documentos de Cerebro no necesitan aprobación; edítalos con `driftless context write`."* and exits 0. Don't call them — to change a document, rewrite it. See [Visibility & sharing](/concepts/governance).
 
 | Command | Description | Example |
 |---|---|---|
-| `context propose <topic>` | Put a Note up for review | `driftless context propose payment-flow` |
-| `context approve <topic>` | Add it to knowledge (owner/admin; only when asked) | `driftless context approve payment-flow` |
-| `context reject <topic>` | Send it back to a Note | `driftless context reject payment-flow` |
-| `context archive <topic>` | Retire a topic | `driftless context archive payment-flow` |
-| `context pr <topic>` | List Suggested edits | `driftless context pr payment-flow` |
-| `context pr <topic> --open` | Open a Suggested edit (`--summary` + content flags) | `driftless context pr payment-flow --open --summary "..." --content @new.md` |
-| `context pr <topic> --merge <id>` | Merge a Suggested edit (owner/admin) | `driftless context pr payment-flow --merge <id>` |
-| `context pr <topic> --reject <id>` | Close a Suggested edit without merging (owner/admin) | `driftless context pr payment-flow --reject <id>` |
+| `context propose <topic>` | No-op | `driftless context propose payment-flow` |
+| `context approve <topic>` | No-op | `driftless context approve payment-flow` |
+| `context reject <topic>` | No-op | `driftless context reject payment-flow` |
+| `context archive <topic>` | No-op | `driftless context archive payment-flow` |
+| `context ack <topic>` | No-op | `driftless context ack payment-flow` |
+| `context unvouch <topic>` | No-op | `driftless context unvouch payment-flow` |
+| `context pr <topic>` | No-op (Suggested edits are retired) | `driftless context pr payment-flow` |
+| — | To change a document: read it, fold in the new fact, write it back | `driftless context write billing/refund-flow.md --content @doc.md` |
 
 ## Share
 
@@ -89,7 +102,7 @@ A workspace is the top-level container for context; you can belong to several an
 | `workspace add --key <drift_…>` | Register a workspace by its API key | `driftless workspace add --key drift_…` |
 | `context move <topic> --to <slug>` | Re-home a topic to another workspace | `driftless context move payment-flow --to acme-platform` |
 
-`context move` resets the topic to a Note in its new workspace (Knowledge status doesn't carry across workspaces) and requires owner/admin in the source plus membership in the target. See [Workspaces](/concepts/workspaces).
+`context move` re-homes the document and requires owner/admin in the source plus membership in the target. See [Workspaces](/concepts/workspaces).
 
 ## Beyond context: the rest of the workspace
 
@@ -99,7 +112,7 @@ The whole workspace is headless, not just topics. The same CLI drives the work s
 |---|---|---|
 | **Collections & records** | `collection list\|get\|records`, `collection record add\|update` | [Collections](/concepts/collections) |
 | **Areas** | `area list\|add\|rename\|rm`, plus `context add/update --area` | [Areas](/concepts/areas) |
-| **Notes & Knowledge** | `note add`, `context propose`, and `context approve` | [Governance](/concepts/governance) |
+| **Documents & visibility** | `note add`, `context write`, `context share` | [Visibility & sharing](/concepts/governance) |
 | **Members** | `member list\|invite\|role\|rm\|invites` | [Workspaces](/concepts/workspaces#invitations) |
 | **Market data** | `market capabilities\|suppliers\|opportunities\|awards\|risks\|permits` | [Market Data](/api/market-data) |
 

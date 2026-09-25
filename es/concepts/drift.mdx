@@ -1,64 +1,46 @@
 ---
-title: 'Detección de drift'
-description: 'Cómo Driftless detecta cuándo el código cambió respecto al contexto del equipo.'
+title: 'Drift y frescura'
+description: 'Cómo Brein marca un documento cuyas rutas de ingeniería pueden haber cambiado.'
 ---
 
-## Cómo funciona el drift
+El drift es una señal de contexto de ingeniería, no una señal del mercado comercial. Ayuda a un equipo de software a notar cuándo las rutas ancladas de un documento ya no respaldan la afirmación que contiene.
 
-Desde un checkout local, `driftless context get --diff` cruza los archivos modificados contra los topics del workspace mediante sus paths y patrones glob. Con `--mark`, los topics reviewed que coinciden quedan marcados como **drifted** con un motivo legible.
+## Inspección local
 
-Por ejemplo, si el trabajo local cambia `src/auth/guard.ts` y `src/auth/service.ts`, el topic `auth-flow` anclado a `src/auth/**` puede pasar a:
-
-> Drifted: los cambios locales tocan `src/auth/guard.ts` y `src/auth/service.ts`.
-
-## Drift local explícito
-
-La CLI reporta drift desde tu checkout **local**:
+Desde un checkout:
 
 ```bash
-driftless context get --diff          # muestra los topics que coinciden con cambios locales (solo despliegue)
-driftless context get --diff --mark   # …y marca esos topics como drifted en Cloud
+driftless context get --diff
+driftless context get --diff --mark
 ```
 
-`--mark` es **opt-in y explícito**. El `--diff` a secas solo despliega, así que el trabajo en progreso nunca cambia el estado del equipo salvo que lo pidas. Es idempotente (los topics ya en drift se dejan tal cual).
+El primer comando muestra los documentos coincidentes sin cambiar el estado del workspace. `--mark` es explícito y registra la señal de drift para los documentos coincidentes. Una coincidencia dice "revisa de nuevo", no "el documento es falso".
 
-## Un empujón, no una alarma
+## Qué hacer después
 
-El drift es un **empujón**, no un error: "el código bajo este topic se movió, vale la pena mirarlo". Tolera falsos positivos por diseño: confía en el código y actualiza el topic solo si el cambio realmente alteró cómo funciona el área. Un archivo ancla borrado produce un empujón distinto: *"archivo anclado borrado: re-ancla o archiva este topic"*.
+1. Lee el código o configuración que cambió.
+2. Lee el documento anclado y decide si cambió la afirmación durable.
+3. Si todavía se sostiene, reescribe o actualiza el documento.
+4. Si el anchor ya no es relevante, quítalo o acótalo.
+5. Si el documento ya no forma parte del trabajo actual del workspace, archívalo mediante el lifecycle humano.
 
-## Ciclo de vida
+El modelo actual de documentos no tiene un `status: reviewed` que vuelva autoritativo un documento. La frescura viene del documento actual y de su relación con el anchor, no de un badge de gobernanza retirado.
 
-```
-drifted → el agente revisa → driftless context update topic --status reviewed → fresco otra vez
-drifted → ningún repo lo reclama → orphaned
-```
-
-Cuando un topic entra en drift:
-1. `driftless sync` expone el drift persistido a cada miembro del equipo
-2. Un agente o humano revisa el cambio
-3. Si el contexto sigue en pie, súmalo al knowledge (`--status reviewed`) para volverlo fresco otra vez
-4. Si ningún repo reclama ya el topic, pasa a orphaned
+## Diagnósticos opcionales
 
 ```bash
-driftless context update auth-flow --status reviewed
+driftless context doctor
+driftless sync
 ```
 
-## Cómo revisar el drift
+`context doctor` audita la capa técnica de documentos. `sync` sigue siendo un digest de compatibilidad para workflows antiguos de repositorio; no es un briefing de cliente ni una automatización comercial. La inteligencia comercial de Brein tiene su propia semántica de evidencia y frescura.
 
-```bash
-driftless sync                         # muestra los topics en drift y qué cambió
-driftless context doctor               # auditoría completa de salud sobre todos los topics
-driftless context get --diff            # drift de los cambios locales actuales (sin commit)
-```
+## Seguridad
 
-<AccordionGroup>
-  <Accordion title="¿Qué dispara el drift?">
-    Solo una llamada local explícita a `context get --diff --mark`. El `--diff` a secas recupera contexto sin cambiar el estado del workspace.
-  </Accordion>
-  <Accordion title="¿Puedo marcar un topic como drifted a mano?">
-    Sí. Corre `driftless context get --diff --mark` desde el checkout relevante. Actualiza el topic si cambió su explicación durable; de lo contrario confirma que sigue vigente.
-  </Accordion>
-  <Accordion title="¿Qué pasa si se borran los archivos anclados de un topic?">
-    La validación local de patterns detecta anchors ausentes al escribir desde la CLI. `context doctor` también lo marca como **zombie**, un ancla que apunta a nada. Arregla los patrones o archiva el topic.
-  </Accordion>
-</AccordionGroup>
+El drift es un nudge, no una alarma. Tolera falsos positivos para que una persona tome la decisión final. Nunca significa que un agente deba reescribir un documento automáticamente, enviar un mensaje o crear un Record CRM.
+
+## Relacionado
+
+- [Documentos y relaciones](/es/concepts/topics)
+- [Contexto de ingeniería en el loop de Brein](/es/concepts/core-loop#el-contexto-de-ingeniería-sigue-soportado)
+- [Comandos de contexto de la CLI](/es/cli/context)

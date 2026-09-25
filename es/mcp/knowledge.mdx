@@ -1,6 +1,6 @@
 ---
 title: 'MCP: Criterio (Cerebro)'
-description: 'Las tools de criterio comercial sobre MCP: recuperar y leer el criterio, escribirlo y editarlo. Las tools técnicas de grafo, relaciones, gobierno, compartir, borrado y tags/areas están eliminadas del catálogo.'
+description: 'Las tools de criterio comercial sobre MCP: recuperar y leer el criterio, escribirlo y editarlo. Las tools técnicas de grafo, relaciones, compartir, borrado y tags/areas están eliminadas del catálogo; las tools de gobernanza retirada se fueron con ellas.'
 ---
 
 Este es el plano de Cerebro sobre MCP: las herramientas que un cliente de IA usa para leer el criterio comercial del equipo antes de actuar (oferta, ICP, exclusiones, señales, geografía, compradores, mensajes y playbooks) y para mantenerlo. Para configuración, autenticación y los scopes de OAuth referenciados abajo, consulta [MCP y OAuth](/es/mcp/overview).
@@ -29,7 +29,7 @@ context_retrieve task:'endurecer el webhook' files:['src/webhooks/handler.ts']
 
 | Tool | Propósito | Parámetros principales | Notas |
 | --- | --- | --- | --- |
-| `context_create` | Crear un topic de criterio | `title`, `content`, `area` | se escribe directo como Knowledge — no hay cola de revisión pendiente en esta superficie (MCP · 2) |
+| `context_create` | Crear un documento de criterio | `title`, `content`, `area` | el documento nace compartido en el workspace — no hay cola de revisión en ninguna parte (MCP · 2) |
 | `context_update` | Actualización append-safe | `topic`, campos | devuelve `anchor_validation` |
 
 Permisos: `topics:create` / `topics:write`. Disponibilidad: disponible. Las respuestas de escritura llevan `anchor_validation` (`ok` / `overbroad` / `zero`), que nunca bloquea la escritura. Ninguna tool de agente borra un topic ni publica una página pública — ver más abajo.
@@ -38,14 +38,14 @@ Permisos: `topics:create` / `topics:write`. Disponibilidad: disponible. Las resp
 
 Las siguientes superficies no tienen ninguna tool de MCP — sus definiciones y handlers
 fueron eliminados, no sólo ocultos; una llamada legacy `driftless_*` ahora responde
-"Unknown tool". Su curación y gobierno sigue disponible para los owners mediante el
-CLI y el dashboard:
+"Unknown tool". Su curación sigue disponible para los owners mediante el CLI y
+el dashboard:
 
 - Notas como producto independiente (`note_add`);
 - grafo de topics (`context_graph`) y relaciones (`context_relations`);
 - comentarios (`context_comment`);
-- propuestas y gobierno (`context_propose`, `_approve`,
-  `_create_proposal`, `_proposals`, `_merge`);
+- la gobernanza Nota→Knowledge retirada (`context_propose`, `_approve`,
+  `_create_proposal`, `_proposals`, `_merge`) — no hay nada que aprobar;
 - eventos y doctor (`context_events`, `_doctor`);
 - areas y tags (`areas`, `tags`);
 - borrado (`context_delete`) — ninguna tool de agente borra un topic;
@@ -62,6 +62,6 @@ CLI y el dashboard:
 
 ## Relacionado
 
-- [Cerebro](/es/concepts/knowledge), [Topics](/es/concepts/topics) - los conceptos.
+- [El loop de Driftless](/es/concepts/core-loop), [Documentos y relaciones](/es/concepts/topics) - los conceptos.
 - [CLI: comandos de contexto](/es/cli/context) - la misma superficie desde la terminal.
 - [MCP y OAuth](/es/mcp/overview) - setup, auth y scopes.

@@ -1,6 +1,6 @@
 ---
 title: 'Resumen de la API'
-description: 'URL base, autenticación y endpoints públicos.'
+description: 'La superficie REST autenticada de Brein: workspace, Cerebro, CRM, inteligencia de mercado, research y campañas.'
 ---
 
 URL base:
@@ -11,81 +11,60 @@ https://api.trybrein.com/api/v1
 
 ## Autenticación
 
-La mayoría de los endpoints requieren una sesión de Clerk desde el dashboard o una API key desde la CLI.
+Los recursos de workspace requieren API key, sesión Clerk o token OAuth autorizado. Una credencial ausente o inválida devuelve `401`; un caller autenticado sin el scope requerido devuelve `403`.
 
 ```bash
-curl https://api.trybrein.com/api/v1/workspaces/acme/repos \
+curl https://api.trybrein.com/api/v1/me \
   -H "x-api-key: drift_your_api_key_here"
 ```
 
-<Warning>
-  Trata las API keys como secretos. Driftless guarda las keys cifradas y solo muestra el valor en crudo una vez, al momento de crearlas.
-</Warning>
+Trata las API keys como secretos. Brein las guarda cifradas y muestra el valor crudo sólo al crearlas.
 
-## Endpoints públicos
+## Recursos del workspace
 
-Estos endpoints no requieren autenticación:
-
-| Método | Ruta | Propósito |
+| Recurso | Rutas principales | Trabajo del cliente |
 |---|---|---|
-| `GET` | `/health` | Chequeo de salud en tiempo de ejecución |
-| `GET` | `/version` | Versión de la API y metadatos del despliegue |
-| `POST` | `/workspaces` | Arranque de workspace |
-| `GET` | `/blog/posts` | Índice público del blog |
-| `GET` | `/blog/posts/:slug` | Entrada pública del blog |
-| `POST` | `/webhooks/clerk` | Receptor de webhooks de Clerk |
+| Workspace y equipo | `/workspaces/:slug`, `/members`, `/api-keys` | Administra workspace, personas, roles y credenciales con scope. |
+| Uso comercial | `/workspaces/:slug/commercial-usage` | Lee plan, requests, créditos de inteligencia, créditos de contacto, renovación y acción de upgrade. |
+| Documentos de Cerebro | `/workspaces/:slug/documents/*` | Lee y escribe documentos markdown en carpetas. |
+| CRM | `/workspaces/:slug/collections/*` | Opera Records de contactos y su ciclo acotado. |
+| Empresas y personas | `/workspaces/:slug/radar/*` | Busca empresas, descubre personas enmascaradas, revela seleccionadas, gestiona contactos adquiridos y los archiva. |
+| Listas | `/workspaces/:slug/radar/lists/*` | Guarda, refresca, cotiza, revela y exporta un resultado de búsqueda de personas. |
+| Market Data | `/workspaces/:slug/market-data/*` | Ejecuta operaciones tipadas y de sólo lectura de proveedores, oportunidades, adjudicaciones, riesgos y permisos. |
+| Explorer | `/workspaces/:slug/intelligence/explorer/*` | Busca e inspecciona el explorer de empresas/evidencia del cliente. |
+| Research | `/workspaces/:slug/research/*` | Inicia, inspecciona, transmite y cancela corridas durables de Investigador. |
+| Email y campañas | `/workspaces/:slug/email-campaigns/*`, `/email-mailboxes/*` | Prepara, revisa, autoriza, activa, pausa y mide secuencias. |
+| Integraciones | `/workspaces/:slug/integrations/*` | Lista, conecta, confirma, reconecta y desconecta providers. |
+| Broker | `/workspaces/:slug/broker/*` | Inspecciona y ejecuta operaciones gobernadas sobre una conexión existente. |
 
-## Autenticación y API keys
+Cada ruta de workspace está acotada al workspace y autenticada. Un caller no puede usar la key o ruta de un workspace para leer datos de otro.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `GET` | `/me` | Identidad actual y contexto del workspace |
-| `POST` | `/workspaces/:slug/api-keys` | Crea una API key para ese workspace |
-| `GET` | `/workspaces/:slug/api-keys` | Lista las API keys de un workspace |
-| `DELETE` | `/workspaces/:slug/api-keys/:id` | Revoca una API key |
+## Rutas públicas de infraestructura
 
-## Uso comercial
+La superficie pública es intencionalmente pequeña. Incluye health y version, bootstrap inicial del workspace, contenido público del sitio, endpoints OAuth de discovery/register/token, receptores de webhooks firmados, endpoints de unsubscribe/share y otras rutas explícitamente públicas.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `GET` | `/workspaces/:slug/commercial-usage` | Consulta plan, uso mensual de inteligencia, saldo y asignación separados de contactos, renovación, promoción y la acción para hablar con ventas |
+La allowlist pública exacta la poseen la API y sus decoradores de ruta; no infieras que un recurso es público porque un cliente no muestre sesión. Consulta [Errores](/es/api/errors) para el sobre común y [Seguridad](/es/security/overview) para los límites de datos.
 
-Buscar en los corpus de mercado —búsqueda, conteo, comparación, historial y
-agregados— no consume asignación en ningún plan y devuelve hasta 50 resultados
-por solicitud. Explorar incluye 25 créditos de inteligencia y 25 créditos de
-contacto separados por mes calendario. Founder cuesta USD 29 al mes e incluye
-250 créditos de inteligencia y 250 de contacto separados. Un crédito de
-inteligencia se gasta sólo cuando el detalle de una empresa devuelve de verdad
-una coordenada publicada. Desbloquear una empresa usa 2 créditos de contacto y nunca reduce la
-asignación de inteligencia. Cada espacio puede canjear una investigación
-profunda sin consumir ninguno de los dos saldos. Una solicitud de
-primer nivel cuenta una sola vez; las llamadas internas no. Cerebro, CRM, la
-navegación y la consulta de capacidades son gratuitas. Las respuestas exitosas
-de market data incluyen `commercial_usage`. Cuando se agota el saldo, la API
-devuelve HTTP `402` con un código `COMMERCIAL_*` estable, `retryable: false`, el
-estado actual en `usage` y `next_action.kind: "contact_sales"`.
+## Límite entre mercado y activación
 
-## OAuth
+El análisis de mercado es separado de la activación de contactos:
 
-Endpoints OAuth 2.0 para aplicaciones cliente de MCP:
+- lecturas, conteos, comparaciones, historial y agregados de mercado no gastan créditos;
+- un detalle de empresa que realmente devuelve una coordenada publicada puede gastar un crédito de inteligencia;
+- la revelación de contactos es persona-primero, se cotiza para el grupo seleccionado, requiere confirmación separada y se cobra contra el saldo separado de contactos;
+- una revelación vacía o fallida se reembolsa y nunca activa un fallback automático.
 
-| Método | Ruta | Propósito |
-|---|---|---|
-| `GET` | `/oauth/authorize` | Pantalla de consentimiento de autorización |
-| `POST` | `/oauth/token` | Intercambia el código de autorización por un token de acceso |
-| `POST` | `/oauth/register` | Registra un cliente OAuth |
-| `POST` | `/oauth/revoke` | Revoca un token de acceso |
+Las respuestas comerciales exitosas exponen el estado de uso actual. Un allowance agotado falla cerrado con un `402` accionable; no se convierte en una cancelación genérica.
 
-## Referencias por recurso
+## Superficies de compatibilidad
 
-Referencias detalladas de endpoints por recurso:
+La API conserva montadas algunas rutas de Topics, sharing, relations y CLI legacy. No son el modelo principal del cliente. El modelo actual de Cerebro son documentos en carpetas; el CRM actual son Records centrados en contactos; y el catálogo MCP actual usa nombres neutrales. Las filas y rutas históricas pueden permanecer hasta que sus consumidores migren, pero compatibilidad no crea una nueva superficie de producto.
 
-- [Collections, Records y Entities](/es/api/collections)
-- [Broker y Connections](/es/api/broker)
-- [Comments, Areas y Tags](/es/api/collaboration)
-- [Topics](/es/api/topics)
-- [Integraciones](/es/api/integrations)
-- [Workspaces](/es/api/workspaces)
-- [Repos](/es/api/repos)
+## Referencias
+
+- [Workspace y equipo](/es/api/workspaces)
+- [Topics y documentos de Cerebro](/es/api/topics)
+- [Collections y Records](/es/api/collections)
 - [Market Data](/es/api/market-data)
-- [Errores](/es/api/errors)
+- [MCP & OAuth](/es/mcp/overview)
+- [Seguridad](/es/security/overview)

@@ -20,26 +20,41 @@ Compone los filtros de search + match-files + list para que no los encadenes a m
 Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no el `content` completo);
 llama a `context_get` para el único topic cuyo cuerpo completo necesites, o pasa
 `view: "full"`. El mismo contrato **active-only, acotado, brief-por-defecto** también
-aplica a la superficie operativa: `collection_query` lee records (estado
-`ok`/`continue`/`incomplete`), y `collection_record` mueve un record por su ciclo de vida.
+aplica a la superficie operativa: `collection_query` lee Records (estado
+`ok`/`continue`/`incomplete`), `people_file` archiva una persona revelada o importada y
+`crm_record` actualiza un Record de contacto existente.
 
 ## Familias de herramientas
 
-La superficie de MCP está documentada por familia en la **Referencia MCP**. Usa esta página para setup y auth; abre una página de familia para nombres de tools, actions, parámetros, permisos y ejemplos.
+La superficie de MCP está documentada por familia en la **Referencia MCP**. Para configurar un cliente, empieza por [Conecta tu IA](/es/connect). Usa esta página para autenticación y capacidades; abre una página de familia para nombres de tools, actions, parámetros, permisos y ejemplos.
 
 | Familia | Qué cubre | Referencia |
 | --- | --- | --- |
 | Criterio (Cerebro) | Recuperar, leer y mantener el criterio comercial (oferta, ICP, exclusiones, señales, geografía, compradores, mensajes, playbooks) | [MCP: Criterio](/es/mcp/knowledge) |
-| CRM (Prospectos) | Leer y trabajar records de collections — el sistema operativo de registro para cuentas, oportunidades y seguimiento | [MCP: Collections y operaciones](/es/mcp/work) |
-| Secuencias | Redactar, previsualizar y hacer preflight de una secuencia de email saliente — no existe tool de envío/activación en esta superficie | [MCP: Secuencias](/es/mcp/sequences) |
+| CRM (Prospectos) | Leer y trabajar Records de contacto — el sistema de registro de personas que el workspace adquirió explícitamente | [MCP: CRM](/es/mcp/work) |
+| Secuencias | Preparar, revisar, autorizar explícitamente, activar, pausar, cancelar y medir secuencias de email acotadas | [MCP: Secuencias](/es/mcp/sequences) |
 | Integraciones | Tools sintetizadas `<provider>_records` / `_document_content` a partir de providers conectados y listos | [MCP: Integraciones](/es/mcp/integrations) |
 | Workspace | Workspaces y uso | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
 | Uso comercial | `usage` lee el plan, las requests y créditos mensuales, la fecha de renovación, la disponibilidad de investigación promocional y la acción de contactar ventas. La lectura en sí es gratuita. | [Resumen de API](/es/api/overview#uso-comercial) |
 | Inteligencia comercial | Trece tools de análisis tipado para suppliers, comparación de segmentos, opportunities, awards, marcas de riesgo y permits. El análisis nunca devuelve coordenadas de contacto. `people_quote` cotiza personas seleccionadas gratis; `people_reveal` corre sólo tras confirmación explícita con un tope de créditos. No hay router genérico de acciones ni tool de detalle masivo de suppliers. Reconecta después de cambios de schema porque los clientes pueden cachear definiciones de tools. | [Market Data](/es/api/market-data) |
 
-El catálogo público es de **22 tools core** (Criterio 4, CRM 2, Empresas y personas 8, Cuenta 2, Secuencias 6) **más 13 tools de Market Data** — 35 en total. Cubre **el criterio comercial** (Cerebro), **lecturas y ciclo de vida del CRM** (Prospectos), **redacción de secuencias salientes**, **inteligencia de mercado**, **enrichment y contactos adquiridos**, y **uso/workspace**. Nunca cubre administración del workspace, registro de repos, gestión de keys, setup de integraciones (conectar un provider), autoría o deploy de scripts de integración, ni disparo manual de agent runs. Las superficies técnicas (grafo de topics, relaciones, comentarios, propuestas, approve/merge, eventos, areas/tags, doctor, CRUD genérico de schema y el router genérico del broker), más compartir, drafting, listado de miembros y borrado de topics, están **eliminadas del catálogo**: sus definiciones y handlers ya no existen, así que un nombre legacy `driftless_*` responde "Unknown tool". Ver Retirado del catálogo público, más abajo.
+El catálogo público contiene **52 tools**: Criterio y Cerebro con forma de documento,
+CRM, Empresas y personas, Listas, workspace y uso, 13 operaciones tipadas de mercado,
+el ciclo de secuencias gobernado y un starter de tareas delegadas. Cubre el criterio
+comercial, el CRM centrado en contactos, contactos adquiridos, inteligencia de mercado,
+preparación de campañas y activación autorizada explícitamente por una persona.
 
-**Criterio es 4, no 7.** `context_search`, `context_list` y `context_get_for_files` ya no aparecen en `tools/list` — `context_retrieve` los absorbió (ya tomaba `task`/`files`/`tags`/`area`/`stale`/`status` como argumentos). Siguen resolviendo durante 60 días como aliases ocultos de compatibilidad (ver Compatibilidad, más abajo) para que un cliente ya conectado no se rompa; una sesión nueva sólo descubre `context_retrieve`.
+No cubre administración del workspace, registro de repos, gestión de keys, conexión
+de providers, autoría o deploy de scripts de integración, disparo manual de agent runs,
+grafo de topics, relaciones, comentarios, gobernanza retirada, eventos, areas/tags,
+doctor, CRUD genérico de schema, el router genérico de Broker, compartir, listado de
+miembros ni borrado de topics. Esas tools retiradas no son públicas; un nombre legacy
+`driftless_*` responde "Unknown tool". Ver Retirado del catálogo público, más abajo.
+
+**La recuperación del criterio son cuatro tools.** `context_search`, `context_list` y
+`context_get_for_files` ya no son públicas; `context_retrieve` absorbió sus argumentos.
+Siguen resolviendo durante la ventana de compatibilidad como aliases ocultos, para que
+un cliente ya conectado no se rompa. Una sesión nueva ve el catálogo neutral actual.
 
 ### Las vistas de payload mantienen las lecturas rápidas
 
@@ -103,7 +118,7 @@ Las siguientes 27 tools **no tienen ninguna tool de MCP** — sus definiciones y
 fueron eliminados, no sólo ocultos. Cualquier alias (`driftless_*`, `brein_*`, el
 nombre neutral) responde "Unknown tool":
 
-- Gobierno y salud de Cerebro: `note_add`, `context_graph`,
+- Auxiliares y salud de Cerebro (las tools de gobernanza están retiradas): `note_add`, `context_graph`,
   `context_relations`, `context_comment`,
   `context_proposals`, `context_create_proposal`,
   `context_propose`, `context_approve`,
@@ -120,7 +135,7 @@ nombre neutral) responde "Unknown tool":
 - preparación de drafts (`contact_prepare`) — redactar es trabajo de Campañas, no del MCP;
 - listado de miembros (`members`) — no es trabajo comercial.
 
-Su curación y gobierno sigue disponible para los owners mediante el CLI y el dashboard.
+Sus datos y operaciones de compatibilidad siguen disponibles mediante CLI y dashboard cuando un consumidor técnico activo los necesita.
 
 <Note>
 Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de tools por sesión de conector**. Después de que Brein publique un cambio de schema, reconecta el conector (o inicia una sesión nueva) para recibirlo. De lo contrario los parámetros o tools nuevos no estarán disponibles, y una sesión que cacheó un catálogo con marca lo seguirá viendo.

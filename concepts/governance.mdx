@@ -1,81 +1,80 @@
 ---
-title: 'Governance'
-description: "A topic becomes Knowledge only once an owner or admin merges it in. Agents propose; the merge is an owner or admin act, runnable by an agent only when explicitly asked."
+title: 'Visibility & sharing'
+description: "A Cerebro document is born shared with the workspace. Private is a per-document toggle, a public link is one command, and there is nothing to approve."
 ---
 
-Driftless governs **understanding** the way GitHub governs code. A topic isn't "the truth" the moment someone writes it. It becomes Knowledge only once an owner or admin merges it in. That one distinction is what lets an agent trust the context it receives, instead of reading from a wiki that quietly rots.
+Cerebro is markdown **documents in folders**. A document is born **shared with the workspace** — there is no review queue, no approval, no Note-vs-Knowledge axis. The only trust is that it's in Cerebro. What used to be governance is now two much smaller things: who can see a document, and who can change it.
 
-## Everything is one topic that evolves
+## A document is born shared
 
-There's one primitive, a **topic**, and it matures along a single trust axis: **Note → Knowledge**. A **Note** is a private draft that its author can put **Up for review**. **Knowledge** is the team's source of truth: *a note becomes knowledge once it's merged in*. Merging is an **owner/admin** act. An owner or admin can merge it themselves, or explicitly ask an agent to run the merge on their behalf, same authority either way. To change existing Knowledge you open a **Suggested edit**, which an owner or admin merges.
+There is one primitive, a **document**: `<folder>/<name>.md`, where the folder is a knowledge area and `<folder>/Structure.md` says what that area is for. Write it and it is the team's — visible to every member of the workspace, retrievable by every agent, immediately.
 
 ```text
-Note  →  Up for review  →  Knowledge     (+ Archived)
-(draft)    (proposed)      (reviewed)
+context write  →  the document is in Cerebro  →  every member and agent reads it
 ```
 
-- **Note**: a draft or private observation. Only you see it; it's excluded from search; untouched notes auto-archive after ~14 days (recoverable). Think here, then propose it for review when it is ready.
-- **Up for review**: a Note put up for human review. It's awaiting a merge, lives in the review queue, and can be sent back with a reason.
-- **Knowledge**: the team's source of truth, the notes merged in. An owner or admin's authority added it to knowledge, so it joins the team's **living, code-anchored knowledge graph**, the multi-context map of the whole codebase. This is the durable truth an agent consumes.
+- **Shared** (the default): every workspace member sees it, search returns it, `context_retrieve` ranks it.
+- **Private** (`--private` on the CLI, `is_private` on the API/MCP): a per-document toggle. Only its author sees it, and it is excluded from search until they share it. It is a switch, not a stage to graduate from — `--public` flips it back.
+- **Public link**: a read-only URL anyone can open without logging in. Opt-in per document, revocable at any time.
 
-`reviewed` topics carry `governance.authoritative: true` + `approved_by`/`approved_at` + `approved_via` (`human` if a person merged it, `agent` if an agent ran the merge on an owner/admin's request). Internally the status enum stays `draft`/`proposed`/`reviewed`/`archived`; the names above are the product language.
+There is no `proposed`, no `reviewed`, no approval queue. The `status` field still exists on the wire and is **inert** — nothing reads it as authority.
 
-The model is simple: **agents propose; merging into Knowledge is an owner/admin act**. `approve`, `reject`, and `merge` require owner/admin authority. An ownerless agent key or a non-owner can write notes but is refused the merge. An agent *can* run the merge, but only when an owner or admin explicitly asks it to, never on its own initiative.
+To change a document, read it and rewrite it. `context write` replaces the whole body, so the honest move is read → fold the new fact in → write back.
 
 ```bash
-driftless context propose <slug>     # Note → Up for review
-driftless context approve <slug>     # add to knowledge (merge it in)
-driftless context reject <slug> --reason "..."   # → back to a Note (with feedback)
-driftless context archive <slug>     # retire it
+driftless context read billing/refund-flow.md > refunds.md
+driftless context write billing/refund-flow.md --content @refunds.md
+driftless context write billing/refund-flow.md --content @refunds.md --private
+driftless context share refund-flow            # public read-only link
+driftless context share refund-flow --revoke   # revoke it
 ```
 
-## Three surfaces
+## The customer surface
 
-The dashboard mirrors the three stages: **Knowledge** (the Knowledge graph, merged-in notes only), **Review queue** (the merge/reject queue plus re-review of drifted context), and **Notes** (your private workspace, with an "expiring soon" state). Notes are not a teammate-inbox or notification surface; use a Collection or the commercial Inbox for operational work.
+The dashboard's customer-facing document surface is **Cerebro**: the folder tree and its markdown documents. The commercial CRM is a separate contact-first surface under Prospectos. Comments and the retired topic graph are not part of the current customer navigation.
 
-## Who can merge: workspace roles
+## Who can change what: workspace roles
 
-Merge authority is a **workspace role**. Each member carries one:
+Membership is what grants access. Each member carries one role:
 
 | Role | Can |
 |---|---|
-| `member` | Read + **put notes up for review** |
-| `admin` / `owner` | …+ **merge**: add to knowledge, reject, archive, and clear drift |
+| `member` | Read every shared document + write and rewrite documents |
+| `admin` / `owner` | …+ manage members, move documents between workspaces, and delete |
 
-Merging a note into Knowledge (and re-confirming a drifted topic) requires the `admin` or `owner` role. A member puts notes up for review but does not merge them in. The role is the authority; an agent acting on an owner or admin's explicit request runs the merge under that authority (and it's stamped `approved_via: agent`). Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
+Writing is not gated: a member writes and rewrites documents directly. Only an `owner` can grant or revoke the `owner` role, and the last owner can't be demoted or removed. The workspace creator is the first owner; manage roles in **Settings → Members**.
 
-Permissions gate **merging and visibility only, never coding**. Driftless informs; it never blocks a developer from writing code.
+Permissions gate **visibility and administration only, never coding**. Driftless informs; it never blocks a developer from writing code.
 
-## The trust signal
+## What the agent reads
 
-The whole point of approval is that the agent can tell **truth from hint**. Every `context get` carries it in the canonical response:
+An agent doesn't weigh a trust level any more — it reads what's there. Every `context get` still carries the document's identity and freshness, which is what actually matters:
 
 ```json
 {
-  "classification": { "status": "reviewed" },
-  "governance": { "reviewed": true, "approved_by": "u_cto", "approved_at": "..." }
+  "classification": { "status": "draft" },
+  "stale": { "is_stale": true, "stale_reason": "anchored code changed" }
 }
 ```
 
-An agent should consume `reviewed` topics (Knowledge) as truth and `draft`/`proposed` ones (Notes) as suggestions. Governance without the agent consuming this signal would just be a wiki.
+Treat `stale` as the signal worth acting on: the document was true and the code moved. `status` is a historical field; ignore it.
 
-## Suggested edit: changing the team's source of truth
+## Retired: the Note → Knowledge governance
 
-Don't overwrite a Knowledge topic. To change the team's source of truth, open a **Suggested edit**: a proposed content change that a human reviews and merges in.
+`propose`, `approve`, `reject`, `archive`, `ack`, `unvouch` and `pr` (Suggested edits) are **retired**. They remain on the CLI and the API as **no-ops** so an older agent or script gets a clear answer instead of an error, and each one prints the same line before exiting 0:
 
 ```bash
-driftless context pr <slug>                                     # list open Suggested edits
-driftless context pr <slug> --open --summary "why" --content @new.md
-driftless context pr <slug> --merge <id>                        # merge it in (owner/admin)
-driftless context pr <slug> --reject <id>                       # close without merging
+driftless context propose <slug>   # → Los documentos de Cerebro no necesitan
+driftless context approve <slug>   #   aprobación; edítalos con
+driftless context pr <slug>        #   `driftless context write`.
 ```
 
-A Suggested edit carries a **content patch** (whitelisted to content fields, so it can never forge approval). Merging applies the patch and makes the topic Knowledge again, attributed to whoever merged it.
+Don't call them. If a document needs to change, rewrite it — that's the whole workflow now, and it's the same one whether you're a person or an agent.
 
 ## Why deterministic
 
-Merging is an owner/admin act, and everything around it is deterministic and auditable: who merged what, when, on whose authority (`approved_by`), by which hand (`approved_via`: a person or an agent they asked), and what changed (version + history). A CTO governing context can always answer *"why did the agent trust this?"* with a precise record, not a model's guess.
+Nothing about this is less auditable. Every write bumps a version and appends a history event: who wrote it, when, and what changed. A CTO can still answer *"why did the agent trust this?"* with a precise record — the record just no longer includes an approval step nobody was running.
 
 <Note>
-In a future release, platform agents (drift, freshness) will open **Suggested edits** automatically. They plug into the same review queue, and an owner/admin still decides what merges. The authoring of intelligent Suggested edits is the only piece that waits.
+Documents that were `reviewed` before the retirement kept their content and their history; only the badge went away. Nothing was archived or deleted in the migration.
 </Note>
