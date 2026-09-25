@@ -1,0 +1,118 @@
+---
+title: 'Catálogo de herramientas MCP'
+description: 'El catálogo público completo de las 52 herramientas MCP de Brein, agrupadas por familia y límite de acción.'
+---
+
+Esta es la referencia pública de las **52 herramientas** que devuelve actualmente el servidor MCP de Brein. La respuesta `tools/list` del servidor sigue siendo el schema canónico: las tablas siguientes explican el propósito, los argumentos principales y el límite de acción de cada herramienta pública.
+
+Todas las herramientas aceptan un argumento opcional `workspace`. Debe identificar un workspace para el que la credencial esté autorizada; si se omite, se usa el workspace principal de la credencial.
+
+<Note>
+  `read` significa que la herramienta no cambia datos de Brein. `write` significa que puede cambiar datos del workspace. `confirm` significa que una persona debe aprobar la acción después de ver la audiencia, el precio o el efecto propuesto. `credits` significa que la acción puede gastar créditos de contacto.
+</Note>
+
+## Cerebro y documentos
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `context_retrieve` | Encuentra el contexto relevante del equipo para una tarea o archivos. | `task`, `files`, `view`, `limit` | read |
+| `context_get` | Lee un topic de contexto y su cuerpo completo. | `topic`, `view` | read |
+| `context_create` | Crea un topic de contexto comercial compartido. | `name`, `title`, `what`, `how`, `content`, `area` | write |
+| `context_update` | Actualiza un topic de contexto y devuelve su nueva versión. | `topic`, `content`, fields, `expected_version` | write |
+| `context_ls` | Lista carpetas y documentos markdown de Cerebro. | `folder` | read |
+| `context_read` | Lee un documento markdown por su ruta. | `path` | read |
+| `context_write` | Crea o reemplaza un documento markdown. | `path`, `content`, `title` | write |
+| `context_search` | Busca documentos de Cerebro por texto. | `q`, `folder`, `limit` | read |
+
+`context_ls`, `context_read`, `context_write` y `context_search` son la vista con forma de documento del mismo almacén de Cerebro que usan las herramientas con forma de topic. Lee un documento antes de reemplazarlo con `context_write`.
+
+## CRM, empresas y personas
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `collection_query` | Lee páginas acotadas de Records de CRM. | `list`, `op`, `collection_id`, `record_id`, `filter`, `limit`, `cursor` | read |
+| `crm_record` | Agrega, actualiza, actualiza en bloque o consulta el historial de Records de CRM. | `action`, `collection_id`, `record_id`, `fields`, `rows`, `limit`, `cursor` | write |
+| `crm_collection` | Crea una Collection de CRM donde guardar contactos. | `action`, `name`, `archetype`, `record_schema`, `stages` | write |
+| `company_search` | Busca en el directorio acotado de empresas sin devolver coordenadas. | `criterion`, `name`, `countries`, `industries`, `headcount`, `limit` | read |
+| `people_search` | Explora personas profesionales enmascaradas dentro del mercado. | `companyName`, `locations`, `industries`, `departments`, `seniorities`, `limit` | read |
+| `people_quote` | Cotiza un grupo seleccionado antes de revelar contactos. | `search`, `count`, `handles` | read · free |
+| `people_acquired` | Lista personas ya reveladas o importadas al workspace. | `q`, `list_id`, `folder_id`, `import_id`, `origen`, `limit` | read |
+| `people_reveal` | Revela las personas cubiertas por una cotización aceptada. | `people`, `quote_token`, `confirm`, `max_credits`, `idempotency_key` | write · credits · confirm |
+| `people_file` | Guarda una persona adquirida en una Collection de CRM. | `record_id`, `collection_id` | write |
+| `people_status` | Cambia el estado de un contacto existente. | `record_id`, `status` | write |
+
+Una empresa, una fila de mercado o un resultado de investigación no se convierte automáticamente en un contacto. Usa `people_file` para una persona que ya fue revelada o importada.
+
+## Listas y workspace
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `list_get` | Lee listas, carpetas, criterios, conteos y miembros guardados. | `list_id`, `state`, `offset` | read |
+| `list_save` | Crea, edita, actualiza o descarta resultados de personas. | `list_id`, `name`, `target`, `companies`, `criteria`, `count`, `refresh` | write |
+| `list_quote` | Cotiza las personas de una lista antes de revelarlas. | `list_id`, `member_ids` | read · free |
+| `workspaces` | Lista los workspaces a los que puede acceder la credencial. | `workspace` | read |
+| `usage` | Lee plan, allowance de mercado, créditos de contactos y renovación. | `workspace` | read |
+
+`list_quote` no revela a nadie. La revelación se hace mediante la misma acción confirmada `people_reveal`.
+
+## Mercado
+
+Todas las herramientas de mercado son de lectura. Devuelven resultados acotados y contexto de fuente. No devuelven coordenadas de contacto ni prometen que el mercado sea completo.
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `market_capabilities` | Devuelve operaciones, filtros, enums y límites actuales del mercado. | `workspace` | read · free |
+| `market_search_suppliers` | Busca proveedores candidatos para un producto, territorio o señal. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `limit`, `cursor` | read · bounded |
+| `market_get_supplier` | Inspecciona un proveedor mediante su `record_ref` opaco. | `record_ref` | read · bounded |
+| `market_search_opportunities` | Busca oportunidades públicas y su contexto oficial. | `query`, `strategy`, `buyer`, `state`, `actionability`, `published_from`, `published_to`, `limit`, `cursor` | read · bounded |
+| `market_get_opportunity` | Inspecciona una oportunidad y opcionalmente incluye sus adjudicaciones. | `record_ref`, `include_awards` | read · bounded |
+| `market_search_awards` | Busca contratos adjudicados bajo una moneda y alcance de monto explícitos. | `query`, `supplier_rfc`, `supplier_name`, `buyer`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_get_supplier_history` | Lee el historial de adjudicaciones de un proveedor conocido. | `supplier_rfc`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_aggregate_awards` | Agrega montos de adjudicaciones y compara periodos. | `currency`, `amount_scope`, `group_by`, `order_by`, `from_date`, `to_date`, `compare_period` | read · bounded |
+| `market_search_risks` | Busca marcas publicadas de riesgo o sanción. | `rfc`, `entity_name`, `mark_kind`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_search_permits` | Busca permisos y concesiones publicadas de energía o minería. | `sector`, `holder_rfc`, `holder_name`, `permit_kind`, `state`, `from_date`, `to_date` | read · bounded |
+| `market_screen_risks` | Revisa hasta 50 RFC conocidos contra listas de riesgo publicadas. | `rfcs` | read · bounded |
+| `market_count_suppliers` | Cuenta proveedores en un segmento de mercado acotado. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `contact_kind` | read · bounded |
+| `market_compare_segments` | Compara hasta cinco segmentos en hasta diez territorios. | `segments`, `geographies`, `observed_kind`, `contact_breakdown` | read · bounded |
+
+Empieza con `market_capabilities` cuando no estén claros los filtros o la cobertura. `market_search_*` devuelve candidatos; `market_get_*` verifica una referencia devuelta. Los conteos y agregados no devuelven las filas subyacentes.
+
+## Campañas y envío
+
+Un borrador de campaña es inerte. Crear, editar, previsualizar o revisar una secuencia no envía emails. La activación y una respuesta puntual requieren confirmación humana explícita.
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `sequence_list` | Lista secuencias salientes en el workspace. | `workspace` | read |
+| `sequence_get` | Lee una secuencia, pasos, audiencia, copy renderizado, sender e historial de autorización. | `sequence_id` | read |
+| `sequence_create_draft` | Crea un borrador inerte desde contactos adquiridos o una audiencia válida. | `name`, `contacts`, `from_people`, `from_collection_id`, `from_list_id`, `sender_mailbox_id`, `schedule` | write |
+| `sequence_update_draft` | Edita una secuencia no enviada o uno de sus pasos. | `sequence_id`, `action`, `name`, `step_number`, `subject`, `message_body`, `wait_days` | write |
+| `sequence_preview` | Renderiza los mensajes exactos y warnings sin enviarlos. | `sequence_id` | read |
+| `sequence_check` | Ejecuta preflight y devuelve readiness, bloqueos, warnings y token de activación. | `sequence_id` | read |
+| `sequence_activate` | Comienza el envío real después de que la persona confirme audiencia y token. | `sequence_id`, `activation_token`, `confirm`, `idempotency_key` | write · sends email · confirm |
+| `sequence_pause` | Detiene próximos envíos conservando la secuencia y el historial. | `sequence_id` | write |
+| `sequence_cancel` | Termina la secuencia y detiene receptores pendientes sin borrar el historial. | `sequence_id` | write |
+| `sequence_metrics` | Lee conteos de entrega y engagement por secuencia. | `sequence_id` | read |
+| `sequence_analytics` | Lee analítica de campañas de todo el workspace. | `workspace` | read |
+| `sequence_reply_thread` | Envía una respuesta escrita por una persona dentro de un hilo. | `sequence_id`, `recipient_id`, `body`, `subject`, `confirm` | write · sends email · confirm |
+| `mailbox_status` | Lee la salud y capacidad diaria del sender sin exponer direcciones. | `workspace` | read |
+| `mailbox_propose_pace` | Prepara una propuesta sellada de límite o ritmo del sender. | `mailbox_id`, `daily_send_limit`, `min_seconds_between_sends` | read |
+| `mailbox_set_pace` | Aplica una propuesta de ritmo después de confirmarla. | `mailbox_id`, `pace_token`, `confirm`, `daily_send_limit`, `min_seconds_between_sends` | write · confirm |
+
+## Tareas en segundo plano
+
+| Herramienta | Qué hace | Argumentos principales | Acceso |
+| --- | --- | --- | --- |
+| `task_start` | Inicia una investigación grande en segundo plano y devuelve un task id. | `title`, `prompt`, `total` | write · background |
+
+Usa `task_start` para investigar muchas empresas o calificar una lista grande. No puede revelar contactos ni enviar emails. Para una solicitud que cabe en una respuesta, usa directamente las herramientas de mercado o empresas.
+
+## Cómo usar el catálogo
+
+1. Lee la descripción y los argumentos principales.
+2. Empieza con una herramienta de lectura.
+3. Confirma el workspace y la audiencia.
+4. Ejecuta la cotización, previsualización o preflight requerida.
+5. Llama la herramienta de escritura o activación sólo después de la confirmación requerida.
+
+La respuesta viva `tools/list` incluye el schema JSON completo, las anotaciones y los ejemplos actuales. Si esta página y el schema del servidor difieren, el schema del servidor es la autoridad.

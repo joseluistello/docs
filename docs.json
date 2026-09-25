@@ -102,6 +102,7 @@
             "group": "MCP reference",
             "icon": "boxes",
             "pages": [
+              "mcp/catalog",
               "mcp/knowledge",
               "mcp/work",
               "mcp/sequences",
@@ -153,6 +154,7 @@
             "group": "Referencia MCP",
             "icon": "boxes",
             "pages": [
+              "es/mcp/catalog",
               "es/mcp/knowledge",
               "es/mcp/work",
               "es/mcp/sequences",

@@ -1,0 +1,118 @@
+---
+title: 'MCP Tool Catalog'
+description: 'The complete public catalog of the 52 Brein MCP tools, grouped by family and action boundary.'
+---
+
+This is the public reference for the **52 tools** currently returned by the Brein MCP server. The server's `tools/list` response remains the canonical schema: the tables below give the purpose, key arguments, and action boundary for every public tool.
+
+All tools accept an optional `workspace` argument. It must identify a workspace the credential is authorized to use; otherwise the credential's primary workspace is used.
+
+<Note>
+  `read` means the tool does not change Brein data. `write` means it can change workspace data. `confirm` means a person must approve the action after seeing the proposed audience, price, or effect. `credits` means the action can spend contact credits.
+</Note>
+
+## Cerebro and documents
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `context_retrieve` | Find the team's relevant context for a task or set of files. | `task`, `files`, `view`, `limit` | read |
+| `context_get` | Read one context topic and its full body. | `topic`, `view` | read |
+| `context_create` | Create a shared commercial context topic. | `name`, `title`, `what`, `how`, `content`, `area` | write |
+| `context_update` | Update an existing context topic and return its new version. | `topic`, `content`, fields, `expected_version` | write |
+| `context_ls` | List Cerebro folders and markdown documents. | `folder` | read |
+| `context_read` | Read one markdown document by path. | `path` | read |
+| `context_write` | Create or replace one markdown document. | `path`, `content`, `title` | write |
+| `context_search` | Search Cerebro documents by text. | `q`, `folder`, `limit` | read |
+
+`context_ls`, `context_read`, `context_write`, and `context_search` are the document-shaped view of the same Cerebro store used by the topic-shaped tools. Read before replacing a document with `context_write`.
+
+## CRM, companies, and people
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `collection_query` | Read bounded pages of CRM Collection records. | `list`, `op`, `collection_id`, `record_id`, `filter`, `limit`, `cursor` | read |
+| `crm_record` | Add, update, bulk-update, or inspect the history of CRM records. | `action`, `collection_id`, `record_id`, `fields`, `rows`, `limit`, `cursor` | write |
+| `crm_collection` | Create a CRM Collection that can hold contact records. | `action`, `name`, `archetype`, `record_schema`, `stages` | write |
+| `company_search` | Search the bounded company directory without returning contact coordinates. | `criterion`, `name`, `countries`, `industries`, `headcount`, `limit` | read |
+| `people_search` | Browse masked professional people inside the company market. | `companyName`, `locations`, `industries`, `departments`, `seniorities`, `limit` | read |
+| `people_quote` | Price a selected group before any contact reveal. | `search`, `count`, `handles` | read · free |
+| `people_acquired` | List people already revealed or imported into the workspace. | `q`, `list_id`, `folder_id`, `import_id`, `origen`, `limit` | read |
+| `people_reveal` | Reveal the people covered by an accepted quote. | `people`, `quote_token`, `confirm`, `max_credits`, `idempotency_key` | write · credits · confirm |
+| `people_file` | Save an acquired person into a CRM Collection. | `record_id`, `collection_id` | write |
+| `people_status` | Set the status of an existing contact. | `record_id`, `status` | write |
+
+A company, market row, or research result does not become a CRM contact by itself. Use `people_file` for a person who has already been revealed or imported.
+
+## Lists and workspace
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `list_get` | Read saved people lists, folders, criteria, counts, and members. | `list_id`, `state`, `offset` | read |
+| `list_save` | Create, edit, refresh, or discard people-list results. | `list_id`, `name`, `target`, `companies`, `criteria`, `count`, `refresh` | write |
+| `list_quote` | Price the people in a saved list before revealing them. | `list_id`, `member_ids` | read · free |
+| `workspaces` | List the workspaces the credential can access. | `workspace` | read |
+| `usage` | Read plan, market allowance, contact credits, and renewal information. | `workspace` | read |
+
+`list_quote` does not reveal anyone. The reveal is performed through the same confirmed `people_reveal` action.
+
+## Market
+
+All market tools are read-only. They return bounded results and source context. They do not return contact coordinates and do not promise that a market is complete.
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `market_capabilities` | Return the current market operations, filters, enums, and limits. | `workspace` | read · free |
+| `market_search_suppliers` | Find supplier candidates for a product, territory, or signal. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `limit`, `cursor` | read · bounded |
+| `market_get_supplier` | Inspect one supplier by its opaque `record_ref`. | `record_ref` | read · bounded |
+| `market_search_opportunities` | Find public procurement opportunities and their official context. | `query`, `strategy`, `buyer`, `state`, `actionability`, `published_from`, `published_to`, `limit`, `cursor` | read · bounded |
+| `market_get_opportunity` | Inspect one opportunity and optionally include its awards. | `record_ref`, `include_awards` | read · bounded |
+| `market_search_awards` | Find awarded contracts under an explicit currency and amount scope. | `query`, `supplier_rfc`, `supplier_name`, `buyer`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_get_supplier_history` | Read one known supplier's award history. | `supplier_rfc`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_aggregate_awards` | Aggregate award totals and compare periods. | `currency`, `amount_scope`, `group_by`, `order_by`, `from_date`, `to_date`, `compare_period` | read · bounded |
+| `market_search_risks` | Search published adverse or sanction marks. | `rfc`, `entity_name`, `mark_kind`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
+| `market_search_permits` | Search published energy or mining permits and concessions. | `sector`, `holder_rfc`, `holder_name`, `permit_kind`, `state`, `from_date`, `to_date` | read · bounded |
+| `market_screen_risks` | Screen up to 50 already-known RFCs against published risk lists. | `rfcs` | read · bounded |
+| `market_count_suppliers` | Count suppliers in a narrowed market segment. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `contact_kind` | read · bounded |
+| `market_compare_segments` | Compare up to five segments across up to ten territories. | `segments`, `geographies`, `observed_kind`, `contact_breakdown` | read · bounded |
+
+Start with `market_capabilities` when the valid filter names or coverage are unclear. `market_search_*` returns candidates; `market_get_*` verifies one returned reference. Aggregates and counts do not return the underlying company rows.
+
+## Campaigns and sending
+
+A campaign draft is inert. Creating, editing, previewing, or checking a sequence does not send email. Activation and a one-off reply require explicit human confirmation.
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `sequence_list` | List outbound sequences in the workspace. | `workspace` | read |
+| `sequence_get` | Read a sequence, its steps, audience, rendered copy, sender, and authorization history. | `sequence_id` | read |
+| `sequence_create_draft` | Create an inert sequence draft from acquired contacts or a valid audience. | `name`, `contacts`, `from_people`, `from_collection_id`, `from_list_id`, `sender_mailbox_id`, `schedule` | write |
+| `sequence_update_draft` | Edit an unsent sequence or one of its steps. | `sequence_id`, `action`, `name`, `step_number`, `subject`, `message_body`, `wait_days` | write |
+| `sequence_preview` | Render the exact messages and warnings without sending them. | `sequence_id` | read |
+| `sequence_check` | Run preflight and return readiness, blockers, warnings, and an activation token. | `sequence_id` | read |
+| `sequence_activate` | Start real sending after the person confirms the audience and token. | `sequence_id`, `activation_token`, `confirm`, `idempotency_key` | write · sends email · confirm |
+| `sequence_pause` | Stop future sends while preserving the sequence and history. | `sequence_id` | write |
+| `sequence_cancel` | End the sequence and stop pending recipients without deleting history. | `sequence_id` | write |
+| `sequence_metrics` | Read per-sequence delivery and engagement counts. | `sequence_id` | read |
+| `sequence_analytics` | Read workspace-wide campaign analytics. | `workspace` | read |
+| `sequence_reply_thread` | Send a human-written answer into a reply thread. | `sequence_id`, `recipient_id`, `body`, `subject`, `confirm` | write · sends email · confirm |
+| `mailbox_status` | Read sender health and remaining daily capacity without exposing addresses. | `workspace` | read |
+| `mailbox_propose_pace` | Prepare a sealed proposal for a sender's daily limit or spacing. | `mailbox_id`, `daily_send_limit`, `min_seconds_between_sends` | read |
+| `mailbox_set_pace` | Apply a pace proposal after a person confirms it. | `mailbox_id`, `pace_token`, `confirm`, `daily_send_limit`, `min_seconds_between_sends` | write · confirm |
+
+## Background tasks
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `task_start` | Start a larger research job in the background and return a task id. | `title`, `prompt`, `total` | write · background |
+
+Use `task_start` for research over many companies or a request to qualify a large list. It cannot reveal contacts or send email. For a request that fits in one answer, use the market or company tools directly.
+
+## How to use the catalog
+
+1. Read the tool description and key arguments.
+2. Start with a read-only tool.
+3. Confirm the workspace and audience.
+4. Run the required quote, preview, or preflight step.
+5. Call the write or activation tool only after the required confirmation.
+
+The live `tools/list` response includes the complete JSON schema, annotations, and current examples. If this page and the server schema differ, the server schema is authoritative.
