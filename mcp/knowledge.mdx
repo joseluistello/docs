@@ -1,67 +1,42 @@
 ---
-title: 'MCP: Criterion (Cerebro)'
-description: 'The commercial-criterion tools over MCP: retrieve and read the criterion, write and edit it. Technical graph, relations, sharing, delete and tags/areas tools are deleted from the catalog; the retired governance tools are gone with them.'
+title: 'MCP: Cerebro'
+description: 'Read and update the team context that guides commercial work through MCP.'
 ---
 
-This is the Cerebro plane over MCP: the tools an AI client uses to read the team's commercial criterion before acting (offer, ICP, exclusions, signals, geography, buyers, messages, playbooks) and to maintain it. For setup, authentication, and the OAuth scopes referenced below, see [MCP & OAuth](/mcp/overview).
+Cerebro tools let an AI client read the team's commercial context before it acts and update that context when the team has a durable decision to keep.
 
-Public tools use neutral capability names without a product prefix. Their `brein_*` and `driftless_*` aliases resolve to the same tool but are not advertised in `tools/list`.
+Read [MCP and OAuth](/mcp/overview) first for authentication and workspace permissions.
 
-## Retrieval and reading
+## Read context
 
-Start with `context_retrieve` when you have a task but no slug. Bodies come back **brief** by default (the durable why, not the full `content`); fetch one full body with `context_get`.
+| Tool | Use it when you want to... | Main arguments |
+| --- | --- | --- |
+| `context_retrieve` | Find the most relevant context for a task or set of files. | `task`, `files`, `view`, `limit` |
+| `context_get` | Read one document in full. | `topic`, `view` |
 
-| Tool | Purpose | Main params | Returns |
-| --- | --- | --- | --- |
-| `context_retrieve` | Ranked context for a task and/or files — absorbs full-text search, listing and file-matching (MCP · 2) | `task`, `files`, `tags`, `area`, `stale`, `status`, `view`, `limit` | `{ shown, has_more, next_action, results[] }` |
-| `context_get` | One topic by slug (full body) | `topic`, `view` | the full topic |
+`context_retrieve` returns a short result by default. Fetch the full document only when you need it.
 
-`context_search`, `context_list` and `context_get_for_files` no longer appear in `tools/list` — `context_retrieve` already took their arguments (`query`→`task`, `status`/`stale`/`tags`, `files`). They remain resolvable for 60 days as hidden compatibility aliases (their result names the replacement in `next_action`); after that window they answer "Unknown tool".
+## Update context
 
-Permission: `context:read`. Availability: Available.
+| Tool | Use it when you want to... | Main arguments |
+| --- | --- | --- |
+| `context_create` | Create a document for a new durable decision. | `title`, `content`, `area` |
+| `context_update` | Update an existing document. | `topic`, fields |
 
-```text
-context_retrieve task:'harden the webhook handler' files:['src/webhooks/handler.ts']
-  → { results: [ { slug, trust, why_matched, confidence } ], has_more }
-```
+Documents are shared with the workspace by default. A write does not delete another document or publish a page to the web.
 
-## Writing and editing
+## Keep the context useful
 
-| Tool | Purpose | Main params | Notes |
-| --- | --- | --- | --- |
-| `context_create` | Create a criterion document | `title`, `content`, `area` | the document is born shared with the workspace — there is no review queue anywhere (MCP · 2) |
-| `context_update` | Append-safe update | `topic`, fields | returns `anchor_validation` |
+A good Brein document explains:
 
-Permissions: `topics:create` / `topics:write`. Availability: Available. Write responses carry `anchor_validation` (`ok` / `overbroad` / `zero`), which never blocks the write. No agent tool deletes a topic or publishes a public page — see below.
-
-## Deleted from the catalog
-
-The following surfaces have no MCP tool at all — their definitions and handlers
-were removed, not merely hidden; a legacy `driftless_*` call now answers
-"Unknown tool". Their curation remains available to owners through the CLI and
-dashboard:
-
-- Notes as a standalone product (`note_add`);
-- topic graph (`context_graph`) and relations (`context_relations`);
-- comments (`context_comment`);
-- the retired Note→Knowledge governance (`context_propose`, `_approve`,
-  `_create_proposal`, `_proposals`, `_merge`) — there is nothing to approve;
-- events and doctor (`context_events`, `_doctor`);
-- areas and tags (`areas`, `tags`);
-- delete (`context_delete`) — no agent tool deletes a topic;
-- publish to the web (`context_share`) — publishing is human work, not an agent action.
-
-## Permissions
-
-| Scope | Covers |
-| --- | --- |
-| `context:read` | Read topics, retrieve, search, list |
-| `topics:create` | Create topics |
-| `topics:write` | Update existing topics |
-| `context:diff` | Read topic diff for local changes |
+- what the team sells;
+- who the team wants to work with;
+- what is out of scope;
+- which geography and messages matter;
+- what the team decided and why.
 
 ## Related
 
-- [The Driftless loop](/concepts/core-loop), [Documents and relations](/concepts/topics) - the concepts.
-- [CLI: Context Commands](/cli/context) - the same surface from the terminal.
-- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.
+- [MCP and OAuth](/mcp/overview)
+- [The Brein workspace](/product/workspace)
+- [Security](/security/overview)

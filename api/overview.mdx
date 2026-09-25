@@ -1,6 +1,6 @@
 ---
 title: 'API Overview'
-description: 'The authenticated Brein REST surface: workspace resources, Cerebro, CRM, market intelligence, research, and campaigns.'
+description: 'The authenticated REST API for building software that works with a Brein workspace.'
 ---
 
 Base URL:
@@ -9,62 +9,46 @@ Base URL:
 https://api.trybrein.com/api/v1
 ```
 
+Use the REST API when your software needs to read or change a Brein workspace directly. For an AI client, start with [MCP and OAuth](/mcp/overview) instead.
+
 ## Authentication
 
-Workspace resources require an authenticated API key, a Clerk session, or an authorized OAuth token. A missing or invalid credential returns `401`; an authenticated caller without the required workspace scope returns `403`.
+Send a scoped API key in the `x-api-key` header:
 
 ```bash
 curl https://api.trybrein.com/api/v1/me \
-  -H "x-api-key: drift_your_api_key_here"
+  -H "x-api-key: <your-api-key>"
 ```
 
-Treat API keys as secrets. Brein stores them encrypted and shows the raw value only when it is created.
+A missing or invalid key returns `401`. A valid key without permission for the workspace or action returns `403`.
 
-## Workspace resources
+Keep keys in your secret manager. Never commit them to source control or put them in customer-facing output.
 
-| Resource | Main routes | Customer job |
-|---|---|---|
-| Workspace and team | `/workspaces/:slug`, `/members`, `/api-keys` | Manage the workspace, people, roles, and scoped credentials. |
-| Commercial usage | `/workspaces/:slug/commercial-usage` | Read plan, requests, intelligence credits, contact credits, renewal, and upgrade action. |
-| Cerebro documents | `/workspaces/:slug/documents/*` | Read and write markdown documents in folders. |
-| CRM | `/workspaces/:slug/collections/*` | Operate contact Records and their bounded lifecycle. |
-| Companies and people | `/workspaces/:slug/radar/*` | Search companies, discover masked people, reveal selected people, manage acquired contacts, and file them. |
-| Lists | `/workspaces/:slug/radar/lists/*` | Save, refresh, quote, reveal, and export a selected people-search result. |
-| Market Data | `/workspaces/:slug/market-data/*` | Run typed, read-only supplier, opportunity, award, risk, and permit operations. |
-| Explorer | `/workspaces/:slug/intelligence/explorer/*` | Search and inspect the customer-facing company/evidence explorer. |
-| Research | `/workspaces/:slug/research/*` | Start, inspect, stream, and cancel durable Investigador runs. |
-| Email and campaigns | `/workspaces/:slug/email-campaigns/*`, `/email-mailboxes/*` | Prepare, review, authorize, activate, pause, and measure outbound sequences. |
-| Integrations | `/workspaces/:slug/integrations/*` | List, connect, confirm, reconnect, and disconnect providers. |
-| Broker | `/workspaces/:slug/broker/*` | Inspect and run governed operations over an existing connection. |
+## Main resources
 
-Every workspace route is workspace-scoped and authenticated. A caller cannot use one workspace's key or route to read another workspace's data.
+| Resource | Base path | Use it for |
+| --- | --- | --- |
+| Workspace and usage | `/workspaces/:slug` | Read workspace details, team access, and commercial usage. |
+| Cerebro | `/workspaces/:slug/documents/*` | Read and update documents in folders. |
+| Prospectos | `/workspaces/:slug/collections/*` | Read and update contact records. |
+| Companies and people | `/workspaces/:slug/radar/*` | Search companies, review masked people, and work with acquired contacts. |
+| Market information | `/workspaces/:slug/market-data/*` | Run read-only supplier, opportunity, award, risk, and permit operations. |
+| Research | `/workspaces/:slug/research/*` | Start, inspect, and cancel Investigador runs. |
+| Campaigns | `/workspaces/:slug/email-campaigns/*` | Prepare, review, activate, pause, and measure email sequences. |
+| Connections | `/workspaces/:slug/integrations/*` | List and manage approved provider connections. |
 
-## Public infrastructure routes
+Every workspace route is scoped to the workspace in the URL. Do not assume that a route from one workspace can be used with another workspace's credentials.
 
-The public surface is intentionally small. It includes runtime health and version routes, the first-run workspace bootstrap, public website content routes, OAuth discovery/register/token endpoints, signed webhook receivers, unsubscribe/share endpoints, and other explicitly public platform routes.
+## Usage and actions
 
-The exact public allowlist is owned by the API and its route decorators; do not infer that a resource is public because a client does not currently show a session. See [Errors](/api/errors) for the common envelope and [Security](/security/overview) for data boundaries.
+Reads and contact actions have different cost rules. A successful response can include the current usage state. If an allowance is exhausted, the API returns an actionable `402` instead of silently continuing.
 
-## Market and activation boundary
+Contact lookup is separate from saving a contact. Campaign creation is separate from campaign activation. A campaign is not sent until the required human confirmation succeeds.
 
-Market analysis is separate from contact activation:
+## Errors
 
-- market reads, counts, comparisons, history, and aggregates do not spend credits;
-- a company detail that actually returns a published coordinate can spend an intelligence credit;
-- contact reveal is person-first, quoted for the selected group, separately confirmed, and charged against the separate contact balance;
-- a failed or empty reveal is refunded and never triggers an automatic provider fallback.
+See [Errors](/api/errors) for the shared response shape and common status codes.
 
-Successful commercial responses expose the current usage state. An exhausted allowance fails closed with an actionable `402`; it does not turn into a generic cancellation.
+## Security
 
-## Compatibility surfaces
-
-The API keeps some Topics, sharing, relation, and legacy CLI compatibility routes mounted. They are not the primary customer model. The current Cerebro model is documents in folders; the current CRM model is contact-first Records; and the current MCP catalog uses neutral capability names. Historical rows and routes may remain until their active consumers migrate, but compatibility is not a new product surface.
-
-## Related references
-
-- [Workspace and team](/api/workspaces)
-- [Topics and Cerebro documents](/api/topics)
-- [Collections and Records](/api/collections)
-- [Market Data](/api/market-data)
-- [MCP & OAuth](/mcp/overview)
-- [Security](/security/overview)
+See [Security](/security/overview) for credential storage, workspace access, contact boundaries, and outbound email rules.

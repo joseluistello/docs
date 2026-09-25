@@ -1,11 +1,11 @@
 ---
 title: 'Errors'
-description: 'The Brein error envelope is part of the agent and integration contract: branch on code, never on prose.'
+description: 'The shared error response used by the Brein REST API.'
 ---
 
-Brein API errors use one stable JSON envelope across REST, CLI, and MCP. Branch on the machine-readable `code`; use `message` only for human-facing context.
+Brein uses one JSON error shape across the REST API. Branch on the machine-readable `code`, not on the human-readable `message`.
 
-## The envelope
+## Error shape
 
 ```json
 {
@@ -21,55 +21,27 @@ Brein API errors use one stable JSON envelope across REST, CLI, and MCP. Branch 
 | Field | Meaning |
 |---|---|
 | `statusCode` | HTTP status. |
-| `code` | Stable, machine-readable error code. Treat new codes as additive. |
-| `message` | Human-readable context. It may change; do not parse it. |
-| `request_id` | Correlation id. Include it in support reports. |
-| `retryable` | `true` only for an operation that may succeed later. A definitive `4xx` is not retryable. |
+| `code` | Stable machine-readable code. |
+| `message` | Human-readable context. It may change. |
+| `request_id` | Include this when asking for help. |
+| `retryable` | Whether the same operation may succeed later. |
 | `endpoint` | Method and route that produced the error. |
 
-Some domains add a typed block. Market Data, for example, can add a `market_data` object with a semantic code, why the request was refused, a suggested correction, and a closed recovery action.
+## Common status codes
 
-## Common categories
-
-### Validation and input
-
-- `VALIDATION_FAILED` — a request field failed validation.
-- `BAD_REQUEST` — a generic invalid request without a more specific code.
-- `INVALID_VALUE` — a value violates a server or database constraint.
-- `INVALID_ID` — an identifier is malformed.
-- `REQUIRED_FIELD` — a required field is missing.
-- `FK_VIOLATION` — a referenced record does not exist.
-- `SECRET_DETECTED` — a write looked like it contained a credential and was blocked; the error does not echo the secret.
-
-### Access and workspace scope
-
-- `UNAUTHORIZED` — the API key or token is missing or invalid.
-- `FORBIDDEN` — the caller is authenticated but not allowed.
-- `INSUFFICIENT_ROLE` — the caller lacks the required workspace role.
-- `NOT_FOUND` — the resource is unavailable to this caller.
-- `METHOD_NOT_ALLOWED` — the route exists but the verb does not; follow the returned `Allow` header.
-
-### Commercial allowance
-
-- `COMMERCIAL_CALL_LIMIT_REACHED` — the workspace used its included commercial requests.
-- `COMMERCIAL_CREDITS_EXHAUSTED` — no intelligence credits remain.
-- `COMMERCIAL_CREDITS_INSUFFICIENT` — the requested action exceeds the remaining allowance.
-
-These responses include the current usage state and an actionable next action when the workspace needs a plan or sales decision. An exhausted allowance is a definitive `402`; do not retry it as if it were a transient network failure.
-
-### Conflicts and server failures
-
-- `DUPLICATE` or `DUPLICATE_TOPIC` — the resource already exists.
-- `VERSION_CONFLICT` — the object changed after the caller read it; re-read and reapply the intended change.
-- `RATE_LIMITED` — back off and respect the response's retry guidance.
-- `INTERNAL` — an unexpected server failure; preserve `request_id` when reporting it.
-
-## Retired governance is not an error example
-
-The former Note → Knowledge approval and merge lifecycle is retired. Do not use an `approve` or `merge` route as the canonical example for identity, authorization, or error handling. Current writes use the current document, CRM, market, research, or campaign contract.
+| Status | Meaning | What to do |
+|---|---|---|
+| `400` | The request is invalid. | Fix the input before retrying. |
+| `401` | The key or token is missing or invalid. | Reconnect or replace the credential. |
+| `403` | The caller is authenticated but not allowed. | Check workspace membership and role. |
+| `404` | The resource is not available to this caller. | Check the workspace and resource id. |
+| `402` | The workspace has reached a commercial limit. | Show the usage response and the next action. |
+| `409` | The resource changed or already exists. | Read the current state before retrying. |
+| `429` | The request rate is too high. | Back off and follow the response guidance. |
+| `500` | The server could not complete the request. | Preserve `request_id` when reporting it. |
 
 ## Related
 
 - [API overview](/api/overview)
-- [Market Data](/api/market-data) — typed refusals and recovery actions.
-- [MCP & OAuth](/mcp/overview) — protocol authentication and compatibility boundaries.
+- [Security](/security/overview)
+- [MCP and OAuth](/mcp/overview)

@@ -1,237 +1,71 @@
 ---
 title: 'MCP & OAuth'
-description: 'Connect ChatGPT, Claude, and other AI clients to your Brein workspace via the Model Context Protocol.'
+description: 'Connect an AI client to the Brein workspace and understand the tools available to it.'
 ---
 
-Brein ships an MCP (Model Context Protocol) server that exposes your workspace's commercial intelligence to AI clients. ChatGPT, Claude, Copilot, and any MCP-compatible client can read and write the commercial criterion, work CRM records (Prospectos), run market analysis, and run the governed person-first people lifecycle through it.
+Brein exposes the current commercial capabilities of your workspace through MCP. An AI client can read the team's context, search market information, work with contacts, prepare campaigns, and run research.
 
-Public tools use neutral capability names with no product prefix (for example `context_get`, `market_search_suppliers`, `people_reveal`). Both `brein_*` and `driftless_*` names resolve to the same tool as **hidden compatibility aliases**: they are not advertised in `tools/list`, but they still resolve server-side so existing integrations keep working. See the [alias → public table](#compatibility) below. This applies only to tools that still exist — a name from the [deleted list](#deleted-from-the-catalog) below answers "Unknown tool" under every alias, with no compatibility window.
+For client setup, start with [Connect your AI](/connect).
 
-## How it works
+## What the client can work with
 
-The MCP adapter runs at `apps/mcp` and translates MCP tool calls to the existing REST API. It is a **protocol adapter only**: it never accesses Postgres, internal libraries, or workspace admin operations directly.
+The public catalog currently contains **52 tools** across these areas:
 
-## Start here: retrieve
-
-When you have a **task** but no criterion slug yet, the first call is
-`context_retrieve`: it returns the team's most relevant recorded
-commercial context for a task description, a set of files, or both, ranked and
-bounded. It composes search + match-files + list filters so you don't hand-chain
-them. Bodies come back **brief** by default (the durable *why*, not the full
-`content`); call `context_get` for the one topic whose full body you
-need, or pass `view: "full"`. The same **active-only, bounded, brief-by-default**
-contract applies to the operational surface: `collection_query` reads Records
-(status `ok`/`continue`/`incomplete`), `people_file` files a revealed or imported
-person, and `crm_record` updates an existing contact Record.
-
-## Tool families
-
-The MCP surface is documented by family in the **MCP reference**. For client setup, start with [Connect your AI](/connect). Use this page for authentication and capability details; open a family page for tool names, actions, parameters, permissions, and examples.
-
-| Family | What it covers | Reference |
+| Area | What the agent can do | Reference |
 | --- | --- | --- |
-| Criterion (Cerebro) | Retrieve, read and maintain the commercial criterion (offer, ICP, exclusions, signals, geography, buyers, messages, playbooks) | [MCP: Criterion](/mcp/knowledge) |
-| CRM (Prospectos) | Read and work contact Records — the operational system of record for people the workspace explicitly acquired | [MCP: CRM](/mcp/work) |
-| Sequences | Prepare, review, explicitly authorize, activate, pause, cancel, and measure bounded outbound email sequences | [MCP: Sequences](/mcp/sequences) |
-| Integrations | Synthesized `<provider>_records` / `_document_content` tools from ready connected providers | [MCP: Integrations](/mcp/integrations) |
-| Workspace | Workspaces and usage | [MCP: Workspace and collaboration](/mcp/collaboration) |
-| Commercial usage | `usage` reads the plan, monthly requests and credits, renewal date, promotional research availability, and contact-sales action. The read itself is free. | [API overview](/api/overview#commercial-usage) |
-| Commercial intelligence | Thirteen typed analysis tools for suppliers, segment comparisons, opportunities, awards, risk marks, and permits. Analysis never returns contact coordinates. `people_quote` prices selected people for free; `people_reveal` runs only after explicit confirmation with a credit cap. There is no generic action router or bulk supplier-detail tool. Reconnect after schema changes because clients may cache tool definitions. | [Market Data](/api/market-data) |
+| Cerebro | Retrieve and update the team's offer, buyer profile, exclusions, geography, messages, and decisions. | [Cerebro tools](/mcp/knowledge) |
+| Prospectos | Read contact records, update a contact, and file a revealed or imported person. | [CRM tools](/mcp/work) |
+| Market | Search published suppliers, opportunities, awards, risks, and permits. | [Market tools](/mcp/overview#market-tools) |
+| Campañas | Create, preview, approve, activate, pause, and measure email sequences. | [Campaign tools](/mcp/sequences) |
+| Investigador | Start and inspect durable research. | [Research tools](/mcp/overview#research-tools) |
+| Workspace | Read the workspaces and commercial usage available to the credential. | [Workspace tools](/mcp/collaboration) |
+| Connections | Read from a provider that an administrator has already connected. | [Connection tools](/mcp/integrations) |
 
-The public catalog contains **52 tools**: Criterion and document-shaped Cerebro,
-CRM, Empresas and people, Lists, workspace and usage, 13 typed market
-operations, the governed sequence lifecycle, and one delegated task starter. It
-covers the commercial criterion, contact-first CRM, acquired contacts, market
-intelligence, campaign preparation and explicit human-authorized activation.
+The client may read a broad list, but every call is checked against the authorized workspace and role.
 
-It does not cover workspace admin, repo registration, key management, provider
-connection setup, authoring or deploying integration scripts, manual agent-run
-triggering, topic graph, relations, comments, the retired governance tools,
-events, areas/tags, doctor, generic schema CRUD, the generic Broker router,
-sharing, member listing, or topic delete. Those retired tool definitions and
-handlers are not public MCP tools; a legacy `driftless_*` name answers "Unknown
-tool". See [Deleted from the catalog](#deleted-from-the-catalog).
+## Market tools
 
-**Criterion retrieval is four tools.** `context_search`, `context_list` and
-`context_get_for_files` are no longer public; `context_retrieve` absorbed their
-arguments. They remain resolvable for the compatibility window as hidden
-aliases, so an already-connected client does not break. A new session sees the
-current neutral catalog.
+Market tools answer bounded questions about published suppliers, opportunities, awards, risks, and permits. They return the result and its source context; they do not reveal contact coordinates or promise a complete market.
 
-### Payload views keep reads fast
+## Research tools
 
-Reads default to a **light payload** so a result never floods your context. The
-vocabulary is the same everywhere (`summary` / `brief` / `full`):
-
-- **`summary`**: an index row (id/slug, title, trust). Lists and search return
-  this, bounded (top 5 search, top 40 list).
-- **`brief`** (the default for `context_retrieve` and
-  `context_get_for_files`) is the durable **why**: what / decisions /
-  gotchas / invariants, **without** the full `content`. Roughly 76% lighter than a
-  full body.
-- **`full`**: everything, including the heavy `content` body. **Never a default
-  elsewhere**; you opt in with `view: "full"`. `context_get` is the
-  exception: it defaults to `full` because you named the one topic you want.
-
-The pattern: `retrieve` / `get_for_files` in `brief` to see *which* topic governs
-the work, then `context_get` (full) for the single body you actually
-need, instead of pulling every full body up front.
-
-### Connector tools are synthesized per workspace
-
-Beyond the static tools above, the MCP server can **synthesize** extra read-only tools per
-workspace from a provider's ready capabilities: `<provider>_records` and
-`<provider>_document_content` (for example, `notion_document_content`). They
-appear only when broker tool synthesis is enabled and the provider exposes a `ready`,
-read-effect capability of a synthesizable kind, capped per workspace. A listed tool is
-not a usable one — a synthesized tool still resolves through the broker API, where an
-external caller is gated by rollout and grants — and **write capabilities are never
-synthesized**. See [Broker](/integrations/broker).
-
-### Compatibility
-
-During the migration window, both branded aliases for every public tool resolve
-to the same neutral capability with the exact same schema:
-
-| Hidden aliases | Public tool |
-| --- | --- |
-| `brein_context_*`, `driftless_context_*` | `context_*` |
-| `brein_collection_query`, `driftless_collection_query` | `collection_query` |
-| `brein_market_*`, `driftless_market_*` | `market_*` |
-| `brein_company_*`, `driftless_company_*`; `brein_people_*`, `driftless_people_*` | `company_*`, `people_*` |
-| `brein_workspaces`, `driftless_workspaces`; `brein_usage`, `driftless_usage` | `workspaces`, `usage` |
-
-**Time-boxed rename/merge aliases (60 days, MCP · 2) — a second, narrower kind of alias.** These are not brand-prefix aliases (above): the tool ITSELF was renamed or merged, so the old name is excluded from `tools/list` but still resolves, and its result carries a `next_action` naming the replacement.
-
-| Hidden alias (60 days) | Replacement |
-| --- | --- |
-| `context_search`, `context_list`, `context_get_for_files` (any branded prefix) | `context_retrieve` |
-| `collection_record` (any branded prefix) | `crm_record` (writes) / `collection_query` (reads) |
-
-After the window, these two answer "Unknown tool" like every other retired name.
-
-### Deleted from the catalog
-
-The following 27 tools have **no MCP tool at all** — their definitions and
-handlers were removed, not merely hidden. Every alias (`driftless_*`,
-`brein_*`, the neutral name) answers "Unknown tool":
-
-- Cerebro auxiliary and health (the governance tools are retired): `note_add`, `context_graph`,
-  `context_relations`, `context_comment`,
-  `context_proposals`, `context_create_proposal`,
-  `context_propose`, `context_approve`,
-  `context_merge`, `context_events`,
-  `context_doctor`;
-- CRM/taxonomy schema CRUD: `collection`, `collection_purge`,
-  `collection_record_delete`, `entity`, `areas`, `tags`;
-- the retired Contact Path (`contact_discover`, `contact_select`,
-  `contacts_acquired`, `contact_quote`, `contact_unlock`) — replaced by the
-  person-first `people_*` lifecycle;
-- the generic connector router: `broker`;
-- topic delete (`context_delete`) — no agent tool deletes a record or a topic;
-- publish to the web (`context_share`) — publishing is human work;
-- draft preparation (`contact_prepare`) — drafting is Campañas' job, not the MCP's;
-- member listing (`members`) — not commercial work.
-
-Their underlying data and compatibility operations remain available through the CLI and dashboard where an active technical consumer requires them.
-
-<Note>
-MCP clients (claude.ai, ChatGPT) **cache tool schemas per connector session**. After Brein ships a schema change, reconnect the connector (or start a fresh session) to pick it up. Otherwise new parameters or tools won't be available, and a session that cached a branded catalog will keep seeing it.
-</Note>
+Research tools start and inspect Investigador runs. The result is a document for review, not an automatic conclusion. Current rules, prices, permits, and institutional details can remain explicit verification steps.
 
 ## Authentication
 
-All MCP requests require authentication. Unauthenticated requests receive HTTP 401 with a `WWW-Authenticate` header pointing to the OAuth discovery endpoints.
+Use OAuth when the client supports it:
 
-There are two ways to authenticate:
+1. Add the Brein endpoint: `https://api.trybrein.com/mcp`
+2. Open the client's authorization flow.
+3. Sign in to Brein and select the workspace.
+4. Approve the requested permissions.
 
-- **API key**: pass your API key in the `X-API-Key` header. Best for CLI, agents, and CI.
-- **OAuth 2.0**: for published AI clients (ChatGPT, Claude) that need per-user consent. The server supports dynamic client registration and PKCE.
+An API key is available for supported integrations and self-hosted clients. Pass it through the client's secret store as `X-API-Key`; do not put the raw key in a repository.
 
-### Connecting with an API key
+A `401` means the credential is missing or invalid. A `403` means the credential is valid but is not allowed to perform the requested action in that workspace.
 
-Add this to your `claude_desktop_config.json` or equivalent:
+## A safe first request
 
-```json
-{
-  "mcpServers": {
-    "brein": {
-      "url": "https://api.trybrein.com/mcp",
-      "headers": {
-        "X-API-Key": "drift_your_api_key_here"
-      }
-    }
-  }
-}
+Start with a read that has no external effect:
+
+```text
+Show the Brein workspaces I can use and the current commercial usage.
 ```
 
-For local development, use `http://localhost:3020/mcp` and your local API key.
+Then try a bounded search or a small piece of team context before asking the agent to change a contact or prepare a campaign. The agent must show the audience, price, or approval request before an action that spends credits or sends a message.
 
-### Connecting with OAuth (Claude.ai, ChatGPT)
+## Tool behavior
 
-The published ChatGPT app is named **Brein**. It connects to the same authenticated
-Brein workspace and uses the same workspace permissions and MCP tool contracts.
+- Reads return a focused result and tell you when more pages are available.
+- Contact details remain masked until the person chooses a selected lookup.
+- CRM writes apply to the contact record named in the request.
+- A campaign draft does not send itself; activation requires a separate confirmation.
+- Clients may cache their tool list. Reconnect after a Brein tool change if a new tool is missing.
 
-Published clients use OAuth 2.0 with PKCE. The flow is fully automatic:
+## Related
 
-1. Install Brein in ChatGPT, or enter `https://api.trybrein.com/mcp` as the MCP endpoint in Claude.ai
-2. The client discovers the OAuth endpoints automatically via `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`
-3. You authorize in the Brein consent screen
-4. The client receives a bearer token and uses it for MCP tool calls within the authorized workspace
-
-No manual OAuth configuration is needed. The client handles registration, PKCE, and token refresh.
-
-## OAuth 2.0 reference
-
-### Dynamic client registration
-
-Any client can register without authentication:
-
-```bash
-curl -X POST https://api.trybrein.com/api/v1/oauth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "client_name": "My AI Client",
-    "redirect_uris": ["https://myapp.com/oauth/callback"]
-  }'
-```
-
-### OAuth scopes
-
-| Scope | Description |
-|-------|-------------|
-| `context:read` | Read topics and context |
-| `topics:create` | Create new topics |
-| `topics:write` | Update existing topics |
-| `work:write` | Write collections, records, entities, comments, tags, areas, plus merge and public-link publishing actions |
-| `context:diff` | Read topic diff for local changes |
-| `broker:read` | Read broker connections, capabilities, and records |
-| `broker:invoke` | Invoke a broker operation |
-| `broker:admin` | Manage broker grants and criterion |
-| `market_data:read` | Read commercial intelligence (suppliers, opportunities, awards, risk marks, permits) — see [Market Data](/api/market-data) |
-| `commercial:discover` | Search companies and discover masked people — never a coordinate |
-| `commercial:read` | Read the acquired-contacts book and quote a reveal — price, balance and availability only, never coordinates |
-| `commercial:activate` | Reveal, file or update the status of selected people after an exact quote and explicit confirmation. Never implicit |
-| `offline_access` | Refresh access without reconnecting |
-
-The `broker:*` scopes are enforced only when the Broker is enabled, and they gate its lane on top of rollout and grants. Discovery metadata advertises a subset of scopes; the enforced set is the authority.
-
-`market_data:read` is the documented, canonical scope for market-data reads, but today's default OAuth issuance does not yet grant it — `context:read` still satisfies those routes transitionally so no existing caller breaks.
-
-### Endpoints
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/.well-known/oauth-protected-resource` | MCP resource metadata (RFC 9728) |
-| `GET` | `/.well-known/oauth-authorization-server` | Authorization server metadata (RFC 8414) |
-| `GET` | `/.well-known/openid-configuration` | OIDC-compatible discovery alias |
-| `GET` | `/api/v1/oauth/authorize` | Authorization consent screen (redirects to dashboard) |
-| `POST` | `/api/v1/oauth/token` | Exchange code for access token |
-| `POST` | `/api/v1/oauth/register` | Register an OAuth client (RFC 7591) |
-| `POST` | `/api/v1/oauth/revoke` | Revoke an access token |
-
-## Token security
-
-- Authorization codes, access tokens, and refresh tokens are stored as **hashes only**, never plaintext
-- Tokens are never logged or returned after initial issuance
-- The MCP server does not import `@driftless/db`, `typeorm`, or any internal library; it calls the REST API exclusively
+- [Connect your AI](/connect)
+- [Security](/security/overview)
+- [Cerebro tools](/mcp/knowledge)
+- [CRM tools](/mcp/work)
+- [Campaign tools](/mcp/sequences)

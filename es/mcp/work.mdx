@@ -1,63 +1,47 @@
 ---
-title: 'MCP: CRM (Prospectos)'
-description: 'Lee páginas acotadas de Records de contacto y avanza el trabajo CRM existente mediante tools MCP gobernadas.'
+title: 'MCP: Prospectos'
+description: 'Lee y actualiza los contactos que tu equipo eligió en Prospectos.'
 ---
 
-Prospectos es el sistema operacional de registro de Brein. Sus Records representan personas que el workspace adquiere y archiva explícitamente; una empresa, fila de mercado o evidencia no es un Record del CRM.
+Prospectos es donde el equipo trabaja con personas que eligió explícitamente. Una empresa o un resultado de mercado no se convierte automáticamente en un contacto.
 
-La superficie MCP separa tres trabajos:
+Lee primero [MCP y OAuth](/es/mcp/overview) para conocer la autenticación y los permisos del workspace.
 
-- `collection_query` lee páginas acotadas de Collections y Records;
-- `crm_record` actualiza, consulta el historial y programa seguimiento de un Record de contacto existente;
-- `crm_collection` crea un contenedor CRM vacío y reutilizable;
-- `people_file` archiva como Record una persona revelada o importada.
+## Lee contactos
 
-El CRUD genérico de esquemas, el purge permanente, el borrado de Records y el registro de entities no son tools MCP públicas. Esas operaciones quedan para humano o CLI cuando el contrato activo lo requiere.
+Usa `collection_query` para leer una página pequeña de contactos. Sigue el cursor devuelto antes de considerar que el resultado está completo.
 
-## Lee una página acotada
+## Actualiza un contacto
+
+Usa `crm_record` para actualizar un contacto que ya existe:
+
+```text
+crm_record action:'update'
+  collection_id:'<collection-id>'
+  record_id:'<contact-record-id>'
+  status:'Contactado'
+```
+
+La actualización se aplica al contacto indicado en la solicitud. No convierte una empresa, licitación, adjudicación o resultado de investigación en un contacto.
+
+## Archiva una persona
+
+Usa `people_file` para guardar en la colección de contactos adecuada a una persona que ya fue revelada o importada.
+
+Buscar un contacto, archivarlo y actualizarlo son acciones separadas. Cada una puede tener permisos o confirmaciones diferentes.
+
+## Primera llamada segura
+
+Empieza con una lectura acotada:
 
 ```text
 collection_query op:'query' collection_id:'<collection-id>' limit:25
-  → { status:'ok'|'continue'|'incomplete', data:[ ... ], page_info:{ ... } }
 ```
 
-Un resultado `continue` no es cobertura completa. Sigue su cursor antes de concluir. Lee los `criterion_refs` de la Collection con `context_get` cuando el trabajo dependa del criterio comercial del equipo.
-
-## Actualiza un Record existente
-
-```text
-crm_record action:'update' collection_id:'<collection-id>' record_id:'<contact-record-id>' status:'Contactado'
-```
-
-`crm_record` no crea un Record de empresa o evidencia. Puede actualizar campos, moverse por el ciclo de la Collection, leer historial acotado y programar seguimiento de un Record de contacto existente.
-
-## Archiva una persona adquirida
-
-`people_file` es el único camino de la familia MCP actual que crea un Record de contacto. Acepta una persona revelada o importada y una Collection CRM de contactos adecuada. No crea Records desde resultados de búsqueda de empresas, evidencia de mercado u observaciones de investigación.
-
-## Retirado del catálogo
-
-Las siguientes superficies no tienen ninguna tool MCP; una llamada legacy `driftless_*` responde "Unknown tool":
-
-- configuración genérica de Collection (`collection`);
-- purge permanente de Collection (`collection_purge`);
-- borrado de Record (`collection_record_delete`);
-- registro de entities (`entity`).
-
-El nombre anterior `collection_record` es un alias oculto de compatibilidad para lecturas acotadas y actualización de Records existentes. No conserva el comportamiento antiguo de crear con `add` o `bulk`; usa `people_file` para crear contactos.
-
-## Permisos
-
-| Scope o rol | Cubre |
-| --- | --- |
-| lectura de miembro | lecturas de Collections y Records, criterio e historial |
-| `work:write` | actualización de Records de contacto, archivado y acciones de ciclo |
-
-Los clientes MCP cachean schemas por sesión. Reconecta el conector después de una actualización para recibir herramientas eliminadas o cambiadas.
+Confirma el workspace, la colección y el contacto antes de pedirle al agente que haga un cambio.
 
 ## Relacionado
 
-- [El workspace de Brein](/es/product/workspace) — superficies y límite contacto/CRM.
-- [MCP: Sequences](/es/mcp/sequences) — preparación y activación gobernada de campañas.
-- [CLI: Collections](/es/cli/collections) y [API: Collections](/es/api/collections) — referencias técnicas equivalentes.
-- [MCP & OAuth](/es/mcp/overview) — configuración, autenticación y scopes.
+- [MCP y OAuth](/es/mcp/overview)
+- [El workspace de Brein](/es/product/workspace)
+- [Herramientas de campañas](/es/mcp/sequences)

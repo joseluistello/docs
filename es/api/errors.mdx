@@ -1,11 +1,11 @@
 ---
 title: 'Errores'
-description: 'El sobre de error de Brein es parte del contrato de agentes e integraciones: ramifica según code, nunca según prosa.'
+description: 'La respuesta de error compartida por la API REST de Brein.'
 ---
 
-Los errores de la API de Brein usan un sobre JSON estable en REST, CLI y MCP. Ramifica según el `code` legible por máquina; usa `message` sólo para contexto humano.
+Brein usa una misma forma JSON de error en la API REST. Decide con el `code` legible por máquinas, no con el `message` para humanos.
 
-## El sobre
+## Forma del error
 
 ```json
 {
@@ -21,55 +21,27 @@ Los errores de la API de Brein usan un sobre JSON estable en REST, CLI y MCP. Ra
 | Campo | Significado |
 |---|---|
 | `statusCode` | Estado HTTP. |
-| `code` | Código estable y legible por máquina. Los códigos nuevos son aditivos. |
-| `message` | Contexto humano. Puede cambiar; no lo parsees. |
-| `request_id` | Id de correlación. Inclúyelo en reportes. |
-| `retryable` | `true` sólo cuando la operación puede funcionar después. Un `4xx` definitivo no se reintenta. |
+| `code` | Código estable legible por máquinas. |
+| `message` | Contexto para humanos. Puede cambiar. |
+| `request_id` | Inclúyelo cuando pidas ayuda. |
+| `retryable` | Indica si la misma operación puede funcionar después. |
 | `endpoint` | Método y ruta que produjeron el error. |
 
-Algunos dominios agregan un bloque tipado. Market Data, por ejemplo, puede agregar `market_data` con un código semántico, la razón del rechazo, una corrección sugerida y una acción de recuperación de vocabulario cerrado.
+## Códigos comunes
 
-## Categorías comunes
-
-### Validación e input
-
-- `VALIDATION_FAILED` — un campo falló la validación.
-- `BAD_REQUEST` — petición inválida genérica sin código más específico.
-- `INVALID_VALUE` — el valor viola una restricción del servidor o base de datos.
-- `INVALID_ID` — el identificador está mal formado.
-- `REQUIRED_FIELD` — falta un campo requerido.
-- `FK_VIOLATION` — el registro referenciado no existe.
-- `SECRET_DETECTED` — una escritura parecía contener una credencial y fue bloqueada; el error no repite el secreto.
-
-### Acceso y scope del workspace
-
-- `UNAUTHORIZED` — falta la API key o el token no es válido.
-- `FORBIDDEN` — el caller está autenticado pero no tiene permiso.
-- `INSUFFICIENT_ROLE` — el caller no tiene el rol requerido.
-- `NOT_FOUND` — el recurso no está disponible para ese caller.
-- `METHOD_NOT_ALLOWED` — la ruta existe pero el verbo no; sigue el header `Allow`.
-
-### Saldo comercial
-
-- `COMMERCIAL_CALL_LIMIT_REACHED` — el workspace agotó sus requests comerciales incluidos.
-- `COMMERCIAL_CREDITS_EXHAUSTED` — no quedan créditos de inteligencia.
-- `COMMERCIAL_CREDITS_INSUFFICIENT` — la acción solicitada supera el allowance restante.
-
-Estas respuestas incluyen el estado de uso actual y una siguiente acción cuando el workspace necesita un plan o decisión comercial. Un allowance agotado es un `402` definitivo; no lo reintentes como si fuera un fallo transitorio.
-
-### Conflictos y fallos del servidor
-
-- `DUPLICATE` o `DUPLICATE_TOPIC` — el recurso ya existe.
-- `VERSION_CONFLICT` — el objeto cambió después de leerlo; vuelve a leer y reaplica el cambio.
-- `RATE_LIMITED` — reduce el ritmo y sigue la guía de retry.
-- `INTERNAL` — fallo inesperado; conserva el `request_id` al reportarlo.
-
-## La gobernanza retirada no es un ejemplo de error
-
-El ciclo anterior Note → Knowledge de aprobación y merge está retirado. No uses una ruta `approve` o `merge` como ejemplo canónico de identidad, autorización o manejo de errores. Las escrituras actuales usan el contrato de documentos, CRM, mercado, research o campañas.
+| Estado | Significado | Qué hacer |
+|---|---|---|
+| `400` | La solicitud es inválida. | Corrige el input antes de reintentar. |
+| `401` | Falta la key o el token, o no es válido. | Reconecta o reemplaza la credencial. |
+| `403` | El caller está autenticado, pero no tiene permiso. | Revisa membresía y rol del workspace. |
+| `404` | El recurso no está disponible para este caller. | Revisa el workspace y el id. |
+| `402` | El workspace alcanzó un límite comercial. | Muestra el uso y la siguiente acción. |
+| `409` | El recurso cambió o ya existe. | Lee el estado actual antes de reintentar. |
+| `429` | Demasiadas solicitudes. | Espera y sigue la guía de la respuesta. |
+| `500` | El servidor no pudo completar la solicitud. | Conserva el `request_id` al reportarlo. |
 
 ## Relacionado
 
-- [Resumen de API](/es/api/overview)
-- [Market Data](/es/api/market-data) — rechazos tipados y acciones de recuperación.
-- [MCP & OAuth](/es/mcp/overview) — autenticación de protocolo y límites de compatibilidad.
+- [Resumen de la API](/es/api/overview)
+- [Seguridad](/es/security/overview)
+- [MCP y OAuth](/es/mcp/overview)

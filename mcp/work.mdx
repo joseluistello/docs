@@ -1,63 +1,47 @@
 ---
-title: 'MCP: CRM (Prospectos)'
-description: 'Read bounded contact Records and advance existing CRM work through governed MCP tools.'
+title: 'MCP: Prospectos'
+description: 'Read and update the contact records your team has chosen in Prospectos.'
 ---
 
-Prospectos is Brein's operational system of record. Its Records represent people the workspace has explicitly acquired and filed; a company, market row, or evidence item is not a CRM Record.
+Prospectos is where the team works with people it has explicitly chosen. A company or market result is not automatically a contact.
 
-The MCP surface separates the three jobs:
+Read [MCP and OAuth](/mcp/overview) first for authentication and workspace permissions.
 
-- `collection_query` reads bounded Collection and Record pages;
-- `crm_record` updates, inspects history for, and schedules follow-up on an existing contact Record;
-- `crm_collection` creates an empty, reusable CRM container;
-- `people_file` files a revealed or imported person as a contact Record.
+## Read contacts
 
-Generic schema CRUD, permanent purge, record deletion, and the entity registry are not public MCP tools. Those remain human or CLI operations where the active product contract requires them.
+Use `collection_query` to read a small page of contact records. Follow the returned cursor before treating the result as complete.
 
-## Read a bounded page
+## Update a contact
+
+Use `crm_record` to update a contact that already exists:
+
+```text
+crm_record action:'update'
+  collection_id:'<collection-id>'
+  record_id:'<contact-record-id>'
+  status:'Contactado'
+```
+
+The update applies to the contact named in the request. It does not turn a company, tender, award, or research result into a contact.
+
+## File a person
+
+Use `people_file` to save a person who has already been revealed or imported into the appropriate contact collection.
+
+A contact lookup, filing the contact, and updating the contact are separate actions. Each one can have a different permission or confirmation requirement.
+
+## Safe first call
+
+Start with a bounded read:
 
 ```text
 collection_query op:'query' collection_id:'<collection-id>' limit:25
-  → { status:'ok'|'continue'|'incomplete', data:[ ... ], page_info:{ ... } }
 ```
 
-A `continue` result is not complete coverage. Follow its cursor before making a conclusion. Read the Collection's `criterion_refs` with `context_get` when the work depends on the team's commercial criterion.
-
-## Update an existing contact Record
-
-```text
-crm_record action:'update' collection_id:'<collection-id>' record_id:'<contact-record-id>' status:'Contactado'
-```
-
-`crm_record` does not create a company or evidence Record. It can update fields, move through the Collection lifecycle, read bounded history, and schedule a follow-up for an existing contact Record.
-
-## File an acquired person
-
-`people_file` is the only path in the current MCP family that creates a contact Record. It accepts a person that was already revealed or imported and an appropriate contact CRM Collection. It does not create Records from company search results, market evidence, or research observations.
-
-## Deleted from the catalog
-
-The following surfaces have no MCP tool at all; a legacy `driftless_*` call answers "Unknown tool":
-
-- generic Collection configuration (`collection`);
-- permanent Collection purge (`collection_purge`);
-- Record delete (`collection_record_delete`);
-- the entity registry (`entity`).
-
-The pre-rename `collection_record` name is a hidden compatibility alias for bounded reads and existing-Record updates. It does not provide the old `add` or `bulk` creation behavior; use `people_file` for contact creation.
-
-## Permissions
-
-| Scope or role | Covers |
-| --- | --- |
-| member read | Collection and Record reads, criterion context, and history |
-| `work:write` | Existing contact Record updates, contact filing, and lifecycle actions |
-
-MCP clients cache tool schemas per connector session. Reconnect the connector after an upgrade so removed or changed tools are reflected in the client.
+Confirm the workspace, collection, and contact before asking the agent to make a change.
 
 ## Related
 
-- [The Brein workspace](/product/workspace) — customer surfaces and the contact/CRM boundary.
-- [MCP: Sequences](/mcp/sequences) — governed campaign preparation and activation.
-- [CLI: Collections](/cli/collections) and [API: Collections](/api/collections) — equivalent technical references.
-- [MCP & OAuth](/mcp/overview) — setup, authentication, and scopes.
+- [MCP and OAuth](/mcp/overview)
+- [The Brein workspace](/product/workspace)
+- [Campaign tools](/mcp/sequences)

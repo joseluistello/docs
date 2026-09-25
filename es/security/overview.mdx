@@ -1,55 +1,42 @@
 ---
 title: 'Seguridad'
-description: 'Cómo Brein protege credenciales del workspace, datos comerciales, evidencia de mercado y email saliente.'
+description: 'Cómo Brein protege las credenciales, los datos del workspace, la información de contactos y los emails enviados.'
 ---
 
-## Credenciales y cifrado
+Brein mantiene los datos del cliente asociados al workspace y al rol autorizado para usarlos.
 
-Brein guarda las credenciales mediante la frontera de cifrado de la plataforma. Las API keys, tokens OAuth, credenciales de providers y secretos de webhooks no son output del cliente. Las API keys crudas se muestran sólo al crearlas y no se pueden recuperar después.
+## Credenciales
 
-Las API keys usan el prefijo de compatibilidad `drift_` durante la migración. Una key está acotada a los workspaces autorizados; no es una super key. Si eliminas a una persona del workspace, su acceso vivo se elimina mediante la frontera de autorización.
+Brein guarda API keys, tokens OAuth, credenciales de providers y secretos de webhooks detrás de su frontera de cifrado. Una API key cruda se muestra sólo cuando se crea.
+
+Una key puede limitarse a workspaces y roles concretos. No es una key universal. Cuando una persona sale de un workspace, su acceso activo se elimina mediante las reglas normales de membresía.
 
 ## Autenticación
 
-- **API key:** para CLI, CI y clientes técnicos soportados.
-- **OAuth 2.0 con PKCE:** para clientes MCP como ChatGPT y Claude.
-- **Sesión Clerk:** para acciones autenticadas del dashboard.
+- **OAuth 2.0 con PKCE** — lo usan clientes MCP publicados como ChatGPT y Claude.
+- **API key** — la usan integraciones soportadas y clientes self-hosted.
+- **Sesión autenticada del dashboard** — se usa para acciones dentro del producto Brein.
 
-Los recursos del workspace están protegidos por el guard global. Las rutas públicas son infraestructura, sitio público, webhooks firmados, discovery OAuth o share/unsubscribe explícitos; no son un bypass general de datos del workspace.
+Cada solicitud al workspace está autenticada y limitada a ese workspace. Una credencial autorizada en un workspace no puede leer los datos de otro.
 
-## Fronteras MCP
+## Qué puede hacer un cliente de IA
 
-El adaptador MCP es un adaptador de protocolo sobre la API REST. No accede directamente a Postgres ni a librerías internas. Las tools públicas usan nombres neutrales; los aliases de marca son llamadas de compatibilidad, no capacidades adicionales.
+El servidor MCP expone las capacidades comerciales del workspace autorizado. No le da al modelo acceso sin restricciones a la base de datos.
 
-Cada llamada está acotada al workspace. Las tools retiradas de gobernanza, grafo, entity genérica, Broker genérico, members y borrado de topics responden `Unknown tool` en vez de conceder un permiso nuevo silenciosamente.
+Los límites importantes siguen existiendo:
 
-## Manejo de datos
-
-| Dato | Frontera |
-|---|---|
-| Documentos de Cerebro | Contexto comercial o de ingeniería durable y acotado al workspace. |
-| Datos de empresas y personas | Enmascarados para lecturas model-facing; las coordenadas sólo salen por un camino explícito y gobernado. |
-| Evidencia de mercado | Respuestas tipadas, de sólo lectura, acotadas y con procedencia. |
-| Records CRM | Records centrados en contactos, creados por personas reveladas/importadas archivadas explícitamente. |
-| Email saliente | Datos de destinatarios autorizados y contenido renderizado; no se importa contenido del inbox. |
-| Credenciales de providers | Vault server-side; nunca se devuelven a la superficie customer-facing. |
-
-Brein no lee, lista, busca, resume ni devuelve mensajes, hilos, contactos, borradores o email personal del cliente. Puede observar interacción con mensajes que envió: aperturas, clics y la existencia de una respuesta. **Detectar interacción no es leer el mailbox.**
+- los datos de contacto permanecen ocultos hasta que la persona elige una búsqueda;
+- la búsqueda de contactos, las escrituras CRM y la activación de campañas tienen sus propias revisiones y confirmaciones;
+- los resultados de mercado e investigación muestran qué se encontró y qué sigue incierto;
+- una campaña preparada no se envía sola;
+- Brein no lee el inbox del cliente ni expone credenciales almacenadas.
 
 ## Email saliente
 
-Un remitente conectado es conectividad, no permiso para enviar. Brein exige una audiencia y un contenido revisados antes de activar, más una confirmación explícita separada. Las comprobaciones de supresión y derechos se aplican antes del despacho. Una revelación de contacto vacía o fallida no se cobra y nunca amplía automáticamente a otro provider.
+Un sender conectado no es permiso para enviar. Brein revisa la audiencia, el contenido, los derechos y el estado del sender antes de activar. Una campaña requiere una confirmación humana separada.
 
-## Extracción y controles de red
+Brein puede observar la interacción con mensajes que envió, como una apertura, un clic o la existencia de una respuesta. No importa el contenido del inbox del cliente.
 
-- las requests de mercado están acotadas por persona verificada y workspace;
-- las entregas exitosas tienen un techo horario respaldado por base de datos;
-- la paginación usa cursores opacos autenticados;
-- referencias de records y source ids no son handles intercambiables de extracción;
-- las respuestas autenticadas no son cacheables;
-- los webhooks firmados de providers se verifican antes de procesarse;
-- el tráfico entre clientes y la API usa HTTPS.
+## Reportar un problema de seguridad
 
-## Reportes
-
-Si descubres un problema de seguridad, repórtalo de forma privada a `security@driftless.icu`. No abras un issue público con credenciales, datos de clientes o contenidos de mensajes.
+Reporta una posible vulnerabilidad de forma privada a [security@driftless.icu](mailto:security@driftless.icu). No incluyas credenciales, datos de clientes ni contenidos de mensajes en un issue público.

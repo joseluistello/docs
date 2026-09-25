@@ -1,36 +1,19 @@
 ---
-title: 'MCP: Integraciones'
-description: 'Lee datos de un provider ya conectado y listo mediante tools MCP sintetizadas y específicas del provider.'
+title: 'MCP: Conexiones'
+description: 'Lee datos de un provider que un administrador ya conectó a Brein.'
 ---
 
-Los sistemas externos se alcanzan por MCP mediante **tools de conector sintetizadas**. Una conexión provider lista puede exponer:
+MCP puede exponer herramientas de lectura acotadas para un provider que ya está conectado y listo. Una conexión típica puede exponer herramientas como:
 
-- `<provider>_records` — una página acotada y consciente de deltas de un modelo sincronizado;
-- `<provider>_document_content` — contenido acotado y citable de un provider de documentos.
+- `<provider>_records` — registros de un modelo sincronizado del provider;
+- `<provider>_document_content` — contenido de un provider de documentos conectado.
 
-Estas tools operan sobre una Connection que ya existe. No conectan ni desconectan un provider; el setup sigue siendo un flujo humano en el dashboard o la CLI. Si la capability requerida no está listada, reporta la capability faltante en vez de escribir un script.
+Estas herramientas no conectan, desconectan ni configuran un provider. Un administrador gestiona la conexión en el producto Brein. Si una herramienta de lectura necesaria no aparece, reporta la capability faltante en vez de inventar una acción.
 
-No existe un router MCP genérico `broker`. Una llamada legacy `driftless_broker` responde `Unknown tool`. El Broker sigue disponible mediante sus superficies CLI y REST.
-
-## Tools sintetizadas
-
-| Tool | Efecto | Límite |
-|---|---|---|
-| `<provider>_records` | lectura | Datos sincronizados del provider; página y cursor acotados. |
-| `<provider>_document_content` | lectura | Contenido live o materializado según la capability del provider. |
-
-Una tool aparece sólo cuando la síntesis está habilitada, el provider expone una capability de lectura `ready` y el rollout del workspace lo permite. Una tool listada todavía requiere las comprobaciones normales de conexión, grant y autorización del workspace.
-
-## Gates y permisos
-
-El Broker y las tools sintetizadas son fail-closed. El feature switch, rollout externo, grant por principal, política de operación, salud de la conexión y scope del workspace deben permitir la lectura. Una tool listada no significa usable.
-
-Las capabilities de escritura nunca se sintetizan. Conectar un provider, desplegar una función de conector o administrar grants está fuera de esta superficie MCP de lectura.
+No se sintetizan herramientas de escritura en esta superficie MCP.
 
 ## Relacionado
 
-- [Integraciones y conexiones](/es/integrations/overview)
-- [Broker](/es/integrations/broker)
-- [CLI: Integraciones y Broker](/es/cli/integrations)
-- [API: Broker y conexiones](/es/api/broker)
-- [MCP & OAuth](/es/mcp/overview)
+- [MCP y OAuth](/es/mcp/overview)
+- [Seguridad](/es/security/overview)
+- [El workspace de Brein](/es/product/workspace)

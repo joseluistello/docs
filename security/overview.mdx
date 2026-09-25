@@ -1,55 +1,42 @@
 ---
 title: 'Security'
-description: 'How Brein protects workspace credentials, commercial data, market evidence, and outbound email.'
+description: 'How Brein protects credentials, workspace data, contact information, and outbound email.'
 ---
 
-## Credentials and encryption
+Brein keeps customer data tied to the workspace and role that is authorized to use it.
 
-Brein stores credentials through the platform encryption boundary. API keys, OAuth tokens, provider credentials, and webhook secrets are not customer output. Raw API keys are shown only at creation and are not recoverable afterward.
+## Credentials
 
-API keys use the compatibility `drift_` prefix during migration. A key is scoped to authorized workspaces; it is not a super key. Removing a person's membership removes that person's live access through the workspace authorization boundary.
+Brein stores API keys, OAuth tokens, provider credentials, and webhook secrets behind its platform encryption boundary. A raw API key is shown only when it is created.
+
+A key can be limited to specific workspaces and roles. It is not a universal key. Removing a person from a workspace removes that person's live access through the normal membership rules.
 
 ## Authentication
 
-- **API key:** for CLI, CI, and supported technical clients.
-- **OAuth 2.0 with PKCE:** for MCP clients such as ChatGPT and Claude.
-- **Clerk session:** for authenticated dashboard actions.
+- **OAuth 2.0 with PKCE** — used by published MCP clients such as ChatGPT and Claude.
+- **API key** — used by supported integrations and self-hosted clients.
+- **Authenticated dashboard session** — used for actions taken in the Brein product.
 
-Workspace resources are protected by the global workspace guard. Public routes are explicit infrastructure, public-site, signed-webhook, OAuth discovery, or share/unsubscribe routes; they are not a general bypass for workspace data.
+Every workspace request is authenticated and workspace-scoped. A credential authorized for one workspace cannot read another workspace's data.
 
-## MCP boundaries
+## What an AI client can do
 
-The MCP adapter is a protocol adapter over the REST API. It does not access Postgres or internal libraries directly. Public tools use neutral capability names; branded aliases are compatibility calls, not additional capabilities.
+The MCP server exposes the commercial capabilities of the authorized workspace. It does not give the model unrestricted database access.
 
-Every call is workspace-scoped. Retired governance, graph, generic entity, generic Broker, member, and topic-delete tools answer `Unknown tool` rather than silently granting a new permission.
+Important boundaries remain:
 
-## Data handling
-
-| Data | Boundary |
-|---|---|
-| Cerebro documents | Workspace-scoped durable commercial or engineering context. |
-| Company and people data | Masked for model-facing reads; contact coordinates are only delivered through an explicit, governed path. |
-| Market evidence | Typed, read-only, bounded, provenance-bearing responses. |
-| CRM Records | Contact-first records created by explicitly filed revealed/imported people. |
-| Outbound email | Authorized recipient data and rendered campaign content; no inbox content is imported. |
-| Provider credentials | Server-side vault storage; never returned to the customer-facing tool surface. |
-
-Brein does not read, list, search, summarize, or return a customer's inbox messages, threads, contacts, drafts, or personal email. It can observe engagement with messages it sent: opens, clicks, and the existence of a reply. **Detecting engagement is not reading the mailbox.**
+- contact details stay masked until the person chooses a lookup;
+- contact lookup, CRM writes, and campaign activation have their own review and confirmation rules;
+- market and research results show what was found and what remains uncertain;
+- a prepared campaign does not send itself;
+- Brein does not read a customer's inbox or expose stored credentials.
 
 ## Outbound email
 
-A connected sender is connectivity, not permission to send. Brein requires a reviewed audience and content before activation, plus a separate explicit confirmation. Suppression and rights checks are enforced before dispatch. A failed or empty contact reveal is not charged and never widens automatically to another provider.
+A connected sender is not permission to send. Brein checks the selected audience, content, rights, and sender health before activation. A campaign requires a separate human confirmation.
 
-## Extraction and network controls
+Brein can observe engagement with messages it sent, such as an open, a click, or the existence of a reply. It does not import the contents of a customer's inbox.
 
-- market requests are bounded per verified person and workspace;
-- successful deliveries have a database-backed hourly ceiling;
-- pagination uses authenticated opaque cursors;
-- record references and source ids are not interchangeable extraction handles;
-- authenticated responses are non-cacheable;
-- signed provider webhooks are verified before processing;
-- traffic between clients and the API uses HTTPS.
+## Reporting a security issue
 
-## Reporting
-
-If you discover a security issue, report it privately to `security@driftless.icu`. Do not open a public issue with credentials, customer data, or message contents.
+Report a suspected issue privately to [security@driftless.icu](mailto:security@driftless.icu). Do not include credentials, customer data, or message contents in a public issue.

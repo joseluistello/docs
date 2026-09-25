@@ -73,45 +73,29 @@
             ]
           },
           {
-            "group": "Commercial work",
+            "group": "Work in Brein",
             "icon": "layers",
             "pages": [
               "guides/overview",
-              "guides/commercial-onboarding",
-              "concepts/core-loop",
-              "concepts/collections"
+              "guides/commercial-onboarding"
             ]
           },
           {
             "group": "Connect your AI",
             "icon": "sparkles",
             "pages": [
-              "connect"
+              "connect",
+              "integrations/self-hosted-agents"
             ]
           },
           {
-            "group": "Developer access",
+            "group": "For developers",
             "icon": "code",
             "pages": [
               "mcp/overview",
-              "integrations/overview",
-              "integrations/notion",
-              "integrations/broker",
-              "integrations/self-hosted-agents",
-              "cli/setup"
-            ]
-          },
-          {
-            "group": "Engineering context",
-            "icon": "brain",
-            "pages": [
-              "concepts/workspaces",
-              "concepts/areas",
-              "concepts/topics",
-              "concepts/governance",
-              "concepts/drift",
-              "agents/setup",
-              "api/repos"
+              "api/overview",
+              "api/errors",
+              "security/overview"
             ]
           },
           {
@@ -123,38 +107,6 @@
               "mcp/sequences",
               "mcp/integrations",
               "mcp/collaboration"
-            ]
-          },
-          {
-            "group": "CLI reference",
-            "icon": "terminal",
-            "pages": [
-              "cli/context",
-              "cli/collections",
-              "cli/integrations",
-              "cli/admin"
-            ]
-          },
-          {
-            "group": "API reference",
-            "icon": "code",
-            "pages": [
-              "api/overview",
-              "api/errors",
-              "api/workspaces",
-              "api/topics",
-              "api/collections",
-              "api/integrations",
-              "api/broker",
-              "api/repos",
-              "api/market-data"
-            ]
-          },
-          {
-            "group": "Platform",
-            "icon": "shield-check",
-            "pages": [
-              "security/overview"
             ]
           }
         ]
@@ -172,45 +124,29 @@
             ]
           },
           {
-            "group": "Trabajo comercial",
+            "group": "Trabaja en Brein",
             "icon": "layers",
             "pages": [
               "es/guides/overview",
-              "es/guides/commercial-onboarding",
-              "es/concepts/core-loop",
-              "es/concepts/collections"
+              "es/guides/commercial-onboarding"
             ]
           },
           {
             "group": "Conecta tu IA",
             "icon": "sparkles",
             "pages": [
-              "es/connect"
+              "es/connect",
+              "es/integrations/self-hosted-agents"
             ]
           },
           {
-            "group": "Acceso de developers",
+            "group": "Para desarrolladores",
             "icon": "code",
             "pages": [
               "es/mcp/overview",
-              "es/integrations/overview",
-              "es/integrations/notion",
-              "es/integrations/broker",
-              "es/integrations/self-hosted-agents",
-              "es/cli/setup"
-            ]
-          },
-          {
-            "group": "Contexto de ingeniería",
-            "icon": "brain",
-            "pages": [
-              "es/concepts/workspaces",
-              "es/concepts/areas",
-              "es/concepts/topics",
-              "es/concepts/governance",
-              "es/concepts/drift",
-              "es/agents/setup",
-              "es/api/repos"
+              "es/api/overview",
+              "es/api/errors",
+              "es/security/overview"
             ]
           },
           {
@@ -222,38 +158,6 @@
               "es/mcp/sequences",
               "es/mcp/integrations",
               "es/mcp/collaboration"
-            ]
-          },
-          {
-            "group": "Referencia CLI",
-            "icon": "terminal",
-            "pages": [
-              "es/cli/context",
-              "es/cli/collections",
-              "es/cli/integrations",
-              "es/cli/admin"
-            ]
-          },
-          {
-            "group": "Referencia API",
-            "icon": "code",
-            "pages": [
-              "es/api/overview",
-              "es/api/errors",
-              "es/api/workspaces",
-              "es/api/topics",
-              "es/api/collections",
-              "es/api/integrations",
-              "es/api/broker",
-              "es/api/repos",
-              "es/api/market-data"
-            ]
-          },
-          {
-            "group": "Plataforma",
-            "icon": "shield-check",
-            "pages": [
-              "es/security/overview"
             ]
           }
         ]
@@ -289,20 +193,8 @@
   },
   "redirects": [
     {
-      "source": "/cli/reference",
-      "destination": "/cli/setup"
-    },
-    {
-      "source": "/cli/installation",
-      "destination": "/cli/setup"
-    },
-    {
       "source": "/api/reference",
       "destination": "/api/overview"
-    },
-    {
-      "source": "/cli/graph",
-      "destination": "/cli/context"
     },
     {
       "source": "/dashboard/overview",
@@ -318,31 +210,23 @@
     },
     {
       "source": "/guides/operate-a-collection",
-      "destination": "/concepts/collections"
+      "destination": "/guides/overview"
     },
     {
       "source": "/guides/govern-agent-learning",
-      "destination": "/concepts/core-loop"
+      "destination": "/guides/overview"
     },
     {
       "source": "/guides/clean-workspace-context",
-      "destination": "/concepts/core-loop"
+      "destination": "/guides/overview"
     },
     {
       "source": "/guides/external-context-with-broker",
-      "destination": "/integrations/overview"
-    },
-    {
-      "source": "/cli/agents",
-      "destination": "/cli/context"
-    },
-    {
-      "source": "/cli/sync",
-      "destination": "/cli/context"
+      "destination": "/mcp/integrations"
     },
     {
       "source": "/api/collaboration",
-      "destination": "/concepts/core-loop"
+      "destination": "/mcp/collaboration"
     },
     {
       "source": "/es/dashboard/overview",
@@ -358,31 +242,23 @@
     },
     {
       "source": "/es/guides/operate-a-collection",
-      "destination": "/es/concepts/collections"
+      "destination": "/es/guides/overview"
     },
     {
       "source": "/es/guides/govern-agent-learning",
-      "destination": "/es/concepts/core-loop"
+      "destination": "/es/guides/overview"
     },
     {
       "source": "/es/guides/clean-workspace-context",
-      "destination": "/es/concepts/core-loop"
+      "destination": "/es/guides/overview"
     },
     {
       "source": "/es/guides/external-context-with-broker",
-      "destination": "/es/integrations/overview"
-    },
-    {
-      "source": "/es/cli/agents",
-      "destination": "/es/cli/context"
-    },
-    {
-      "source": "/es/cli/sync",
-      "destination": "/es/cli/context"
+      "destination": "/es/mcp/integrations"
     },
     {
       "source": "/es/api/collaboration",
-      "destination": "/es/concepts/core-loop"
+      "destination": "/es/mcp/collaboration"
     }
   ],
   "seo": {

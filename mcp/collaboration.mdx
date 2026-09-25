@@ -1,38 +1,24 @@
 ---
 title: 'MCP: Workspace'
-description: 'List the workspaces a credential can reach, and read commercial usage.'
+description: 'List the workspaces available to a credential and read commercial usage.'
 ---
 
-These tools resolve the identifiers the write tools expect and read workspace usage.
+These tools help an agent select the correct workspace and understand its current usage before it asks for more data or changes something.
 
-## Workspaces and usage
+## Workspace and usage tools
 
-| Tool | Purpose | Returns |
-| --- | --- | --- |
-| `workspaces` | List the workspaces your credential can target | workspace slugs |
-| `usage` | Read the monthly commercial allowance (requests + credits) | plan, limits, renewal |
-
-Permissions: member-level reads. Availability: Available. Every tool accepts an optional `workspace` argument to target another workspace your credential is authorized for.
-
-```text
-workspaces → [ { slug, name, role } ]
-```
-
-## Deleted from the catalog
-
-`members` (listing the workspace's members) and comments (`context_comment`) have
-no MCP tool at all — their definitions and handlers were removed, not merely
-hidden; a legacy `driftless_*` call now answers "Unknown tool". Both remain
-available through the CLI and dashboard — listing members is not agent work.
-
-## Permissions
-
-| Scope | Covers |
+| Tool | Purpose |
 | --- | --- |
-| member (read) | `workspaces`, `usage` |
+| `workspaces` | List the workspaces the credential can access. |
+| `usage` | Read the current plan, limits, renewal date, and commercial usage. |
+
+Both tools require member-level access and accept a workspace only when the credential is authorized for it.
+
+## Confirm before acting
+
+Ask the agent to show the workspace name before a write, contact lookup, or campaign action. A credential for one workspace must never be used to read another workspace.
 
 ## Related
 
-- [Workspaces](/concepts/workspaces) - the concept.
-- [CLI: Context Commands](/cli/context) - members from the terminal.
-- [MCP & OAuth](/mcp/overview) - setup, auth, and scopes.
+- [MCP and OAuth](/mcp/overview)
+- [Security](/security/overview)

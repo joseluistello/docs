@@ -1,61 +1,55 @@
 ---
 title: 'The Brein workspace'
-description: "A map of Brein's commercial surfaces, access paths, and boundaries."
+description: "A plain-language map of where to find companies, people, contacts, campaigns, research, and team context in Brein."
 ---
 
-Brein is a commercial-intelligence workspace for founders and sales teams. It connects the commercial criterion, published market evidence, people, CRM work, campaigns, and durable research without making one object stand in for another.
+Brein keeps the commercial work in one place. Different spaces answer different questions, so a company you found does not silently become a contact or a campaign recipient.
 
-## Start with the commercial loop
+## The spaces you will use
 
-```txt
-Signal → Context → Evidence → Inference → Action → Human decision → Outcome → Learning
-```
+### Find the market
 
-A signal is interpreted against Cerebro. Evidence is inspected through the governed market or research surfaces. The person chooses the next action, and Brein preserves the result so the next run starts from more than a blank conversation.
+- **Empresas** — search for companies that fit the market your team described.
+- **Personas** — review masked public professional profiles inside a company result.
+- **Licitaciones** — explore published tenders and the source behind each result.
+- **Proveedores** — explore Brein's published supplier sources.
+- **Adjudicaciones** — review awards, buyers, suppliers, amounts, currencies, and dates as published.
+- **Registros** — review permits and registry information, including the limits of each source.
+- **Investigador** — run a deeper research brief and return with a document that can be reviewed and kept.
 
-## Customer surfaces
+### Keep the context
 
-### Market and evidence
+- **Cerebro** — save your offer, ideal customer, exclusions, geography, buyer language, playbooks, and team decisions as documents.
+- **Configuración** — manage the workspace, team, billing, connections, privacy, and deletion.
 
-- **Empresas** searches a bounded company directory by the criterion the person submitted. Search does not silently reveal contact coordinates.
-- **Personas** are masked public decision-makers found inside a company result. They are candidates until the person explicitly chooses which ones to reveal.
-- **Contactos** is the acquired contact book: people already revealed or imported. It is distinct from the discovery surface.
-- **Licitaciones** preserves tender-specific filters and provenance.
-- **Proveedores** exposes Brein's owned supplier corpora without presenting them as an exhaustive global directory.
-- **Adjudicaciones** preserves buyer, supplier, amount, currency, and date semantics for published awards.
-- **Registros** exposes permits and registry evidence with exact-name and coverage limits.
-- **Investigador** runs durable research and returns a portable dossier with verification gates.
+### Work the opportunity
 
-### Work and activation
+- **Personas** are candidates while their contact details remain masked.
+- **Contactos** are people whose details have already been revealed or imported.
+- **Prospectos** is where your team works with people it has explicitly chosen.
+- **Campañas** lets you prepare an email sequence from contacts with an available work email. A draft is not a send.
 
-- **Cerebro** stores durable commercial truth as markdown documents in folders: offer, ICP, exclusions, signals, geography, buyers, messages, playbooks, and learned decisions.
-- **Prospectos** is the CRM operational system of record. A Record is created only when a revealed or imported person is explicitly filed.
-- **Campañas** prepares a bounded outbound sequence from contacts whose work email is already available. Drafting is inert; each send path requires explicit human authorization over the reviewed audience and content.
-- **Configuración** manages the workspace, team, billing and credits, connections, privacy, and deletion. Areas, tags, and background workers remain backend-only during beta.
-
-## The contact and CRM boundary
-
-This boundary is intentional:
+## One simple rule
 
 ```text
-Company or evidence → market context
-Person candidate → masked discovery
-Revealed/imported person → acquired Contact
-Explicitly filed person → CRM Record
+Company or market result → research context
+Masked person → candidate
+Revealed or imported person → acquired contact
+Chosen contact → Prospectos record
+Reviewed contact + approved content → Campaign
 ```
 
-Selecting a company does not create a CRM Record. A supplier observation, tender, award, permit, risk mark, or research row does not create one either. Those objects can provide context to a person's Record only when the server attests the relationship.
+This keeps discovery separate from spending credits and sending messages.
 
-## Access paths
+## Start with the right place
 
-The dashboard is the primary customer surface. The same governed capabilities are available through:
+| If you want to... | Go to... |
+| --- | --- |
+| Find companies | **Empresas** |
+| Review people without revealing details | **Personas** |
+| Work a chosen contact | **Prospectos** |
+| Prepare a sequence | **Campañas** |
+| Keep team knowledge | **Cerebro** |
+| Run a deeper research brief | **Investigador** |
 
-- [CLI](/cli/setup) for terminal workflows, workspace administration, and supported engineering context;
-- [MCP](/mcp/overview) for AI clients over `https://api.trybrein.com/mcp`;
-- [REST API](/api/overview) for integrations and typed market operations.
-
-The `driftless` command, package namespace, API-key prefix, and hidden MCP aliases remain compatibility contracts. Public MCP tools use neutral capability names.
-
-## What Brein does not promise
-
-Brein is not an exhaustive market database, a generic schema builder, a project manager, an agent-observability console, or an autonomous sales system. A search is bounded, an inference is not a fact, a contact reveal costs a separate explicit authorization, and sending a message is never implied by preparing a draft.
+[Start with the first opportunities](/guides/commercial-onboarding) or [connect your AI](/connect).

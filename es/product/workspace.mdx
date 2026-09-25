@@ -1,61 +1,55 @@
 ---
 title: 'El workspace de Brein'
-description: "Un mapa de las superficies comerciales, caminos de acceso y límites de Brein."
+description: "Un mapa sencillo de dónde encontrar empresas, personas, contactos, campañas, investigación y contexto del equipo en Brein."
 ---
 
-Brein es un workspace de inteligencia comercial para fundadores y equipos de ventas. Conecta el criterio comercial, la evidencia de mercado publicada, las personas, el trabajo CRM, las campañas y la investigación durable sin hacer que un objeto represente a otro.
+Brein mantiene el trabajo comercial en un solo lugar. Cada espacio responde una pregunta distinta, para que una empresa que encontraste no se convierta sin querer en un contacto o destinatario de campaña.
 
-## Comienza con el loop comercial
+## Los espacios que vas a usar
 
-```txt
-Señal → Contexto → Evidencia → Inferencia → Acción → Decisión humana → Resultado → Aprendizaje
+### Encontrar el mercado
+
+- **Empresas** — busca empresas que encajen con el mercado que describió tu equipo.
+- **Personas** — revisa perfiles profesionales públicos enmascarados dentro del resultado de una empresa.
+- **Licitaciones** — explora licitaciones publicadas y la fuente de cada resultado.
+- **Proveedores** — explora las fuentes de proveedores publicadas por Brein.
+- **Adjudicaciones** — revisa adjudicaciones, compradores, proveedores, montos, monedas y fechas tal como fueron publicadas.
+- **Registros** — revisa permisos e información de registros, incluyendo los límites de cada fuente.
+- **Investigador** — ejecuta una investigación más profunda y vuelve con un documento que se puede revisar y conservar.
+
+### Conservar el contexto
+
+- **Cerebro** — guarda tu oferta, cliente ideal, exclusiones, geografía, lenguaje de compradores, playbooks y decisiones del equipo como documentos.
+- **Configuración** — administra el workspace, equipo, facturación, conexiones, privacidad y eliminación.
+
+### Trabajar la oportunidad
+
+- **Personas** son candidatas mientras sus datos permanezcan ocultos.
+- **Contactos** son personas cuyos datos ya fueron revelados o importados.
+- **Prospectos** es donde tu equipo trabaja con las personas que eligió explícitamente.
+- **Campañas** permite preparar una secuencia de email desde contactos con correo laboral disponible. Un borrador no es un envío.
+
+## Una regla sencilla
+
+```text
+Empresa o resultado de mercado → contexto de investigación
+Persona enmascarada → candidata
+Persona revelada o importada → contacto adquirido
+Contacto elegido → Record de Prospectos
+Contacto revisado + contenido aprobado → Campaña
 ```
 
-Una señal se interpreta contra Cerebro. La evidencia se revisa mediante las superficies gobernadas de mercado o investigación. La persona elige la siguiente acción y Brein conserva el resultado para que la siguiente corrida no empiece desde una conversación vacía.
+Esto mantiene el descubrimiento separado del gasto de créditos y del envío de mensajes.
 
-## Superficies del cliente
+## Empieza por el lugar correcto
 
-### Mercado y evidencia
+| Si quieres... | Ve a... |
+| --- | --- |
+| Encontrar empresas | **Empresas** |
+| Revisar personas sin revelar datos | **Personas** |
+| Trabajar un contacto elegido | **Prospectos** |
+| Preparar una secuencia | **Campañas** |
+| Conservar el conocimiento del equipo | **Cerebro** |
+| Hacer una investigación más profunda | **Investigador** |
 
-- **Empresas** busca en un directorio acotado de empresas usando el criterio que la persona entrega. La búsqueda no revela coordenadas en silencio.
-- **Personas** son decisores públicos enmascarados encontrados dentro del resultado de una empresa. Son candidatos hasta que la persona elige explícitamente a quién revelar.
-- **Contactos** es la libreta adquirida: personas ya reveladas o importadas. Es distinta de la superficie de descubrimiento.
-- **Licitaciones** conserva filtros y procedencia específicos de licitación.
-- **Proveedores** expone los corpora de proveedores de Brein sin presentarlos como un directorio global exhaustivo.
-- **Adjudicaciones** conserva comprador, proveedor, monto, moneda y fecha de adjudicaciones publicadas.
-- **Registros** expone permisos y evidencia de registros con límites de nombre exacto y cobertura.
-- **Investigador** ejecuta investigación durable y devuelve un dossier portátil con compuertas de verificación.
-
-### Trabajo y activación
-
-- **Cerebro** guarda la verdad comercial durable como documentos markdown en carpetas: oferta, ICP, exclusiones, señales, geografía, compradores, mensajes, playbooks y decisiones aprendidas.
-- **Prospectos** es el sistema operacional de registro del CRM. Un Record se crea sólo cuando una persona revelada o importada se archiva explícitamente.
-- **Campañas** prepara una secuencia saliente acotada desde contactos cuyo correo laboral ya está disponible. Crear un borrador es inerte; cada envío exige autorización humana explícita sobre la audiencia y el contenido revisados.
-- **Configuración** administra el workspace, equipo, facturación y créditos, conexiones, privacidad y eliminación. Las áreas, tags y background workers permanecen backend-only durante beta.
-
-## El límite entre contacto y CRM
-
-Este límite es intencional:
-
-```txt
-Empresa o evidencia → contexto de mercado
-Persona candidata → descubrimiento enmascarado
-Persona revelada/importada → Contacto adquirido
-Persona archivada explícitamente → Record del CRM
-```
-
-Seleccionar una empresa no crea un Record del CRM. Una observación de proveedor, licitación, adjudicación, permiso, marca de riesgo o fila de investigación tampoco. Esos objetos pueden aportar contexto al Record de una persona sólo cuando el servidor atestigua la relación.
-
-## Caminos de acceso
-
-El dashboard es la superficie principal del cliente. Las mismas capacidades gobernadas están disponibles mediante:
-
-- [CLI](/es/cli/setup) para terminal, administración y contexto de ingeniería soportado;
-- [MCP](/es/mcp/overview) para clientes de IA sobre `https://api.trybrein.com/mcp`;
-- [API REST](/es/api/overview) para integraciones y operaciones tipadas de mercado.
-
-El comando `driftless`, el namespace del paquete, el prefijo de API key y los aliases MCP ocultos siguen siendo contratos de compatibilidad. Las tools MCP públicas usan nombres neutrales.
-
-## Lo que Brein no promete
-
-Brein no es una base de datos exhaustiva, un constructor genérico de esquemas, un gestor de proyectos, una consola de observabilidad de agentes ni un sistema de ventas autónomo. Una búsqueda es acotada, una inferencia no es un hecho, una revelación de contacto exige autorización explícita separada y preparar un borrador nunca implica enviar un mensaje.
+[Empieza con las primeras oportunidades](/es/guides/commercial-onboarding) o [conecta tu IA](/es/connect).

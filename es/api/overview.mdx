@@ -1,6 +1,6 @@
 ---
 title: 'Resumen de la API'
-description: 'La superficie REST autenticada de Brein: workspace, Cerebro, CRM, inteligencia de mercado, research y campañas.'
+description: 'La API REST autenticada para crear software que trabaje con un workspace de Brein.'
 ---
 
 URL base:
@@ -9,62 +9,46 @@ URL base:
 https://api.trybrein.com/api/v1
 ```
 
+Usa la API REST cuando tu software necesite leer o cambiar directamente un workspace de Brein. Para un cliente de IA, empieza por [MCP y OAuth](/es/mcp/overview).
+
 ## Autenticación
 
-Los recursos de workspace requieren API key, sesión Clerk o token OAuth autorizado. Una credencial ausente o inválida devuelve `401`; un caller autenticado sin el scope requerido devuelve `403`.
+Envía una API key con scope en el header `x-api-key`:
 
 ```bash
 curl https://api.trybrein.com/api/v1/me \
-  -H "x-api-key: drift_your_api_key_here"
+  -H "x-api-key: <your-api-key>"
 ```
 
-Trata las API keys como secretos. Brein las guarda cifradas y muestra el valor crudo sólo al crearlas.
+Una key faltante o inválida devuelve `401`. Una key válida sin permiso para el workspace o la acción devuelve `403`.
 
-## Recursos del workspace
+Conserva las keys en tu gestor de secretos. Nunca las commitees ni las muestres en output para clientes.
 
-| Recurso | Rutas principales | Trabajo del cliente |
-|---|---|---|
-| Workspace y equipo | `/workspaces/:slug`, `/members`, `/api-keys` | Administra workspace, personas, roles y credenciales con scope. |
-| Uso comercial | `/workspaces/:slug/commercial-usage` | Lee plan, requests, créditos de inteligencia, créditos de contacto, renovación y acción de upgrade. |
-| Documentos de Cerebro | `/workspaces/:slug/documents/*` | Lee y escribe documentos markdown en carpetas. |
-| CRM | `/workspaces/:slug/collections/*` | Opera Records de contactos y su ciclo acotado. |
-| Empresas y personas | `/workspaces/:slug/radar/*` | Busca empresas, descubre personas enmascaradas, revela seleccionadas, gestiona contactos adquiridos y los archiva. |
-| Listas | `/workspaces/:slug/radar/lists/*` | Guarda, refresca, cotiza, revela y exporta un resultado de búsqueda de personas. |
-| Market Data | `/workspaces/:slug/market-data/*` | Ejecuta operaciones tipadas y de sólo lectura de proveedores, oportunidades, adjudicaciones, riesgos y permisos. |
-| Explorer | `/workspaces/:slug/intelligence/explorer/*` | Busca e inspecciona el explorer de empresas/evidencia del cliente. |
-| Research | `/workspaces/:slug/research/*` | Inicia, inspecciona, transmite y cancela corridas durables de Investigador. |
-| Email y campañas | `/workspaces/:slug/email-campaigns/*`, `/email-mailboxes/*` | Prepara, revisa, autoriza, activa, pausa y mide secuencias. |
-| Integraciones | `/workspaces/:slug/integrations/*` | Lista, conecta, confirma, reconecta y desconecta providers. |
-| Broker | `/workspaces/:slug/broker/*` | Inspecciona y ejecuta operaciones gobernadas sobre una conexión existente. |
+## Recursos principales
 
-Cada ruta de workspace está acotada al workspace y autenticada. Un caller no puede usar la key o ruta de un workspace para leer datos de otro.
+| Recurso | Ruta base | Úsalo para |
+| --- | --- | --- |
+| Workspace y uso | `/workspaces/:slug` | Leer detalles del workspace, acceso del equipo y uso comercial. |
+| Cerebro | `/workspaces/:slug/documents/*` | Leer y actualizar documentos en carpetas. |
+| Prospectos | `/workspaces/:slug/collections/*` | Leer y actualizar contactos. |
+| Empresas y personas | `/workspaces/:slug/radar/*` | Buscar empresas, revisar personas enmascaradas y trabajar con contactos adquiridos. |
+| Información de mercado | `/workspaces/:slug/market-data/*` | Ejecutar operaciones de sólo lectura sobre proveedores, oportunidades, adjudicaciones, riesgos y permisos. |
+| Research | `/workspaces/:slug/research/*` | Iniciar, inspeccionar y cancelar corridas de Investigador. |
+| Campañas | `/workspaces/:slug/email-campaigns/*` | Preparar, revisar, activar, pausar y medir secuencias. |
+| Conexiones | `/workspaces/:slug/integrations/*` | Listar y administrar conexiones aprobadas. |
 
-## Rutas públicas de infraestructura
+Cada ruta de workspace está limitada al workspace de la URL. No asumas que una ruta de un workspace puede usarse con las credenciales de otro.
 
-La superficie pública es intencionalmente pequeña. Incluye health y version, bootstrap inicial del workspace, contenido público del sitio, endpoints OAuth de discovery/register/token, receptores de webhooks firmados, endpoints de unsubscribe/share y otras rutas explícitamente públicas.
+## Uso y acciones
 
-La allowlist pública exacta la poseen la API y sus decoradores de ruta; no infieras que un recurso es público porque un cliente no muestre sesión. Consulta [Errores](/es/api/errors) para el sobre común y [Seguridad](/es/security/overview) para los límites de datos.
+Las lecturas y las acciones de contacto tienen reglas de costo diferentes. Una respuesta exitosa puede incluir el estado de uso actual. Si se agota una allowance, la API devuelve un `402` accionable en vez de continuar silenciosamente.
 
-## Límite entre mercado y activación
+Buscar un contacto es separado de guardar un contacto. Crear una campaña es separado de activarla. Una campaña no se envía hasta que la confirmación humana requerida termina correctamente.
 
-El análisis de mercado es separado de la activación de contactos:
+## Errores
 
-- lecturas, conteos, comparaciones, historial y agregados de mercado no gastan créditos;
-- un detalle de empresa que realmente devuelve una coordenada publicada puede gastar un crédito de inteligencia;
-- la revelación de contactos es persona-primero, se cotiza para el grupo seleccionado, requiere confirmación separada y se cobra contra el saldo separado de contactos;
-- una revelación vacía o fallida se reembolsa y nunca activa un fallback automático.
+Consulta [Errores](/es/api/errors) para ver la forma de respuesta y los códigos comunes.
 
-Las respuestas comerciales exitosas exponen el estado de uso actual. Un allowance agotado falla cerrado con un `402` accionable; no se convierte en una cancelación genérica.
+## Seguridad
 
-## Superficies de compatibilidad
-
-La API conserva montadas algunas rutas de Topics, sharing, relations y CLI legacy. No son el modelo principal del cliente. El modelo actual de Cerebro son documentos en carpetas; el CRM actual son Records centrados en contactos; y el catálogo MCP actual usa nombres neutrales. Las filas y rutas históricas pueden permanecer hasta que sus consumidores migren, pero compatibilidad no crea una nueva superficie de producto.
-
-## Referencias
-
-- [Workspace y equipo](/es/api/workspaces)
-- [Topics y documentos de Cerebro](/es/api/topics)
-- [Collections y Records](/es/api/collections)
-- [Market Data](/es/api/market-data)
-- [MCP & OAuth](/es/mcp/overview)
-- [Seguridad](/es/security/overview)
+Consulta [Seguridad](/es/security/overview) para conocer el almacenamiento de credenciales, el acceso por workspace, los límites de contactos y las reglas de email saliente.

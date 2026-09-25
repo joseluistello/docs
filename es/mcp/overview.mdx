@@ -1,239 +1,71 @@
 ---
 title: 'MCP y OAuth'
-description: "Conecta ChatGPT, Claude y otros clientes de IA a tu workspace de Brein mediante Model Context Protocol."
+description: 'Conecta un cliente de IA al workspace de Brein y conoce las herramientas disponibles.'
 ---
 
-Brein incluye un servidor MCP (Model Context Protocol) que expone la inteligencia comercial de tu workspace a clientes de IA. ChatGPT, Claude, Copilot y cualquier cliente compatible con MCP pueden leer y escribir el criterio comercial, trabajar los records de CRM (Prospectos), correr análisis de mercado y operar el ciclo de personas persona-primero gobernado a través de él.
+Brein expone las capacidades comerciales actuales de tu workspace mediante MCP. Un cliente de IA puede leer el contexto del equipo, buscar información de mercado, trabajar con contactos, preparar campañas e investigar.
 
-Las tools públicas usan nombres de capability neutrales, sin prefijo de producto (por ejemplo `context_get`, `market_search_suppliers`, `people_reveal`). Los nombres `brein_*` y `driftless_*` resuelven a la misma tool como **aliases ocultos de compatibilidad**: no se anuncian en `tools/list`, pero siguen resolviendo del lado del servidor para que las integraciones existentes sigan funcionando. Ver la tabla alias → tool pública más abajo, en Compatibilidad. Esto aplica sólo a las tools que todavía existen — un nombre de la lista de Retirado del catálogo público (más abajo) responde "Unknown tool" bajo cualquier alias, sin ventana de compatibilidad.
+Para configurar un cliente, empieza por [Conecta tu IA](/es/connect).
 
-## Cómo funciona
+## Con qué puede trabajar el cliente
 
-El adaptador corre en `apps/mcp` y traduce llamadas MCP al REST API existente. Es **sólo un adaptador de protocolo**: nunca accede directamente a Postgres, librerías internas ni administración del workspace.
+El catálogo público contiene **52 herramientas** en estas áreas:
 
-## Empieza por acá: retrieve
-
-Cuando tienes una **tarea** pero todavía no un slug de criterio, la primera llamada es
-`context_retrieve`: devuelve el contexto comercial registrado más relevante del equipo
-para una descripción de tarea, un conjunto de archivos, o ambos, ordenado y acotado.
-Compone los filtros de search + match-files + list para que no los encadenes a mano.
-Los cuerpos vuelven **brief** por defecto (el *porqué* durable, no el `content` completo);
-llama a `context_get` para el único topic cuyo cuerpo completo necesites, o pasa
-`view: "full"`. El mismo contrato **active-only, acotado, brief-por-defecto** también
-aplica a la superficie operativa: `collection_query` lee Records (estado
-`ok`/`continue`/`incomplete`), `people_file` archiva una persona revelada o importada y
-`crm_record` actualiza un Record de contacto existente.
-
-## Familias de herramientas
-
-La superficie de MCP está documentada por familia en la **Referencia MCP**. Para configurar un cliente, empieza por [Conecta tu IA](/es/connect). Usa esta página para autenticación y capacidades; abre una página de familia para nombres de tools, actions, parámetros, permisos y ejemplos.
-
-| Familia | Qué cubre | Referencia |
+| Área | Qué puede hacer el agente | Referencia |
 | --- | --- | --- |
-| Criterio (Cerebro) | Recuperar, leer y mantener el criterio comercial (oferta, ICP, exclusiones, señales, geografía, compradores, mensajes, playbooks) | [MCP: Criterio](/es/mcp/knowledge) |
-| CRM (Prospectos) | Leer y trabajar Records de contacto — el sistema de registro de personas que el workspace adquirió explícitamente | [MCP: CRM](/es/mcp/work) |
-| Secuencias | Preparar, revisar, autorizar explícitamente, activar, pausar, cancelar y medir secuencias de email acotadas | [MCP: Secuencias](/es/mcp/sequences) |
-| Integraciones | Tools sintetizadas `<provider>_records` / `_document_content` a partir de providers conectados y listos | [MCP: Integraciones](/es/mcp/integrations) |
-| Workspace | Workspaces y uso | [MCP: Workspace y colaboración](/es/mcp/collaboration) |
-| Uso comercial | `usage` lee el plan, las requests y créditos mensuales, la fecha de renovación, la disponibilidad de investigación promocional y la acción de contactar ventas. La lectura en sí es gratuita. | [Resumen de API](/es/api/overview#uso-comercial) |
-| Inteligencia comercial | Trece tools de análisis tipado para suppliers, comparación de segmentos, opportunities, awards, marcas de riesgo y permits. El análisis nunca devuelve coordenadas de contacto. `people_quote` cotiza personas seleccionadas gratis; `people_reveal` corre sólo tras confirmación explícita con un tope de créditos. No hay router genérico de acciones ni tool de detalle masivo de suppliers. Reconecta después de cambios de schema porque los clientes pueden cachear definiciones de tools. | [Market Data](/es/api/market-data) |
+| Cerebro | Recuperar y actualizar la oferta, el perfil del comprador, las exclusiones, la geografía, los mensajes y las decisiones del equipo. | [Herramientas de Cerebro](/es/mcp/knowledge) |
+| Prospectos | Leer contactos, actualizar un contacto y archivar una persona revelada o importada. | [Herramientas CRM](/es/mcp/work) |
+| Mercado | Buscar proveedores, oportunidades, adjudicaciones, riesgos y permisos publicados. | [Herramientas de mercado](/es/mcp/overview#herramientas-de-mercado) |
+| Campañas | Crear, previsualizar, aprobar, activar, pausar y medir secuencias. | [Herramientas de campañas](/es/mcp/sequences) |
+| Investigador | Iniciar e inspeccionar investigación durable. | [Herramientas de research](/es/mcp/overview#herramientas-de-investigacion) |
+| Workspace | Leer los workspaces y el uso comercial disponibles para la credencial. | [Herramientas de workspace](/es/mcp/collaboration) |
+| Conexiones | Leer desde un provider que un administrador ya conectó. | [Herramientas de conexiones](/es/mcp/integrations) |
 
-El catálogo público contiene **52 tools**: Criterio y Cerebro con forma de documento,
-CRM, Empresas y personas, Listas, workspace y uso, 13 operaciones tipadas de mercado,
-el ciclo de secuencias gobernado y un starter de tareas delegadas. Cubre el criterio
-comercial, el CRM centrado en contactos, contactos adquiridos, inteligencia de mercado,
-preparación de campañas y activación autorizada explícitamente por una persona.
+El cliente puede leer una lista amplia, pero cada llamada se verifica contra el workspace y el rol autorizados.
 
-No cubre administración del workspace, registro de repos, gestión de keys, conexión
-de providers, autoría o deploy de scripts de integración, disparo manual de agent runs,
-grafo de topics, relaciones, comentarios, gobernanza retirada, eventos, areas/tags,
-doctor, CRUD genérico de schema, el router genérico de Broker, compartir, listado de
-miembros ni borrado de topics. Esas tools retiradas no son públicas; un nombre legacy
-`driftless_*` responde "Unknown tool". Ver Retirado del catálogo público, más abajo.
+## Herramientas de mercado
 
-**La recuperación del criterio son cuatro tools.** `context_search`, `context_list` y
-`context_get_for_files` ya no son públicas; `context_retrieve` absorbió sus argumentos.
-Siguen resolviendo durante la ventana de compatibilidad como aliases ocultos, para que
-un cliente ya conectado no se rompa. Una sesión nueva ve el catálogo neutral actual.
+Las herramientas de mercado responden preguntas acotadas sobre proveedores, oportunidades, adjudicaciones, riesgos y permisos publicados. Devuelven el resultado y el contexto de sus fuentes; no revelan coordenadas de contacto ni prometen un mercado completo.
 
-### Las vistas de payload mantienen las lecturas rápidas
+## Herramientas de investigación
 
-Las lecturas devuelven por defecto un **payload liviano** para que un resultado nunca
-inunde tu contexto. El vocabulario es el mismo en todos lados (`summary` / `brief` / `full`):
-
-- **`summary`**: una fila índice (id/slug, título, trust). Las listas y
-  la búsqueda devuelven esto, acotado (5 primeros en search, 40 primeros en list).
-- **`brief`** (el default para `context_retrieve` y
-  `context_get_for_files`) es el **porqué** durable: what / decisions /
-  gotchas / invariants, **sin** el `content` completo. Aproximadamente 76% más liviano
-  que un cuerpo completo.
-- **`full`**: todo, incluyendo el pesado cuerpo `content`. **Nunca es default en otro
-  lado**; entras a él con `view: "full"`. `context_get` es la excepción: usa
-  `full` por defecto porque nombraste el único topic que querías.
-
-El patrón: `retrieve` / `get_for_files` en `brief` para ver *cuál* topic gobierna el
-trabajo, y después `context_get` (full) para el único cuerpo que de verdad
-necesitas, en vez de traer todos los cuerpos completos de entrada.
-
-### Las connector tools se sintetizan por workspace
-
-Más allá de las tools estáticas de arriba, el servidor MCP puede **sintetizar** tools
-extra de sólo lectura por workspace a partir de las capabilities `ready` de un provider:
-`<provider>_records` y `<provider>_document_content` (por ejemplo,
-`notion_document_content`). Aparecen sólo cuando la síntesis de tools del broker está
-habilitada y el provider expone una capability `ready`, de efecto lectura y de un kind
-sintetizable, con un tope por workspace. Que una tool esté listada no la vuelve usable
-— una tool sintetizada igual resuelve a través del broker API, donde un caller externo
-queda sujeto a rollout y grants — y **las capabilities de escritura nunca se sintetizan**.
-Ver [Broker](/es/integrations/broker).
-
-### Compatibilidad
-
-Durante la ventana de migración, ambos aliases de marca de cada tool pública resuelven
-a la misma capability neutral con exactamente el mismo schema:
-
-| Aliases ocultos | Tool pública |
-| --- | --- |
-| `brein_context_*`, `driftless_context_*` | `context_*` |
-| `brein_collection_query`, `driftless_collection_query` | `collection_query` |
-| `brein_market_*`, `driftless_market_*` | `market_*` |
-| `brein_company_*`, `driftless_company_*`; `brein_people_*`, `driftless_people_*` | `company_*`, `people_*` |
-| `brein_workspaces`, `driftless_workspaces`; `brein_usage`, `driftless_usage` | `workspaces`, `usage` |
-
-**Aliases de renombre/fusión con plazo (60 días, MCP · 2) — un segundo tipo de alias, más
-acotado.** No son aliases de prefijo de marca (los de arriba): la tool MISMA fue
-renombrada o fusionada, así que el nombre viejo queda excluido de `tools/list` pero
-sigue resolviendo, y su resultado trae un `next_action` que nombra el reemplazo.
-
-| Alias oculto (60 días) | Reemplazo |
-| --- | --- |
-| `context_search`, `context_list`, `context_get_for_files` (con cualquier prefijo de marca) | `context_retrieve` |
-| `collection_record` (con cualquier prefijo de marca) | `crm_record` (escrituras) / `collection_query` (lecturas) |
-
-Después de ese plazo, estos dos responden "Unknown tool" como cualquier otro nombre retirado.
-
-### Retirado del catálogo público
-
-Las siguientes 27 tools **no tienen ninguna tool de MCP** — sus definiciones y handlers
-fueron eliminados, no sólo ocultos. Cualquier alias (`driftless_*`, `brein_*`, el
-nombre neutral) responde "Unknown tool":
-
-- Auxiliares y salud de Cerebro (las tools de gobernanza están retiradas): `note_add`, `context_graph`,
-  `context_relations`, `context_comment`,
-  `context_proposals`, `context_create_proposal`,
-  `context_propose`, `context_approve`,
-  `context_merge`, `context_events`,
-  `context_doctor`;
-- CRUD de schema de CRM/taxonomía: `collection`, `collection_purge`,
-  `collection_record_delete`, `entity`, `areas`, `tags`;
-- el Contact Path retirado (`contact_discover`, `contact_select`,
-  `contacts_acquired`, `contact_quote`, `contact_unlock`) — reemplazado por el
-  ciclo persona-primero `people_*`;
-- el router genérico de conectores: `broker`;
-- borrado de topics (`context_delete`) — ninguna tool de agente borra un record ni un topic;
-- publicar a la web (`context_share`) — publicar es trabajo humano;
-- preparación de drafts (`contact_prepare`) — redactar es trabajo de Campañas, no del MCP;
-- listado de miembros (`members`) — no es trabajo comercial.
-
-Sus datos y operaciones de compatibilidad siguen disponibles mediante CLI y dashboard cuando un consumidor técnico activo los necesita.
-
-<Note>
-Los clientes MCP (claude.ai, ChatGPT) **cachean los schemas de tools por sesión de conector**. Después de que Brein publique un cambio de schema, reconecta el conector (o inicia una sesión nueva) para recibirlo. De lo contrario los parámetros o tools nuevos no estarán disponibles, y una sesión que cacheó un catálogo con marca lo seguirá viendo.
-</Note>
+Las herramientas de investigación inician e inspeccionan corridas de Investigador. El resultado es un documento para revisar, no una conclusión automática. Las reglas, precios, permisos y detalles institucionales actuales pueden quedar como verificaciones explícitas.
 
 ## Autenticación
 
-Todas las solicitudes MCP requieren autenticación. Las solicitudes sin autenticar reciben un HTTP 401 con un header `WWW-Authenticate` que apunta a los endpoints de discovery de OAuth.
+Usa OAuth cuando el cliente lo soporte:
 
-Hay dos formas de autenticarse:
+1. Agrega el endpoint de Brein: `https://api.trybrein.com/mcp`
+2. Abre el flujo de autorización del cliente.
+3. Inicia sesión en Brein y selecciona el workspace.
+4. Aprueba los permisos solicitados.
 
-- **API key**: pasa tu API key en el header `X-API-Key`. Ideal para el CLI, agentes y CI.
-- **OAuth 2.0**: para clientes de IA publicados (ChatGPT, Claude) que necesitan consentimiento por usuario. El servidor soporta registro dinámico de clientes y PKCE.
+Una API key está disponible para integraciones soportadas y clientes self-hosted. Envíala mediante el almacén de secretos del cliente como `X-API-Key`; no pongas la key cruda en un repositorio.
 
-### Conectando con una API key
+Un `401` significa que la credencial falta o no es válida. Un `403` significa que la credencial es válida, pero no puede realizar la acción solicitada en ese workspace.
 
-Agrega esto a tu `claude_desktop_config.json` o equivalente:
+## Una primera solicitud segura
 
-```json
-{
-  "mcpServers": {
-    "brein": {
-      "url": "https://api.trybrein.com/mcp",
-      "headers": {
-        "X-API-Key": "drift_your_api_key_here"
-      }
-    }
-  }
-}
+Empieza con una lectura sin efectos externos:
+
+```text
+Muestra los workspaces de Brein que puedo usar y el uso comercial actual.
 ```
 
-Para desarrollo local, usa `http://localhost:3020/mcp` y tu API key local.
+Después prueba una búsqueda acotada o un fragmento del contexto del equipo antes de pedirle al agente que cambie un contacto o prepare una campaña. El agente debe mostrar la audiencia, el precio o la solicitud de aprobación antes de una acción que gaste créditos o envíe un mensaje.
 
-### Conectando con OAuth (Claude.ai, ChatGPT)
+## Comportamiento de las herramientas
 
-La aplicación publicada en ChatGPT se llama **Brein**. Se conecta al mismo workspace
-autenticado de Brein y usa los mismos permisos y contratos de tools de MCP.
+- Las lecturas devuelven un resultado enfocado e indican cuando hay más páginas disponibles.
+- Los datos de contacto permanecen ocultos hasta que la persona elige una búsqueda concreta.
+- Las escrituras CRM se aplican al Record de contacto indicado en la solicitud.
+- Un borrador de campaña no se envía solo; la activación requiere otra confirmación.
+- Los clientes pueden cachear su lista de herramientas. Reconecta después de un cambio si falta una herramienta nueva.
 
-Los clientes publicados usan OAuth 2.0 con PKCE. El flujo es totalmente automático:
+## Relacionado
 
-1. Instala Brein en ChatGPT, o ingresa `https://api.trybrein.com/mcp` como el endpoint MCP en Claude.ai
-2. El cliente descubre los endpoints de OAuth automáticamente vía `/.well-known/oauth-protected-resource` y `/.well-known/oauth-authorization-server`
-3. Autorizas en la pantalla de consentimiento de Brein
-4. El cliente recibe un bearer token y lo usa para las llamadas MCP dentro del workspace autorizado
-
-No hace falta configuración OAuth manual. El cliente maneja el registro, PKCE y el refresh de tokens.
-
-## Referencia de OAuth 2.0
-
-### Registro dinámico de clientes
-
-Cualquier cliente puede registrarse sin autenticación:
-
-```bash
-curl -X POST https://api.trybrein.com/api/v1/oauth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "client_name": "Mi Cliente de IA",
-    "redirect_uris": ["https://myapp.com/oauth/callback"]
-  }'
-```
-
-### Scopes de OAuth
-
-| Scope | Descripción |
-|-------|-------------|
-| `context:read` | Lee topics y contexto |
-| `topics:create` | Crea topics nuevos |
-| `topics:write` | Actualiza topics existentes |
-| `work:write` | Escribe collections, records, entities, comentarios, tags, areas, más las acciones de integración y publicación de enlaces públicos |
-| `context:diff` | Lee el diff de topics para cambios locales |
-| `broker:read` | Lee connections, capabilities y records del broker |
-| `broker:invoke` | Invoca una operación del broker |
-| `broker:admin` | Gestiona grants y criterion del broker |
-| `market_data:read` | Lee inteligencia comercial (suppliers, opportunities, awards, marcas de riesgo, permits) — ver [Market Data](/es/api/market-data) |
-| `commercial:discover` | Busca empresas y descubre personas enmascaradas — nunca una coordenada |
-| `commercial:read` | Lee la libreta de contactos adquiridos y cotiza un reveal — solo precio, saldo y disponibilidad, nunca coordenadas |
-| `commercial:activate` | Revela, archiva o actualiza el estado de personas seleccionadas tras una cotización exacta y confirmación explícita. Nunca implícito |
-| `offline_access` | Refresca el acceso sin reconectar |
-
-Los scopes `broker:*` se aplican solo cuando el Broker está habilitado, y gobiernan su lane encima del rollout y los grants. La metadata de discovery anuncia un subconjunto de scopes; el conjunto aplicado es la autoridad.
-
-`market_data:read` es el scope documentado y canónico para las lecturas de market-data, pero la emisión OAuth por defecto de hoy todavía no lo otorga — `context:read` sigue satisfaciendo esas rutas de forma transicional para que ningún caller existente se rompa.
-
-### Endpoints
-
-| Método | Path | Propósito |
-|--------|------|---------|
-| `GET` | `/.well-known/oauth-protected-resource` | Metadata del recurso MCP (RFC 9728) |
-| `GET` | `/.well-known/oauth-authorization-server` | Metadata del authorization server (RFC 8414) |
-| `GET` | `/.well-known/openid-configuration` | Alias de discovery compatible con OIDC |
-| `GET` | `/api/v1/oauth/authorize` | Pantalla de consentimiento de autorización (redirige al dashboard) |
-| `POST` | `/api/v1/oauth/token` | Intercambia el code por un access token |
-| `POST` | `/api/v1/oauth/register` | Registra un cliente OAuth (RFC 7591) |
-| `POST` | `/api/v1/oauth/revoke` | Revoca un access token |
-
-## Seguridad de tokens
-
-- Los authorization codes, access tokens y refresh tokens se guardan **solo como hashes**, nunca en texto plano
-- Los tokens nunca se loguean ni se devuelven después de la emisión inicial
-- El servidor MCP no importa `@driftless/db`, `typeorm` ni ninguna librería interna; llama exclusivamente a la REST API
+- [Conecta tu IA](/es/connect)
+- [Seguridad](/es/security/overview)
+- [Herramientas de Cerebro](/es/mcp/knowledge)
+- [Herramientas CRM](/es/mcp/work)
+- [Herramientas de campañas](/es/mcp/sequences)

@@ -1,83 +1,59 @@
 ---
 title: 'Agentes self-hosted (OpenClaw y Hermes)'
-description: "Conecta OpenClaw o Hermes con Brein mediante la CLI de compatibilidad, el skill de ingeniería o el endpoint MCP remoto."
+description: "Conecta OpenClaw o Hermes al servidor MCP alojado de Brein."
 ---
 
-OpenClaw y Hermes Agent son agentes self-hosted que pueden tener acceso al shell, skills y soporte MCP. Brein ofrece dos puertas separadas:
+OpenClaw y Hermes pueden usar Brein mediante el mismo servidor MCP remoto que cualquier otro cliente de IA:
 
-- **CLI + skill de ingeniería** para un workflow de repositorio: leer el contexto relevante de Cerebro antes de editar y escribir un documento limpio después de aprender algo durable.
-- **MCP remoto** para un cliente de IA que debe trabajar con las capacidades comerciales gobernadas de Brein.
-
-Los nombres de CLI y paquete siguen siendo contratos de compatibilidad `driftless`. El endpoint MCP público usa nombres neutrales.
-
-## Datos de conexión compartidos
-
-| | Valor |
-|---|---|
-| MCP endpoint | `https://api.trybrein.com/mcp` |
-| Autenticación MCP | `X-API-Key: drift_…` u OAuth para clientes soportados |
-| Paquete CLI | `@driftless-sh/cli` |
-| API key | Dashboard de Brein → **Settings → API Keys** |
-
-Una key está acotada a los workspaces que autorizó. No se convierte en una super key. Si eliminas a una persona del workspace, su acceso a ese workspace se revoca mediante la frontera normal de autorización.
-
-## CLI + skill
-
-Instala y autentica en el host que ejecuta el agente:
-
-```bash
-pnpm add -g @driftless-sh/cli
-# o
-npm install -g @driftless-sh/cli
-driftless login --key drift_your_api_key_here
+```text
+https://api.trybrein.com/mcp
 ```
 
-Desde el repositorio o raíz del workspace:
+El cliente elige el modelo. Brein aporta los datos y las acciones del workspace, incluyendo Empresas, Personas, Prospectos, Campañas, Cerebro e Investigador.
+
+## Usa OAuth cuando esté disponible
+
+Prefiere el flujo OAuth normal del cliente. Selecciona el workspace de Brein que quieres que use el agente, revisa los permisos solicitados y termina la autorización en el navegador.
+
+## Usa una API key cuando el cliente requiere headers
+
+Crea una key con scope en **Configuración → API Keys** y consérvala en el almacén de secretos o variables de entorno del cliente.
+
+Para OpenClaw, la conexión tiene esta forma:
 
 ```bash
-driftless install-skill
-```
-
-El skill enseña el loop de contexto de ingeniería. No autoriza al agente a enviar emails, revelar contactos, gastar créditos ni tomar una decisión CRM importante sin la autorización del servidor.
-
-## MCP remoto
-
-Para OpenClaw:
-
-```bash
-openclaw mcp add driftless \
+openclaw mcp add brein \
   --url https://api.trybrein.com/mcp \
   --transport streamable-http \
-  --header X-API-Key:drift_your_api_key_here
+  --header "X-API-Key: ${BREIN_API_KEY}"
 ```
 
-Para Hermes, agrega el endpoint bajo `mcp_servers` en `~/.hermes/config.yaml`:
+Para Hermes, agrega el servidor bajo `mcp_servers`:
 
 ```yaml
 mcp_servers:
-  driftless:
+  brein:
     url: "https://api.trybrein.com/mcp"
     headers:
-      X-API-Key: "drift_your_api_key_here"
+      X-API-Key: "${BREIN_API_KEY}"
     tools:
       resources: false
       prompts: false
 ```
 
-Usa los nombres neutrales actuales, como `context_retrieve`, `context_get`, `collection_query`, `crm_record`, `people_search` y `sequence_activate`. No construyas una integración nueva alrededor de tools retiradas como `driftless_context_search`, `driftless_collection`, `driftless_tags` o `driftless_areas`.
+La expansión exacta de la variable depende del cliente. Nunca guardes la key cruda en un repositorio compartido.
 
 ## Verifica la conexión
 
-1. Ejecuta una lectura acotada como `context_retrieve` o `collection_query`.
-2. Confirma que la respuesta pertenece al workspace correcto.
-3. Si necesitas una escritura, usa el contrato actual y la autorización explícita que indique el resultado.
-4. Reconecta o recarga MCP después de un cambio de schema; los clientes cachean definiciones por sesión.
+1. Lista los workspaces a los que puede acceder la credencial.
+2. Ejecuta una lectura pequeña, como una búsqueda de mercado o una consulta CRM acotada.
+3. Confirma que el resultado pertenece al workspace previsto.
+4. Reconecta el cliente después de un cambio de tools si el cliente cachea su lista.
 
-Un `401` significa que la API key o token OAuth no llegó a Brein. Un `403` significa que el caller está autenticado pero no tiene el scope o rol requerido.
+Un `401` significa que la credencial no llegó a Brein. Un `403` significa que la credencial es válida, pero no tiene acceso al workspace o a la acción solicitada.
 
 ## Relacionado
 
-- [MCP & OAuth](/es/mcp/overview)
-- [CLI Setup](/es/cli/setup)
-- [El workspace de Brein](/es/product/workspace)
-- [Contexto de ingeniería](/es/concepts/core-loop#el-contexto-de-ingeniería-sigue-soportado)
+- [Conecta tu IA](/es/connect)
+- [MCP y OAuth](/es/mcp/overview)
+- [Seguridad](/es/security/overview)

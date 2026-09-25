@@ -1,65 +1,66 @@
 ---
 title: 'Welcome to Brein'
-description: "Brein is a commercial-intelligence workspace for founders and sales teams: find a market, understand the evidence, and move a real opportunity forward."
+description: "Brein helps founders and sales teams find relevant companies, understand the evidence, and move the right opportunity forward."
 ---
 
-Brein turns scattered market knowledge, published evidence, and commercial work into decisions your team can act on.
+Brein helps a founder or sales team decide **where to work next**.
 
-A founder or sales team should not need to stitch together a supplier directory, a web search, a spreadsheet, a CRM, and a separate research tool before deciding where to spend the next hour. Brein gives those pieces one governed loop:
+It brings the work into one place:
 
-> **Signal → Context → Evidence → Inference → Action → Human decision → Outcome → Learning**
+- what you sell and who may be a good fit;
+- published market opportunities;
+- companies and people worth reviewing;
+- contacts your team is working;
+- campaign drafts and research;
+- the context your team wants to keep.
 
-Start with the problem your team is trying to solve. Brein searches a bounded market, shows the evidence behind each candidate, and keeps the commercial criterion your team is using in view while you decide what to work next.
+Brein is not an autonomous salesperson. It shows what it found and why. Your team chooses what to pursue, what to reveal, and what to send.
 
-## Start in Brein
+<Note>
+  The simplest way to think about Brein is: **find it, check it, decide, and keep the result**.
+</Note>
 
-[Open the Brein dashboard](https://app.trybrein.com) and follow the first commercial run:
+## Start with one real question
+
+[Open the Brein dashboard](https://app.trybrein.com) and begin with the market or customer question your team needs to answer this week.
 
 1. Share your company website and, if useful, one sentence about what you sell.
-2. Review the proposed offer, ideal customers, exclusions, geography, and buying signals.
-3. Confirm the profile before Brein uses it as commercial context.
-4. Inspect a short, evidence-backed list of opportunities.
-5. Choose a company, review its people, and explicitly select the people worth revealing.
-6. Review the quote for the selected group, then confirm it before any contact credit is spent.
-7. File the revealed or imported contact into Prospectos and continue with Campañas when a verified work email is available.
+2. Review the draft profile. Correct anything that does not describe your business.
+3. Look at a short list of relevant companies and the public reasons they appeared.
+4. Open a company and review the people connected to it.
+5. Choose the people you want to know more about. Contact details stay hidden until you confirm the choice.
+6. Review the price and authorize the lookup when you are ready.
+7. Save a revealed or imported contact in **Prospectos**. If a verified work email is available, you can prepare a **Campaña** from it.
 
-A bounded search is not a complete map of a market. Brein shows what it found, what remains uncertain, and why a candidate deserves review. An empty result is not proof that a company, person, or opportunity does not exist.
+You always decide what happens next. A search, a contact reveal, and a campaign are separate actions.
 
 ## What you can do in Brein
 
-- **Empresas** — search a bounded company directory without revealing contact coordinates.
-- **Personas** — inspect masked public decision-makers inside a company result.
-- **Licitaciones, Proveedores, Adjudicaciones, and Registros** — browse distinct published evidence corpora with their own semantics and provenance.
-- **Investigador** — run durable research and return a portable dossier instead of a disconnected chat summary.
-- **Cerebro** — keep the offer, ICP, exclusions, signals, territory, buyers, messages, and learned decisions in markdown documents.
-- **Prospectos** — work CRM Records for people your team has explicitly chosen; companies and evidence do not become Records by themselves.
-- **Campañas** — prepare a bounded email sequence, review it, and require an explicit human authorization before it can send.
-- **Configuración** — manage the workspace, team, billing, connections, privacy, and deletion.
+- **Empresas** — search for companies that fit the market you described.
+- **Personas** — review masked professional profiles before spending credits.
+- **Licitaciones, Proveedores, Adjudicaciones y Registros** — explore published sources for opportunities, suppliers, awards, permits, and records.
+- **Investigador** — ask a deeper research question and return with a document you can keep and share.
+- **Cerebro** — keep your offer, ideal customer, exclusions, geography, messages, and team decisions in documents.
+- **Prospectos** — work with people your team has chosen. Companies and market observations do not become contacts automatically.
+- **Campañas** — prepare a short email sequence, review it, and approve sending only when you are ready.
+- **Configuración** — manage your workspace, team, billing, connections, privacy, and deletion.
 
-[Read the workspace guide](/product/workspace) for the complete map.
+[See the Brein workspace](/product/workspace) for the full map.
 
 ## Connect your AI
 
-The fastest way to use Brein with an AI client is to connect the workspace through MCP:
+You can use Brein from ChatGPT, Claude, OpenCode, Cursor, Hermes, OpenClaw, or another MCP-compatible client:
 
-[Connect ChatGPT, Claude, OpenCode, Cursor, Hermes, or OpenClaw](/connect).
+[Connect your AI](/connect)
 
 ```text
 https://api.trybrein.com/mcp
 ```
 
-The client chooses the model. Brein supplies the governed commercial capabilities. You do not need to install the Brein CLI to connect an AI client.
+Your AI client chooses the model. Brein provides the commercial actions and data that belong to your workspace. The client must still follow Brein's permission and confirmation rules.
 
-## Developer access
+## For developers
 
-For deeper integrations, use:
-
-- [MCP & OAuth](/mcp/overview) for agent capabilities;
-- [REST API](/api/overview) for your own software;
-- [CLI compatibility](/cli/setup) for existing engineering-context workflows.
-
-The existing `driftless` command, package namespace, API-key prefix, and hidden MCP aliases remain compatibility contracts while their consumers migrate. They are not a second product.
-
-## For engineering teams
-
-Engineering context through Cerebro documents and path anchors is still supported. It is an additional use case, not the center of Brein: read the relevant context before editing code, then write back one clean document when you learn something durable. See [the engineering context reference](/concepts/core-loop#engineering-context-is-still-supported).
+- [MCP and OAuth](/mcp/overview) — connect an AI client and inspect the available tools.
+- [REST API](/api/overview) — build an integration for your own software.
+- [Security](/security/overview) — understand credentials, workspace access, and action boundaries.

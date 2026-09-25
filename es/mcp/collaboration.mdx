@@ -1,38 +1,24 @@
 ---
 title: 'MCP: Workspace'
-description: 'Lista los workspaces a los que una credencial puede llegar, y lee el uso comercial.'
+description: 'Lista los workspaces disponibles para una credencial y lee el uso comercial.'
 ---
 
-Estas herramientas resuelven los identificadores que esperan las tools de escritura y leen el uso del workspace.
+Estas herramientas ayudan a un agente a elegir el workspace correcto y entender el uso actual antes de pedir más datos o hacer un cambio.
 
-## Workspaces y uso
+## Herramientas de workspace y uso
 
-| Tool | Propósito | Devuelve |
-| --- | --- | --- |
-| `workspaces` | Listar los workspaces a los que tu credencial puede apuntar | slugs de workspace |
-| `usage` | Leer el allowance comercial mensual (requests + créditos) | plan, límites, renovación |
-
-Permisos: lecturas de nivel miembro. Disponibilidad: disponible. Cada tool acepta un argumento opcional `workspace` para apuntar a otro workspace autorizado para tu credencial.
-
-```text
-workspaces → [ { slug, name, role } ]
-```
-
-## Retirado del catálogo público
-
-`members` (listar los miembros del workspace) y los comentarios (`context_comment`) no
-tienen ninguna tool de MCP — sus definiciones y handlers fueron eliminados, no sólo
-ocultos; una llamada legacy `driftless_*` ahora responde "Unknown tool". Ambos siguen
-disponibles mediante el CLI y el dashboard — listar miembros no es trabajo de agente.
-
-## Permisos
-
-| Scope | Cubre |
+| Herramienta | Propósito |
 | --- | --- |
-| miembro (lectura) | `workspaces`, `usage` |
+| `workspaces` | Lista los workspaces a los que puede acceder la credencial. |
+| `usage` | Lee el plan, límites, fecha de renovación y uso comercial actual. |
+
+Ambas herramientas requieren acceso de miembro y aceptan un workspace sólo cuando la credencial está autorizada para él.
+
+## Confirma antes de actuar
+
+Pide al agente que muestre el nombre del workspace antes de una escritura, una búsqueda de contactos o una campaña. Una credencial de un workspace nunca debe usarse para leer otro.
 
 ## Relacionado
 
-- [Workspaces](/es/concepts/workspaces) - el concepto.
-- [CLI: comandos de contexto](/es/cli/context) - miembros desde la terminal.
-- [MCP y OAuth](/es/mcp/overview) - setup, auth y scopes.
+- [MCP y OAuth](/es/mcp/overview)
+- [Seguridad](/es/security/overview)

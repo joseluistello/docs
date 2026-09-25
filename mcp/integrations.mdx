@@ -1,36 +1,19 @@
 ---
-title: 'MCP: Integrations'
-description: 'Read data from a ready, already-connected provider through synthesized provider-specific MCP tools.'
+title: 'MCP: Connections'
+description: 'Read data from a provider that an administrator has already connected to Brein.'
 ---
 
-External systems are reached over MCP through **synthesized connector tools**. A ready provider connection may expose:
+MCP can expose bounded read tools for a provider that is already connected and ready. A typical connection may expose tools such as:
 
-- `<provider>_records` — a bounded, delta-aware page from a synced model;
-- `<provider>_document_content` — bounded, citeable content from a document provider.
+- `<provider>_records` — records from a synced provider model;
+- `<provider>_document_content` — content from a connected document provider.
 
-These tools operate on a Connection that already exists. They do not connect or disconnect a provider; setup remains a human-led flow in the dashboard or CLI. If the required capability is not listed, report the missing capability rather than authoring a script.
+These tools do not connect, disconnect, or configure a provider. An administrator manages the connection in the Brein product. If a needed read tool is not listed, report the missing capability instead of inventing a new action.
 
-There is no generic `broker` MCP router. A legacy `driftless_broker` call answers `Unknown tool`. The Broker remains available through its CLI and REST surfaces.
-
-## Synthesized tools
-
-| Tool | Effect | Boundary |
-|---|---|---|
-| `<provider>_records` | read | Synced provider data; bounded page and cursor. |
-| `<provider>_document_content` | read | Live or materialized document content according to the provider capability. |
-
-A tool appears only when synthesis is enabled, the provider exposes a `ready` read capability, and the workspace rollout permits it. A listed tool still requires the normal connection, grant, and workspace authorization checks.
-
-## Gates and permissions
-
-The Broker and synthesized tools are fail-closed. The feature switch, external rollout, per-principal grant, operation policy, connection health, and workspace scope must all allow the read. A listed tool is not automatically usable.
-
-Write capabilities are never synthesized. Connecting a provider, deploying a connector function, or managing grants is outside this MCP read surface.
+Write tools are not synthesized into this MCP surface.
 
 ## Related
 
-- [Integrations and Connections](/integrations/overview)
-- [Broker](/integrations/broker)
-- [CLI: Integrations and Broker](/cli/integrations)
-- [API: Broker and Connections](/api/broker)
-- [MCP & OAuth](/mcp/overview)
+- [MCP and OAuth](/mcp/overview)
+- [Security](/security/overview)
+- [The Brein workspace](/product/workspace)
