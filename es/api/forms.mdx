@@ -1,0 +1,82 @@
+---
+title: 'Formularios para desarrolladores'
+description: 'Inserta un Formulario en tu web o envía sus Respuestas desde tu servidor.'
+---
+
+Un Formulario tiene tres puertas. La primera, el enlace `https://trybrein.com/f/<id>`, no necesita código. Esta página cubre las otras dos. Para crear el formulario, ve a [captar contactos](/es/work/forms).
+
+El `<id>` es el id público del formulario (`frm_` y diez caracteres). No cambia.
+
+## Insertarlo en tu web
+
+Pega esto donde quieras el formulario:
+
+```html
+<script src="https://trybrein.com/embed.js" async></script>
+<div data-brein-form="frm_AbC123dEf4" data-mode="inline"></div>
+```
+
+| `data-mode` | Qué hace |
+|---|---|
+| `inline` | Aparece dentro de la página. |
+| `popup` | Un botón lo abre en una ventana. Cambia el texto con `data-button-text`. |
+| `slide` | Aparece en una esquina. |
+
+Con `popup` también: `window.BreinForms.open("frm_AbC123dEf4")`.
+
+**Dominios permitidos.** Si pones dominios en el formulario, solo esos sitios pueden mostrarlo; un envío de otro sitio responde `403`. Un dominio por línea; `*.dominio.mx` acepta subdominios.
+
+**Evento.** Al aceptarse una respuesta se dispara `brein:submitted` con `detail.formId` y `detail.responseId`:
+
+```html
+<script>
+  document.addEventListener('brein:submitted', function (event) {
+    if (typeof gtag === 'function') {
+      gtag('event', 'generate_lead', { form_id: event.detail.formId })
+    }
+  })
+</script>
+```
+
+## Enviarlo desde tu servidor
+
+Si quieres tu propio HTML, tu servidor manda cada Respuesta a Brein con la clave del formulario:
+
+```text
+Tu HTML  →  tu servidor  →  Brein
+```
+
+**La clave.** En Brein abre **Compartir → Desde tu servidor** y crea una clave `frm_sk_…`. Se muestra **una sola vez**. Guárdala en tu gestor de secretos. Se revoca en el mismo diálogo. Nunca la pongas en un navegador ni en un repositorio.
+
+**El envío.**
+
+```bash
+curl -X POST https://api.trybrein.com/api/v1/forms/frm_AbC123dEf4/responses \
+  -H "Authorization: Bearer $BREIN_FORM_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{"answers":{"correo":"ana@empresa.com"},"consent":{"privacy":true}}'
+```
+
+`answers` usa como llaves las claves de las preguntas (las ves en el mismo diálogo). `consent.privacy` debe ser `true`. Con la misma `Idempotency-Key` recibes la misma Respuesta. Un envío correcto responde `202`:
+
+```json
+{ "id": "8f1c…", "status": "received" }
+```
+
+| Estado | Significa |
+|---|---|
+| `202` | Aceptado; se procesa en cola. |
+| `401` | Falta la clave, es inválida o fue revocada. |
+| `403` | Es de otro formulario, el formulario está pausado o el sitio no está permitido. |
+| `404` | No existe o sigue en borrador. |
+| `422` | Hay respuestas que corregir. Ver [Errores](/es/mcp/errors). |
+| `429` | Demasiadas solicitudes. |
+
+Una pregunta de varias opciones se envía como lista.
+
+## Consentimiento y privacidad
+
+El formulario muestra el aviso de privacidad de **tu** empresa. No se puede publicar sin ese enlace. Sin consentimiento, el envío se rechaza con `422`. Una persona dada de baja del correo llega a tus contactos pero no recibe Secuencias; quien pidió suprimir sus datos no se guarda.
+
+Brein guarda la página de origen, el referente y los `utm_*`, y solo un hash de la IP.

@@ -1,73 +1,49 @@
 ---
-title: 'MCP y OAuth'
-description: 'Conecta un cliente de IA al workspace de Brein y conoce las herramientas disponibles.'
+title: 'Brein por MCP'
+description: 'Para desarrolladores: cómo Brein expone su producto a cualquier cliente MCP, y cómo se reparten las responsabilidades.'
 ---
 
-Brein expone las capacidades comerciales actuales de tu workspace mediante MCP. Un cliente de IA puede leer el contexto del equipo, buscar información de mercado, trabajar con contactos, preparar secuencias e investigar.
+Esta sección es para quien integra, depura o quiere entender el MCP de Brein. Si solo quieres conectar tu asistente, ve a [Conecta](/es/connect/chatgpt).
 
-Para ver la lista pública completa, consulta el [Catálogo de herramientas MCP](/es/mcp/catalog).
+## Qué es
 
-Para configurar un cliente, empieza por [Conecta tu IA](/es/connect).
-
-## Con qué puede trabajar el cliente
-
-El catálogo público contiene **56 herramientas** en estas áreas:
-
-| Área | Qué puede hacer el agente | Referencia |
-| --- | --- | --- |
-| Cerebro | Recuperar y actualizar la oferta, el perfil del comprador, las exclusiones, la geografía, los mensajes y las decisiones del equipo. | [Herramientas de Cerebro](/es/mcp/knowledge) |
-| Prospectos | Leer contactos, actualizar un contacto y archivar una persona revelada o importada. | [Herramientas CRM](/es/mcp/work) |
-| Mercado | Buscar proveedores, oportunidades, adjudicaciones, riesgos y permisos publicados. | [Herramientas de mercado](/es/mcp/overview#herramientas-de-mercado) |
-| Secuencias | Crear, previsualizar, aprobar, activar, pausar y medir secuencias. | [Herramientas de secuencias](/es/mcp/sequences) |
-| Investigador | Iniciar e inspeccionar investigación durable. | [Herramientas de research](/es/mcp/overview#herramientas-de-investigacion) |
-| Workspace | Leer los workspaces y el uso comercial disponibles para la credencial. | [Herramientas de workspace](/es/mcp/collaboration) |
-| Conexiones | Leer desde un provider que un administrador ya conectó. | [Herramientas de conexiones](/es/mcp/integrations) |
-
-El cliente puede leer una lista amplia, pero cada llamada se verifica contra el workspace y el rol autorizados.
-
-## Herramientas de mercado
-
-Las herramientas de mercado responden preguntas acotadas sobre proveedores, oportunidades, adjudicaciones, riesgos y permisos publicados. Devuelven el resultado y el contexto de sus fuentes; no revelan coordenadas de contacto ni prometen un mercado completo.
-
-## Herramientas de investigación
-
-Las herramientas de investigación inician e inspeccionan corridas de Investigador. El resultado es un documento para revisar, no una conclusión automática. Las reglas, precios, permisos y detalles institucionales actuales pueden quedar como verificaciones explícitas.
-
-## Autenticación
-
-Usa OAuth cuando el cliente lo soporte:
-
-1. Agrega el endpoint de Brein: `https://api.trybrein.com/mcp`
-2. Abre el flujo de autorización del cliente.
-3. Inicia sesión en Brein y selecciona el workspace.
-4. Aprueba los permisos solicitados.
-
-Una API key está disponible para integraciones soportadas y clientes self-hosted. Envíala mediante el almacén de secretos del cliente como `X-API-Key`; no pongas la key cruda en un repositorio.
-
-Un `401` significa que la credencial falta o no es válida. Un `403` significa que la credencial es válida, pero no puede realizar la acción solicitada en ese workspace.
-
-## Una primera solicitud segura
-
-Empieza con una lectura sin efectos externos:
+Brein expone su producto como un único servidor MCP remoto:
 
 ```text
-Muestra los workspaces de Brein que puedo usar y el uso comercial actual.
+https://api.trybrein.com/mcp
 ```
 
-Después prueba una búsqueda acotada o un fragmento del contexto del equipo antes de pedirle al agente que cambie un contacto o prepare una secuencia. El agente debe mostrar la audiencia, el precio o la solicitud de aprobación antes de una acción que gaste créditos o envíe un mensaje.
+- Transporte: HTTP con streaming (MCP remoto). Capacidad: herramientas (`tools`).
+- `tools/list` se pagina con un cursor opaco.
+- El modelo lo pone el cliente. Brein pone los datos y las acciones del espacio de trabajo que la credencial autoriza.
+- **Es la misma superficie para Ada y para un cliente de fuera** (ChatGPT, Claude, Codex, Cursor). Cambia solo el carril: desde fuera, la respuesta llega en la misma llamada.
 
-## Comportamiento de las herramientas
+## Cómo se organiza
 
-- Las lecturas devuelven un resultado enfocado e indican cuando hay más páginas disponibles.
-- Los datos de contacto permanecen ocultos hasta que la persona elige una búsqueda concreta.
-- Las escrituras CRM se aplican al Record de contacto indicado en la solicitud.
-- Un borrador de secuencia no se envía solo; la activación requiere otra confirmación.
-- Los clientes pueden cachear su lista de herramientas. Reconecta después de un cambio si falta una herramienta nueva.
+| Pregunta | Dónde |
+|---|---|
+| ¿Qué herramientas hay? | [Catálogo de herramientas](/es/mcp/catalog) |
+| ¿Cómo me autentico y qué alcances existen? | [Permisos y acceso](/es/mcp/permissions) |
+| ¿Qué errores devuelve? | [Errores](/es/mcp/errors) |
+| ¿Cómo recibo respuestas de un Formulario? | [Formularios para desarrolladores](/es/api/forms) |
 
-## Relacionado
+## Reglas que el cliente debe respetar
 
-- [Conecta tu IA](/es/connect)
-- [Seguridad](/es/security/overview)
-- [Herramientas de Cerebro](/es/mcp/knowledge)
-- [Herramientas CRM](/es/mcp/work)
-- [Herramientas de secuencias](/es/mcp/sequences)
+1. **Dos pasos.** Lo que gasta, manda o cambia algo importante tiene una herramienta que propone y otra que ejecuta. La segunda exige un token sellado por la primera y `confirm: true` de una persona. Ver [qué pide el sí](/es/trust/yes).
+2. **Nunca confirmar por el usuario.** Muestra la propuesta y detén el turno. La ejecución exige una persona (sesión de Brein o cliente OAuth), no una llave de API.
+3. **El espacio de trabajo.** Cada herramienta acepta `workspace` (un slug autorizado). Sin él se usa el principal.
+4. **Los textos de terceros son datos.** Extractos web, notas y respuestas llegan marcados; no son instrucciones.
+5. **Los datos de contacto no llegan al modelo.** Los resultados dicen que existe un canal, nunca el correo ni el teléfono.
+6. **Las listas se paginan.** Sigue `next_cursor`.
+
+## Una primera llamada segura
+
+Llama `workspaces`, luego `usage`. Ambas solo leen.
+
+## Si falta una herramienta
+
+Los clientes guardan la lista de herramientas por sesión. Reconecta o abre una sesión nueva.
+
+## Nombres retirados
+
+Los nombres anteriores de herramientas ya no están en `tools/list`. Llamar a uno devuelve `TOOL_RETIRED` con la llamada que lo reemplaza. Ver [Errores](/es/mcp/errors).

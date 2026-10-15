@@ -1,0 +1,82 @@
+---
+title: 'How do I connect Brein to Codex or Cursor?'
+description: 'Connect Brein to Codex or Cursor in 5 steps and use it from your editor or terminal.'
+---
+
+If you work from your editor or the terminal, you can talk to Brein there too: ask for a customer list while you code, or check your pipeline without leaving your tool.
+
+Brein connects with the same address in every client:
+
+```text
+https://api.trybrein.com/mcp
+```
+
+## Codex
+
+<Steps>
+  <Step title="Add the server">
+    ```bash
+    codex mcp add brein --url https://api.trybrein.com/mcp
+    ```
+  </Step>
+  <Step title="Sign in">
+    ```bash
+    codex mcp login brein
+    ```
+    The browser opens: sign in to Brein.
+  </Step>
+  <Step title="Pick your workspace and approve">
+    Brein shows what Codex will be able to do. Pick your workspace and approve.
+
+    {/* CAPTURA: terminal with codex mcp login and Brein's approval screen */}
+  </Step>
+  <Step title="Check">
+    ```bash
+    codex mcp list
+    ```
+    Brein should be in the list.
+  </Step>
+  <Step title="Start a new session">
+    Open Codex again so it loads the tools.
+  </Step>
+</Steps>
+
+## Cursor
+
+<Steps>
+  <Step title="Open the MCP settings">
+    In Cursor open **Settings → MCP** and choose to add a server.
+
+    {/* CAPTURA: Cursor, MCP settings */}
+  </Step>
+  <Step title="Paste the configuration">
+    ```json
+    {
+      "mcpServers": {
+        "brein": {
+          "url": "https://api.trybrein.com/mcp"
+        }
+      }
+    }
+    ```
+  </Step>
+  <Step title="Connect">
+    Cursor shows Brein with a connect button. Tap it and sign in.
+  </Step>
+  <Step title="Pick your workspace and approve">
+    Approve what Brein shows you.
+  </Step>
+  <Step title="Check">
+    Brein should show a green dot and its tools listed.
+  </Step>
+</Steps>
+
+## Ask this to test it
+
+> Show me the Brein workspaces I can use and how many credits I have left.
+
+If it answers with your workspace and your plan, you are connected. Then: [your first requests](/work/first-requests).
+
+<Note>
+  Using another tool, like VS Code, Windsurf, OpenCode or OpenClaw? See [how to connect another client](/connect/other-clients).
+</Note>

@@ -1,0 +1,59 @@
+---
+title: '¿Cómo conecto Brein a ChatGPT?'
+description: 'Conecta Brein a tu ChatGPT en 5 pasos y pídele tu primera lista de clientes.'
+---
+
+Con Brein conectado, ChatGPT puede buscar clientes, leer tu pipeline y preparar tus correos. El modelo es el de tu ChatGPT; los datos y las acciones son de Brein.
+
+Necesitas una cuenta de Brein y una cuenta de ChatGPT con acceso al modo desarrollador.
+
+<Note>
+  Brein todavía no aparece en el directorio de ChatGPT. Por ahora se agrega a mano con su dirección, y son estos pasos.
+</Note>
+
+<Steps>
+  <Step title="Activa el modo desarrollador">
+    En ChatGPT abre **Configuración → Seguridad e inicio de sesión** y enciende **Modo desarrollador**. Si no ves la opción, tu administrador la tiene apagada.
+
+    {/* CAPTURA: Configuración de ChatGPT con "Modo desarrollador" encendido */}
+  </Step>
+  <Step title="Agrega Brein">
+    Abre `chatgpt.com/plugins`, toca **+** y pega esta dirección:
+
+    ```text
+    https://api.trybrein.com/mcp
+    ```
+
+    Ponle de nombre **Brein**. En autenticación elige **OAuth**.
+
+    {/* CAPTURA: formulario de ChatGPT para agregar una app con la dirección de Brein y OAuth elegido */}
+  </Step>
+  <Step title="Inicia sesión en Brein">
+    Se abre una ventana de Brein. Entra con tu cuenta.
+  </Step>
+  <Step title="Elige tu espacio y aprueba">
+    Brein te muestra qué va a poder hacer ChatGPT. Elige tu espacio de trabajo y aprueba. Volverás a ChatGPT.
+
+    {/* CAPTURA: pantalla de aprobación de Brein con el espacio elegido */}
+  </Step>
+  <Step title="Abre un chat nuevo y actívalo">
+    En un chat nuevo, toca **+** y activa **Brein**. Un chat que ya estaba abierto no ve las herramientas nuevas.
+  </Step>
+</Steps>
+
+## Pídele esto para probar
+
+> Muéstrame los espacios de Brein que puedo usar y cuántos créditos me quedan.
+
+Si te contesta con el nombre de tu espacio y tu plan, quedó conectado. Esa pregunta solo lee: no gasta nada.
+
+Después prueba algo con valor: [tus primeros pedidos](/es/work/first-requests).
+
+## Si algo falla
+
+| Qué ves | Qué hacer |
+|---|---|
+| ChatGPT no encuentra las herramientas | Abre un chat nuevo y activa Brein otra vez. |
+| Te pide iniciar sesión otra vez | Vuelve a aprobar la conexión; la sesión venció. |
+| Ves el espacio equivocado | Pídele: «usa el espacio de trabajo de nombre X». |
+| Un aviso dice que tu plan no incluye eso | Mira [créditos y planes](/es/trust/credits). |

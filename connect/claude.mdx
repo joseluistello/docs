@@ -1,0 +1,53 @@
+---
+title: 'How do I connect Brein to Claude?'
+description: 'Connect Brein to Claude (desktop and web) in 5 steps and ask for your first list of customers.'
+---
+
+With Brein connected, Claude can look for customers, read your pipeline and prepare your emails. It works the same in the desktop app and on claude.ai.
+
+You need a Brein account and a Claude account.
+
+<Steps>
+  <Step title="Open connectors">
+    In Claude open **Settings → Connectors**. On a team or enterprise plan, the plan owner adds the connector in **Admin settings → Connectors**, and then each person connects it here.
+
+    {/* CAPTURA: Claude Settings → Connectors with the "Add custom connector" button */}
+  </Step>
+  <Step title="Add Brein">
+    Choose **Add custom connector**, paste this address and tap **Add**:
+
+    ```text
+    https://api.trybrein.com/mcp
+    ```
+
+    {/* CAPTURA: Claude window to add the connector with Brein's address */}
+  </Step>
+  <Step title="Connect">
+    Tap **Connect**. Brein opens: sign in.
+  </Step>
+  <Step title="Pick your workspace and approve">
+    Brein shows what Claude will be able to do. Pick your workspace and approve.
+
+    {/* CAPTURA: Brein approval screen */}
+  </Step>
+  <Step title="Turn it on in your chat">
+    In a chat, tap **+ → Connectors** and switch **Brein** on. You turn it on or off per conversation.
+  </Step>
+</Steps>
+
+## Ask this to test it
+
+> Show me the Brein workspaces I can use and how many credits I have left.
+
+If it answers with your workspace name and your plan, you are connected. That question only reads.
+
+Next: [your first requests](/work/first-requests).
+
+## If something fails
+
+| What you see | What to do |
+|---|---|
+| Claude does not use Brein | Check it is on in **+ → Connectors** for that chat. |
+| It asks you to connect again | Tap **Connect** again; the session expired. |
+| New tools are missing | Remove the connector and add it again. |
+| Your team account does not let you add it | Ask whoever administers the plan to add it. |

@@ -1,0 +1,53 @@
+---
+title: '¿Cómo conecto Brein a Claude?'
+description: 'Conecta Brein a Claude (escritorio y web) en 5 pasos y pídele tu primera lista de clientes.'
+---
+
+Con Brein conectado, Claude puede buscar clientes, leer tu pipeline y preparar tus correos. Sirve igual en la app de escritorio y en claude.ai.
+
+Necesitas una cuenta de Brein y una de Claude.
+
+<Steps>
+  <Step title="Abre los conectores">
+    En Claude abre **Configuración → Conectores**. En un plan de equipo o empresa, el dueño del plan agrega el conector en **Configuración de administración → Conectores**, y después cada persona lo conecta aquí.
+
+    {/* CAPTURA: Configuración → Conectores de Claude con el botón "Agregar conector personalizado" */}
+  </Step>
+  <Step title="Agrega Brein">
+    Elige **Agregar conector personalizado**, pega esta dirección y toca **Agregar**:
+
+    ```text
+    https://api.trybrein.com/mcp
+    ```
+
+    {/* CAPTURA: ventana de Claude para agregar el conector con la dirección de Brein */}
+  </Step>
+  <Step title="Conéctate">
+    Toca **Conectar**. Se abre Brein: inicia sesión.
+  </Step>
+  <Step title="Elige tu espacio y aprueba">
+    Brein te muestra qué va a poder hacer Claude. Elige tu espacio de trabajo y aprueba.
+
+    {/* CAPTURA: pantalla de aprobación de Brein */}
+  </Step>
+  <Step title="Actívalo en tu chat">
+    En un chat, toca **+ → Conectores** y enciende **Brein**. Lo prendes o apagas por conversación.
+  </Step>
+</Steps>
+
+## Pídele esto para probar
+
+> Muéstrame los espacios de Brein que puedo usar y cuántos créditos me quedan.
+
+Si te contesta con el nombre de tu espacio y tu plan, quedó conectado. Esa pregunta solo lee.
+
+Siguiente: [tus primeros pedidos](/es/work/first-requests).
+
+## Si algo falla
+
+| Qué ves | Qué hacer |
+|---|---|
+| Claude no usa Brein | Revisa que esté encendido en **+ → Conectores** de ese chat. |
+| Te pide conectar otra vez | Toca **Conectar** de nuevo; la sesión venció. |
+| Faltan herramientas nuevas | Quita el conector y agrégalo otra vez. |
+| Tu cuenta de equipo no deja agregarlo | Pídele a quien administra el plan que lo agregue. |

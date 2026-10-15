@@ -1,0 +1,57 @@
+---
+title: 'Errores'
+description: 'Cómo responde Brein cuando algo falla, y qué hacer con cada código.'
+---
+
+Decide con el `code`, no con el `message`: el texto puede cambiar.
+
+## Forma
+
+Un error de herramienta trae `message` (para una persona), `next` (qué hacer) y `retryable`. También trae `Recovery:`, una oración que le dice al agente qué hacer, y `Request id:`. Si `retryable` es `false`, corrige lo que dice antes de volver a llamar. Guarda el `request_id` al pedir ayuda.
+
+La API REST devuelve esta forma:
+
+```json
+{
+  "statusCode": 422,
+  "code": "VALIDATION_FAILED",
+  "message": "The request contains a field value the server cannot accept.",
+  "request_id": "a1b2c3d4",
+  "retryable": false,
+  "fixer": "caller",
+  "recovery": "Fix the fields the message names and call again with corrected values.",
+  "endpoint": "POST /api/v1/workspaces/acme/..."
+}
+```
+
+- `fixer` dice quién lo arregla: `caller` (corrige la solicitud), `person` (una persona tiene que hacer algo, como dar un sí o reconectar) o `brein` (falla nuestra; reintenta más tarde).
+- `recovery` es el siguiente paso, en una oración.
+- Un `403` puede traer `reason`, la causa exacta: por ejemplo, `api_key_member_removed` (quien creó la llave ya no es miembro) o `oauth_workspace_mismatch` (el token es de otro espacio). El `code` sigue siendo `FORBIDDEN`.
+
+Un `422` de un Formulario añade `errors`: una entrada por pregunta, con `key` o `path` y `message`.
+
+## Códigos comunes
+
+| Estado | Significa | Qué hacer |
+|---|---|---|
+| `400` | La solicitud es inválida. | Corrige el argumento. |
+| `401` | Falta la credencial o no es válida. | Reconecta o reemplaza la llave. |
+| `402` | Tu plan llegó a un tope o no incluye eso. | Muestra el aviso; trae el enlace a Facturación. |
+| `403` | Estás autenticado, pero no puedes. | Revisa membresía y rol. Con `MISSING_HUMAN_IDENTITY`, hace falta una persona, no una llave. |
+| `404` | No existe para ti. | Revisa el espacio y el id. |
+| `409` | Cambió o ya existe. | Lee el estado actual y propón de nuevo. |
+| `422` | Un valor no se puede aceptar. | Corrige lo que dice `errors`. |
+| `429` | Demasiadas solicitudes. | Espera y reintenta. |
+| `500` | Falló el servidor. | Guarda el `request_id`. |
+
+## Casos de herramientas
+
+| Caso | Qué pasó |
+|---|---|
+| `TOOL_RETIRED` | Llamaste un nombre retirado. El mensaje dice la herramienta que lo reemplaza. |
+| Propuesta vencida o cambiada | El token sellado ya no corresponde. Vuelve a proponer. |
+| `reveal_running` | Ya se están buscando correos en esa Lista. Espera y léela. |
+| `prospect_provider_off` | El proveedor de datos no está disponible. No hay sustituto silencioso: reintenta más tarde. |
+| Grupo cambió | Una operación de grupo se rechaza si el grupo cambió desde que se contó. |
+
+Sin saldo o con un plan que no lo incluye, Brein falla cerrado con `402`. No hay reintento automático con otro proveedor.

@@ -1,0 +1,62 @@
+---
+title: 'Permisos y acceso'
+description: 'Cómo se autentica un cliente, qué alcances OAuth existen y qué acciones exigen una persona.'
+---
+
+## Autenticación
+
+| Método | Cuándo |
+|---|---|
+| **OAuth** con PKCE (S256) y registro dinámico de cliente | Clientes interactivos: ChatGPT, Claude, Codex, Cursor. Es lo recomendable. |
+| **Llave de API** en el encabezado `X-API-Key` | Integraciones y clientes sin navegador. Limitada a espacios y roles concretos. Se muestra una sola vez. |
+
+El descubrimiento OAuth está en `https://api.trybrein.com/.well-known/oauth-protected-resource` y `/.well-known/oauth-authorization-server`.
+
+Con OAuth la persona inicia sesión, elige el espacio de trabajo y aprueba los alcances que Brein le muestra.
+
+## Alcances OAuth
+
+La política es **negar por defecto**: una ruta solo es alcanzable por OAuth si está mapeada a un alcance. Lo no mapeado se rechaza.
+
+| Alcance | Qué abre |
+|---|---|
+| `context:read` | Leer Cerebro, el CRM, Listas y Secuencias; consultar Análisis y Reportes; buscar en la web. |
+| `context:diff` | Leer Cerebro a partir de cambios de archivos. |
+| `topics:create` | Crear un documento nuevo en Cerebro. |
+| `topics:write` | Escribir y reescribir documentos de Cerebro. |
+| `work:write` | Escribir en el CRM: oportunidades, pipelines, notas, correcciones de canales; guardar Análisis y Reportes. |
+| `market_data:read` | Consultar el mercado público (licitaciones, adjudicaciones, permisos, riesgos, proveedores). |
+| `commercial:read` | Leer contactos seleccionados, cotizar un revelado, proponer una operación de grupo. Nunca gasta ni devuelve un canal. |
+| `commercial:discover` | Armar y editar Listas. No desbloquea ningún dato de contacto. |
+| `commercial:activate` | Lo que sale: revelar, guardar y archivar contactos, aplicar una operación de grupo, crear y activar Secuencias y sus respuestas. |
+| `offline_access` | Renovar la sesión sin volver a iniciar. |
+
+Los alcances `broker:read`, `broker:invoke` y `broker:admin` existen por compatibilidad. Las integraciones externas están apagadas.
+
+## Lo que OAuth nunca alcanza
+
+- La administración interna de la plataforma.
+- Exportar todo el espacio, listar a los miembros o leer el registro de auditoría.
+- Las claves del servidor de un Formulario.
+- El ritmo y los ajustes de un Remitente (se hacen en Brein).
+
+## Qué acciones exigen una persona
+
+Una **persona** es una sesión de Brein o un cliente OAuth que ella conectó. Una llave de API no lo es: la herramienta responde `403` con `MISSING_HUMAN_IDENTITY`.
+
+| Acción | Herramientas | Quién |
+|---|---|---|
+| Revelar contactos | `list_quote` o `people_quote` → `reveal` | Una persona |
+| Activar una Secuencia | `sequence_check` → `sequence_activate` | Una persona con rol de dueño o administrador |
+| Responder en un hilo | `sequence_propose_reply` → `sequence_reply_thread` | Una persona |
+| Crear o cambiar una oportunidad | `crm_propose_*` → `crm_*_opportunity` | Una persona |
+| Operación de grupo de más de 50, o de etapa | `crm_group_propose` → `crm_group_apply` | Una persona |
+| Reescribir un documento | `context_propose_rewrite` → `context_rewrite` | Una persona |
+
+Hasta 50 contactos o empresas, guardar en un pipeline, archivar o desarchivar se aplica sin el sí.
+
+## Buenas prácticas
+
+- Pide el alcance mínimo.
+- Guarda las llaves en un almacén de secretos, nunca en un repositorio.
+- No muestres un `quote_token` como credencial: es un identificador de la cotización.

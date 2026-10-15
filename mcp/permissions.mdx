@@ -1,0 +1,62 @@
+---
+title: 'Permissions and access'
+description: 'How a client authenticates, which OAuth scopes exist and which actions require a person.'
+---
+
+## Authentication
+
+| Method | When |
+|---|---|
+| **OAuth** with PKCE (S256) and dynamic client registration | Interactive clients: ChatGPT, Claude, Codex, Cursor. Recommended. |
+| **API key** in the `X-API-Key` header | Integrations and clients without a browser. Limited to specific workspaces and roles. Shown once. |
+
+OAuth discovery lives at `https://api.trybrein.com/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
+
+With OAuth the person signs in, picks the workspace and approves the scopes Brein shows.
+
+## OAuth scopes
+
+The policy is **deny by default**: a route is reachable through OAuth only if it is mapped to a scope. Anything unmapped is refused.
+
+| Scope | What it opens |
+|---|---|
+| `context:read` | Read Cerebro, the CRM, Lists and Sequences; query Analyses and Reports; search the web. |
+| `context:diff` | Read Cerebro from file changes. |
+| `topics:create` | Create a new document in Cerebro. |
+| `topics:write` | Write and rewrite Cerebro documents. |
+| `work:write` | Write to the CRM: opportunities, pipelines, notes, channel corrections; save Analyses and Reports. |
+| `market_data:read` | Query public market data (tenders, awards, permits, risks, suppliers). |
+| `commercial:read` | Read selected contacts, quote a reveal, propose a group operation. Never spends nor returns a channel. |
+| `commercial:discover` | Build and edit Lists. Unlocks no contact data. |
+| `commercial:activate` | What goes out: reveal, file and archive contacts, apply a group operation, create and activate Sequences and their replies. |
+| `offline_access` | Renew the session without signing in again. |
+
+The `broker:read`, `broker:invoke` and `broker:admin` scopes exist for compatibility. External integrations are switched off.
+
+## What OAuth never reaches
+
+- Internal platform administration.
+- Exporting the whole workspace, listing members or reading the audit log.
+- A Form's server keys.
+- A Sender's pace and settings (done in Brein).
+
+## Which actions require a person
+
+A **person** is a Brein session or an OAuth client they connected. An API key is not: the tool answers `403` with `MISSING_HUMAN_IDENTITY`.
+
+| Action | Tools | Who |
+|---|---|---|
+| Reveal contacts | `list_quote` or `people_quote` → `reveal` | A person |
+| Activate a Sequence | `sequence_check` → `sequence_activate` | A person with the owner or admin role |
+| Reply in a thread | `sequence_propose_reply` → `sequence_reply_thread` | A person |
+| Create or change an opportunity | `crm_propose_*` → `crm_*_opportunity` | A person |
+| Group operation of more than 50, or a stage change | `crm_group_propose` → `crm_group_apply` | A person |
+| Rewrite a document | `context_propose_rewrite` → `context_rewrite` | A person |
+
+Up to 50 contacts or companies, filing in a pipeline, archiving or unarchiving is applied without the yes.
+
+## Good practices
+
+- Ask for the minimum scope.
+- Keep keys in a secret store, never in a repository.
+- Do not display a `quote_token` as a credential: it is a quote identifier.

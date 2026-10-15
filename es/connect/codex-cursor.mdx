@@ -1,0 +1,82 @@
+---
+title: '¿Cómo conecto Brein a Codex o Cursor?'
+description: 'Conecta Brein a Codex o a Cursor en 5 pasos y úsalo desde tu editor o tu terminal.'
+---
+
+Si trabajas desde el editor o la terminal, también puedes hablar con Brein ahí: pedir una lista de clientes mientras programas, o revisar tu pipeline sin salir de tu herramienta.
+
+Brein se conecta con la misma dirección en todos los clientes:
+
+```text
+https://api.trybrein.com/mcp
+```
+
+## Codex
+
+<Steps>
+  <Step title="Agrega el servidor">
+    ```bash
+    codex mcp add brein --url https://api.trybrein.com/mcp
+    ```
+  </Step>
+  <Step title="Inicia sesión">
+    ```bash
+    codex mcp login brein
+    ```
+    Se abre el navegador: entra a Brein.
+  </Step>
+  <Step title="Elige tu espacio y aprueba">
+    Brein te muestra qué va a poder hacer Codex. Elige tu espacio y aprueba.
+
+    {/* CAPTURA: terminal con codex mcp login y la pantalla de aprobación de Brein */}
+  </Step>
+  <Step title="Comprueba">
+    ```bash
+    codex mcp list
+    ```
+    Brein debe aparecer en la lista.
+  </Step>
+  <Step title="Empieza una sesión nueva">
+    Abre Codex de nuevo para que cargue las herramientas.
+  </Step>
+</Steps>
+
+## Cursor
+
+<Steps>
+  <Step title="Abre los ajustes de MCP">
+    En Cursor abre **Settings → MCP** y elige agregar un servidor.
+
+    {/* CAPTURA: Cursor, ajustes de MCP */}
+  </Step>
+  <Step title="Pega la configuración">
+    ```json
+    {
+      "mcpServers": {
+        "brein": {
+          "url": "https://api.trybrein.com/mcp"
+        }
+      }
+    }
+    ```
+  </Step>
+  <Step title="Conéctate">
+    Cursor muestra Brein con un botón para conectar. Tócalo e inicia sesión.
+  </Step>
+  <Step title="Elige tu espacio y aprueba">
+    Aprueba lo que Brein te muestra.
+  </Step>
+  <Step title="Comprueba">
+    Brein debe verse con un punto verde y sus herramientas listadas.
+  </Step>
+</Steps>
+
+## Pídele esto para probar
+
+> Muéstrame los espacios de Brein que puedo usar y cuántos créditos me quedan.
+
+Si responde con tu espacio y tu plan, quedó conectado. Después: [tus primeros pedidos](/es/work/first-requests).
+
+<Note>
+  ¿Usas otra herramienta, como VS Code, Windsurf, OpenCode u OpenClaw? Mira [cómo conectar otro cliente](/es/connect/other-clients).
+</Note>

@@ -1,0 +1,47 @@
+---
+title: 'Using another client? Here is how to connect Brein'
+description: 'Any app that accepts remote MCP servers with sign-in can use Brein. This is all you need.'
+---
+
+If your tool accepts remote MCP servers, it can use Brein. You don't need a guide for each app: they all ask for the same thing.
+
+## What you need
+
+1. **Brein's address:**
+
+   ```text
+   https://api.trybrein.com/mcp
+   ```
+
+2. **Pick sign-in (OAuth)** when the app asks how to authenticate. You don't need a client ID, a secret or a key: the app registers itself with Brein.
+
+3. **Sign in to Brein and approve.** Your browser opens, you sign in with your account, pick your workspace and approve. Done.
+
+Then ask it this to test:
+
+> Show me the Brein workspaces I can use and how many credits I have left.
+
+## Where to add it in each app
+
+Menu names change often. If you can't find one, search for «MCP» or «Connectors» in your app's settings.
+
+| App | Where |
+|---|---|
+| [ChatGPT](/connect/chatgpt), [Claude](/connect/claude), [Codex and Cursor](/connect/codex-cursor), [OpenClaw](/connect/openclaw) | They have their own guide. |
+| VS Code with Copilot | In the `mcp.json` file, under `"servers"`, add `"brein": { "type": "http", "url": "https://api.trybrein.com/mcp" }`. Careful: VS Code uses `servers`, not `mcpServers`; that's the most common mistake when copying from another guide. |
+| Mistral Le Chat | **Intelligence → Connectors**, custom connector, OAuth authentication. |
+| Windsurf, Goose, Gemini CLI and others | In their MCP settings, add a remote server (Streamable HTTP) with Brein's address and sign in when asked. |
+
+## If your app asks for something else
+
+| It asks for | What it means |
+|---|---|
+| A required **client ID** or **secret** | That app can't register itself. Write to us and we'll work it out with you. |
+| A **key** or a **token** | That app can't sign in with OAuth. With OAuth, every action is in a person's name; that's why it's the path we recommend. See [permissions and access](/mcp/permissions). |
+| A **command** to start a local server | That option is for servers that run on your machine. Brein is remote: look for the remote or by-URL server option. |
+
+## What's the same in every app
+
+- **Your yes stays in Brein.** Anything that spends credits or sends email asks you to confirm, no matter which app you ask from. More in [what needs your yes](/trust/yes).
+- **You see the same as in the dashboard:** your workspaces, your Cerebro, your Lists, your pipeline and your Sequences.
+- **You can remove access** whenever you want in Brein, under **Settings → Security & Data**. The app can no longer get in.

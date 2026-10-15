@@ -1,0 +1,59 @@
+---
+title: 'How do I connect Brein to ChatGPT?'
+description: 'Connect Brein to your ChatGPT in 5 steps and ask for your first list of customers.'
+---
+
+With Brein connected, ChatGPT can look for customers, read your pipeline and prepare your emails. The model is your ChatGPT's; the data and the actions are Brein's.
+
+You need a Brein account and a ChatGPT account with developer mode access.
+
+<Note>
+  Brein is not in the ChatGPT directory yet. For now you add it by hand with its address, and these are the steps.
+</Note>
+
+<Steps>
+  <Step title="Turn on developer mode">
+    In ChatGPT open **Settings → Security and login** and turn on **Developer mode**. If you do not see it, your administrator has it off.
+
+    {/* CAPTURA: ChatGPT settings with "Developer mode" turned on */}
+  </Step>
+  <Step title="Add Brein">
+    Open `chatgpt.com/plugins`, tap **+** and paste this address:
+
+    ```text
+    https://api.trybrein.com/mcp
+    ```
+
+    Name it **Brein**. For authentication choose **OAuth**.
+
+    {/* CAPTURA: ChatGPT form to add an app with Brein's address and OAuth selected */}
+  </Step>
+  <Step title="Sign in to Brein">
+    A Brein window opens. Sign in with your account.
+  </Step>
+  <Step title="Pick your workspace and approve">
+    Brein shows what ChatGPT will be able to do. Pick your workspace and approve. You return to ChatGPT.
+
+    {/* CAPTURA: Brein approval screen with the workspace picked */}
+  </Step>
+  <Step title="Open a new chat and turn it on">
+    In a new chat, tap **+** and turn on **Brein**. A chat that was already open does not see the new tools.
+  </Step>
+</Steps>
+
+## Ask this to test it
+
+> Show me the Brein workspaces I can use and how many credits I have left.
+
+If it answers with your workspace name and your plan, you are connected. That question only reads: it spends nothing.
+
+Then try something valuable: [your first requests](/work/first-requests).
+
+## If something fails
+
+| What you see | What to do |
+|---|---|
+| ChatGPT cannot find the tools | Open a new chat and turn Brein on again. |
+| It asks you to sign in again | Approve the connection again; the session expired. |
+| You see the wrong workspace | Ask: "use the workspace named X". |
+| A notice says your plan does not include that | See [credits and plans](/trust/credits). |

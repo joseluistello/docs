@@ -1,0 +1,57 @@
+---
+title: 'Errors'
+description: 'How Brein responds when something fails, and what to do with each code.'
+---
+
+Decide with the `code`, not the `message`: the text can change.
+
+## Shape
+
+A tool error carries `message` (for a person), `next` (what to do) and `retryable`. It also carries `Recovery:`, one sentence telling the agent what to do, and `Request id:`. If `retryable` is `false`, fix what it says before calling again. Keep the `request_id` when asking for help.
+
+The REST API returns this shape:
+
+```json
+{
+  "statusCode": 422,
+  "code": "VALIDATION_FAILED",
+  "message": "The request contains a field value the server cannot accept.",
+  "request_id": "a1b2c3d4",
+  "retryable": false,
+  "fixer": "caller",
+  "recovery": "Fix the fields the message names and call again with corrected values.",
+  "endpoint": "POST /api/v1/workspaces/acme/..."
+}
+```
+
+- `fixer` says who fixes it: `caller` (fix the request), `person` (a person has to act, such as saying yes or reconnecting) or `brein` (our failure; try again later).
+- `recovery` is the next step, in one sentence.
+- A `403` may carry `reason`, the exact cause: for example `api_key_member_removed` (whoever created the key is no longer a member) or `oauth_workspace_mismatch` (the token belongs to another workspace). The `code` stays `FORBIDDEN`.
+
+A Form `422` adds `errors`: one entry per question, with `key` or `path` and `message`.
+
+## Common codes
+
+| Status | Means | What to do |
+|---|---|---|
+| `400` | The request is invalid. | Fix the argument. |
+| `401` | The credential is missing or invalid. | Reconnect or replace the key. |
+| `402` | Your plan hit a limit or does not include that. | Show the notice; it brings the Billing link. |
+| `403` | You are authenticated but cannot. | Check membership and role. With `MISSING_HUMAN_IDENTITY`, a person is needed, not a key. |
+| `404` | It does not exist for you. | Check the workspace and the id. |
+| `409` | It changed or already exists. | Read the current state and propose again. |
+| `422` | A value cannot be accepted. | Fix what `errors` says. |
+| `429` | Too many requests. | Wait and retry. |
+| `500` | The server failed. | Keep the `request_id`. |
+
+## Tool cases
+
+| Case | What happened |
+|---|---|
+| `TOOL_RETIRED` | You called a retired name. The message names the tool that replaces it. |
+| Expired or changed proposal | The sealed token no longer matches. Propose again. |
+| `reveal_running` | Emails are already being searched on that List. Wait and read it. |
+| `prospect_provider_off` | The data provider is unavailable. There is no silent substitute: retry later. |
+| Group changed | A group operation is refused if the group changed since it was counted. |
+
+Without balance or on a plan that does not include it, Brein fails closed with `402`. There is no automatic retry with another provider.

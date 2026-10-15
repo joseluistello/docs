@@ -1,0 +1,75 @@
+---
+title: 'How do I connect Brein to OpenClaw?'
+description: 'Connect Brein to your OpenClaw (formerly Clawdbot) from its settings screen and ask for your first list.'
+---
+
+With Brein connected, your OpenClaw can look for customers, read your pipeline and prepare emails from wherever you already talk to it: WhatsApp, Telegram, Slack or its own chat. OpenClaw brings the agent; Brein brings the data and the actions.
+
+<Note>
+  OpenClaw used to be called Clawdbot (and, for a few days, Moltbot). It is the same project.
+</Note>
+
+You need a Brein account and admin access to your OpenClaw.
+
+<Steps>
+  <Step title="Open settings at your Gateway's address">
+    Open the OpenClaw control screen from your own Gateway's address: the local one on your machine, its Tailscale address or its `https` address. Go to **Settings → MCP**.
+
+    If you open settings from any other address, the Brein sign-in cannot come back and gets stuck halfway.
+
+    {/* CAPTURA: OpenClaw, Settings → MCP with «Configured servers» */}
+  </Step>
+  <Step title="Add Brein">
+    Under **Configured servers**, tap **Add server**:
+
+    - **Name:** `brein`
+    - **Transport:** Streamable HTTP
+    - **URL:** `https://api.trybrein.com/mcp`
+
+    Save with **Add server**.
+  </Step>
+  <Step title="Tell it to sign in">
+    Further down, in the config editor on the same page, add `"auth": "oauth"` to the `brein` server. That makes OpenClaw ask you to sign in to Brein instead of asking for a key.
+
+    ```json
+    "brein": {
+      "url": "https://api.trybrein.com/mcp",
+      "transport": "streamable-http",
+      "auth": "oauth"
+    }
+    ```
+  </Step>
+  <Step title="Sign in to Brein and approve">
+    Tap **Sign in** next to Brein. Brein opens in your browser: sign in with your account, pick your workspace and approve. Go back to OpenClaw's settings.
+
+    «Authentication saved» only means it stored the access. The real test is the next step.
+
+    {/* CAPTURA: Brein approval screen with the chosen workspace */}
+  </Step>
+  <Step title="Try it in a chat">
+    In the chat, tap **+ → Connectors** and check that Brein shows up with its tools. Then ask it what's below.
+  </Step>
+</Steps>
+
+## Ask it this to test
+
+> Show me the Brein workspaces I can use and how many credits I have left.
+
+If it answers with your workspace name and your plan, you're connected. That question only reads: it spends nothing.
+
+Then try something useful: [your first requests](/work/first-requests).
+
+## One important thing
+
+OpenClaw can act on its own, at any hour, and that is fine for reading, searching and preparing. Anything that **spends credits or sends email** still asks a person for a yes inside Brein, even if OpenClaw is allowed to use the tool. No agent says yes to itself. More in [what needs your yes](/trust/yes).
+
+If several people talk to your OpenClaw, each of them should connect their own Brein account. That way every action is in the name of whoever asked for it.
+
+## If something fails
+
+| What you see | What to do |
+|---|---|
+| **Sign in** does not show up | Check that you added `"auth": "oauth"` and that Brein is enabled. |
+| The browser signs in to Brein but OpenClaw never notices | You opened settings from an address that is not your Gateway's. Open them from the local, Tailscale or `https` Gateway address and tap **Sign in** again. |
+| Brein is not in **+ → Connectors** | Check that the server is enabled and open a new chat. |
+| It says your plan does not include that | See [credits and plans](/trust/credits). |

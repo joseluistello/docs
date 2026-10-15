@@ -1,0 +1,82 @@
+---
+title: 'Forms for developers'
+description: 'Embed a Form on your site or send its Responses from your server.'
+---
+
+A Form has three doors. The first, the link `https://trybrein.com/f/<id>`, needs no code. This page covers the other two. To create the form, go to [capturing contacts](/work/forms).
+
+The `<id>` is the form's public id (`frm_` and ten characters). It does not change.
+
+## Embed it on your site
+
+Paste this where you want the form:
+
+```html
+<script src="https://trybrein.com/embed.js" async></script>
+<div data-brein-form="frm_AbC123dEf4" data-mode="inline"></div>
+```
+
+| `data-mode` | What it does |
+|---|---|
+| `inline` | Appears inside the page. |
+| `popup` | A button opens it in a window. Change the text with `data-button-text`. |
+| `slide` | Appears in a corner. |
+
+With `popup` also: `window.BreinForms.open("frm_AbC123dEf4")`.
+
+**Allowed domains.** If you set domains on the form, only those sites can show it; a submission from another site answers `403`. One domain per line; `*.domain.mx` accepts subdomains.
+
+**Event.** When a response is accepted, `brein:submitted` fires with `detail.formId` and `detail.responseId`:
+
+```html
+<script>
+  document.addEventListener('brein:submitted', function (event) {
+    if (typeof gtag === 'function') {
+      gtag('event', 'generate_lead', { form_id: event.detail.formId })
+    }
+  })
+</script>
+```
+
+## Send it from your server
+
+If you want your own HTML, your server sends each Response to Brein with the form's key:
+
+```text
+Your HTML  →  your server  →  Brein
+```
+
+**The key.** In Brein open **Share → From your server** and create a `frm_sk_…` key. It is shown **only once**. Store it in your secret manager. Revoke it in the same dialog. Never put it in a browser or a repository.
+
+**The submission.**
+
+```bash
+curl -X POST https://api.trybrein.com/api/v1/forms/frm_AbC123dEf4/responses \
+  -H "Authorization: Bearer $BREIN_FORM_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{"answers":{"correo":"ana@empresa.com"},"consent":{"privacy":true}}'
+```
+
+`answers` uses the question keys as its keys (you see them in the same dialog). `consent.privacy` must be `true`. With the same `Idempotency-Key` you get the same Response. A correct submission answers `202`:
+
+```json
+{ "id": "8f1c…", "status": "received" }
+```
+
+| Status | Means |
+|---|---|
+| `202` | Accepted; processed in a queue. |
+| `401` | The key is missing, invalid or revoked. |
+| `403` | It belongs to another form, the form is paused or the site is not allowed. |
+| `404` | It does not exist or is still a draft. |
+| `422` | There are responses to fix. See [Errors](/mcp/errors). |
+| `429` | Too many requests. |
+
+A multiple-choice question is sent as a list.
+
+## Consent and privacy
+
+The form shows **your** company's privacy notice. It cannot be published without that link. Without consent, the submission is refused with `422`. A person unsubscribed from email reaches your contacts but receives no Sequences; whoever asked to delete their data is not saved.
+
+Brein stores the source page, the referrer and the `utm_*`, and only a hash of the IP.
