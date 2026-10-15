@@ -1,9 +1,9 @@
 ---
 title: 'How do I connect Brein to Codex or Cursor?'
-description: 'Connect Brein to Codex or Cursor in 5 steps and use it from your editor or terminal.'
+description: 'Connect Brein to Codex or Cursor from their settings and use it while you work.'
 ---
 
-If you work from your editor or the terminal, you can talk to Brein there too: ask for a customer list while you code, or check your pipeline without leaving your tool.
+If you work in Codex or Cursor, you can talk to Brein there too: ask for a customer list while you code, or check your pipeline without leaving your tool.
 
 Brein connects with the same address in every client:
 
@@ -13,39 +13,42 @@ https://api.trybrein.com/mcp
 
 ## Codex
 
-<Steps>
-  <Step title="Add the server">
-    ```bash
-    codex mcp add brein --url https://api.trybrein.com/mcp
-    ```
-  </Step>
-  <Step title="Sign in">
-    ```bash
-    codex mcp login brein
-    ```
-    The browser opens: sign in to Brein.
-  </Step>
-  <Step title="Pick your workspace and approve">
-    Brein shows what Codex will be able to do. Pick your workspace and approve.
+It works the same in the Codex app and in its editor extension: both share the same configuration.
 
-    {/* CAPTURA: terminal with codex mcp login and Brein's approval screen */}
+<Steps>
+  <Step title="Open the MCP servers">
+    In the Codex app: **Settings → MCP servers**. In the editor extension: the gear, then **MCP servers**.
+
+    {/* CAPTURA: Codex, Settings → MCP servers */}
   </Step>
-  <Step title="Check">
-    ```bash
-    codex mcp list
-    ```
-    Brein should be in the list.
+  <Step title="Add Brein">
+    Tap **Add server**:
+
+    - **Name:** `brein`
+    - **Type:** Streamable HTTP
+    - **URL:** `https://api.trybrein.com/mcp`
+
+    Save and tap **Restart** (in the extension, **Restart extension**).
   </Step>
-  <Step title="Start a new session">
-    Open Codex again so it loads the tools.
+  <Step title="Sign in to Brein">
+    In the list, Brein shows up as needing sign-in. Tap **Authenticate**: the browser opens, you sign in to Brein, pick your workspace and approve.
+
+    {/* CAPTURA: Brein approval screen */}
+  </Step>
+  <Step title="Start a new conversation">
+    Open a new conversation so Codex loads Brein's tools.
   </Step>
 </Steps>
+
+<Accordion title="Using Codex in the terminal?">
+  Add Brein with `codex mcp add brein --url https://api.trybrein.com/mcp`, then sign in with `codex mcp login brein`. It is the same configuration the app and the extension use.
+</Accordion>
 
 ## Cursor
 
 <Steps>
   <Step title="Open the MCP settings">
-    In Cursor open **Settings → MCP** and choose to add a server.
+    In Cursor's settings, find the **MCP** section and choose to add a new server. The menu name changes between versions; if you can't find it, search for «MCP» in the settings.
 
     {/* CAPTURA: Cursor, MCP settings */}
   </Step>
@@ -61,10 +64,7 @@ https://api.trybrein.com/mcp
     ```
   </Step>
   <Step title="Connect">
-    Cursor shows Brein with a connect button. Tap it and sign in.
-  </Step>
-  <Step title="Pick your workspace and approve">
-    Approve what Brein shows you.
+    Brein shows up as needing sign-in. Tap **Connect**, sign in to Brein, pick your workspace and approve.
   </Step>
   <Step title="Check">
     Brein should show a green dot and its tools listed.

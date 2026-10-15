@@ -7,24 +7,28 @@ Con Brein conectado, ChatGPT puede buscar clientes, leer tu pipeline y preparar 
 
 Necesitas una cuenta de Brein y una cuenta de ChatGPT con acceso al modo desarrollador.
 
+<Card title="Abrir ChatGPT para conectar Brein" icon="message-circle" href="https://chatgpt.com/plugins">
+  Abre la página de Complementos de ChatGPT. Ahí sigues el paso 2 con la dirección de Brein.
+</Card>
+
 <Note>
-  Brein todavía no aparece en el directorio de ChatGPT. Por ahora se agrega a mano con su dirección, y son estos pasos.
+  Brein todavía no aparece en el directorio de ChatGPT, y ChatGPT no deja abrir el formulario con Brein ya escrito, como Claude. Por ahora se agrega a mano con su dirección, en estos pasos.
 </Note>
 
 <Steps>
-  <Step title="Activa el modo desarrollador">
-    En ChatGPT abre **Configuración → Seguridad e inicio de sesión** y enciende **Modo desarrollador**. Si no ves la opción, tu administrador la tiene apagada.
+  <Step title="Activa el modo desarrollador (si hace falta)">
+    Si en el paso 2 no ves **Agregar servidor MCP personalizado**, abre en ChatGPT **Configuración → Seguridad e inicio de sesión** y enciende **Modo desarrollador**. Si no ves la opción, tu administrador la tiene apagada.
 
     {/* CAPTURA: Configuración de ChatGPT con "Modo desarrollador" encendido */}
   </Step>
   <Step title="Agrega Brein">
-    Abre `chatgpt.com/plugins`, toca **+** y pega esta dirección:
+    Abre [chatgpt.com/plugins](https://chatgpt.com/plugins), toca **Agregar → Agregar servidor MCP personalizado** y llena:
 
-    ```text
-    https://api.trybrein.com/mcp
-    ```
+    - **Nombre:** Brein
+    - **Conexión:** URL del servidor, `https://api.trybrein.com/mcp`
+    - **Autenticación:** OAuth
 
-    Ponle de nombre **Brein**. En autenticación elige **OAuth**.
+    Marca **Entiendo y quiero continuar** y guarda.
 
     {/* CAPTURA: formulario de ChatGPT para agregar una app con la dirección de Brein y OAuth elegido */}
   </Step>

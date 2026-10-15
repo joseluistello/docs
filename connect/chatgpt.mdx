@@ -7,24 +7,28 @@ With Brein connected, ChatGPT can look for customers, read your pipeline and pre
 
 You need a Brein account and a ChatGPT account with developer mode access.
 
+<Card title="Open ChatGPT to connect Brein" icon="message-circle" href="https://chatgpt.com/plugins">
+  Opens ChatGPT's Plugins page. Follow step 2 there with Brein's address.
+</Card>
+
 <Note>
-  Brein is not in the ChatGPT directory yet. For now you add it by hand with its address, and these are the steps.
+  Brein is not in the ChatGPT directory yet, and ChatGPT can't open the form with Brein already filled in, the way Claude does. For now you add it by hand with its address, in these steps.
 </Note>
 
 <Steps>
-  <Step title="Turn on developer mode">
-    In ChatGPT open **Settings → Security and login** and turn on **Developer mode**. If you do not see it, your administrator has it off.
+  <Step title="Turn on developer mode (if needed)">
+    If in step 2 you don't see **Add custom MCP server**, open **Settings → Security and login** in ChatGPT and turn on **Developer mode**. If you do not see it, your administrator has it off.
 
     {/* CAPTURA: ChatGPT settings with "Developer mode" turned on */}
   </Step>
   <Step title="Add Brein">
-    Open `chatgpt.com/plugins`, tap **+** and paste this address:
+    Open [chatgpt.com/plugins](https://chatgpt.com/plugins), tap **Add → Add custom MCP server** and fill in:
 
-    ```text
-    https://api.trybrein.com/mcp
-    ```
+    - **Name:** Brein
+    - **Connection:** Server URL, `https://api.trybrein.com/mcp`
+    - **Authentication:** OAuth
 
-    Name it **Brein**. For authentication choose **OAuth**.
+    Check **I understand and want to continue** and save.
 
     {/* CAPTURA: ChatGPT form to add an app with Brein's address and OAuth selected */}
   </Step>

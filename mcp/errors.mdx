@@ -7,7 +7,7 @@ Decide with the `code`, not the `message`: the text can change.
 
 ## Shape
 
-A tool error carries `message` (for a person), `next` (what to do) and `retryable`. It also carries `Recovery:`, one sentence telling the agent what to do, and `Request id:`. If `retryable` is `false`, fix what it says before calling again. Keep the `request_id` when asking for help.
+A tool error carries `message` (for a person), `next` (what to do) and `retryable`. It also carries `Recovery:`, one sentence telling the agent what to do, and `Request id:`. If `retryable` is `false`, fix what it says before calling again. When a rate limit says how long to wait, the result also carries `retry_after_seconds`. Keep the `request_id` when asking for help.
 
 The REST API returns this shape:
 
@@ -48,6 +48,7 @@ A Form `422` adds `errors`: one entry per question, with `key` or `path` and `me
 
 | Case | What happened |
 |---|---|
+| `INVALID_ARGUMENTS` | The call's arguments do not fit the tool. The response names the fields (`problems`) and the ones it accepts. Fix them and call again. |
 | `TOOL_RETIRED` | You called a retired name. The message names the tool that replaces it. |
 | Expired or changed proposal | The sealed token no longer matches. Propose again. |
 | `reveal_running` | Emails are already being searched on that List. Wait and read it. |

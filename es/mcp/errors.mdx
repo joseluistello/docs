@@ -7,7 +7,7 @@ Decide con el `code`, no con el `message`: el texto puede cambiar.
 
 ## Forma
 
-Un error de herramienta trae `message` (para una persona), `next` (qué hacer) y `retryable`. También trae `Recovery:`, una oración que le dice al agente qué hacer, y `Request id:`. Si `retryable` es `false`, corrige lo que dice antes de volver a llamar. Guarda el `request_id` al pedir ayuda.
+Un error de herramienta trae `message` (para una persona), `next` (qué hacer) y `retryable`. También trae `Recovery:`, una oración que le dice al agente qué hacer, y `Request id:`. Si `retryable` es `false`, corrige lo que dice antes de volver a llamar. Cuando un límite de uso dice cuánto esperar, el resultado trae también `retry_after_seconds`. Guarda el `request_id` al pedir ayuda.
 
 La API REST devuelve esta forma:
 
@@ -48,6 +48,7 @@ Un `422` de un Formulario añade `errors`: una entrada por pregunta, con `key` o
 
 | Caso | Qué pasó |
 |---|---|
+| `INVALID_ARGUMENTS` | Los argumentos de la llamada no encajan con la herramienta. La respuesta nombra los campos (`problems`) y los que acepta. Corrígelos y llama de nuevo. |
 | `TOOL_RETIRED` | Llamaste un nombre retirado. El mensaje dice la herramienta que lo reemplaza. |
 | Propuesta vencida o cambiada | El token sellado ya no corresponde. Vuelve a proponer. |
 | `reveal_running` | Ya se están buscando correos en esa Lista. Espera y léela. |
