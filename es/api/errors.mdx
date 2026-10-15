@@ -26,6 +26,31 @@ Brein usa una misma forma JSON de error en la API REST. Decide con el `code` leg
 | `request_id` | Inclúyelo cuando pidas ayuda. |
 | `retryable` | Indica si la misma operación puede funcionar después. |
 | `endpoint` | Método y ruta que produjeron el error. |
+| `errors` | Sólo en algunos `422`: los campos exactos que debes corregir. Ver abajo. |
+
+## Errores por campo
+
+Un `422` de un Formulario (o al guardar su definición) incluye `errors`, con una entrada por cada campo que falló. Así puedes señalar la pregunta que se debe corregir sin revisar todo el envío:
+
+```json
+{
+  "statusCode": 422,
+  "code": "VALIDATION_FAILED",
+  "message": "Hay respuestas que corregir.",
+  "errors": [
+    { "key": "correo_trabajo", "message": "Esta pregunta es obligatoria" },
+    { "path": "questions[2].label", "message": "La etiqueta es obligatoria" }
+  ]
+}
+```
+
+| Campo | Significado |
+|---|---|
+| `key` | La clave de la pregunta (`correo_trabajo`), cuando falla una respuesta. |
+| `path` | La ubicación del campo (`questions[2].label`), cuando falla la definición. |
+| `message` | Qué corregir, en español. |
+
+Cada entrada tiene `message` y al menos uno de `key` o `path`.
 
 ## Códigos comunes
 

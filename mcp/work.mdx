@@ -9,7 +9,7 @@ Read [MCP and OAuth](/mcp/overview) first for authentication and workspace permi
 
 ## Read contacts
 
-Use `collection_query` to read a small page of contact records. Follow the returned cursor before treating the result as complete.
+Use `crm_query` to read a small page of contact records. Follow the returned cursor before treating the result as complete.
 
 ## Update a contact
 
@@ -26,7 +26,7 @@ The update applies to the contact named in the request. It does not turn a compa
 
 ## File a person
 
-Use `people_file` to save a person who has already been revealed or imported into the appropriate contact collection.
+Use `contact_file` to save a person who has already been revealed or imported into the appropriate contact collection.
 
 A contact lookup, filing the contact, and updating the contact are separate actions. Each one can have a different permission or confirmation requirement.
 
@@ -35,7 +35,7 @@ A contact lookup, filing the contact, and updating the contact are separate acti
 Start with a bounded read:
 
 ```text
-collection_query op:'query' collection_id:'<collection-id>' limit:25
+crm_query op:'query' collection_id:'<collection-id>' limit:25
 ```
 
 Confirm the workspace, collection, and contact before asking the agent to make a change.
@@ -44,4 +44,4 @@ Confirm the workspace, collection, and contact before asking the agent to make a
 
 - [MCP and OAuth](/mcp/overview)
 - [The Brein workspace](/product/workspace)
-- [Campaign tools](/mcp/sequences)
+- [Sequence tools](/mcp/sequences)

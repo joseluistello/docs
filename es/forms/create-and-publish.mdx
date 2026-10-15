@@ -1,0 +1,72 @@
+---
+title: 'Crear y publicar un formulario'
+description: 'Un Formulario es una puerta pública a tu CRM: cada Respuesta llega como Contacto.'
+---
+
+Un **Formulario** es una página pública donde alguien deja sus datos. Cada **Respuesta** llega a tu espacio por el mismo motor de contactos que una importación: llena lo vacío y nunca pisa lo que ya tienes. Un formulario no le escribe a quien respondió ni gasta créditos.
+
+Crea formularios desde **Formularios** en la barra lateral. Los formularios viven en carpetas, como los Reportes. Los nuevos nacen como **Borrador**, y un borrador no tiene puerta pública.
+
+## Los diez tipos de pregunta
+
+| Tipo | Para qué sirve |
+| --- | --- |
+| Texto | Una respuesta corta: un nombre, un puesto. |
+| Texto largo | Una respuesta de varias líneas. |
+| Correo | El correo de la persona. |
+| Teléfono | El teléfono de la persona. |
+| Enlace | Una URL, por ejemplo el sitio de la empresa. |
+| Número | Un número. |
+| Moneda | Un monto, en MXN o USD. |
+| Fecha | Una fecha. |
+| Opción | Una opción de una lista. |
+| Opciones | Varias opciones de una lista. |
+
+Todo formulario necesita al menos una pregunta obligatoria de **Correo** o de **Teléfono**: sin identidad no hay contacto.
+
+## A qué Campo va cada respuesta
+
+Cada pregunta apunta a un **Campo** de un objeto, o a la nota. En el editor esto se llama **Va a**:
+
+- **Contacto:** Nombre, Puesto, Correo, Teléfono, o uno de los campos de contacto de tu espacio.
+- **Empresa:** Nombre o Sitio.
+- **Oportunidad:** Monto o Cierre.
+- **Nota:** guardar la respuesta solo en la nota.
+
+El tipo de la pregunta debe caber en su destino: un **Enlace** puede llenar el **Sitio** de la empresa, una **Moneda** llena el **Monto** de la oportunidad, una **Fecha** llena el **Cierre**, y un **Correo** o un **Teléfono** solo pueden llenar esos dos campos del contacto.
+
+## Qué pasa cuando alguien responde
+
+Un formulario solo escribe en el CRM:
+
+- **Contacto.** Un contacto nuevo, o el que ya existía y coincide por correo o teléfono. Sigue la política **Completar**: llena los campos vacíos y nunca pisa un valor que ya tienes.
+- **Empresa.** Se liga por el dominio no gratuito del correo, o por el sitio que dejó la persona.
+- **Nota.** Una nota, "Llenó «title»", con las respuestas y de dónde llegaron.
+- **Lista.** Si elegiste una lista en **Al enviar**, el contacto entra a ella.
+- **Oportunidad.** Si elegiste un tablero y una etapa, se crea una oportunidad con origen **Formulario**.
+- **Aviso.** Si elegiste a un miembro en **Al enviar**, recibe un correo con un enlace a la Respuesta.
+
+Un formulario no inscribe a nadie en una Secuencia, no corre una Rutina, no le escribe a quien respondió y no gasta créditos.
+
+## Estados de una Respuesta
+
+1. **Recibida.** Llegó y está en cola de procesamiento.
+2. **Procesada.** Llegó al CRM.
+3. **Por decidir.** El correo o el teléfono coincide con más de un contacto. Ábrela, elige el contacto correcto o crea uno nuevo.
+4. **Rechazada.** La persona había pedido suprimir sus datos; no se guarda nada.
+5. **Fallida.** Falló la escritura en el CRM. Ábrela, lee **Qué falló** y **Reintentar**. Brein ya reintenta unas cuantas veces.
+
+## Publicar, pausar o dejar borrador
+
+- **Borrador.** Sin puerta pública. Solo tú lo ves.
+- **Publicado.** El enlace y cualquier inserción funcionan. Editar un formulario publicado cambia lo que ven los visitantes.
+- **Pausado.** El enlace todavía abre, pero sin preguntas, y no acepta ninguna Respuesta.
+
+Para publicar, el formulario necesita su pregunta obligatoria de identidad y, si elegiste **Avisar a**, un miembro del espacio. Un **Borrador** nunca es público: el enlace y el servidor responden 404.
+
+## Relacionado
+
+- [Compartir por enlace](/es/forms/share-by-link)
+- [Insertar en tu web](/es/forms/embed)
+- [Enviar desde tu servidor](/es/forms/from-your-server)
+- [Privacidad y consentimiento](/es/forms/privacy-and-consent)

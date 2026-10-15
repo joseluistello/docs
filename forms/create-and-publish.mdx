@@ -1,0 +1,72 @@
+---
+title: 'Create and publish a form'
+description: 'A Formulario is a public door into your CRM: every Respuesta arrives as a Contacto.'
+---
+
+A **Formulario** is a public page where someone leaves their details. Every **Respuesta** reaches your workspace through the same contact engine as an import: it fills what is empty and never overwrites what you already have. A form never emails the person who answered and never spends credits.
+
+Create forms from **Formularios** in the sidebar. Forms live in folders, like Reportes. New forms start as a **Borrador**, and a draft has no public door.
+
+## The ten question types
+
+| Type | Use it for |
+| --- | --- |
+| Texto | A short answer: a name, a role. |
+| Texto largo | A multi-line answer. |
+| Correo | The person's email. |
+| Teléfono | The person's phone. |
+| Enlace | A URL, for example the company website. |
+| Número | A number. |
+| Moneda | An amount, in MXN or USD. |
+| Fecha | A date. |
+| Opción | One choice from a list. |
+| Opciones | Several choices from a list. |
+
+Every form needs at least one required **Correo** or **Teléfono** question: without identity there is no contact.
+
+## Where each answer goes
+
+Each question points at a **Campo** of an object, or at the note. The editor calls this **Va a**:
+
+- **Contacto:** Nombre, Puesto, Correo, Teléfono, or one of your workspace's own contact fields.
+- **Empresa:** Nombre or Sitio.
+- **Oportunidad:** Monto or Cierre.
+- **Nota:** keep the answer in the note only.
+
+The question's type has to fit its destination: an **Enlace** can fill the company **Sitio**, a **Moneda** fills the opportunity **Monto**, a **Fecha** fills **Cierre**, and a **Correo** or **Teléfono** can only fill those two contact fields.
+
+## What happens when someone answers
+
+A form writes to the CRM only:
+
+- **Contacto.** A new contact, or the existing one whose email or phone matches. It follows the **Completar** policy: it fills empty fields and never overwrites a value you already have.
+- **Empresa.** Linked by the email's non-free domain, or by the website the person left.
+- **Nota.** One note, "Llenó «title»", with the answers and where they came from.
+- **Lista.** If you chose a list in **Al enviar**, the contact joins it.
+- **Oportunidad.** If you chose a board and stage, an opportunity is created with origin **Formulario**.
+- **Aviso.** If you chose a member in **Al enviar**, they get one email with a link to the Respuesta.
+
+A form never signs anyone into a Secuencia, never runs a Rutina, never emails the person who answered, and never spends credits.
+
+## Response states
+
+1. **Recibida.** It arrived and is waiting to be processed.
+2. **Procesada.** It reached the CRM.
+3. **Por decidir.** The email or phone matches more than one contact. Open it, pick the right contact, or create a new one.
+4. **Rechazada.** The person had asked to suppress their data; nothing is kept.
+5. **Fallida.** Writing to the CRM failed. Open it, read **Qué falló**, and **Reintentar**. Brein already retries a few times with backoff.
+
+## Publish, pause, or keep a draft
+
+- **Borrador.** No public door. Only you see it.
+- **Publicado.** The link and any embed work. Editing a published form changes what visitors see.
+- **Pausado.** The link still opens, but without questions, and no Respuesta is accepted.
+
+To publish, the form needs its required identity question and, if you chose **Avisar a**, a member of the workspace. A **Borrador** is never public: the link and the server both answer 404.
+
+## Related
+
+- [Share by link](/forms/share-by-link)
+- [Embed on your site](/forms/embed)
+- [Send from your server](/forms/from-your-server)
+- [Privacy and consent](/forms/privacy-and-consent)

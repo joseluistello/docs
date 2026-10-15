@@ -26,6 +26,33 @@ Brein uses one JSON error shape across the REST API. Branch on the machine-reada
 | `request_id` | Include this when asking for help. |
 | `retryable` | Whether the same operation may succeed later. |
 | `endpoint` | Method and route that produced the error. |
+| `errors` | Only on some `422`s: the exact fields to fix. See below. |
+
+## Field-level errors
+
+A `422` from a Formulario (or from saving a definition) carries `errors`, one
+entry per field that failed, so the caller can point at the question instead of
+re-reading the whole payload:
+
+```json
+{
+  "statusCode": 422,
+  "code": "VALIDATION_FAILED",
+  "message": "Hay respuestas que corregir.",
+  "errors": [
+    { "key": "correo_trabajo", "message": "Esta pregunta es obligatoria" },
+    { "path": "questions[2].label", "message": "La etiqueta es obligatoria" }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `key` | The answer's question key (`correo_trabajo`), when the error is about what a person answered. |
+| `path` | The contract location that broke (`questions[2].label`), when the error is about the definition itself. |
+| `message` | What to fix, in Spanish. |
+
+An entry always has `message` and at least one of `key` or `path`.
 
 ## Common status codes
 

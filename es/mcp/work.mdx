@@ -9,7 +9,7 @@ Lee primero [MCP y OAuth](/es/mcp/overview) para conocer la autenticación y los
 
 ## Lee contactos
 
-Usa `collection_query` para leer una página pequeña de contactos. Sigue el cursor devuelto antes de considerar que el resultado está completo.
+Usa `crm_query` para leer una página pequeña de contactos. Sigue el cursor devuelto antes de considerar que el resultado está completo.
 
 ## Actualiza un contacto
 
@@ -26,7 +26,7 @@ La actualización se aplica al contacto indicado en la solicitud. No convierte u
 
 ## Archiva una persona
 
-Usa `people_file` para guardar en la colección de contactos adecuada a una persona que ya fue revelada o importada.
+Usa `contact_file` para guardar en la colección de contactos adecuada a una persona que ya fue revelada o importada.
 
 Buscar un contacto, archivarlo y actualizarlo son acciones separadas. Cada una puede tener permisos o confirmaciones diferentes.
 
@@ -35,7 +35,7 @@ Buscar un contacto, archivarlo y actualizarlo son acciones separadas. Cada una p
 Empieza con una lectura acotada:
 
 ```text
-collection_query op:'query' collection_id:'<collection-id>' limit:25
+crm_query op:'query' collection_id:'<collection-id>' limit:25
 ```
 
 Confirma el workspace, la colección y el contacto antes de pedirle al agente que haga un cambio.
@@ -44,4 +44,4 @@ Confirma el workspace, la colección y el contacto antes de pedirle al agente qu
 
 - [MCP y OAuth](/es/mcp/overview)
 - [El workspace de Brein](/es/product/workspace)
-- [Herramientas de campañas](/es/mcp/sequences)
+- [Herramientas de secuencias](/es/mcp/sequences)

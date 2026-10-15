@@ -1,0 +1,32 @@
+---
+title: 'Privacy and consent'
+description: 'What a Respuesta stores, the consent it asks for, and what happens when someone opts out.'
+---
+
+A Formulario collects personal data, so Brein keeps only what it needs and treats opt-outs as rules, not preferences.
+
+## What a response stores
+
+- **Answers.** What the person wrote, normalized to your fields (email, phone, URL, number, currency, date, options).
+- **Context.** The page, the referrer, and any `utm_*` values — never the visitor's IP. Brein stores only a hash of the IP, so it can count submissions without identifying anyone.
+- **Consent.** Whether the privacy notice was accepted, whether the marketing box was checked, the version of the notice, and the time.
+- **Result.** The contact it matched or created, and which fields it filled.
+
+## Consent
+
+The form shows a link to **your own** privacy notice next to the consent checkbox. Brein does not supply one: a new form starts with the link empty, and you cannot publish until you add it (an `http(s)` link to your company's notice, not a trybrein.com one); publishing without it is rejected with `422` on `consent.privacyUrl`. Without the consent, the send is rejected with `422`. If you enable the marketing box, it is a separate, optional checkbox — a person can answer without agreeing to promotions.
+
+## Opt-outs and suppression
+
+Two different opt-outs matter:
+
+- **Email opt-out.** If the person is on your email suppression list, the contact still reaches the CRM, but Brein never adds them to a Secuencia.
+- **Data suppression.** If the person asked to have their data suppressed, nothing is stored: the Respuesta is marked as **Rechazada** and kept without personal data.
+
+Ada and other MCP clients create forms with `form_save` and read them with `form_read`; reading lists and results never exposes email or phone. For the wider rules, see [Security](/security/overview).
+
+## Related
+
+- [Create and publish a form](/forms/create-and-publish)
+- [Send from your server](/forms/from-your-server)
+- [Security](/security/overview)

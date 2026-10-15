@@ -1,111 +1,137 @@
 ---
 title: 'MCP Tool Catalog'
-description: 'The complete public catalog of the 52 Brein MCP tools, grouped by family and action boundary.'
+description: 'The complete public catalog of the 43 Brein MCP tools, grouped by family and action boundary.'
 ---
 
-This is the public reference for the **52 tools** currently returned by the Brein MCP server. The server's `tools/list` response remains the canonical schema: the tables below give the purpose, key arguments, and action boundary for every public tool.
+This is the public reference for the **43 tools** currently returned by the Brein MCP server. The server's `tools/list` response remains the canonical schema: the tables below give the purpose, key arguments, and action boundary for every public tool.
 
 All tools accept an optional `workspace` argument. It must identify a workspace the credential is authorized to use; otherwise the credential's primary workspace is used.
 
 <Note>
-  `read` means the tool does not change Brein data. `write` means it can change workspace data. `confirm` means a person must approve the action after seeing the proposed audience, price, or effect. `credits` means the action can spend contact credits.
+  `read` means the tool does not change Brein data. `write` means it can change workspace data. `confirm` means a person must approve the action after seeing the proposed audience, price, or effect. `credits` means the action can spend credits.
 </Note>
 
-## Cerebro and documents
+## Cerebro
 
 | Tool | What it does | Key arguments | Access |
 | --- | --- | --- | --- |
-| `context_retrieve` | Find the team's relevant context for a task or set of files. | `task`, `files`, `view`, `limit` | read |
-| `context_get` | Read one context topic and its full body. | `topic`, `view` | read |
-| `context_create` | Create a shared commercial context topic. | `name`, `title`, `what`, `how`, `content`, `area` | write |
-| `context_update` | Update an existing context topic and return its new version. | `topic`, `content`, fields, `expected_version` | write |
-| `context_ls` | List Cerebro folders and markdown documents. | `folder` | read |
-| `context_read` | Read one markdown document by path. | `path` | read |
-| `context_write` | Create or replace one markdown document. | `path`, `content`, `title` | write |
-| `context_search` | Search Cerebro documents by text. | `q`, `folder`, `limit` | read |
+| `context_read` | Read what the team knows. `query` searches and returns ranked paths with snippets; `path` opens one document with its whole body and version; neither browses the folder tree. | `query`, `path`, `folder`, `limit` | read |
+| `context_write` | Create one new markdown document at `<folder>/<name>.md`. | `path`, `content`, `title` | write |
+| `context_propose_rewrite` | Step 1 of changing a document that exists: seals the whole new body against the version you read; nothing is written until a person confirms. | `path`, `content`, `expected_version` | read |
+| `context_rewrite` | Step 2: writes exactly the sealed body, after a person approved it. | `path`, `content`, `expected_version`, `write_token`, `confirm` | write |
 
-`context_ls`, `context_read`, `context_write`, and `context_search` are the document-shaped view of the same Cerebro store used by the topic-shaped tools. Read before replacing a document with `context_write`.
+Cerebro is a set of markdown documents in folders; `<folder>/Structure.md` says what a folder is for. A new document is written directly. One that exists changes in two steps: read it, propose the whole new body with the `version` you read, and a person confirms. If someone edited it in the meantime, the rewrite fails instead of discarding their change.
+
+Earlier names (`context_retrieve`, `context_get`, `context_search`, `context_ls`, `context_create`, `context_update`) still answer for clients that already use them, but no longer appear in `tools/list`; each answer names the call to use instead.
 
 ## CRM, companies, and people
 
 | Tool | What it does | Key arguments | Access |
 | --- | --- | --- | --- |
-| `collection_query` | Read bounded pages of CRM Collection records. | `list`, `op`, `collection_id`, `record_id`, `filter`, `limit`, `cursor` | read |
-| `crm_record` | Add, update, bulk-update, or inspect the history of CRM records. | `action`, `collection_id`, `record_id`, `fields`, `rows`, `limit`, `cursor` | write |
-| `crm_collection` | Create a CRM Collection that can hold contact records. | `action`, `name`, `archetype`, `record_schema`, `stages` | write |
-| `company_search` | Search the bounded company directory without returning contact coordinates. | `criterion`, `name`, `countries`, `industries`, `headcount`, `limit` | read |
-| `people_search` | Browse masked professional people inside the company market. | `companyName`, `locations`, `industries`, `departments`, `seniorities`, `limit` | read |
+| `crm_read` | Every read of the team's own CRM, by `object`: `company` (accounts; `company_id` opens one with its contacts and their latest Notes), `contact` (acquired contacts, with whether each can be contacted; never an email or phone; `contact_id` opens one with its full Notes; filter by `origen`, `correo` or `archivados`, and `preview` returns the group's total, a sample and how it splits), `list` (saved Lists or one List's members), `opportunity` (the opportunity boards, a bounded page of one board's opportunities, one opportunity, or an aggregate by stage; `record` is its older name), `product` (the product catalog: name, list price and currency; an opportunity's `producto` field holds a `product_id` from it, and `crm_propose` also takes the product's name). | `object`, `query`, `company_id`, `contact_id`, `list_id`, `collection_id`, `record_id`, `filter`, `group_by`, `origen`, `correo`, `archivados`, `preview`, `limit`, `cursor`, `offset` | read |
+| `crm_propose` | Step 1 of changing an opportunity, or of creating one (no `record_id`): returns the change (before, after, summary) sealed in `update_token`; nothing changes until a person confirms. | `collection_id`, `record_id`, `status`, `fields` | read |
+| `contact_update` | Note the relationship with a contact: `prospecto`, `en_conversacion`, `cliente` or `descartado`. `contactado` and `respondio` are recorded automatically by sequences; a meeting or a close belongs to the opportunity (`crm_propose`). `status` stays for older callers: `descartado` is the relationship, `reunion` and `cerrado` are refused. When the person asks, `nota` adds a Note (full text; no confirmation). | `record_id`, `lifecycle`, `nota` | write |
+| `crm_record` | Add, update, bulk-update, or inspect the history of opportunities. | `action`, `collection_id`, `record_id`, `fields`, `rows`, `limit`, `cursor` | write |
+| `prospect_companies` | Search the bounded company directory without returning contact coordinates. | `criterion`, `name`, `countries`, `industries`, `headcount`, `limit` | read |
+| `prospect_people` | Browse masked professional people inside the company market. | `companyName`, `locations`, `industries`, `departments`, `seniorities`, `limit` | read |
 | `people_quote` | Price a selected group before any contact reveal. | `search`, `count`, `handles` | read · free |
-| `people_acquired` | List people already revealed or imported into the workspace. | `q`, `list_id`, `folder_id`, `import_id`, `origen`, `limit` | read |
-| `people_reveal` | Reveal the people covered by an accepted quote. | `people`, `quote_token`, `confirm`, `max_credits`, `idempotency_key` | write · credits · confirm |
-| `people_file` | Save an acquired person into a CRM Collection. | `record_id`, `collection_id` | write |
-| `people_status` | Set the status of an existing contact. | `record_id`, `status` | write |
+| `reveal` | Reveal the people covered by an accepted quote (`list_quote` or `people_quote`). For a list built by `list_save` it answers `running`: the emails arrive within minutes and only an email that arrives is charged. | `quote_token`, `confirm`, `max_credits`, `idempotency_key` | write · credits · confirm |
+| `contact_file` | Save an acquired person into a CRM Collection. | `record_id`, `collection_id` | write |
+| `crm_group_propose` | Step 1 of changing many contacts or companies at once: save them to a pipeline (an existing one, or a new one by name), move their stage, archive or unarchive. Takes `crm_read`'s criteria; the server counts the group and returns the effect, a sample and how it splits. Nothing changes. | `object`, `criteria`, `operation` | read |
+| `crm_group_apply` | Step 2: apply the proposal. Fifty or fewer apply at once; more than fifty, or a stage move, need the person's yes (`confirm: true` from their client). If the group changed since the count, propose again. | `token`, `confirm` | write |
+| `crm_collection` | Create a pipeline, with the stages the person names. | `name`, `stages` | write |
 
-A company, market row, or research result does not become a CRM contact by itself. Use `people_file` for a person who has already been revealed or imported.
+Earlier names (`crm_query`, `company_list`, `company_get`, `contact_list`, `list_get`, `people_status`, `people_reveal`) still answer for clients that use them, but no longer appear in `tools/list`. Creating a Collection or pipeline is done in the Brein app; `crm_collection` stays callable but is not offered.
+
+A company, market row, or research result does not become a CRM contact by itself. Use `contact_file` for a person who has already been revealed or imported.
 
 ## Lists and workspace
 
 | Tool | What it does | Key arguments | Access |
 | --- | --- | --- | --- |
-| `list_get` | Read saved people lists, folders, criteria, counts, and members. | `list_id`, `state`, `offset` | read |
-| `list_save` | Create, edit, refresh, or discard people-list results. | `list_id`, `name`, `target`, `companies`, `criteria`, `count`, `refresh` | write |
+| `list_preview` | See a Muestra before building: 3 companies the same criteria turn up, in seconds, and how the search read the request (`read_as`). Creates nothing and spends no credits. | `industries`, `geography`, `role`, `offer`, `size`, `signals`, `exclude_brands` | read · free |
+| `list_save` | Build a List: companies that fit, each with a line of evidence and the person who decides (name, title, public LinkedIn), from structured criteria or from refs of companies already found. Free; it answers at once with `building` and the list is read with `crm_read`. Also renames, refreshes or discards. | `name`, `target`, `industries`, `geography`, `role`, `offer`, `size`, `signals`, `exclude_brands`, `from_refs`, `list_id` | write |
 | `list_quote` | Price the people in a saved list before revealing them. | `list_id`, `member_ids` | read · free |
 | `workspaces` | List the workspaces the credential can access. | `workspace` | read |
-| `usage` | Read plan, market allowance, contact credits, and renewal information. | `workspace` | read |
+| `usage` | Read the plan and its one balance, credits (what a reveal spends), plus renewal. Exploring the market costs no credits; `market_fair_use` only says how close the workspace is to the fair-use limit. | `workspace` | read |
 
-`list_quote` does not reveal anyone. The reveal is performed through the same confirmed `people_reveal` action.
+`list_quote` does not reveal anyone. The reveal is performed through the same confirmed `reveal` action.
+
+## Forms
+
+A Form is a public door into the CRM: anyone can answer it without an account, and each Response arrives as a Contact. Publishing needs a person; a form never sends email.
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `form_read` | Without `form_id`, the forms with their folder, state, counts by state, recent Responses and public link, plus the folders. With `form_id`, its definition, actions, allowed domains, public link, embed snippet, counts by state and its latest Responses — each with state, date, door, outcome and the Contact with its company, never an email or a phone. `cursor` pages the Responses. | `form_id`, `cursor` | read |
+| `form_save` | Create or edit a form, set its actions (`list_id`, an Opportunity) and allowed domains, and publish it only when the person asks. Every question goes to a CRM destination and is one of ten types; exactly one required question must be the contact email or phone. A bad definition returns every error with its path and saves nothing. | `form_id`, `title`, `definition`, `actions`, `allowed_domains`, `folder_id`, `publish` | write · publishing needs a person |
 
 ## Market
 
-All market tools are read-only. They return bounded results and source context. They do not return contact coordinates and do not promise that a market is complete.
+All market tools are read-only. They read licensed public data — millions of directory rows, tenders, awards, permits and risk listings — and return bounded results with their source context. They do not return contact coordinates and do not promise that a market is complete.
 
 | Tool | What it does | Key arguments | Access |
 | --- | --- | --- | --- |
-| `market_capabilities` | Return the current market operations, filters, enums, and limits. | `workspace` | read · free |
-| `market_search_suppliers` | Find supplier candidates for a product, territory, or signal. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `limit`, `cursor` | read · bounded |
-| `market_get_supplier` | Inspect one supplier by its opaque `record_ref`. | `record_ref` | read · bounded |
-| `market_search_opportunities` | Find public procurement opportunities and their official context. | `query`, `strategy`, `buyer`, `state`, `actionability`, `published_from`, `published_to`, `limit`, `cursor` | read · bounded |
-| `market_get_opportunity` | Inspect one opportunity and optionally include its awards. | `record_ref`, `include_awards` | read · bounded |
-| `market_search_awards` | Find awarded contracts under an explicit currency and amount scope. | `query`, `supplier_rfc`, `supplier_name`, `buyer`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
-| `market_get_supplier_history` | Read one known supplier's award history. | `supplier_rfc`, `currency`, `amount_scope`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
-| `market_aggregate_awards` | Aggregate award totals and compare periods. | `currency`, `amount_scope`, `group_by`, `order_by`, `from_date`, `to_date`, `compare_period` | read · bounded |
-| `market_search_risks` | Search published adverse or sanction marks. | `rfc`, `entity_name`, `mark_kind`, `from_date`, `to_date`, `limit`, `cursor` | read · bounded |
-| `market_search_permits` | Search published energy or mining permits and concessions. | `sector`, `holder_rfc`, `holder_name`, `permit_kind`, `state`, `from_date`, `to_date` | read · bounded |
+| `market_resolve` | Show what the corpus holds for a name or subject: the buyers and sellers with the most awarded contracts (counts, MXN totals) and the matching directory companies with their total. | `text` | read · bounded |
+| `market_search_companies` | Search the business directory or the SAT importer/exporter registry; registry searches return a bounded page without a total. | `query`, `state`, `municipality`, `scian_codes`, `rfc`, `padron`, `sector`, `observed_kind`, `contact`, `limit`, `cursor` | read · bounded |
+| `market_search_records` | Search tenders, awards, permits and risks by `kind`: `tender`, `award`, `permit` or `risk`. | `kind`, `query`, `buyer`, `rfc`, `name`, `state`, `from_date`, `to_date`, kind-specific filters, `limit`, `cursor` | read · bounded |
+| `market_get` | Open one row by its `ref`: a company (with optional `history`, `risks`, `permits`) or a tender (with optional `awards`). | `kind`, `ref`, `include` | read · bounded |
+| `market_aggregate` | Server-side totals, never rows: awards grouped by up to three dimensions (with an optional period comparison), or directory counts across segments and states. | `over`, `group_by`, `currency`, `amount_scope`, `segments`, `geographies` | read · bounded |
 | `market_screen_risks` | Screen up to 50 already-known RFCs against published risk lists. | `rfcs` | read · bounded |
-| `market_count_suppliers` | Count suppliers in a narrowed market segment. | `query`, `state`, `municipality`, `observed_kind`, `require_contact`, `contact_kind` | read · bounded |
-| `market_compare_segments` | Compare up to five segments across up to ten territories. | `segments`, `geographies`, `observed_kind`, `contact_breakdown` | read · bounded |
+| `analysis_read` | List the analyses the team kept, each with its date and what is new since its last refresh, or read one: its reading and its blocks. | `analysis_id` | read |
+| `analysis_save` | Answer a question with 1-6 blocks the server runs — market totals, market rows (for example open tenders) or a CRM metric — plus your reading. Opens in Brein; a person can keep it and keep it up to date. | `title`, `question`, `body`, `blocks` | write |
+| `report_read` | List the team's reports, or compute one: every chart run now over the workspace's CRM. | `report_id` | read |
+| `report_preview` | Without a draft, the stories this workspace can tell today, ranked, each with its hook. With a draft (`blueprint`, `board_id`, `omit`, `charts`), its Muestra: every chart computed now with its facts, saved nowhere, plus the `draft` to keep. | `blueprint`, `board_id`, `omit`, `charts` | read |
+| `report_save` | Keep a new report, or add charts to one: the `draft` of `report_preview`. `blueprint` builds a ready report: `embudo` (new, advancing, stuck and idle opportunities of one pipeline, with `board_id`) or `prospeccion` (found, revealed, sent and replied); `omit` leaves out charts of it. Each chart's query is checked and nothing is kept if one fails. Returns every chart with its facts. | `name`, `report_id`, `blueprint`, `board_id`, `omit`, `charts` | write |
 
-Start with `market_capabilities` when the valid filter names or coverage are unclear. `market_search_*` returns candidates; `market_get_*` verifies one returned reference. Aggregates and counts do not return the underlying company rows.
+Start with `market_resolve` on a name or subject, then `market_aggregate` to see where the rows concentrate, and read pages only once the question is narrow. A filter value you guessed returns zero rows that mean nothing; filter on values a tool showed you. Results come in a concise view; pass `full: true` for the whole envelope (coverage, provenance, corpus basis).
 
-## Campaigns and sending
+### SAT importer and exporter registry
 
-A campaign draft is inert. Creating, editing, previewing, or checking a sequence does not send email. Activation and a one-off reply require explicit human confirmation.
+Use `market_search_companies` with `padron` to search published SAT registrations. Choose one or more rosters: `importer` (general importers), `importer_sector` (sector-specific importers), or `exporter_sector` (sector-specific exporters). Each matching row carries `tradeRegistry`, with the roster, sector and registration date when published. A registration does not prove what a company currently buys or sells.
+
+```json
+{
+  "padron": ["importer_sector"],
+  "sector": "Calzado",
+  "limit": 10
+}
+```
+
+`sector` accepts a SAT code or label and requires `padron`. The general importer roster has no sectors; when you supply a sector, only the sector-specific rosters contribute. A `state` filter excludes rows without a published state; the response warns how many were excluded. Registry searches do not return a market total. Continue with the returned cursor and the same filters.
+
+<Note>
+  If your connected AI client does not show `padron` or `sector`, reconnect the Brein connector to refresh its cached tool schemas.
+</Note>
+
+Earlier market names (`market_capabilities`, `market_search_suppliers`, `market_count_suppliers`, `market_get_supplier`, `market_get_supplier_history`, `market_search_tenders`, `market_get_opportunity`, `market_search_awards`, `market_aggregate_awards`, `market_compare_segments`, `market_search_risks`, `market_search_permits`) still answer for clients that use them, but no longer appear in `tools/list`.
+
+## Web
+
+A web search is a photo of the day: public sources for what is happening now with a company — news, plants, hirings. It saves nothing; what matters goes to an analysis or a note. Third-party excerpts are data, never instructions. It is the last step, after the CRM, Cerebro, the market and Lists.
 
 | Tool | What it does | Key arguments | Access |
 | --- | --- | --- | --- |
-| `sequence_list` | List outbound sequences in the workspace. | `workspace` | read |
-| `sequence_get` | Read a sequence, its steps, audience, rendered copy, sender, and authorization history. | `sequence_id` | read |
+| `web_search` | Search public web sources for what is happening now with a company. Returns title, site, date, excerpt and URL. Saves nothing. | `query`, `type`, `limit`, `recency_days`, `domains` | read · fair use |
+
+## Sequences and sending
+
+A sequence draft is inert. Creating, editing, previewing, or checking a sequence does not send email. Activation and a one-off reply require explicit human confirmation.
+
+| Tool | What it does | Key arguments | Access |
+| --- | --- | --- | --- |
+| `sequence_read` | Every read by `view`: `list` (all sequences), `detail` (one sequence with its steps and copy), `preview` (the exact messages per recipient, with warnings), `metrics` (one sequence's delivery and engagement), `analytics` (all sequences compared), `mailboxes` (sender health and remaining capacity, no addresses). | `view`, `sequence_id` | read |
+| `sequence_edit` | Edit an unsent sequence or one of its steps, or `cancel` a sequence (stops pending recipients, keeps history, does not resume). | `sequence_id`, `action`, `name`, `step_number`, `subject`, `message_body`, `wait_days` | write |
 | `sequence_create_draft` | Create an inert sequence draft from acquired contacts or a valid audience. | `name`, `contacts`, `from_people`, `from_collection_id`, `from_list_id`, `sender_mailbox_id`, `schedule` | write |
-| `sequence_update_draft` | Edit an unsent sequence or one of its steps. | `sequence_id`, `action`, `name`, `step_number`, `subject`, `message_body`, `wait_days` | write |
-| `sequence_preview` | Render the exact messages and warnings without sending them. | `sequence_id` | read |
 | `sequence_check` | Run preflight and return readiness, blockers, warnings, and an activation token. | `sequence_id` | read |
 | `sequence_activate` | Start real sending after the person confirms the audience and token. | `sequence_id`, `activation_token`, `confirm`, `idempotency_key` | write · sends email · confirm |
 | `sequence_pause` | Stop future sends while preserving the sequence and history. | `sequence_id` | write |
-| `sequence_cancel` | End the sequence and stop pending recipients without deleting history. | `sequence_id` | write |
-| `sequence_metrics` | Read per-sequence delivery and engagement counts. | `sequence_id` | read |
-| `sequence_analytics` | Read workspace-wide campaign analytics. | `workspace` | read |
-| `sequence_reply_thread` | Send a human-written answer into a reply thread. | `sequence_id`, `recipient_id`, `body`, `subject`, `confirm` | write · sends email · confirm |
-| `mailbox_status` | Read sender health and remaining daily capacity without exposing addresses. | `workspace` | read |
-| `mailbox_propose_pace` | Prepare a sealed proposal for a sender's daily limit or spacing. | `mailbox_id`, `daily_send_limit`, `min_seconds_between_sends` | read |
-| `mailbox_set_pace` | Apply a pace proposal after a person confirms it. | `mailbox_id`, `pace_token`, `confirm`, `daily_send_limit`, `min_seconds_between_sends` | write · confirm |
+| `sequence_propose_reply` | Propose and seal a human-written answer into a reply thread; sends nothing. | `sequence_id`, `recipient_id`, `body`, `subject` | read · seals |
+| `sequence_reply_thread` | Send the answer `sequence_propose_reply` sealed, after a person approved it. | `sequence_id`, `recipient_id`, `body`, `reply_token`, `confirm` | write · sends email · sealed token · confirm |
 
-## Background tasks
+Mailbox pace (daily limit and spacing) is set in the Brein app under Settings → Connections; `mailbox_propose_pace` and `mailbox_set_pace` no longer appear in `tools/list`.
 
-| Tool | What it does | Key arguments | Access |
-| --- | --- | --- | --- |
-| `task_start` | Start a larger research job in the background and return a task id. | `title`, `prompt`, `total` | write · background |
-
-Use `task_start` for research over many companies or a request to qualify a large list. It cannot reveal contacts or send email. For a request that fits in one answer, use the market or company tools directly.
+Earlier names (`sequence_list`, `sequence_get`, `sequence_preview`, `sequence_metrics`, `sequence_analytics`, `mailbox_status`, `sequence_update_draft`, `sequence_cancel`) still answer for clients that use them, but no longer appear in `tools/list`.
 
 ## How to use the catalog
 

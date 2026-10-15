@@ -1,0 +1,118 @@
+---
+title: 'Send from your server'
+description: 'Use your own HTML form and your own backend, and send each Respuesta to Brein with the form key.'
+---
+
+Sometimes the form must look like the rest of your site. Build the HTML form yourself, post it to your own backend, and let that backend send the answers to Brein. The flow is three hops:
+
+```
+Your HTML form  →  your server (/api/brein)  →  Brein (POST …/responses)
+```
+
+The visitor never talks to Brein and never sees the form key. Your server adds the key, maps the fields to the form's question keys, and creates the Respuesta, which lands in the CRM as a contact.
+
+## Create the form key
+
+Open **Compartir → Desde tu servidor** and create a key. The full key looks like `frm_sk_…` and is shown **once**; Brein stores only its hash and a short prefix. Copy it into your secret manager. Revoke a key from the same dialog when a server should stop sending.
+
+The same dialog lists the endpoint of your form and the exact question keys, with each question's type and whether it is required. Use those keys as the keys of `answers`.
+
+## Send a response
+
+Send a `POST` to the public endpoint with the key in the `Authorization` header:
+
+```bash
+curl -X POST https://api.trybrein.com/api/v1/forms/frm_AbC123dEf4/responses \
+  -H "Authorization: Bearer $BREIN_FORM_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{"answers":{"correo":"ana@empresa.com"},"consent":{"privacy":true}}'
+```
+
+`answers` is an object whose keys are the form's question keys. `consent.privacy` must be `true`. `Idempotency-Key` is optional: sending the same key twice returns the same Respuesta.
+
+A successful send answers `202`:
+
+```json
+{ "id": "8f1c…", "status": "received" }
+```
+
+## Example: your form, your backend
+
+This example has three parts: an HTML form on your site, a Next.js route handler (`app/api/brein/route.ts`) on your server, and the key in your environment. Replace `frm_AbC123dEf4` with your form's id, and the field names with the keys from **Compartir → Desde tu servidor**.
+
+Put the key in your server's environment, never in the page:
+
+```bash
+BREIN_FORM_KEY=frm_sk_…
+```
+
+The HTML form posts to your own route. Its design is yours; the only requirements are the field names and the consent checkbox:
+
+```html
+<form action="/api/brein" method="post">
+  <input type="text" name="nombre" placeholder="Tu nombre" />
+  <input type="email" name="correo" placeholder="Tu correo de trabajo" required />
+  <label>
+    <input type="checkbox" name="privacy" required />
+    Acepto el <a href="/privacidad">aviso de privacidad</a>
+  </label>
+  <button type="submit">Enviar</button>
+</form>
+```
+
+The route handler reads that POST, maps each field to its question key, adds the consent, and forwards it to Brein with the key from the environment. On success it redirects to a thank-you page; on error it passes Brein's status and body back to the page:
+
+```ts
+// app/api/brein/route.ts
+import { NextResponse } from 'next/server'
+
+const BREIN_RESPONSES_URL = 'https://api.trybrein.com/api/v1/forms/frm_AbC123dEf4/responses'
+
+export async function POST(request: Request) {
+  const data = await request.formData()
+
+  const response = await fetch(BREIN_RESPONSES_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.BREIN_FORM_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      answers: {
+        nombre: String(data.get('nombre') ?? ''),
+        correo: String(data.get('correo') ?? ''),
+      },
+      consent: { privacy: data.get('privacy') === 'on' },
+    }),
+  })
+
+  if (!response.ok) {
+    return NextResponse.json(await response.json(), { status: response.status })
+  }
+  return NextResponse.redirect(new URL('/gracias', request.url), 303)
+}
+```
+
+A multi-select question sends a list: read it with `data.getAll('intereses')` and pass the array as its answer. Any other server works the same way; only the forwarding and the response change.
+
+## Status codes
+
+| Status | Meaning |
+| --- | --- |
+| `202` | Accepted. The Respuesta is queued and will be processed. |
+| `401` | The key is missing, invalid, or revoked. |
+| `403` | The key belongs to another form, the form is paused, or a browser submission came from a site that is not allowed. |
+| `404` | The form does not exist or is still a draft. |
+| `422` | There is an answer to fix. The body uses the [error shape](/api/errors) with `errors`, one entry per question. |
+| `429` | Too many requests. Back off and retry. |
+
+## Keep the key on the server
+
+A form key is a credential. Never put it in a browser, a mobile app, a public repository, or any code a visitor can read. The HTML form above posts to your own route precisely so the key never leaves your server. If you would rather not build a form at all, use the [embed](/forms/embed) or the [share link](/forms/share-by-link): the public door checks Turnstile and the allowed domains for you.
+
+## Related
+
+- [Share by link](/forms/share-by-link)
+- [Embed on your site](/forms/embed)
+- [Errors](/api/errors)

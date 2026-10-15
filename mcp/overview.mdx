@@ -3,7 +3,7 @@ title: 'MCP & OAuth'
 description: 'Connect an AI client to the Brein workspace and understand the tools available to it.'
 ---
 
-Brein exposes the current commercial capabilities of your workspace through MCP. An AI client can read the team's context, search market information, work with contacts, prepare campaigns, and run research.
+Brein exposes the current commercial capabilities of your workspace through MCP. An AI client can read the team's context, search market information, work with contacts, prepare sequences, and run research.
 
 For the complete public list, see the [MCP Tool Catalog](/mcp/catalog).
 
@@ -11,14 +11,14 @@ For client setup, start with [Connect your AI](/connect).
 
 ## What the client can work with
 
-The public catalog currently contains **52 tools** across these areas:
+The public catalog currently contains **56 tools** across these areas:
 
 | Area | What the agent can do | Reference |
 | --- | --- | --- |
 | Cerebro | Retrieve and update the team's offer, buyer profile, exclusions, geography, messages, and decisions. | [Cerebro tools](/mcp/knowledge) |
 | Prospectos | Read contact records, update a contact, and file a revealed or imported person. | [CRM tools](/mcp/work) |
 | Market | Search published suppliers, opportunities, awards, risks, and permits. | [Market tools](/mcp/overview#market-tools) |
-| Campañas | Create, preview, approve, activate, pause, and measure email sequences. | [Campaign tools](/mcp/sequences) |
+| Secuencias | Create, preview, approve, activate, pause, and measure email sequences. | [Sequence tools](/mcp/sequences) |
 | Investigador | Start and inspect durable research. | [Research tools](/mcp/overview#research-tools) |
 | Workspace | Read the workspaces and commercial usage available to the credential. | [Workspace tools](/mcp/collaboration) |
 | Connections | Read from a provider that an administrator has already connected. | [Connection tools](/mcp/integrations) |
@@ -54,14 +54,14 @@ Start with a read that has no external effect:
 Show the Brein workspaces I can use and the current commercial usage.
 ```
 
-Then try a bounded search or a small piece of team context before asking the agent to change a contact or prepare a campaign. The agent must show the audience, price, or approval request before an action that spends credits or sends a message.
+Then try a bounded search or a small piece of team context before asking the agent to change a contact or prepare a sequence. The agent must show the audience, price, or approval request before an action that spends credits or sends a message.
 
 ## Tool behavior
 
 - Reads return a focused result and tell you when more pages are available.
 - Contact details remain masked until the person chooses a selected lookup.
 - CRM writes apply to the contact record named in the request.
-- A campaign draft does not send itself; activation requires a separate confirmation.
+- A sequence draft does not send itself; activation requires a separate confirmation.
 - Clients may cache their tool list. Reconnect after a Brein tool change if a new tool is missing.
 
 ## Related
@@ -70,4 +70,4 @@ Then try a bounded search or a small piece of team context before asking the age
 - [Security](/security/overview)
 - [Cerebro tools](/mcp/knowledge)
 - [CRM tools](/mcp/work)
-- [Campaign tools](/mcp/sequences)
+- [Sequence tools](/mcp/sequences)

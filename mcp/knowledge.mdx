@@ -9,19 +9,21 @@ Read [MCP and OAuth](/mcp/overview) first for authentication and workspace permi
 
 ## Read context
 
-| Tool | Use it when you want to... | Main arguments |
-| --- | --- | --- |
-| `context_retrieve` | Find the most relevant context for a task or set of files. | `task`, `files`, `view`, `limit` |
-| `context_get` | Read one document in full. | `topic`, `view` |
+`context_read` does three things, chosen by the argument you pass:
 
-`context_retrieve` returns a short result by default. Fetch the full document only when you need it.
+| Pass | You get | Use it to... |
+| --- | --- | --- |
+| `query` | Ranked document paths, each with a short snippet. | Find what the team wrote about a task or topic. |
+| `path` | One document: its whole body and its `version`. | Read the document you are about to cite or change. A bare name (`refund-flow`) works too. |
+| nothing (or `folder`) | The folder tree. | See what exists. `<folder>/Structure.md` says what a folder is for. |
+
+Snippets help you find a document; open it before citing it.
 
 ## Update context
 
-| Tool | Use it when you want to... | Main arguments |
-| --- | --- | --- |
-| `context_create` | Create a document for a new durable decision. | `title`, `content`, `area` |
-| `context_update` | Update an existing document. | `topic`, fields |
+`context_write` creates one new document at `<folder>/<name>.md`. A folder that does not exist yet is created.
+
+A document that exists changes in two steps. Read it, then `context_propose_rewrite` with the whole new body and the `version` you read: nothing is written yet. A person confirms, and `context_rewrite` writes exactly that body. It replaces, never merges; if someone edited the document in the meantime, the rewrite fails instead of silently discarding their change.
 
 Documents are shared with the workspace by default. A write does not delete another document or publish a page to the web.
 
